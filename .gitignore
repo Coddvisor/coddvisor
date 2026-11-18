@@ -1,0 +1,50 @@
+# Lista de lo que NUNCA entra al registro de cambios ni a GitHub.
+# Cada bloque dice por qué.
+
+# --- Secretos y llaves ---
+# Las llaves (Vercel, base de datos, correo, SUNAT) viven en archivos .env.
+# Si una llave se sube a GitHub, aunque se borre después queda en el historial:
+# hay que darla por robada y cambiarla. Por eso se bloquean de raíz.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credenciales*
+secrets*
+
+# --- Documentos privados del negocio ---
+# Este repositorio es público. Las notas privadas van en archivos *.local.md
+# y los documentos privados viven fuera de este proyecto. Estas reglas son un
+# cinturón de seguridad por si alguien copia una parte aquí.
+*.local.md
+memoria-inversionistas*/
+*memoria*inversionista*
+
+# --- Lo que se regenera solo (no es trabajo de nadie) ---
+# Se reconstruye en segundos con "npm install" o al publicar; guardarlo solo
+# engorda el repositorio y genera cambios falsos.
+node_modules/
+.next/
+out/
+dist/
+build/
+.vercel/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+coverage/
+
+# --- Basura del sistema y de los editores ---
+.DS_Store
+._*
+Thumbs.db
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+
+# --- Índices locales de herramientas ---
+.codegraph/
