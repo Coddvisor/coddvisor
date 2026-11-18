@@ -1,12 +1,27 @@
 # Sitio público de Coddvisor (`web/`)
 
-Una sola página de presentación. Son tres archivos y nada más:
+Una sola página de presentación. Son estos archivos y nada más:
 
-| Archivo        | Qué es                                                        |
-|----------------|---------------------------------------------------------------|
-| `index.html`   | El contenido: textos, cifras y la maqueta del inventario       |
-| `estilos.css`  | La identidad visual (colores, letras, espacios, celular)       |
-| `favicon.svg`  | El ícono de la pestaña del navegador                           |
+| Archivo                | Qué es                                                       |
+|------------------------|--------------------------------------------------------------|
+| `index.html`           | El contenido: textos, cifras, el logotipo y la maqueta       |
+| `colores.css`          | Los colores de marca. Copia fiel del archivo de marca: no se edita aquí |
+| `estilos.css`          | Qué color de marca usa cada pieza, letras, espacios, celular |
+| `favicon.svg`          | El ícono de la pestaña del navegador                         |
+| `favicon-32.png`       | El mismo ícono, para navegadores que no leen SVG             |
+| `apple-touch-icon.png` | El ícono cuando alguien guarda el sitio en su iPhone         |
+
+## Los colores (un solo lugar)
+
+`colores.css` es una copia exacta del archivo de colores de la marca. Si la marca
+cambia un color, se reemplaza ese archivo entero por el nuevo, y no se toca
+nada más. `estilos.css` no define colores propios: solo dice, por ejemplo, que
+el botón usa `--boton` o que los enlaces usan `--enlace`.
+
+Las franjas azules (portada y contacto) son bloques oscuros dentro de una
+página clara: sus textos llevan `data-tema="oscuro"` en `index.html`, y con eso
+toman solos los colores "sobre oscuro" de la marca. La maqueta del inventario
+no lo lleva, a propósito: sigue el tema de la página.
 
 No hay "programa" que compilar ni librerías que instalar. Por eso cualquier
 servicio lo publica tal cual (hoy, Cloudflare Pages), y por eso no se rompe
@@ -26,6 +41,16 @@ En `index.html`, el atributo `data-correo="equipo@coddvisor.com"` decide a qué
 correo escribe el botón "Escríbanos". Para cambiarlo, se cambia solo ahí. Si se
 deja vacío (`data-correo=""`), el sitio muestra "Muy pronto publicaremos aquí un
 correo de contacto" en vez de un botón.
+
+## El logotipo
+
+El gato y la palabra «coddvisor» están dibujados dentro de `index.html` (el
+`<symbol id="logotipo">`), copiados del logotipo horizontal de la marca. Sus
+colores salen de `--logo-gato` y `--logo-palabra` en `estilos.css`: sobre fondo
+claro, todo en cobalto; en modo oscuro, el gato ámbar y la palabra blanca. El
+gato ámbar nunca va sobre fondo claro, porque ahí no se distingue. La palabra
+es un dibujo, no una tipografía: no la reescribas con Space Grotesk. Alto
+mínimo: 24 px.
 
 ## Reglas de contenido (no se negocian)
 
