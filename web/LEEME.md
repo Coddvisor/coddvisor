@@ -8,8 +8,9 @@ Una sola página de presentación. Son tres archivos y nada más:
 | `estilos.css`  | La identidad visual (colores, letras, espacios, celular)       |
 | `favicon.svg`  | El ícono de la pestaña del navegador                           |
 
-No hay "programa" que compilar ni librerías que instalar. Por eso Vercel lo
-publica tal cual, y por eso no se rompe cuando una librería se actualiza.
+No hay "programa" que compilar ni librerías que instalar. Por eso cualquier
+servicio lo publica tal cual (hoy, Cloudflare Pages), y por eso no se rompe
+cuando una librería se actualiza.
 
 ## Verlo en tu computadora
 
@@ -19,12 +20,12 @@ python3 -m http.server 4321 --directory web
 
 Luego abre `http://localhost:4321` en el navegador. Para apagarlo: `Ctrl + C`.
 
-## Cambiar el correo de contacto (un solo lugar)
+## El correo de contacto (un solo lugar)
 
-En `index.html`, busca `data-correo=""` y escribe la dirección entre las
-comillas, por ejemplo `data-correo="contacto@coddvisor.com"`. Mientras esté
-vacío, el sitio muestra "Muy pronto publicaremos aquí un correo de contacto" y
-ningún botón lleva a un correo que no existe.
+En `index.html`, el atributo `data-correo="equipo@coddvisor.com"` decide a qué
+correo escribe el botón "Escríbanos". Para cambiarlo, se cambia solo ahí. Si se
+deja vacío (`data-correo=""`), el sitio muestra "Muy pronto publicaremos aquí un
+correo de contacto" en vez de un botón.
 
 ## Reglas de contenido (no se negocian)
 
@@ -33,7 +34,7 @@ ningún botón lleva a un correo que no existe.
 2. **Hoy es un solo negocio.** El sitio lo dice tal cual. No hay precios, planes,
    clientes de fuera ni testimonios.
 3. **Solo información pública.** Nada de documentos internos ni planes
-   financieros: este repositorio es público.
+   financieros: este repositorio es público, y su historial también.
 4. **Cifras de CAYLA:** autorizadas por el fundador el 17-nov-2026, con su fecha
    (14-nov-2026) y la aclaración de que son de un solo negocio.
 5. **Vocabulario:** "cliente", "integrante", "sede".
@@ -42,97 +43,112 @@ ningún botón lleva a un correo que no existe.
 
 ## Pasos para publicarlo (los hace Felipe)
 
-> **Antes de empezar, una decisión de dinero** (ver "Lo que cuesta" abajo).
+Todo lo de esta guía es gratis. Si en algún paso una pantalla te pide tarjeta o
+un plan de pago, detente: no hace falta para este sitio.
 
-### Paso 1 · Subir el proyecto a GitHub
+### Paso 0 · Cerrar con llave antes de abrir la tienda
 
-La otra sesión ya dejó la carpeta `coddvisor/` lista como repositorio, y este
-sitio quedó guardado en la rama `web/sitio-inicial`. Falta el "depósito" en
-GitHub (el remoto), que creas tú:
+Activa la **verificación en dos pasos** en GitHub, Cloudflare, GoDaddy y Zoho.
+Son las cuatro llaves de tu presencia pública: con la contraseña de cualquiera,
+alguien podría cambiar tu sitio o leer los correos de los interesados. La
+verificación en dos pasos lo impide aunque tenga la contraseña.
 
-1. En github.com, dentro de tu organización, crea un repositorio **privado**
-   llamado `coddvisor`, **vacío** (sin README ni .gitignore: ya existen).
-2. GitHub te muestra una dirección como
-   `https://github.com/TU-ORGANIZACION/coddvisor.git`. En la terminal:
+### Paso 1 · Llevar el sitio a `main` en GitHub
 
-```bash
-cd ruta/de/la/carpeta/coddvisor
-```
+El repositorio ya existe en GitHub (`Coddvisor/coddvisor`, público) y el sitio
+está en la rama `web/sitio-inicial`.
 
-```bash
-git remote add origin https://github.com/TU-ORGANIZACION/coddvisor.git
-```
+1. Sube los últimos cambios de la rama (solo cuando tú lo decidas):
 
 ```bash
-git push -u origin main
+git push origin web/sitio-inicial
 ```
 
-```bash
-git push -u origin web/sitio-inicial
-```
+2. En GitHub abre un *pull request* (solicitud de revisión) de
+   `web/sitio-inicial` hacia `main`. Revísalo y apruébalo tú.
 
-3. En GitHub abre un *pull request* (solicitud de revisión) de
-   `web/sitio-inicial` hacia `main`. Revísalo y apruébalo tú: así queda la regla
-   del README de que solo tú decides qué ve el público.
+**Por qué así:** Cloudflare va a publicar solo lo que está en `main`. La
+solicitud de revisión es la puerta: nada llega a la vitrina sin que tú lo veas
+antes. Las demás ramas reciben una dirección de prueba, como el probador de la
+tienda: ves la prenda puesta antes de sacarla a vitrina.
 
-**Por qué así:** Vercel mira GitHub. Cada vez que algo entra a `main`, el sitio
-se actualiza solo; cada rama nueva recibe una dirección de prueba privada para
-revisarla antes. Es como el probador de la tienda: ves la prenda puesta antes
-de sacarla a vitrina.
+### Paso 2 · Crear el sitio en Cloudflare Pages
 
-### Paso 2 · Conectar Vercel
+1. Crea tu cuenta gratis en dash.cloudflare.com (si no la tienes).
+2. En el menú: **Workers & Pages → Create → pestaña Pages → Connect to Git**.
+   (Si la pantalla te ofrece crear un "Worker", busca la opción de **Pages**:
+   es la que sirve aquí.)
+3. Conecta GitHub. Cuando GitHub pregunte a qué repositorios puede entrar
+   Cloudflare, elige **Only select repositories → `coddvisor`**, no todos.
+4. Elige el repositorio `coddvisor` y completa así:
+   - **Project name:** `coddvisor` (la dirección de prueba será
+     `coddvisor.pages.dev`; si ese nombre está tomado, Cloudflare propone otro).
+   - **Production branch:** `main`.
+   - **Framework preset:** `None`.
+   - **Build command:** vacío.
+   - **Build output directory:** `web` ← lo más importante. El repositorio
+     tiene otras carpetas (arquitectura, documentos) que no deben publicarse.
+5. **Save and Deploy.** En un minuto te da la dirección `coddvisor.pages.dev`.
+   Ábrela en el celular y en la computadora, y prueba el botón "Escríbanos".
 
-1. En vercel.com → **Add New… → Project** → elige el repositorio `coddvisor`
-   (la primera vez te pide dar permiso a Vercel para leer ese repositorio:
-   dale permiso **solo a ese**, no a todos).
-2. En la pantalla de configuración:
-   - **Root Directory:** `web` ← lo más importante. El repositorio tiene más
-     carpetas (arquitectura, docs) que no deben publicarse.
-   - **Framework Preset:** `Other`.
-   - **Build Command** y **Output Directory:** déjalos vacíos.
-3. **Deploy.** En un minuto te da una dirección como `coddvisor-xxxx.vercel.app`.
-   Ábrela en el celular y en la computadora.
+### Paso 3 · Apuntar coddvisor.com (sin tocar el correo)
 
-### Paso 3 · Apuntar coddvisor.com
+El dominio **se queda en GoDaddy**, igual que su DNS (la libreta de direcciones
+del dominio, donde también viven los registros de Zoho). Solo se cambian dos
+cosas:
 
-1. En Vercel: tu proyecto → **Settings → Domains** → agrega `coddvisor.com`.
-   Acepta que también agregue `www.coddvisor.com` (que redirija a uno de los dos).
-2. Vercel te muestra **los registros DNS exactos** que necesita (normalmente un
-   registro tipo `A` para `@` y un `CNAME` para `www`). **Copia los valores que
-   te muestre Vercel**, no los de una guía: a veces cambian por proyecto.
-3. En GoDaddy: **Mis productos → coddvisor.com → DNS → Administrar registros**.
-   - Edita el registro `A` cuyo nombre es `@` (GoDaddy pone uno que dice
-     "Parked" o apunta a su página de estacionamiento) y cambia su valor por el
-     de Vercel. Si hay más de un `A` en `@`, borra los demás.
-   - Edita (o crea) el `CNAME` de nombre `www` con el valor de Vercel.
-   - No toques los registros `MX` ni `TXT`: son del correo de Zoho.
-4. Espera. Suele tardar de minutos a unas horas. Vercel marcará el dominio con
-   un visto verde y activará el candado (HTTPS) solo, sin costo.
+**3a. `www.coddvisor.com` → Cloudflare**
 
-**Por qué así y no "transferir el dominio a Vercel":** el dominio sigue siendo
-tuyo y sigue en GoDaddy; solo le dices a internet "esta dirección vive en
-Vercel". Si mañana te mudas de proveedor, cambias dos registros y listo.
+1. En Cloudflare: tu proyecto de Pages → **Custom domains → Set up a custom
+   domain** → escribe `www.coddvisor.com` → elige la opción de **CNAME**
+   (configurar el registro tú mismo en tu proveedor, no mover el dominio).
+   Hazlo **antes** de tocar GoDaddy: si GoDaddy apunta primero, el sitio
+   muestra un error hasta que Cloudflare lo reconozca.
+2. En GoDaddy: **Mis productos → coddvisor.com → DNS → Administrar registros**.
+   Edita el registro `CNAME` de nombre `www` (o créalo si no existe) y pon como
+   valor **el que te muestre Cloudflare** (normalmente `coddvisor.pages.dev`).
+3. Espera. Suele tardar de minutos a unas horas. Cloudflare marca el dominio
+   como activo y pone el candado (HTTPS) solo, sin costo.
 
-### Paso 4 · El correo de contacto
+**3b. `coddvisor.com` (sin www) → reenvío a `www`**
 
-El sitio publica `equipo@coddvisor.com`, un buzón de Zoho Mail. Zoho funciona
-gracias a unos registros del DNS (`MX`, y `TXT` para SPF y DKIM). **Cualquier
-cambio de DNS para publicar el sitio debe dejarlos intactos**: si se pierden,
-los correos de los interesados dejan de llegar sin que nadie te avise.
+1. En GoDaddy, en la misma página del dominio: **Reenvío (Forwarding) →
+   Dominio → Agregar reenvío**.
+2. Destino: `https://www.coddvisor.com` · Tipo: **permanente (301)** · Sin
+   "enmascarar" (*masking*).
+3. Guarda. GoDaddy ajusta solo el registro `A` de `@`; no lo cambies a mano.
+
+**No toques nunca** los registros `MX` ni `TXT`: son los del correo de Zoho.
+Después de cada cambio en GoDaddy, revisa que sigan ahí.
+
+**Por qué así y no "pasar el dominio a Cloudflare":** mover el DNS a Cloudflare
+obligaría a copiar los registros de Zoho. Si uno se pierde en la copia, los
+correos de los interesados dejan de llegar sin aviso. Así, Zoho no se entera
+de nada. El costo: quien escriba `coddvisor.com` terminará en
+`www.coddvisor.com`, que es normal en internet.
+
+### Paso 4 · Probar el correo antes de anunciar el sitio
+
+El botón del sitio escribe a `equipo@coddvisor.com` (Zoho Mail). Antes de
+compartir el sitio:
+
+1. Desde un Gmail o un Hotmail que no sea tuyo de trabajo, escribe a
+   `equipo@coddvisor.com`. Debe llegar.
+2. Responde desde Zoho. Revisa que la respuesta **no** caiga en spam del otro
+   lado. Si cae, a Zoho le falta un registro de autenticación (SPF o DKIM):
+   Zoho te muestra cuál en su panel, en la sección de dominios.
 
 ---
 
 ## Lo que cuesta
 
-- **GitHub** (organización gratuita, repositorio privado): gratis.
-- **GoDaddy:** ya pagaste el dominio. Revisa la fecha de renovación.
-- **Vercel:** el plan gratuito (*Hobby*) según sus condiciones es para uso
-  **personal y no comercial**. Un sitio que presenta un producto que se va a
-  vender es uso comercial. Opciones:
-  1. **Vercel Pro**: pago mensual por integrante del equipo (revisa el precio
-     vigente en vercel.com/pricing antes de decidir).
-  2. **Cloudflare Pages**: gratis y permite uso comercial; el sitio funciona
-     igual porque son tres archivos sin programa. Cambia el panel, no el sitio.
-  3. Publicar en Hobby mientras sea una página de presentación y pasar a Pro
-     cuando haya clientes que paguen. Es tu decisión de riesgo; yo no la tomo
-     por ti.
+- **GitHub** (organización gratuita, repositorio público): gratis.
+- **Cloudflare Pages:** gratis, y sus condiciones permiten uso comercial.
+  Integrantes adicionales en la cuenta tampoco cuestan.
+- **GoDaddy:** ya pagaste el dominio; el reenvío del dominio es gratis.
+  Revisa la fecha de renovación del dominio.
+- **Zoho Mail:** según el plan que ya tienes.
+
+Cuándo revisar esta decisión: cuando exista la aplicación de Coddvisor (no esta
+página). Si se construye con Next.js, Vercel Pro puede convenir para la
+aplicación; esta página puede quedarse en Cloudflare igual.
