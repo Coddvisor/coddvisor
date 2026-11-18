@@ -5,8 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Coddvisor · Software de gestión para micro y pequeñas empresas del Perú</title>
 <meta name="description" content="Coddvisor reúne la venta, la caja, el inventario y la planilla en un solo lugar. Nace del sistema con el que CAYLA trabaja todos los días. Hoy lo usa un solo negocio; buscamos los primeros que quieran probarlo.">
-<meta name="theme-color" content="#12304A">
+<meta name="theme-color" content="#0B1841">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta property="og:title" content="Coddvisor">
 <meta property="og:description" content="Software de gestión para micro y pequeñas empresas del Perú. Nace dentro de un negocio real.">
 <meta property="og:type" content="website">
@@ -14,22 +16,28 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="/colores.css">
 <link rel="stylesheet" href="/estilos.css">
 </head>
 <body>
 
-<svg class="oculto" aria-hidden="true" focusable="false"><symbol id="logo" viewBox="0 0 64 64"><rect x="4" y="4" width="56" height="56" rx="14" fill="var(--logo-fondo)"/><polyline points="19,22 31,32 19,42" fill="none" stroke="var(--brand)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><line x1="35" y1="43" x2="47" y2="43" stroke="var(--f3)" stroke-width="5" stroke-linecap="round"/></symbol></svg>
+<!-- Logotipo horizontal de Coddvisor (guía de marca v3): el gato y la palabra dibujada con trazos.
+     Copia fiel de coddvisor-logotipo-horizontal.svg; solo los colores se cambiaron por los tokens
+     --logo-gato y --logo-palabra de estilos.css (cobalto sobre claro; gato ámbar y palabra blanca
+     sobre oscuro). El punto de la i es siempre ámbar. La palabra no es una tipografía: no
+     reescribirla con Space Grotesk. -->
+<svg class="oculto" aria-hidden="true" focusable="false"><symbol id="logotipo" viewBox="0 0 444.95 67"><g transform="translate(-11.93 -6.54) scale(1.27)"><path fill="var(--logo-gato)" fill-rule="evenodd" stroke="var(--logo-gato)" stroke-width="4.2" stroke-linejoin="round" d="M11.5 14.0L26.0 26.17H38.0L52.5 14.0V40.0A13.5 13.5 0 0 1 39.0 53.5H25.0A13.5 13.5 0 0 1 11.5 40.0ZM14.6 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0ZM33.4 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0Z"/></g><g transform="translate(72.34 0)"><g fill="none" stroke="var(--logo-palabra)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M30.91 32.3A16 16 0 1 0 30.91 55.7"/><circle cx="60.91" cy="44" r="16"/><circle cx="107.91" cy="44" r="16"/><path fill="var(--logo-palabra)" stroke="none" d="M126.71 3.2Q127.91 3.2 127.91 4.4V60A4.0 4.0 0 0 1 119.91 60V10.51Q119.91 9.51 120.81 8.81Z"/><circle cx="159.91" cy="44" r="16"/><path fill="var(--logo-palabra)" stroke="none" d="M178.71 3.2Q179.91 3.2 179.91 4.4V60A4.0 4.0 0 0 1 171.91 60V10.51Q171.91 9.51 172.81 8.81Z"/><path d="M192.91 28L207.91 60L222.91 28"/><path d="M240.41 28V60"/><circle fill="var(--ambar)" stroke="none" cx="240.41" cy="11" r="5.2"/><path d="M278.62 32.24A11 8 0 1 0 268.91 44A11 8 0 1 1 259.2 55.76"/><circle cx="310.91" cy="44" r="16"/><path d="M343.91 28V60"/><path d="M343.91 41A13 13 0 0 1 365.61 31.34"/></g></g></symbol></svg>
 
 <a class="saltar" href="#contenido">Ir al contenido</a>
 
 <header class="top">
   <div class="col top-in">
-    <a class="marca" href="#" aria-label="Coddvisor, ir al inicio"><svg aria-hidden="true"><use href="#logo"/></svg>Coddvisor</a>
+    <a class="marca" href="#" aria-label="Coddvisor, ir al inicio"><svg aria-hidden="true" viewBox="0 0 444.95 67"><use href="#logotipo"/></svg></a>
     <nav class="top-nav" aria-label="Secciones">
       <a href="#producto">Qué hace</a>
       <a href="#etapa">En qué etapa estamos</a>
     </nav>
-    <a class="btn btn--chico" href="#contacto">Quiero probarlo</a>
+    <a class="btn btn--2 btn--chico" href="#contacto">Quiero probarlo</a>
   </div>
 </header>
 
@@ -38,21 +46,21 @@
 <!-- 1. Portada: el problema y qué es Coddvisor -->
 <section class="portada noche" aria-labelledby="portada-t">
   <div class="col portada-in">
-    <div class="portada-texto">
+    <div class="portada-texto" data-tema="oscuro">
       <span class="franja franja--sello" aria-hidden="true"></span>
-      <p class="rotulo">&gt;_ Software de gestión para micro y pequeñas empresas del Perú</p>
+      <p class="rotulo">Software de gestión para micro y pequeñas empresas del Perú</p>
       <h1 class="portada-t rise" id="portada-t">Tres de cada cuatro pequeños negocios del Perú <em>no saben cómo les va.</em></h1>
       <p class="portada-dato rise d1"><b>76.5 %</b> de las micro y pequeñas empresas no lleva ningún registro de sus cuentas.<sup class="ref"><a href="#fuente-1" aria-label="Fuente 1">1</a></sup></p>
       <p class="portada-baj rise d2">Coddvisor reúne en un solo lugar la venta, la caja, el inventario y la planilla, para que quien dirige un negocio sepa cada día cómo le va y decida con datos.</p>
       <div class="acciones rise d3">
         <a class="btn" href="#contacto">Quiero probarlo</a>
-        <a class="btn btn--linea" href="#producto">Ver qué hace</a>
+        <a class="btn btn--2" href="#producto">Ver qué hace</a>
       </div>
     </div>
 
     <!-- Maqueta: inventario de una prenda por talla. Datos inventados. -->
     <figure class="maqueta rise d2" aria-labelledby="mq-pie">
-      <p class="etiqueta"><span class="punto" aria-hidden="true"></span>Ya funciona en CAYLA <small>· datos inventados</small></p>
+      <p class="etiqueta" data-tema="oscuro"><span class="punto" aria-hidden="true"></span>Ya funciona en CAYLA <small>· datos inventados</small></p>
       <div class="marco">
         <div class="marco-barra"><i></i><i></i><i></i><span>coddvisor · inventario · Sede Centro</span></div>
         <div class="ui">
@@ -70,10 +78,10 @@
               <tr><th scope="row">Otra sede</th><td>2</td><td>4</td><td>3</td><td>5</td></tr>
             </tbody>
           </table>
-          <p class="ui-aviso"><b>XL:</b> no hay en piso. Bajar 1 del almacén.</p>
+          <p class="ui-aviso"><span aria-hidden="true">▲ </span><b>XL:</b> no hay en piso. Bajar 1 del almacén.</p>
         </div>
       </div>
-      <figcaption id="mq-pie" class="maqueta-pie">Maqueta de Coddvisor con datos inventados; no es una captura.</figcaption>
+      <figcaption id="mq-pie" class="maqueta-pie" data-tema="oscuro">Maqueta de Coddvisor con datos inventados; no es una captura.</figcaption>
     </figure>
   </div>
 </section>
@@ -82,7 +90,7 @@
 <section class="banda" id="origen" aria-labelledby="origen-t">
   <div class="col duo">
     <div>
-      <p class="rotulo">&gt;_ Cómo nace</p>
+      <p class="rotulo">Cómo nace</p>
       <h2 class="titular" id="origen-t">No lo imaginamos en una oficina. <em>Nace dentro de un negocio real.</em></h2>
       <div class="prosa">
         <p>Coddvisor nace del sistema con el que CAYLA, un negocio peruano de indumentaria con varias sedes y taller propio, trabaja todos los días desde hace unos meses.</p>
@@ -99,7 +107,7 @@
 <!-- 3. Qué hace -->
 <section class="banda banda--hundida" id="producto" aria-labelledby="producto-t">
   <div class="col">
-    <p class="rotulo">&gt;_ Qué hace</p>
+    <p class="rotulo">Qué hace</p>
     <h2 class="titular" id="producto-t">Cuatro partes del negocio, <em>una sola fuente de verdad.</em></h2>
     <p class="bajada">Lo que se vende descuenta el inventario, entra a la caja y queda en las cuentas. Nadie copia una cifra de un cuaderno a otro.</p>
     <ul class="modulos">
@@ -131,7 +139,7 @@
 <!-- 4. Cifras de uso real -->
 <section class="banda" id="cifras" aria-labelledby="cifras-t">
   <div class="col">
-    <p class="rotulo">&gt;_ Lo que ya registró</p>
+    <p class="rotulo">Lo que ya registró</p>
     <h2 class="titular" id="cifras-t">Unos meses de uso diario en CAYLA, <em>en cinco cifras.</em></h2>
     <div class="cifras">
       <div class="cifra"><p class="cifra-num">2,380</p><p class="cifra-tx">ventas</p></div>
@@ -147,7 +155,7 @@
 <!-- 5. En qué etapa estamos -->
 <section class="banda banda--hundida" id="etapa" aria-labelledby="etapa-t">
   <div class="col">
-    <p class="rotulo">&gt;_ En qué etapa estamos</p>
+    <p class="rotulo">En qué etapa estamos</p>
     <h2 class="titular" id="etapa-t">Hoy lo usa un solo negocio. <em>Buscamos los primeros que quieran probarlo.</em></h2>
     <ol class="pasos">
       <li class="es-hoy">
@@ -172,7 +180,7 @@
 
 <!-- 6. Contacto -->
 <section class="contacto noche" id="contacto" aria-labelledby="contacto-t">
-  <div class="col contacto-in">
+  <div class="col contacto-in" data-tema="oscuro">
     <span class="franja franja--sello" aria-hidden="true"></span>
     <h2 class="titular" id="contacto-t">¿Quiere que su negocio <em>sea de los primeros?</em></h2>
     <p class="bajada">Cuéntenos qué vende, cuántas personas trabajan con usted y cuántas sedes tiene. Le respondemos nosotros.</p>
@@ -187,7 +195,7 @@
 
 <footer class="pie">
   <div class="col pie-in">
-    <p class="marca marca--pie"><svg aria-hidden="true"><use href="#logo"/></svg>Coddvisor</p>
+    <p class="marca marca--pie"><svg role="img" aria-label="Coddvisor" viewBox="0 0 444.95 67"><use href="#logotipo"/></svg></p>
     <p>Software de gestión para micro y pequeñas empresas del Perú.</p>
     <p class="pie-nombre">El nombre viene de Edgar F. Codd, el creador de las bases de datos relacionales, y de <i lang="en">advisor</i>, consejero.</p>
     <ol class="fuentes">
