@@ -105,7 +105,7 @@ de sacarla a vitrina.
      "Parked" o apunta a su página de estacionamiento) y cambia su valor por el
      de Vercel. Si hay más de un `A` en `@`, borra los demás.
    - Edita (o crea) el `CNAME` de nombre `www` con el valor de Vercel.
-   - No toques los registros `MX` ni `TXT` si existen: son del correo.
+   - No toques los registros `MX` ni `TXT`: son del correo de Zoho.
 4. Espera. Suele tardar de minutos a unas horas. Vercel marcará el dominio con
    un visto verde y activará el candado (HTTPS) solo, sin costo.
 
@@ -115,15 +115,10 @@ Vercel". Si mañana te mudas de proveedor, cambias dos registros y listo.
 
 ### Paso 4 · El correo de contacto
 
-Hoy el sitio no tiene correo publicado. Para tener `contacto@coddvisor.com`
-hay dos caminos:
-- **Reenvío gratuito:** un servicio de reenvío hace que lo que llegue a
-  `contacto@coddvisor.com` caiga en tu correo actual. Tú respondes desde tu
-  correo de siempre. Se configura con dos o tres registros DNS en GoDaddy.
-- **Buzón propio** (Google Workspace, Microsoft 365 o el de GoDaddy): cuesta
-  una cuota mensual por persona.
-
-Cuando tengas la dirección, cámbiala en un solo lugar (ver arriba).
+El sitio publica `equipo@coddvisor.com`, un buzón de Zoho Mail. Zoho funciona
+gracias a unos registros del DNS (`MX`, y `TXT` para SPF y DKIM). **Cualquier
+cambio de DNS para publicar el sitio debe dejarlos intactos**: si se pierden,
+los correos de los interesados dejan de llegar sin que nadie te avise.
 
 ---
 
