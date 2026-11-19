@@ -12,6 +12,7 @@ Una sola página de presentación. Son estos archivos y nada más:
 | `favicon-32-claro.png` | El mismo ícono en cobalto, para navegadores que no leen SVG  |
 | `favicon-32-oscuro.png`| El mismo ícono en ámbar, para navegadores que no leen SVG    |
 | `apple-touch-icon.png` | El ícono cuando alguien guarda el sitio en su iPhone         |
+| `vista-previa.png`     | La imagen que sale al compartir el enlace (WhatsApp, redes). Copia de `marca/logo/redes/coddvisor-vista-previa-enlace.png` |
 | `robots.txt`           | Les dice a los buscadores que pueden leer todo el sitio      |
 
 ## Los colores (un solo lugar)
