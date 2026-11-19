@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="es-PE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coddvisor · Identidad de marca</title>
+<link rel="icon" href="logo/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<!-- Los colores viven en un solo archivo. Esta página no define ninguno propio. -->
+<link rel="stylesheet" href="colores.css">
+<style>
+:root{
+  --sans:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Space Mono",ui-monospace,Menlo,monospace;
+}
+/* imágenes que cambian según el tema */
+.os{display:none}
+@media (prefers-color-scheme:dark){:root:not([data-tema="claro"]) .cl{display:none}:root:not([data-tema="claro"]) .os{display:revert}}
+:root[data-tema="oscuro"] .cl{display:none}:root[data-tema="oscuro"] .os{display:revert}
+
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);font:400 17px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,ul,ol,figure,table{margin:0}
+img,svg{display:block;max-width:100%}
+.col{max-width:1080px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}
+.rot{font:700 12px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--texto-3)}
+h1{font-size:clamp(34px,4vw + 14px,56px);line-height:1.05;letter-spacing:-.03em;font-weight:600;max-width:18ch;text-wrap:balance}
+h2{font-size:clamp(26px,2vw + 16px,36px);line-height:1.1;letter-spacing:-.02em;font-weight:600;margin:6px 0 14px;text-wrap:balance}
+h3{font-size:19px;line-height:1.25;font-weight:600}
+p{text-wrap:pretty}
+.baj{font-size:20px;line-height:1.45;color:var(--texto-2);max-width:62ch}
+.txt{max-width:66ch}
+.txt+.txt{margin-top:12px}
+em{font-style:normal;color:var(--resalte)}
+section{padding:56px 0;border-top:1px solid var(--borde)}
+.barra{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--fondo) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--borde)}
+.barra .col{display:flex;align-items:center;gap:20px;height:60px}
+.barra img{height:28px;width:auto}
+.barra nav{display:flex;gap:18px;margin-left:auto;font-size:14px;overflow-x:auto;white-space:nowrap}
+.barra a{color:var(--texto-2);text-decoration:none}.barra a:hover{color:var(--tinta)}
+.tema{font:700 12px/1 var(--mono);border:1px solid var(--borde-fuerte);background:transparent;color:var(--tinta);border-radius:999px;padding:9px 12px;cursor:pointer;flex:none}
+.tema:focus-visible,a:focus-visible{outline:3px solid var(--ambar);outline-offset:3px}
+.portada{padding:64px 0 56px;border-top:0}
+.portada .col{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:48px;align-items:center}
+.portada figure{background:#0B1841;border-radius:20px;padding:44px;display:grid;place-items:center}
+.portada figure img{width:min(230px,100%)}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+@media(max-width:860px){.portada .col,.g2,.g3{grid-template-columns:1fr}.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.caja{background:var(--tarjeta);border:1px solid var(--borde);border-radius:14px;padding:22px}
+.caja h3{margin-bottom:8px}
+.caja p{font-size:16px}
+.caja p.pie{font:400 12px/1.5 var(--mono);margin-top:12px}
+.caja p.tipo-g{font:600 clamp(34px,4.6vw,54px)/1 var(--sans);letter-spacing:-.02em}
+.caja p.tipo-m{font:700 clamp(24px,3vw,36px)/1.1 var(--mono)}
+.mt{margin-top:24px}
+/* suma de ideas */
+.suma{background:#0B1841;color:#F7F9FC;border-radius:16px;padding:28px 18px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px 16px;margin-top:24px}
+.suma figure{width:128px;display:grid;justify-items:center;gap:10px;text-align:center}
+.suma svg{width:72px;height:72px}
+.suma figcaption{font:700 11px/1.35 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.suma span{font-size:32px;line-height:72px;color:#A9B4D6}
+/* voz */
+.voz{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--borde);border-radius:14px;overflow:hidden;background:var(--tarjeta)}
+.voz>div{padding:18px 20px;border-top:1px solid var(--borde);font-size:16px}
+.voz>div:nth-child(-n+2){border-top:0}
+.voz>div:nth-child(odd){border-right:1px solid var(--borde)}
+.voz .cab{font:700 12px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.si{color:var(--correcto)}.no{color:var(--error)}
+.voz small{display:block;font:400 12px/1.4 var(--mono);color:var(--texto-3);margin-bottom:4px}
+@media(max-width:700px){.voz{grid-template-columns:1fr}.voz>div:nth-child(odd){border-right:0}.voz>div:nth-child(2){border-top:1px solid var(--borde)}}
+table.pal{width:100%;border-collapse:collapse;font-size:15px}
+.pal th,.pal td{padding:10px 8px;border-bottom:1px solid var(--borde);text-align:left;vertical-align:middle}
+.pal th{font:700 11px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--texto-3)}
+.pal tr.grupo th{padding-top:22px;color:var(--tinta);border-bottom-color:var(--borde-fuerte)}
+.pal code,.hex{font:400 13px/1.3 var(--mono)}
+.mue{width:38px;height:38px;border-radius:9px;border:1px solid var(--borde-fuerte)}
+.ok{font:700 12px/1 var(--mono);color:var(--correcto)}.mal{font:700 12px/1 var(--mono);color:var(--error)}
+.tabla-scroll{overflow-x:auto}
+/* logo */
+.lienzo{border-radius:14px;border:1px solid var(--borde);display:grid;place-items:center;padding:28px;min-height:150px}
+.lienzo.claro{background:#F7F9FC}.lienzo.blanco{background:#fff}.lienzo.cob{background:#0B1841;border-color:#0B1841}.lienzo.amb{background:#FF8F1F;border-color:#FF8F1F}
+.lienzo img{max-height:70px;width:auto}
+.lienzo.alto img{max-height:150px}
+.pie{font:400 12px/1.4 var(--mono);color:var(--texto-3);margin-top:8px}
+.cons{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
+@media(max-width:860px){.cons{grid-template-columns:1fr}}
+.cons>svg{width:100%;height:auto;background:#fff;border:1px solid var(--borde);border-radius:14px}
+.lista{padding-left:1.1em;display:grid;gap:8px;max-width:66ch}
+.tam{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-end}
+.tam figure{display:grid;gap:8px;justify-items:start}
+.tam img[src*="icono"]{border-radius:22%;box-shadow:0 0 0 1px var(--borde-fuerte)}
+.mal-uso .lienzo{min-height:130px;overflow:hidden;position:relative}
+.mal-uso .lienzo::after{content:"✕";position:absolute;top:8px;right:10px;font:700 14px/1 var(--mono);color:#C4203F;background:#fff;border-radius:50%;width:22px;height:22px;display:grid;place-items:center;border:1px solid #D9DFEC}
+.mal-uso img{max-height:50px}
+/* reglas */
+.regla{display:grid;gap:10px;align-content:start}
+.fl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bt{font-weight:600;border-radius:999px;padding:9px 16px;font-size:14px;white-space:nowrap}
+.bt.p{background:var(--boton);color:var(--boton-texto)}.bt.s{background:var(--boton-2);color:var(--boton-2-texto)}
+.est{border-radius:8px;padding:9px 12px;font-size:14px}
+.est.av{background:var(--aviso-fondo);color:var(--aviso)}.est.er{background:var(--error-fondo);color:var(--error)}.est.co{background:var(--correcto-fondo);color:var(--correcto)}
+/* aplicados: maquetas con colores fijos, no cambian con el tema */
+.ap{background:var(--superficie);border-radius:16px;padding:24px;display:grid;place-items:center}
+.ui{width:100%;max-width:520px;background:#F7F9FC;color:#0B1841;border-radius:12px;overflow:hidden;border:1px solid #D9DFEC;font-size:14px}
+.ui-b{display:flex;align-items:center;gap:10px;background:#0B1841;color:#fff;padding:10px 14px}
+.ui-b img{height:22px}.ui-b span{margin-left:auto;font:400 11px/1 var(--mono);color:#A9B4D6}
+.ui-c{padding:16px;display:grid;gap:12px}
+.ui-k{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ui-k div{background:#fff;border:1px solid #D9DFEC;border-radius:8px;padding:10px}
+.ui-k small{font:700 10px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#5B6785;display:block}
+.ui-k b{font-size:19px;font-variant-numeric:tabular-nums}
+.ui-av{background:#FFF1C2;color:#5C4300;border-radius:8px;padding:10px 12px;font-size:13px}
+.ui-bts{display:flex;gap:8px;align-items:center}
+.ui-bt{background:#FF8F1F;color:#0B1841;font-weight:600;border-radius:999px;padding:10px 18px;font-size:14px}
+.ui-bt2{background:#E3F5FE;color:#1554E0;font-weight:600;border-radius:999px;padding:10px 18px;font-size:14px}
+.ui-lk{color:#1554E0;font-weight:600;text-decoration:underline;font-size:13px;margin-left:auto}
+.bol{width:260px;background:#fff;color:#0B1841;padding:18px 16px;font:400 12px/1.5 var(--mono);box-shadow:0 14px 30px -16px rgba(11,24,65,.5)}
+.bol img{margin:0 auto}
+.bol hr{border:0;border-top:1px dashed #A7B0C6;margin:8px 0}
+.bol .f{display:flex;justify-content:space-between;gap:8px}
+.bol .c{text-align:center}
+.tarj{width:320px;aspect-ratio:9/5.5;border-radius:10px;padding:20px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 14px 30px -16px rgba(11,24,65,.5)}
+.tarj.a{background:#0B1841;color:#fff;align-items:center;justify-content:center}
+.tarj.a img{height:104px}
+.tarj.b{background:#fff;color:#0B1841;border:1px solid #D9DFEC}
+.tarj.b img{height:22px;align-self:flex-start}
+.tarj.b b{font-size:17px}.tarj.b small{font:400 11px/1.5 var(--mono);color:#5B6785;display:block}
+.post{width:300px;aspect-ratio:1;background:#0B1841;color:#fff;border-radius:6px;padding:24px;display:flex;flex-direction:column;justify-content:space-between}
+.post p{font:600 27px/1.1 var(--sans);letter-spacing:-.02em}.post p em{color:#FF8F1F}
+.post img{height:26px;align-self:flex-start}
+.post i{display:block;height:6px;width:96px;border-radius:3px;background:linear-gradient(90deg,var(--cobalto) 0 14.28%,var(--azul-real) 14.28% 28.57%,var(--celeste) 28.57% 42.85%,var(--celeste-claro) 42.85% 57.14%,var(--ambar-claro) 57.14% 71.42%,var(--ambar) 71.42% 85.71%,var(--ambar-tostado) 85.71%)}
+.dos{display:flex;flex-wrap:wrap;gap:18px;justify-content:center}
+footer{padding:40px 0 64px;border-top:1px solid var(--borde);color:var(--texto-3);font-size:14px}
+</style>
+</head>
+<body>
+
+<header class="barra"><div class="col">
+  <img class="cl" src="logo/coddvisor-logotipo-horizontal.svg" alt="Coddvisor">
+  <img class="os" src="logo/coddvisor-logotipo-horizontal-fondo-oscuro.svg" alt="Coddvisor">
+  <nav aria-label="Secciones"><a href="#proposito">Propósito</a><a href="#voz">Voz</a><a href="#logo">Logo</a><a href="#color">Color</a><a href="#tipo">Tipografía</a><a href="#aplicado">Aplicado</a></nav>
+  <button class="tema" id="tema" type="button">Claro / oscuro</button>
+</div></header>
+
+<main>
+<section class="portada"><div class="col">
+  <div>
+    <p class="rot">Identidad de marca · versión 3 · noviembre de 2026</p>
+    <h1>El leal felino que cuida <em>tu negocio.</em></h1>
+    <p class="baj" style="margin-top:20px">Esta página explica quién es Coddvisor, cómo habla y cómo se dibuja. Sirve para que cualquier integrante del equipo, o una imprenta, use la marca sin tener que preguntar.</p>
+  </div>
+  <figure><img src="logo/coddvisor-isotipo-fondo-oscuro.svg" alt="Isotipo de Coddvisor: la cabeza de un gato ámbar con dos ojos redondos"></figure>
+</div></section>
+
+<section id="proposito"><div class="col">
+  <p class="rot">1 · Propósito y personalidad</p>
+  <h2>Que quien dirige un negocio pequeño <em>sepa cada día cómo le va.</em></h2>
+  <p class="txt">Coddvisor es un sistema de gestión para micro y pequeñas empresas del Perú: venta, caja, inventario, comprobantes electrónicos y planilla en un solo lugar. Nace dentro de un negocio real y lo atiende un equipo que conoce el producto y conversa en persona con cada negocio.</p>
+  <div class="caja mt"><h3>De dónde viene el nombre</h3><p>Coddvisor une dos palabras. <b>Codd</b>, por Edgar F. Codd, el científico que en 1970 propuso guardar la información en tablas que se relacionan entre sí; así ordenan sus datos casi todos los sistemas de gestión de hoy. Y <b>advisor</b>, que en inglés es «consejero». Dentro de advisor queda además la palabra <b>visor</b>: lo que te deja ver. El doble sentido es a propósito: Coddvisor te aconseja y te deja ver cómo va tu negocio, apoyado en datos bien ordenados.</p></div>
+  <div class="g4 mt">
+    <div class="caja"><h3>Cercana</h3><p>Habla como la persona de confianza que te ayuda a cuadrar la caja, no como un banco.</p></div>
+    <div class="caja"><h3>Clara</h3><p>Una idea por frase. Si una dueña de bodega no lo entiende a la primera, está mal escrito.</p></div>
+    <div class="caja"><h3>Austera</h3><p>No promete de más ni adorna. Dice lo que ya funciona y lo que todavía no.</p></div>
+    <div class="caja"><h3>Atenta</h3><p>Como el gato de la tienda: se queda mirando el negocio cuando tú ya cerraste.</p></div>
+  </div>
+  <div class="g2 mt">
+    <div class="caja"><h3>A quién le habla</h3><p>A quien dirige un negocio de 1 a 50 personas: una boutique con dos sedes, un taller de confección, una ferretería de barrio. Vende todos los días, anota en un cuaderno o en una hoja de cálculo y decide de memoria. No tiene un área de sistemas ni tiempo para un curso.</p></div>
+    <div class="caja"><h3>A quién no le habla</h3><p>A la gerencia de sistemas de una empresa grande, ni a quien busca un programa contable para un estudio. Si un texto solo lo entendería un contador o un programador, no es para esta marca.</p></div>
+  </div>
+</div></section>
+
+<section id="voz"><div class="col">
+  <p class="rot">2 · Tono de voz</p>
+  <h2>Hablamos como se habla <em>en el mostrador.</em></h2>
+  <p class="txt">Tratamos de «tú». Usamos las palabras del negocio (caja, vuelto, talla, sede, boleta), no las del software. Las cifras siempre con su fuente o su fecha.</p>
+  <div class="voz mt">
+    <div class="cab si">Así sí</div><div class="cab no">Así no</div>
+    <div><small>Portada del sitio</small>Sabe cada día cuánto vendiste, cuánto hay en caja y qué te falta reponer.</div><div><small>&nbsp;</small>Solución integral de clase mundial que potencia la transformación digital de tu empresa.</div>
+    <div><small>Mensaje de error</small>No pudimos enviar la boleta a SUNAT. Quedó guardada y la reenviamos sola en unos minutos. No tienes que hacer nada.</div><div><small>&nbsp;</small>Error 0x34: fallo en la transmisión del CPE. Contacte al administrador.</div>
+    <div><small>Lo que todavía no hay</small>Hoy la planilla calcula el régimen de pequeña empresa. El régimen general llega después.</div><div><small>&nbsp;</small>Planilla completa para todo tipo de empresa.</div>
+    <div><small>Invitación a probar</small>¿Quieres verlo con los datos de tu tienda? Vamos a tu local y lo probamos juntos.</div><div><small>&nbsp;</small>¡Agenda YA tu demo con un ejecutivo de ventas y aprovecha esta oferta irrepetible!</div>
+  </div>
+  <div class="g2 mt">
+    <div class="caja"><h3>Palabras que usamos</h3><p>Integrante o colaborador. Asesor comercial. Sede, tienda o boutique. Cliente. Encargado de sede o líder de equipo. Desarrollo Organizacional.</p></div>
+    <div class="caja"><h3>Palabras que no usamos</h3><p>Empleado, jefe, sucursal, vendedor, RRHH. Tampoco «solución», «ecosistema», «potenciar», «robusto» ni signos de exclamación en fila.</p></div>
+  </div>
+</div></section>
+
+<section id="logo"><div class="col">
+  <p class="rot">3 · El logo</p>
+  <h2>Dos orejas, <em>dos ojos que no se cierran.</em></h2>
+  <p class="txt">El isotipo es la cabeza de un gato hecha de una sola mancha, con dos huecos redondos: sus ojos, siempre abiertos. Son el «visor» del nombre: un gato que mira por tu negocio. El gato tiene una historia real y un nombre: Aventurero, la leal mascota de nuestra oficina, a quien muchas veces le decimos Aventura. Se quedaba hasta altas horas de la noche acompañando al equipo y le gustaba subirse a los teclados. Y se parece a algo que nuestros clientes conocen: en muchas bodegas y talleres del Perú hay un gato que cuida la mercadería. Eso hace Coddvisor con las cuentas.</p>
+  <p class="txt">Es sólido y no una línea por una razón práctica: una línea fina se borra en la pestaña del navegador, en una ticketera o en un sello. Una mancha con dos huecos se reconoce igual a 16 píxeles que en un letrero.</p>
+  <div class="suma" role="img" aria-label="Binoculares, más gato de la tienda, más el signo mayor que y guion bajo del sitio, igual al isotipo">
+    <figure><svg viewBox="0 0 64 64" fill="none" stroke="#FF8F1F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="40" r="10"/><circle cx="44" cy="40" r="10"/><path d="M14 32L18 16H26L28 31M36 31L38 16H46L50 32M28 26H36"/></svg><figcaption>Visor: ver cómo te va</figcaption></figure><span>+</span>
+    <figure><svg viewBox="0 0 64 64" fill="none" stroke="#FF8F1F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 30L17 12L28 20H36L47 12L50 30V36A16 16 0 0 1 34 52H30A16 16 0 0 1 14 36Z"/><path d="M26 36v2M38 36v2"/></svg><figcaption>El gato de nuestra oficina</figcaption></figure><span>+</span>
+    <figure><svg viewBox="0 0 64 64" fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><polyline points="19,22 31,32 19,42" stroke="#FF8F1F"/><line x1="35" y1="43" x2="47" y2="43" stroke="#2CB7F5"/></svg><figcaption>El signo de origen: hecho en código</figcaption></figure><span>=</span>
+    <figure><svg viewBox="0 0 64 64"><path fill="#FF8F1F" fill-rule="evenodd" stroke="#FF8F1F" stroke-width="4.2" stroke-linejoin="round" d="M11.5 14.0L26.0 26.17H38.0L52.5 14.0V40.0A13.5 13.5 0 0 1 39.0 53.5H25.0A13.5 13.5 0 0 1 11.5 40.0ZM14.6 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0ZM33.4 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0Z"/></svg><figcaption>Coddvisor</figcaption></figure>
+  </div>
+
+  <h3 class="mt">Versiones</h3>
+  <div class="g3" style="margin-top:12px">
+    <div><div class="lienzo claro"><img src="logo/coddvisor-logotipo-horizontal.svg" alt="Logotipo horizontal"></div><p class="pie">Horizontal · la principal, sobre fondo claro</p></div>
+    <div><div class="lienzo claro alto"><img src="logo/coddvisor-logotipo-vertical.svg" alt="Logotipo vertical"></div><p class="pie">Vertical · espacios cuadrados</p></div>
+    <div><div class="lienzo claro"><img src="logo/coddvisor-icono.svg" alt="Ícono" style="max-height:92px"></div><p class="pie">Ícono · app y foto de perfil</p></div>
+    <div><div class="lienzo cob"><img src="logo/coddvisor-logotipo-horizontal-fondo-oscuro.svg" alt="Logotipo para fondo oscuro"></div><p class="pie">Para fondo oscuro · aquí el gato es ámbar</p></div>
+    <div><div class="lienzo blanco"><img src="logo/coddvisor-logotipo-horizontal-un-color.svg" alt="Logotipo en un color"></div><p class="pie">Un color · sellos, fotocopias, ticketera, bordado</p></div>
+    <div><div class="lienzo amb"><img src="logo/coddvisor-logotipo-horizontal-un-color.svg" alt="Logotipo en cobalto sobre fondo ámbar"></div><p class="pie">Sobre ámbar · el logo va en cobalto (7,5 a 1)</p></div>
+  </div>
+  <div class="g2 mt">
+    <div class="caja"><h3>Cuándo el gato es ámbar y cuándo es azul</h3><p>El gato es ámbar donde el ámbar se ve: sobre cobalto u otro fondo oscuro, y dentro del ícono. Sobre fondo claro va en cobalto, porque el ámbar sobre blanco casi no se distingue (2,2 a 1). El ícono de la pestaña del navegador sigue la misma regla: es el gato sin fondo, en cobalto cuando el navegador está en tema claro y en ámbar cuando está en tema oscuro. Para que la gente recuerde al gato en ámbar, el ícono es la pieza que más debe verse: en la app y en el perfil de redes. Las palabras «gato naranja» no se usan como lema ni como nombre: ya hay marcas peruanas con esas palabras.</p><p style="margin-top:10px">Sobre un fondo ámbar, todo el logo va en cobalto: en blanco no se lee (2,3 a 1). El logo en blanco se reserva para fotos oscuras; el azul real no se usa como fondo del logo.</p></div>
+    <div class="caja"><h3>La palabra</h3><p>«coddvisor» no sale de una tipografía: está dibujada letra por letra, con un trazo redondo y parejo. Cada d termina arriba en un corte de 40°, el mismo ángulo de la oreja del gato. Por eso <b>nunca se vuelve a escribir con el teclado</b>: siempre se usa el archivo. En un texto corrido se escribe «Coddvisor», con mayúscula.</p><h3 style="margin-top:20px">El gato va con la palabra</h3><p>En letreros, tarjetas, uniformes, empaques, documentos y anuncios va siempre el logotipo completo: el gato junto a «coddvisor». El gato se separa de la palabra solo en cuatro lugares: el ícono de la aplicación y el interior del sistema, la foto de perfil, la pestaña del navegador y los espacios donde la palabra ya no se lee (ver tamaños mínimos). En los tres primeros el nombre aparece al lado de todos modos, porque lo pone el teléfono, la red social o el navegador.</p><p style="margin-top:10px">La razón: una cabeza de gato la usan otras marcas de tecnología, también en el Perú. Lo que hace única a esta marca es el gato junto a su nombre.</p>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px">
+        <div><div class="lienzo claro" style="min-height:92px;padding:16px"><img src="logo/coddvisor-logotipo-horizontal.svg" alt="El logotipo completo, gato y palabra" style="max-height:30px"></div><p class="pie"><span class="ok">ASÍ SÍ</span> · en un letrero o una tarjeta</p></div>
+        <div><div class="lienzo claro" style="min-height:92px;padding:16px"><img src="logo/coddvisor-isotipo.svg" alt="El gato solo, sin la palabra" style="max-height:44px"></div><p class="pie"><span class="mal">ASÍ NO</span> · el gato solo</p></div>
+      </div></div>
+  </div>
+
+  <h3 class="mt">Construcción</h3>
+  <div class="cons" style="margin-top:12px">
+    <svg viewBox="-6 -6 76 76" role="img" aria-label="Isotipo sobre su cuadrícula de construcción">
+      <g stroke="#2CB7F5" stroke-width=".25" opacity=".7"><path d="M0 0H64M0 8H64M0 16H64M0 24H64M0 32H64M0 40H64M0 48H64M0 56H64M0 64H64M0 0V64M8 0V64M16 0V64M24 0V64M32 0V64M40 0V64M48 0V64M56 0V64M64 0V64"/></g>
+      <rect x="4" y="4" width="56" height="56" rx="14" fill="none" stroke="#5B6785" stroke-width=".5" stroke-dasharray="2 1.5"/>
+      <path fill="#FF8F1F" fill-rule="evenodd" stroke="#FF8F1F" stroke-width="4.2" stroke-linejoin="round" d="M11.5 14.0L26.0 26.17H38.0L52.5 14.0V40.0A13.5 13.5 0 0 1 39.0 53.5H25.0A13.5 13.5 0 0 1 11.5 40.0ZM14.6 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0ZM33.4 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0Z"/>
+      <path d="M32 0V64" stroke="#C4203F" stroke-width=".4" stroke-dasharray="1.5 1.5"/>
+      <g fill="none" stroke="#0B1841" stroke-width=".5"><path d="M26 29.4V31.2M38 29.4V31.2M26 30.3H38"/></g>
+      <g font-family="Space Mono,monospace" font-size="2.6" fill="#5B6785"><text x="33" y="3">eje</text><text x="1" y="68">cuadrícula de 64 · cada cuadro = 8</text></g>
+      <g font-family="Space Mono,monospace" font-size="2.4" fill="#0B1841"><text x="30.4" y="34">12</text><text x="15" y="25">40°</text></g>
+    </svg>
+    <ul class="lista">
+      <li><b>Una sola mancha.</b> Sin líneas ni contornos: la cabeza es una forma llena, con las puntas de las orejas apenas redondeadas.</li>
+      <li><b>Dos huecos iguales.</b> Círculos perfectos, a la misma altura.</li>
+      <li><b>Simétrico.</b> La mitad derecha es el espejo de la izquierda.</li>
+      <li><b>Tres rasgos que lo hacen propio</b> y que no se cambian: las orejas son las esquinas de la cabeza, la frente es plana, y sobre oscuro siempre es ámbar.</li>
+      <li><b>La muesca entre las orejas</b> viene del signo <code>&gt;_</code> que tuvo el primer sitio: la pendiente es de 40°, como el <code>&gt;</code>, y la frente mide 12, como el <code>_</code>. Es una historia para la casa; al cliente no hace falta explicársela.</li>
+    </ul>
+  </div>
+  <div class="g2 mt">
+    <div class="caja"><h3>El gato se sienta con las letras</h3><p>En el logotipo, el gato se apoya en la misma línea que las letras y su frente coincide con la altura de las minúsculas. Así se lee como una letra más y no como un dibujo pegado al lado.</p><div style="margin-top:14px;background:#fff;border:1px solid var(--borde);border-radius:10px;padding:16px"><svg style="width:100%;height:auto;max-width:520px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 444.95 67" role="img" aria-label="Coddvisor"><title>Coddvisor</title><g transform="translate(-11.93 -6.54) scale(1.27)"><path fill="#0B1841" fill-rule="evenodd" stroke="#0B1841" stroke-width="4.2" stroke-linejoin="round" d="M11.5 14.0L26.0 26.17H38.0L52.5 14.0V40.0A13.5 13.5 0 0 1 39.0 53.5H25.0A13.5 13.5 0 0 1 11.5 40.0ZM14.6 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0ZM33.4 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0Z"/></g><g transform="translate(72.34 0)"><g fill="none" stroke="#0B1841" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M30.91 32.3A16 16 0 1 0 30.91 55.7"/><circle cx="60.91" cy="44" r="16"/><circle cx="107.91" cy="44" r="16"/><path fill="#0B1841" stroke="none" d="M126.71 3.2Q127.91 3.2 127.91 4.4V60A4.0 4.0 0 0 1 119.91 60V10.51Q119.91 9.51 120.81 8.81Z"/><circle cx="159.91" cy="44" r="16"/><path fill="#0B1841" stroke="none" d="M178.71 3.2Q179.91 3.2 179.91 4.4V60A4.0 4.0 0 0 1 171.91 60V10.51Q171.91 9.51 172.81 8.81Z"/><path d="M192.91 28L207.91 60L222.91 28"/><path d="M240.41 28V60"/><circle fill="#FF8F1F" stroke="none" cx="240.41" cy="11" r="5.2"/><path d="M278.62 32.24A11 8 0 1 0 268.91 44A11 8 0 1 1 259.2 55.76"/><circle cx="310.91" cy="44" r="16"/><path d="M343.91 28V60"/><path d="M343.91 41A13 13 0 0 1 365.61 31.34"/></g></g><g stroke="#FF3B6B" stroke-width=".35"><path d="M0 64H441.95M0 24H441.95"/></g></svg>
+</div></div>
+    <div class="caja"><h3>Área de respeto</h3><p>Alrededor del logo queda libre, como mínimo, un cuarto de su alto (más o menos el ancho de una oreja). Nada entra ahí: ni texto, ni otro logo, ni el borde del papel.</p>
+      <div class="lienzo claro" style="margin-top:14px;padding:0;min-height:0"><div style="padding:20px;outline:1px dashed #C4203F;outline-offset:-1px;margin:14px"><img src="logo/coddvisor-logotipo-horizontal.svg" alt="" style="max-height:60px"></div></div></div>
+  </div>
+  <div class="caja mt"><h3>Tamaños mínimos</h3><p>Por debajo de estos tamaños la palabra ya no se lee: ahí, y solo ahí, se usa el ícono sin la palabra.</p>
+    <div class="tam" style="margin-top:14px">
+      <figure><img class="cl" src="logo/coddvisor-logotipo-horizontal.svg" style="height:24px" alt=""><img class="os" src="logo/coddvisor-logotipo-horizontal-fondo-oscuro.svg" style="height:24px" alt=""><figcaption class="pie">Horizontal: 24 px de alto · 25 mm de ancho impreso</figcaption></figure>
+      <figure><img src="logo/coddvisor-icono.svg" width="32" height="32" alt=""><figcaption class="pie">Ícono: 32 px</figcaption></figure>
+      <figure><img src="logo/favicon.svg" width="16" height="16" alt="" style="image-rendering:pixelated"><figcaption class="pie">Pestaña: 16 px · 5 mm</figcaption></figure>
+    </div>
+    <p class="pie">Para la pestaña del navegador existe <code>favicon.svg</code>: es el gato solo, sin fondo, dibujado píxel por píxel en una cuadrícula de 16 para que a ese tamaño los bordes salgan nítidos. Cambia de color con el tema del navegador: cobalto en claro, ámbar en oscuro.</p></div>
+
+  <h3 class="mt">Usos incorrectos</h3>
+  <div class="g3 mal-uso" style="margin-top:12px">
+    <div><div class="lienzo claro"><img src="logo/coddvisor-logotipo-horizontal.svg" style="transform:scaleX(1.45)" alt=""></div><p class="pie">No estirarlo ni aplastarlo</p></div>
+    <div><div class="lienzo claro"><img src="logo/coddvisor-logotipo-horizontal.svg" style="filter:hue-rotate(120deg) saturate(2.4)" alt=""></div><p class="pie">No cambiarle los colores</p></div>
+    <div><div class="lienzo claro"><img src="logo/coddvisor-isotipo-fondo-oscuro.svg" style="max-height:70px" alt=""></div><p class="pie">No usar el gato ámbar sin fondo sobre claro: no se distingue</p></div>
+    <div><div class="lienzo claro"><img src="logo/coddvisor-logotipo-horizontal.svg" style="transform:rotate(-12deg)" alt=""></div><p class="pie">No girarlo</p></div>
+    <div><div class="lienzo claro"><img src="logo/coddvisor-logotipo-horizontal.svg" style="filter:drop-shadow(4px 5px 3px rgba(0,0,0,.55))" alt=""></div><p class="pie">No ponerle sombras, brillos ni contornos</p></div>
+    <div><div class="lienzo claro" style="font:700 30px/1 var(--sans);color:#0B1841;gap:10px;grid-auto-flow:column"><img src="logo/coddvisor-isotipo.svg" style="max-height:46px" alt="">Coddvisor</div><p class="pie">No reescribir la palabra con una tipografía</p></div>
+  </div>
+</div></section>
+
+<section id="color"><div class="col">
+  <p class="rot">4 · Paleta</p>
+  <h2>Azul cobalto y ámbar, <em>con dos azules de apoyo.</em></h2>
+  <p class="txt">La marca se recuerda como «azul y naranja». El cobalto da la seriedad que necesita algo que emite comprobantes. El ámbar es el color vivo, el del gato y el del botón principal. El azul real y el celeste acompañan: uno para lo que se puede tocar, otro para lo que se mira.</p>
+  <div class="g3 mt">
+    <div class="caja regla"><h3>Están equilibrados</h3><div class="fl"><span class="mue" style="background:#FF8F1F;width:54px;height:54px"></span><span class="mue" style="background:#2CB7F5;width:54px;height:54px"></span></div><p>El ámbar y el celeste tienen la misma luminosidad (70,2 y 70,2 de 100) y son colores opuestos en la rueda de color: ninguno aplasta al otro.</p></div>
+    <div class="caja regla"><h3>Son una sola familia de azul</h3><div class="fl"><span class="mue" style="background:#0B1841;width:54px;height:54px"></span><span class="mue" style="background:#1554E0;width:54px;height:54px"></span></div><p>El cobalto y el azul real tienen el mismo tono: uno oscuro para leer y uno vivo para actuar.</p></div>
+    <div class="caja regla"><h3>Proporción</h3><div class="fl" style="gap:0;border-radius:9px;overflow:hidden;height:54px;border:1px solid var(--borde-fuerte)"><span style="flex:6;background:#F7F9FC;height:100%"></span><span style="flex:3;background:#0B1841;height:100%"></span><span style="flex:1;background:#FF8F1F;height:100%"></span></div><p>De cada diez partes de una pantalla o una pieza: seis de blancos y neutros, tres de cobalto y una sola de color vivo.</p></div>
+  </div>
+  <div class="tabla-scroll mt"><table class="pal">
+    <thead><tr><th></th><th>Nombre</th><th>Hex</th><th>Para qué</th><th>Contraste comprobado</th></tr></thead>
+    <tbody><tr class="grupo"><th colspan="5">Marca</th></tr><tr><td><div class="mue" style="background:#0B1841"></div></td><td>Cobalto</td><td><code>#0B1841</code></td><td>Texto, fondos oscuros, gato sobre claro</td><td>Sobre Fondo: 16,3 a 1 <span class="ok">pasa</span></td></tr><tr><td><div class="mue" style="background:#FF8F1F"></div></td><td>Ámbar</td><td><code>#FF8F1F</code></td><td>Gato sobre oscuro, botón principal, punto de la i</td><td>Sobre Cobalto: 7,5 a 1 <span class="ok">pasa</span> · Sobre Fondo: 2,2 a 1 <span class="mal">no pasa</span></td></tr><tr><td><div class="mue" style="background:#1554E0"></div></td><td>Azul real</td><td><code>#1554E0</code></td><td>Enlaces, palabras resaltadas y botón secundario, sobre claro</td><td>Sobre Fondo: 5,9 a 1 <span class="ok">pasa</span> · Sobre Cobalto: 2,8 a 1 <span class="mal">no pasa</span></td></tr><tr><td><div class="mue" style="background:#2CB7F5"></div></td><td>Celeste</td><td><code>#2CB7F5</code></td><td>Gráficos, etiquetas y enlaces, sobre oscuro</td><td>Sobre Cobalto: 7,5 a 1 <span class="ok">pasa</span> · Sobre Fondo: 2,2 a 1 <span class="mal">no pasa</span></td></tr><tr class="grupo"><th colspan="5">Derivados</th></tr><tr><td><div class="mue" style="background:#B05008"></div></td><td>Ámbar tostado</td><td><code>#B05008</code></td><td>Texto ámbar sobre fondo claro</td><td>Sobre Fondo: 5,0 a 1 <span class="ok">pasa</span></td></tr><tr><td><div class="mue" style="background:#0A86C7"></div></td><td>Celeste oscuro</td><td><code>#0A86C7</code></td><td>Gráficos y trazos celestes sobre fondo claro</td><td>Sobre Fondo: 3,8 a 1, suficiente para un gráfico (mínimo 3)</td></tr><tr><td><div class="mue" style="background:#E3F5FE"></div></td><td>Hielo</td><td><code>#E3F5FE</code></td><td>Fondo de etiquetas y del botón secundario</td><td>Azul real encima: 5,6 a 1 <span class="ok">pasa</span></td></tr><tr><td><div class="mue" style="background:#BFE8FC"></div></td><td>Celeste claro</td><td><code>#BFE8FC</code></td><td>Solo en la franja de siete tonos</td><td>No lleva texto encima</td></tr><tr><td><div class="mue" style="background:#FFD3A1"></div></td><td>Ámbar claro</td><td><code>#FFD3A1</code></td><td>Solo en la franja de siete tonos</td><td>No lleva texto encima</td></tr><tr class="grupo"><th colspan="5">Neutros</th></tr><tr><td><div class="mue" style="background:#3A476B"></div></td><td>Texto secundario</td><td><code>#3A476B</code></td><td>Párrafos de apoyo</td><td>Sobre Fondo: 8,7 a 1 <span class="ok">pasa</span></td></tr><tr><td><div class="mue" style="background:#5B6785"></div></td><td>Texto terciario</td><td><code>#5B6785</code></td><td>Rótulos y notas</td><td>Sobre Fondo: 5,3 a 1 <span class="ok">pasa</span></td></tr><tr><td><div class="mue" style="background:#A7B0C6"></div></td><td>Borde fuerte</td><td><code>#A7B0C6</code></td><td>Campos y separadores marcados</td><td>—</td></tr><tr><td><div class="mue" style="background:#D9DFEC"></div></td><td>Borde</td><td><code>#D9DFEC</code></td><td>Tarjetas y líneas</td><td>—</td></tr><tr><td><div class="mue" style="background:#EEF1F7"></div></td><td>Superficie</td><td><code>#EEF1F7</code></td><td>Bandas y zonas de apoyo</td><td>Cobalto encima: 15,2 a 1 <span class="ok">pasa</span></td></tr><tr><td><div class="mue" style="background:#F7F9FC"></div></td><td>Fondo</td><td><code>#F7F9FC</code></td><td>Fondo general</td><td>—</td></tr><tr class="grupo"><th colspan="5">Estados</th></tr><tr><td><div class="mue" style="background:#0B6B41"></div></td><td>Correcto</td><td><code>#0B6B41</code></td><td>Texto sobre su fondo #DDF3E8</td><td>5,7 a 1 <span class="ok">pasa</span></td></tr><tr><td><div class="mue" style="background:#5C4300"></div></td><td>Aviso</td><td><code>#5C4300</code></td><td>Texto sobre su fondo #FFF1C2, siempre con ícono</td><td>8,2 a 1 <span class="ok">pasa</span></td></tr><tr><td><div class="mue" style="background:#C4203F"></div></td><td>Error</td><td><code>#C4203F</code></td><td>Texto sobre su fondo #FDE8EC</td><td>4,9 a 1 <span class="ok">pasa</span></td></tr></tbody></table></div>
+  <p class="txt mt"><b>Cómo leer el contraste.</b> Es cuánto se distingue un color del que tiene detrás. Para texto normal hace falta 4,5 a 1 o más (norma internacional WCAG, nivel AA); para un dibujo o un gráfico, 3 a 1. Donde la tabla dice «no pasa», ese color no se usa de esa manera: para eso existen los derivados.</p>
+
+  <h3 class="mt">Tres reglas de uso</h3>
+  <div class="g3" style="margin-top:12px">
+    <div class="caja regla"><h3>1. Un solo botón lleno</h3><div class="fl"><span class="bt p">Cerrar caja</span><span class="bt s">Nueva venta</span></div><p>En cada pantalla hay un único botón de color pleno, el ámbar con texto cobalto (7,5 a 1). El segundo botón va en fondo hielo con texto azul. Dos botones llenos compiten entre sí.</p></div>
+    <div class="caja regla"><h3>2. El ámbar no avisa problemas</h3><p class="est av"><b>▲ Falta cuadrar S/ 8.00.</b> Revisa el último vuelto.</p><p class="est er"><b>✕ No se envió la boleta.</b> La reenviamos sola.</p><p>El ámbar se parece al color de «cuidado», y quien no distingue bien los colores los ve idénticos. Por eso los avisos y errores llevan fondo claro, ícono y texto: nunca relleno naranja ni amarillo.</p></div>
+    <div class="caja regla"><h3>3. Cada color, sobre su fondo</h3><div class="fl" style="background:#F7F9FC;border:1px solid #D9DFEC;border-radius:8px;padding:8px 10px"><b style="color:#1554E0">Enlace</b><b style="color:#B05008">Ámbar tostado</b><b style="color:#0A86C7">▮▮▮</b></div><div class="fl" style="background:#0B1841;border-radius:8px;padding:8px 10px"><b style="color:#2CB7F5">Enlace</b><b style="color:#FF8F1F">Ámbar</b><b style="color:#2CB7F5">▮▮▮</b></div><p>Sobre claro: enlaces en azul real, texto ámbar en tostado, gráficos en celeste oscuro. Sobre oscuro: enlaces y gráficos en celeste, y el ámbar puro. El celeste y el ámbar puros no se leen sobre blanco (2,2 a 1); el azul real no se lee sobre cobalto (2,8 a 1).</p></div>
+  </div>
+  <p class="txt mt"><b>En modo oscuro</b> el fondo pasa a <span class="hex">#080F2E</span>, las tarjetas a cobalto, la tinta a <span class="hex">#EEF2FF</span> (16,8 a 1) y el texto secundario a <span class="hex">#A9B4D6</span> (9,1 a 1). El celeste y el ámbar quedan en 8,2 y 8,2 a 1.</p>
+  <p class="txt"><b>Dónde viven los colores.</b> En un solo archivo, <code>colores.css</code>. El sitio, el sistema y esta misma página los leen de ahí. Si un color cambia, se cambia en ese archivo y en ningún otro lugar.</p>
+  <div class="caja mt"><h3>La franja de siete tonos</h3><p>Del cobalto al ámbar tostado, es el adorno propio de la marca: una línea delgada para firmar una pieza. Nunca es fondo ni reemplaza al logo.</p>
+    <div style="height:10px;border-radius:5px;margin-top:14px;background:linear-gradient(90deg,var(--cobalto) 0 14.28%,var(--azul-real) 14.28% 28.57%,var(--celeste) 28.57% 42.85%,var(--celeste-claro) 42.85% 57.14%,var(--ambar-claro) 57.14% 71.42%,var(--ambar) 71.42% 85.71%,var(--ambar-tostado) 85.71%)"></div>
+    <p class="pie">#0B1841 · #1554E0 · #2CB7F5 · #BFE8FC · #FFD3A1 · #FF8F1F · #B05008</p></div>
+</div></section>
+
+<section id="tipo"><div class="col">
+  <p class="rot">5 · Tipografías</p>
+  <h2>Dos familias, <em>las dos gratuitas.</em></h2>
+  <div class="g2">
+    <div class="caja"><p class="tipo-g">Cuadra la caja</p><h3 style="margin-top:14px">Space Grotesk</h3><p>Para todo: títulos, párrafos, botones y pantallas del sistema. Pesos 400, 500, 600 y 700. Sus formas redondas combinan con la palabra del logo. Gratuita en Google Fonts, licencia abierta (OFL).</p></div>
+    <div class="caja"><p class="tipo-m">S/ 1 284.50</p><h3 style="margin-top:14px">Space Mono</h3><p>Solo para rótulos cortos en mayúsculas, códigos y comprobantes, donde cada cifra debe ocupar el mismo ancho para que las columnas cuadren. Gratuita en Google Fonts (OFL).</p></div>
+  </div>
+  <p class="txt mt">Si una de las dos no carga, el reemplazo es la tipografía del sistema de cada equipo. No se compra ninguna tipografía.</p>
+</div></section>
+
+<section id="aplicado"><div class="col">
+  <p class="rot">6 · Ejemplos aplicados</p>
+  <h2>Cómo se ve <em>en el día a día.</em></h2>
+  <p class="txt">Son maquetas con datos inventados, no capturas del sistema.</p>
+  <div class="g2 mt">
+    <div><div class="ap">
+      <div class="ui"><div class="ui-b"><img src="logo/coddvisor-isotipo-fondo-oscuro.svg" alt=""><b>Caja · Sede Centro</b><span>mar 18 nov</span></div>
+        <div class="ui-c"><div class="ui-k"><div><small>Ventas de hoy</small><b>S/ 1 284.50</b></div><div><small>En caja</small><b>S/ 412.00</b></div><div><small>Boletas</small><b>23</b></div></div>
+        <div class="ui-av"><b>▲ Falta cuadrar S/ 8.00.</b> Revisa el último vuelto antes de cerrar.</div>
+        <div class="ui-bts"><span class="ui-bt">Cerrar caja</span><span class="ui-bt2">Nueva venta</span><span class="ui-lk">Ver movimientos</span></div></div></div>
+    </div><p class="pie">Pantalla del sistema · un solo botón ámbar, el aviso con ícono y fondo claro, enlaces en azul real</p></div>
+    <div><div class="ap">
+      <div class="bol"><p class="c"><b style="font-size:14px">BOUTIQUE EJEMPLO S.A.C.</b><br>RUC 20XXXXXXXXX<br>Av. Ejemplo 123, Lima</p><hr><p class="c"><b>BOLETA DE VENTA ELECTRÓNICA</b><br>B001-00000123</p><hr>
+        <div class="f"><span>1 Casaca denim M</span><span>159.00</span></div><div class="f"><span>2 Polo básico S</span><span>78.00</span></div><hr>
+        <div class="f"><span>Op. gravada</span><span>200.85</span></div><div class="f"><span>IGV 18 %</span><span>36.15</span></div><div class="f"><b>TOTAL S/</b><b>237.00</b></div><hr><p class="c">Gracias por tu compra</p><p class="c" style="margin-top:10px;font-size:9px;color:#5B6785">Emitido con</p><img src="logo/coddvisor-logotipo-horizontal-un-color.svg" alt="Coddvisor" style="height:14px;margin:2px auto 0"></div>
+    </div><p class="pie">Comprobante · en un color, porque la ticketera imprime solo en negro. Manda el nombre del negocio; Coddvisor firma chico</p></div>
+    <div><div class="ap"><div class="dos">
+      <div class="tarj a"><img src="logo/coddvisor-logotipo-vertical-fondo-oscuro.svg" alt="Coddvisor"></div>
+      <div class="tarj b"><img src="logo/coddvisor-logotipo-horizontal.svg" alt=""><div><b>Nombre Apellido</b><small>Asesor comercial<br>nombre@coddvisor.com · 9XX XXX XXX<br>coddvisor.com</small></div></div>
+    </div></div><p class="pie">Tarjeta · 9 × 5,5 cm, anverso y reverso</p></div>
+    <div><div class="ap">
+      <div class="post"><i></i><p>¿Cuánto vendiste ayer? <em>Si tuviste que sacar el cuaderno, conversemos.</em></p><img src="logo/coddvisor-logotipo-horizontal-fondo-oscuro.svg" alt="Coddvisor"></div>
+    </div><p class="pie">Red social · cuadrado, una sola idea, logo abajo a la izquierda</p></div>
+  </div>
+</div></section>
+
+<section><div class="col">
+  <p class="rot">7 · Coherencia con el sitio</p>
+  <h2>Qué cambia <em>en el sitio.</em></h2>
+  <p class="txt">El primer sitio usaba azul petróleo, papel cálido y un naranja más apagado, con el signo <code>&gt;_</code> como ícono. Esta identidad los reemplaza: la paleta nueva manda. El cambio es chico porque el sitio ya tiene sus colores como variables en un solo lugar; basta con que lea <code>colores.css</code>.</p>
+  <ul class="lista mt">
+    <li><b>Colores:</b> los de <code>colores.css</code>. El fondo pasa de papel cálido a un blanco fresco.</li>
+    <li><b>Ícono de la pestaña:</b> <code>favicon.svg</code>, el gato sin fondo que cambia con el tema del navegador. De respaldo, para los navegadores que no leen ese formato, <code>favicon-32-claro.png</code> (cobalto) y <code>favicon-32-oscuro.png</code> (ámbar). <code>favicon-180.png</code> es el ícono de inicio del iPhone y conserva el cuadrado cobalto, porque ahí un fondo transparente se vuelve negro.</li>
+    <li><b>Marca de la barra superior:</b> el logotipo horizontal; en tema oscuro, su versión para fondo oscuro.</li>
+    <li><b>Rótulos:</b> sin el <code>&gt;_</code> delante. Ese signo quedó dentro del gato, en la muesca entre las orejas.</li>
+    <li><b>Tipografías:</b> no cambian.</li>
+  </ul>
+</div></section>
+
+<section><div class="col">
+  <p class="rot">8 · Archivos</p>
+  <h2>Qué archivo usar <em>en cada caso.</em></h2>
+  <div class="tabla-scroll"><table class="pal">
+    <thead><tr><th>Si es para…</th><th>Usa (carpeta <code>logo/</code>)</th></tr></thead>
+    <tbody>
+      <tr><td>Web, documentos y presentaciones en fondo claro</td><td><code>coddvisor-logotipo-horizontal.svg</code></td></tr>
+      <tr><td>Lo mismo en fondo cobalto u oscuro</td><td><code>coddvisor-logotipo-horizontal-fondo-oscuro.svg</code></td></tr>
+      <tr><td>Espacios cuadrados: portada, letrero, tarjeta</td><td><code>coddvisor-logotipo-vertical.svg</code> y <code>-fondo-oscuro</code></td></tr>
+      <tr><td>Ícono de app y foto de perfil</td><td><code>coddvisor-icono.svg</code></td></tr>
+      <tr><td>Solo el gato, sin fondo<br><span class="pie">para el interior del sistema; no va suelto en piezas impresas</span></td><td><code>coddvisor-isotipo.svg</code> (claro) y <code>-fondo-oscuro</code> (ámbar)</td></tr>
+      <tr><td>Pestaña del navegador</td><td><code>favicon.svg</code>, <code>favicon-32-claro.png</code>, <code>favicon-32-oscuro.png</code></td></tr><tr><td>Ícono de inicio del iPhone</td><td><code>favicon-180.png</code></td></tr>
+      <tr><td>Ticketera, fotocopia, sello de goma, bordado</td><td>Los que terminan en <code>-un-color.svg</code></td></tr>
+      <tr><td>Sobre un fondo ámbar</td><td>Los que terminan en <code>-un-color.svg</code> (logo en cobalto)</td></tr>
+      <tr><td>Sobre una foto oscura</td><td>Los que terminan en <code>-negativo.svg</code> (logo en blanco)</td></tr>
+      <tr><td>Solo la palabra</td><td><code>coddvisor-palabra.svg</code> y sus variantes</td></tr>
+      <tr><td>Colores para el sitio y el sistema</td><td><code>../colores.css</code></td></tr>
+    </tbody></table></div>
+  <p class="txt mt">Los SVG se pueden agrandar sin perder nitidez. Para corte en vinil o bordado, la imprenta debe «expandir trazos» antes de producir: la palabra está hecha con líneas de grosor fijo. Los colores están definidos para pantalla; antes de la primera impresión a color hay que pedir una prueba a la imprenta, porque el ámbar y el celeste salen más apagados en papel.</p>
+</div></section>
+</main>
+
+<footer><div class="col">Coddvisor · guía de marca v3 · noviembre de 2026.</div></footer>
+
+<script>
+(function(){
+  var r=document.documentElement, q=new URLSearchParams(location.search).get("tema");
+  if(q==="oscuro"||q==="claro") r.setAttribute("data-tema",q);
+  document.getElementById("tema").addEventListener("click",function(){
+    var oscuro=r.getAttribute("data-tema")==="oscuro"||(!r.getAttribute("data-tema")&&matchMedia("(prefers-color-scheme: dark)").matches);
+    r.setAttribute("data-tema",oscuro?"claro":"oscuro");
+  });
+})();
+</script>
+</body>
+</html>

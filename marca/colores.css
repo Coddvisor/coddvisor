@@ -1,0 +1,71 @@
+/* Coddvisor · colores de marca
+   Fuente única: el sitio, el sistema y la guía de marca leen los colores de aquí.
+   Si un color cambia, se cambia en este archivo y en ningún otro lugar.
+   El contraste de cada pareja texto/fondo está medido en la guía de marca. */
+
+:root {
+  /* Marca: los cuatro colores */
+  --cobalto: #0B1841;        /* tinta, fondos oscuros, gato sobre claro */
+  --ambar: #FF8F1F;          /* gato sobre oscuro, botón principal, punto de la i */
+  --azul-real: #1554E0;      /* enlaces, palabras resaltadas, botón secundario (sobre claro) */
+  --celeste: #2CB7F5;        /* gráficos, etiquetas y enlaces sobre oscuro */
+
+  /* Derivados: para los casos en que el color de marca no se lee */
+  --ambar-tostado: #B05008;  /* texto ámbar sobre fondo claro */
+  --celeste-oscuro: #0A86C7; /* gráficos y trazos celestes sobre fondo claro */
+  --hielo: #E3F5FE;          /* fondo de etiquetas y del botón secundario */
+  --celeste-claro: #BFE8FC;  /* solo en la franja de marca; no lleva texto encima */
+  --ambar-claro: #FFD3A1;    /* solo en la franja de marca; no lleva texto encima */
+
+  /* Neutros */
+  --tinta: #0B1841;
+  --texto-2: #3A476B;
+  --texto-3: #5B6785;
+  --borde-fuerte: #A7B0C6;
+  --borde: #D9DFEC;
+  --superficie: #EEF1F7;
+  --fondo: #F7F9FC;
+  --tarjeta: #FFFFFF;
+
+  /* Estados: nunca dependen solo del color; siempre llevan ícono y texto */
+  --correcto: #0B6B41;  --correcto-fondo: #DDF3E8;
+  --aviso: #5C4300;     --aviso-fondo: #FFF1C2;
+  --error: #C4203F;     --error-fondo: #FDE8EC;
+
+  /* Papeles: lo que la interfaz pide por nombre */
+  --enlace: var(--azul-real);
+  --resalte: var(--azul-real);
+  --boton: var(--ambar);            --boton-texto: var(--cobalto);
+  --boton-2: var(--hielo);          --boton-2-texto: var(--azul-real);
+  --grafico: var(--celeste-oscuro); --grafico-hoy: var(--ambar);
+  color-scheme: light;
+}
+
+/* Modo oscuro: mismas reglas, otros valores. Sobre oscuro los enlaces van en celeste.
+   data-tema="oscuro" sirve en la página entera o en un bloque suelto (una franja cobalto
+   dentro de una página clara): dentro de ese bloque los papeles toman los valores oscuros.
+   Los dos bloques de abajo deben quedar idénticos. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --tinta: #EEF2FF; --texto-2: #A9B4D6; --texto-3: #8794BC;
+    --borde-fuerte: #2C3C80; --borde: #1C2A66; --superficie: #060B22; --fondo: #080F2E; --tarjeta: #0B1841;
+    --hielo: #14245E; --boton-2: var(--hielo);
+    --correcto: #6FD3A5; --correcto-fondo: #0E2A22;
+    --aviso: #FFE08A;    --aviso-fondo: #2A2410;
+    --error: #FF9CAE;    --error-fondo: #3A1220;
+    --enlace: var(--celeste); --resalte: var(--celeste);
+    --boton-2-texto: var(--celeste); --grafico: var(--celeste);
+    color-scheme: dark;
+  }
+}
+[data-tema="oscuro"] {
+  --tinta: #EEF2FF; --texto-2: #A9B4D6; --texto-3: #8794BC;
+  --borde-fuerte: #2C3C80; --borde: #1C2A66; --superficie: #060B22; --fondo: #080F2E; --tarjeta: #0B1841;
+  --hielo: #14245E; --boton-2: var(--hielo);
+  --correcto: #6FD3A5; --correcto-fondo: #0E2A22;
+  --aviso: #FFE08A;    --aviso-fondo: #2A2410;
+  --error: #FF9CAE;    --error-fondo: #3A1220;
+  --enlace: var(--celeste); --resalte: var(--celeste);
+  --boton-2-texto: var(--celeste); --grafico: var(--celeste);
+  color-scheme: dark;
+}
