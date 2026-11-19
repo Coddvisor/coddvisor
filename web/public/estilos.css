@@ -441,6 +441,90 @@ html:not(.js) form[data-form] { display:none; }
 .promesas p { margin-top:10px; font-size:16px; line-height:1.55; color:var(--texto-2); }
 .contacto-in--simple .contacto-baj { max-width:560px; }
 
+/* ---------- Herramientas gratis ----------
+   Hoja de trabajo a la izquierda y resultado a la derecha (lo acompaña al bajar). En celular, el
+   resultado va al final. Los campos reutilizan .campo del formulario de contacto. */
+.caja-sec { padding:clamp(40px, 5vw, 72px) 0; background:var(--superficie); }
+.caja { display:grid; grid-template-columns:minmax(0, 1fr) minmax(300px, 380px); gap:28px; align-items:start; }
+.caja-hoja { display:grid; gap:20px; min-width:0; }
+.caja-bloque { margin:0; min-width:0; border:2px solid var(--borde); border-radius:22px; background:var(--tarjeta); padding:clamp(20px, 2.4vw, 28px); }
+.caja-bloque legend { float:left; width:100%; display:flex; align-items:center; gap:12px; padding:0; font-size:20px; font-weight:700; letter-spacing:-.01em; line-height:1.25; }
+.caja-bloque legend small, .campo label small { font-weight:400; color:var(--texto-2); font-size:.8em; }
+.caja-bloque legend + * { clear:both; }
+.caja-n { flex:none; width:32px; height:32px; border-radius:10px; display:inline-grid; place-items:center; background:var(--hielo); color:var(--azul-real); font:700 15px/1 var(--mono); }
+.caja-ayuda { clear:both; padding-top:6px; font-size:15px; line-height:1.5; color:var(--texto-2); }
+.caja-campos { clear:both; margin-top:16px; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px 16px; align-items:end; }
+.caja-campos--3 { grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); }
+.monto { position:relative; }
+.monto span { position:absolute; left:14px; top:50%; transform:translateY(-50%); font:700 15px/1 var(--mono); color:var(--texto-2); pointer-events:none; }
+.monto input { padding-left:44px !important; font-variant-numeric:tabular-nums; }
+.caja input[type=number] { -moz-appearance:textfield; appearance:textfield; }
+.caja input[type=number]::-webkit-inner-spin-button, .caja input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+.conteo { clear:both; margin-top:16px; display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:8px 32px; }
+.conteo-t { font:700 12px/1.4 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--texto-2); margin-bottom:6px; }
+.conteo-fila { display:grid; grid-template-columns:72px 14px minmax(64px, 96px) 1fr; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--borde); }
+.conteo-fila label { font:700 15px/1 var(--mono); }
+.conteo-x { color:var(--texto-3); text-align:center; }
+.conteo-fila input { width:100%; min-height:44px; border:2px solid var(--borde-fuerte); border-radius:12px; padding:0 10px; font:inherit; font-size:16px; text-align:center; background:var(--fondo); color:var(--cobalto); font-variant-numeric:tabular-nums; }
+.conteo-sub { text-align:right; font:400 14px/1 var(--mono); color:var(--texto-2); font-variant-numeric:tabular-nums; }
+.caja-impresa { display:none; }
+
+.caja-res { position:sticky; top:calc(var(--cab-h) + 20px); min-width:0; }
+.res-tarjeta { border-radius:24px; background:var(--tarjeta); border:2px solid var(--borde); border-bottom-width:5px; padding:24px; }
+.res-estado { margin-top:12px; padding:16px; border-radius:16px; background:var(--superficie); }
+.res-v { font-size:26px; line-height:1.15; letter-spacing:-.02em; font-weight:700; }
+.res-linea { margin-top:6px; font-size:15px; line-height:1.5; color:var(--texto-2); }
+.res-estado[data-estado="cuadra"] { background:var(--correcto-fondo); }
+.res-estado[data-estado="cuadra"] .res-v { color:var(--correcto); }
+.res-estado[data-estado="falta"] { background:var(--error-fondo); }
+.res-estado[data-estado="falta"] .res-v { color:var(--error); }
+.res-estado[data-estado="sobra"] { background:var(--ambar-claro); }
+.res-estado[data-estado="sobra"] .res-v { color:var(--ambar-tostado); }
+.res-lista { margin:16px 0 0; display:grid; }
+.res-lista div { display:flex; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid var(--borde); font-size:15px; }
+.res-lista dt { color:var(--texto-2); }
+.res-lista dd { margin:0; font:700 15px/1.4 var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.res-dif dt, .res-total dt { color:var(--cobalto); font-weight:600; }
+.res-lista--dia { margin-top:20px; }
+.res-acc { margin-top:20px; display:grid; gap:8px; }
+.btn-2--claro { width:100%; background:var(--hielo); border-color:transparent; color:var(--azul-real); }
+.btn-2--claro:hover { border-color:var(--azul-real); }
+.res-borrar { min-height:44px; border:0; background:none; color:var(--texto-2); font:500 15px/1 var(--sans); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.res-nota { margin-top:12px; font-size:13px; line-height:1.5; color:var(--texto-2); }
+.res-barra { display:none; }
+
+/* Guía bajo cada herramienta (es el artículo del blog). Columna de lectura angosta. */
+.guia { padding:var(--pad-sec) 0; }
+.guia-in { max-width:780px; }
+.guia-t { font-size:clamp(30px, 2.4vw + 14px, 46px); }
+.guia-meta { margin-top:14px; font:400 13px/1.5 var(--mono); color:var(--texto-2); }
+.guia-cuerpo { margin-top:36px; font-size:18px; line-height:1.7; }
+.guia-cuerpo h3 { margin-top:40px; font-size:24px; line-height:1.2; letter-spacing:-.01em; font-weight:700; }
+.guia-cuerpo p { margin-top:14px; color:var(--texto-2); }
+.guia-cuerpo p b, .guia-cuerpo li b { color:var(--cobalto); font-weight:600; }
+.guia-pasos, .revisar { margin:16px 0 0; padding-left:1.4em; display:grid; gap:12px; color:var(--texto-2); }
+.guia-pasos li::marker, .revisar li::marker { font:700 15px var(--mono); color:var(--azul-real); }
+.formula { margin-top:18px; padding:18px 20px; border-radius:16px; background:var(--hielo); border-left:5px solid var(--azul-real); display:grid; gap:6px; }
+.formula p { margin:0; font:400 15px/1.6 var(--mono); color:var(--cobalto); }
+.guia-faq { margin-top:16px; }
+.guia-faq summary { font-size:18px; }
+
+/* Índices de herramientas y del blog */
+.lista-sec { padding:clamp(40px, 5vw, 72px) 0 var(--pad-sec); }
+.tarjetas { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px; }
+.tarjetas--blog { grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); }
+.tarjeta { position:relative; display:flex; flex-direction:column; border-radius:22px; background:var(--tarjeta); border:2px solid var(--borde); border-bottom-width:5px; padding:24px; }
+.tarjeta:hover { border-color:var(--borde-fuerte); }
+.tarjeta-cat { font:700 12px/1.4 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--azul-real); }
+.tarjeta-t { margin-top:10px; font-size:24px; line-height:1.2; letter-spacing:-.015em; font-weight:700; }
+.tarjeta-t a { color:var(--cobalto); text-decoration:none; }
+/* Toda la tarjeta es clicable, pero el enlace es solo el título (así el lector de pantalla no lee todo dos veces). */
+.tarjeta-t a::after { content:""; position:absolute; inset:0; border-radius:22px; }
+.tarjeta-tx { margin-top:8px; font-size:16px; line-height:1.55; color:var(--texto-2); flex:1; }
+.tarjeta-ir { margin-top:16px; font-weight:600; color:var(--azul-real); }
+.tarjeta-meta { margin-top:16px; font:400 13px/1.5 var(--mono); color:var(--texto-2); }
+.lista-pie { margin-top:28px; font-size:15px; color:var(--texto-2); }
+
 /* ---------- Movimiento (solo si la persona no pidió menos) ---------- */
 @media (prefers-reduced-motion: no-preference) {
   .brillo--ambar { animation:brillo 9s ease-in-out infinite alternate; }
@@ -468,6 +552,20 @@ html:not(.js) form[data-form] { display:none; }
 /* Bajo 820 px el menú pasa al botón «Menú» y se abre a pantalla completa. */
 @media (max-width:1024px) {
   .portada-in { grid-template-columns:minmax(0, 1fr); gap:48px; }
+  .caja { grid-template-columns:minmax(0, 1fr); }
+  .caja-res { position:static; }
+  .caja-sec { padding-bottom:96px; }
+  .res-barra.es-visible {
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:20;
+    min-height:56px; padding:0 18px; border-radius:16px; text-decoration:none;
+    background:var(--cobalto); color:var(--fondo); font-weight:700; box-shadow:var(--sombra-honda);
+  }
+  .res-barra-ir { font-weight:500; font-size:14px; color:var(--celeste-claro); white-space:nowrap; }
+  .res-barra[data-estado="cuadra"] { background:var(--correcto); }
+  .res-barra[data-estado="falta"] { background:var(--error); }
+  .res-barra[data-estado="sobra"] { background:var(--ambar-tostado); }
+  .res-barra:not([data-estado="vacio"]) .res-barra-ir { color:var(--fondo); }
   .portada-texto { position:static; max-width:720px; padding-top:0; }
 }
 @media (max-width:820px) {
@@ -518,5 +616,18 @@ html:not(.js) form[data-form] { display:none; }
 
 @media print {
   .cab, .aviso, .saltar, .brillo { display:none; }
+  /* Herramientas: al imprimir sale solo la hoja con su resultado, en blanco y negro legible. */
+  body:has(.caja) main > :not(.caja-sec), body:has(.caja) .pie { display:none; }
+  .caja-sec { padding:0; background:none; }
+  .caja { display:block; }
+  .caja-impresa { display:block; margin-bottom:12px; }
+  .caja-impresa-t { font-size:22px; font-weight:700; }
+  .caja-impresa-tx { font-size:11px; color:#555; }
+  .caja-bloque, .res-tarjeta { border:1px solid #999; border-radius:8px; padding:10px 14px; margin-bottom:10px; break-inside:avoid; }
+  .caja-hoja { gap:0; }
+  .caja-ayuda, .res-acc, .res-nota, .res-barra { display:none !important; }
+  .caja-res { position:static; }
+  .conteo-fila { padding:2px 0; }
+  .conteo-fila input, .campo input { min-height:0; border:0; padding:0; background:none; }
   .osc { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 }

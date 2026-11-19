@@ -1,0 +1,36 @@
+---
+// Índice de herramientas gratis. Sale de src/datos/herramientas.ts.
+import Base from '../../layouts/Base.astro';
+import { herramientas } from '../../datos/herramientas';
+---
+<Base
+  titulo="Herramientas gratis para micro y pequeñas empresas | Coddvisor"
+  descripcion="Herramientas gratis para llevar su negocio: cierre de caja y más. Se usan en el navegador, sin registrarse y sin dejar su correo.">
+
+<section class="portada portada--interior osc" aria-labelledby="hs-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot">Recursos</p>
+    <h1 class="portada-t interior-t" id="hs-t">Herramientas gratis <span class="cel">para el día a día.</span></h1>
+    <p class="portada-baj">Se usan aquí mismo, en el navegador. Sin registrarse, sin dejar su correo, y lo que escribe no sale de su computadora.</p>
+  </div>
+</section>
+
+<section class="lista-sec" aria-label="Herramientas">
+  <div class="col">
+    <ul class="tarjetas">
+      {herramientas.map((h) => (
+        <li class="tarjeta">
+          <p class="tarjeta-cat">{h.categoria}</p>
+          <h2 class="tarjeta-t"><a href={h.href}>{h.nombre}</a></h2>
+          <p class="tarjeta-tx">{h.frase}.</p>
+          <span class="tarjeta-ir" aria-hidden="true">Usar gratis →</span>
+        </li>
+      ))}
+    </ul>
+    <p class="lista-pie">Estamos preparando más: IGV de una venta, gratificación, vacaciones, CTS y el costo real de un integrante. Cada una sale cuando está revisada.</p>
+  </div>
+</section>
+
+</Base>

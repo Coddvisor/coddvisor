@@ -31,8 +31,7 @@ El menú de arriba, el menú del celular y el pie salen de `src/datos/navegacion
 Para que una página aparezca en los tres, se agrega **una línea** ahí.
 
 - **Solo entra lo que ya existe.** Un enlace a una página vacía enseña que el
-  menú no es confiable. «Recursos» (herramientas gratis, blog) entra cuando
-  exista la primera herramienta.
+  menú no es confiable.
 - **Los productos se nombran con un verbo** («Venda y cobre», «Pague la
   planilla»): la persona busca qué puede hacer, no el nombre de un módulo.
   Mientras no tengan página propia, llevan a su pestaña en la portada
@@ -43,6 +42,29 @@ Para que una página aparezca en los tres, se agrega **una línea** ahí.
 En celular (820 px o menos), el botón con tres rayas abre el menú a pantalla
 completa. Por debajo de 400 px, el botón de arriba dice «Probar» para que
 quepan el logotipo y el menú.
+
+## Herramientas gratis y blog (un solo lugar)
+
+Cada herramienta vive en **una sola página**: la herramienta arriba y su guía
+(el artículo del blog) debajo. Una página fuerte posiciona mejor en Google que
+dos débiles. La lista está en `src/datos/herramientas.ts`, y de ella salen el
+menú «Recursos», el pie, `/herramientas/` y `/blog/`.
+
+Reglas de toda herramienta:
+
+1. **Se usa ahí mismo, sin registrarse y sin pedir el correo.**
+2. **Nada sale de la computadora de la persona.** El cálculo corre en su
+   navegador (`public/herramientas/<nombre>.js`); lo escrito se guarda solo en
+   ese navegador, para no perderlo al cerrar la página.
+3. **Las cuentas de dinero se hacen en céntimos** (números enteros): así
+   S/ 0.10 + S/ 0.20 da S/ 0.30 exacto.
+4. **Las fórmulas laborales citan la norma** (ley y artículo) y muestran la
+   fecha en que se compararon contra ella, con el aviso «Revísela con su
+   contador». Cuando haya un revisor colegiado, su nombre reemplaza el aviso.
+5. **Entra a la lista solo cuando funciona y fue revisada con el fundador.**
+
+Orden acordado: cierre de caja → IGV → gratificación → vacaciones → CTS →
+costo real de un integrante.
 
 ## Una página nueva
 
