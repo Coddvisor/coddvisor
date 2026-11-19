@@ -77,13 +77,15 @@
       <h1 class="portada-t" id="portada-t">Sepa <span class="cel">cada día</span> cómo le va a su negocio.</h1>
       <p class="portada-baj">Venta, caja, inventario y planilla en un solo lugar. <b>Lo que se vende descuenta el stock, entra a la caja y queda en las cuentas</b>, sede por sede.</p>
 
-      <!-- Sin JS, el formulario abre el correo; con JS, arma el mensaje (ver sitio.js). -->
-      <form class="pildora" data-form="portada" action="mailto:equipo@coddvisor.com" method="post" enctype="text/plain">
+      <!-- Los formularios los envía sitio.js (arma el mensaje y abre el correo o WhatsApp).
+           Sin JS se ocultan y queda el enlace de correo de abajo. -->
+      <form class="pildora" data-form="portada">
         <label class="oculto" for="portada-contacto">Su WhatsApp o correo</label>
         <input id="portada-contacto" name="contacto" type="text" autocomplete="email" placeholder="Su WhatsApp o correo" required>
         <button class="btn btn--pildora" type="submit">Quiero probarlo</button>
       </form>
       <p class="form-estado form-estado--osc" data-estado="portada" role="status"></p>
+      <noscript><p class="sin-js"><a href="mailto:equipo@coddvisor.com">Escríbanos a equipo@coddvisor.com</a></p></noscript>
 
       <ul class="confianza">
         <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Boletas y facturas electrónicas</li>
@@ -411,7 +413,7 @@
       </div>
     </div>
 
-    <form class="form" data-form="contacto" action="mailto:equipo@coddvisor.com" method="post" enctype="text/plain">
+    <form class="form" data-form="contacto">
       <div class="campo">
         <label for="c-nombre">Su nombre</label>
         <input id="c-nombre" name="nombre" type="text" autocomplete="name" required>
