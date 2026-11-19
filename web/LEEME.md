@@ -10,7 +10,10 @@ cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar
 
 | Carpeta o archivo        | Qué es                                                       |
 |--------------------------|--------------------------------------------------------------|
-| `src/pages/`             | Las páginas. Cada archivo es una dirección: `index.astro` es la portada |
+| `src/pages/`             | Las páginas. Cada archivo es una dirección: `index.astro` es la portada, `nosotros.astro` es `/nosotros/`, `404.astro` es la página de error |
+| `src/datos/navegacion.ts`| **El menú y el pie**: la única lista de enlaces del sitio      |
+| `src/layouts/Base.astro` | El molde de todas las páginas: `<head>`, íconos, correo y WhatsApp, cabecera y pie |
+| `src/components/`        | Piezas del molde: `Cabecera` (con el menú), `Pie` y `Logotipo` |
 | `public/`                | Lo que se publica tal cual, sin pasar por Astro:             |
 | `public/colores.css`     | Los colores de marca. Copia fiel del archivo de marca: no se edita aquí |
 | `public/estilos.css`     | Tonos de apoyo, qué color usa cada pieza, letras, espacios, celular |
@@ -21,6 +24,41 @@ cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar
 | `package.json`           | Qué versión de Astro usa el sitio. Va **fija** (sin `^`)      |
 | `astro.config.mjs`       | La configuración de Astro                                     |
 | `dist/`                  | Lo que Astro genera. No se sube a GitHub: Cloudflare lo arma solo |
+
+## El menú (un solo lugar)
+
+El menú de arriba, el menú del celular y el pie salen de `src/datos/navegacion.ts`.
+Para que una página aparezca en los tres, se agrega **una línea** ahí.
+
+- **Solo entra lo que ya existe.** Un enlace a una página vacía enseña que el
+  menú no es confiable. «Recursos» (herramientas gratis, blog) entra cuando
+  exista la primera herramienta.
+- **Los productos se nombran con un verbo** («Venda y cobre», «Pague la
+  planilla»): la persona busca qué puede hacer, no el nombre de un módulo.
+  Mientras no tengan página propia, llevan a su pestaña en la portada
+  (`/#vender`, `/#inventario`, `/#planilla`). Cuando la tengan, solo cambia su
+  dirección en la lista.
+- **Un solo botón lleno:** «Quiero probarlo», en ámbar. Lo demás es secundario.
+
+En celular (820 px o menos), el botón con tres rayas abre el menú a pantalla
+completa. Por debajo de 400 px, el botón de arriba dice «Probar» para que
+quepan el logotipo y el menú.
+
+## Una página nueva
+
+1. Crea el archivo en `src/pages/` (por ejemplo `seguridad.astro` → `/seguridad/`).
+2. Empieza con el molde, que pone el menú, el pie y los íconos:
+
+```astro
+---
+import Base from '../layouts/Base.astro';
+---
+<Base titulo="Título en la pestaña | Coddvisor" descripcion="Lo que dice Google debajo.">
+  <!-- contenido -->
+</Base>
+```
+
+3. Si debe ir en el menú o en el pie, agrégala en `src/datos/navegacion.ts`.
 
 ## La versión de Astro va fija
 
@@ -66,7 +104,7 @@ npm run build && npm run preview
 
 ## Correo y WhatsApp (un solo lugar)
 
-En `src/pages/index.astro`, la etiqueta `<body>` lleva dos datos:
+En `src/layouts/Base.astro`, la etiqueta `<body>` lleva dos datos:
 
 - `data-correo="equipo@coddvisor.com"`: a qué correo escriben los formularios.
 - `data-whatsapp=""`: el número con código de país, solo dígitos (ejemplo:
@@ -84,6 +122,9 @@ su teléfono o computadora:
 - **Pestañas de «Qué hace»:** avanzan solas cada 6.6 s mientras se ven; se
   pausan con el mouse o el teclado encima y se detienen al primer clic.
 - **Aparición al bajar:** las secciones entran con un fundido suave.
+- **Menú:** un grupo abierto a la vez; Escape lo cierra; en celular se cierra
+  solo al tocar un enlace. Si `sitio.js` no carga, los grupos igual se abren
+  (son `<details>`), y en celular el menú no aparece, como antes.
 
 ## El logotipo
 
