@@ -8,8 +8,9 @@ Una sola página de presentación. Son estos archivos y nada más:
 | `colores.css`          | Los colores de marca. Copia fiel del archivo de marca: no se edita aquí |
 | `estilos.css`          | Tonos de apoyo, qué color usa cada pieza, letras, espacios, celular |
 | `sitio.js`             | El movimiento: panel de la portada, pestañas, formularios y aparición al bajar |
-| `favicon.svg`          | El ícono de la pestaña del navegador                         |
-| `favicon-32.png`       | El mismo ícono, para navegadores que no leen SVG             |
+| `favicon.svg`          | El ícono de la pestaña: gato cobalto en modo claro, ámbar en oscuro |
+| `favicon-32-claro.png` | El mismo ícono en cobalto, para navegadores que no leen SVG  |
+| `favicon-32-oscuro.png`| El mismo ícono en ámbar, para navegadores que no leen SVG    |
 | `apple-touch-icon.png` | El ícono cuando alguien guarda el sitio en su iPhone         |
 
 ## Los colores (un solo lugar)
