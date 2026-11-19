@@ -24,10 +24,10 @@ export type Grupo = {
 };
 
 // Los productos se nombran con un verbo: la persona busca qué puede hacer, no un módulo.
+// Son las mismas tres partes de «Qué hace» en la portada: el menú y la portada cuentan lo mismo.
 // PENDIENTE: cuando cada producto tenga su página (/producto/vender/, etc.), solo cambia su href.
 export const productos: Enlace[] = [
-  { texto: 'Venda y cobre', frase: 'Caja por sede con efectivo, Yape, Plin y tarjeta', href: '/#vender' },
-  { texto: 'Emita comprobantes', frase: 'Boleta y factura electrónica en el momento de la venta', href: '/#vender' },
+  { texto: 'Venda y cobre', frase: 'Con boleta o factura electrónica, efectivo, Yape, Plin y tarjeta', href: '/#vender' },
   { texto: 'Controle el inventario', frase: 'Por talla y color, en el piso y el almacén de cada sede', href: '/#inventario' },
   { texto: 'Pague la planilla', frase: 'Asistencia con código y planilla de la pequeña empresa', href: '/#planilla' },
 ];
