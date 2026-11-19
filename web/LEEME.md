@@ -4,25 +4,26 @@ Una sola página de presentación. Son estos archivos y nada más:
 
 | Archivo                | Qué es                                                       |
 |------------------------|--------------------------------------------------------------|
-| `index.html`           | El contenido: textos, cifras, el logotipo y la maqueta       |
+| `index.html`           | El contenido: textos, el logotipo y las maquetas             |
 | `colores.css`          | Los colores de marca. Copia fiel del archivo de marca: no se edita aquí |
-| `estilos.css`          | Qué color de marca usa cada pieza, letras, espacios, celular |
+| `estilos.css`          | Tonos de apoyo, qué color usa cada pieza, letras, espacios, celular |
+| `sitio.js`             | El movimiento: panel de la portada, pestañas, formularios y aparición al bajar |
 | `favicon.svg`          | El ícono de la pestaña: gato cobalto en modo claro, ámbar en oscuro |
 | `favicon-32-claro.png` | El mismo ícono en cobalto, para navegadores que no leen SVG  |
 | `favicon-32-oscuro.png`| El mismo ícono en ámbar, para navegadores que no leen SVG    |
 | `apple-touch-icon.png` | El ícono cuando alguien guarda el sitio en su iPhone         |
+| `robots.txt`           | Les dice a los buscadores que pueden leer todo el sitio      |
 
 ## Los colores (un solo lugar)
 
 `colores.css` es una copia exacta del archivo de colores de la marca. Si la marca
 cambia un color, se reemplaza ese archivo entero por el nuevo, y no se toca
-nada más. `estilos.css` no define colores propios: solo dice, por ejemplo, que
-el botón usa `--boton` o que los enlaces usan `--enlace`.
+nada más. `estilos.css` solo agrega siete tonos de apoyo para las franjas
+oscuras (al inicio del archivo, en `:root`) y dice qué color usa cada pieza.
 
-Las franjas azules (portada y contacto) son bloques oscuros dentro de una
-página clara: sus textos llevan `data-tema="oscuro"` en `index.html`, y con eso
-toman solos los colores "sobre oscuro" de la marca. La maqueta del inventario
-no lo lleva, a propósito: sigue el tema de la página.
+La página alterna franjas claras y oscuras: portada, Etapa y Contacto van en
+cobalto (clase `osc`). Por eso `<html>` lleva `data-tema="claro"`: la página no
+cambia con el modo oscuro del teléfono, porque ya tiene su propio ritmo.
 
 No hay "programa" que compilar ni librerías que instalar. Por eso cualquier
 servicio lo publica tal cual (hoy, Cloudflare Pages), y por eso no se rompe
@@ -36,34 +37,48 @@ python3 -m http.server 4321 --directory web
 
 Luego abre `http://localhost:4321` en el navegador. Para apagarlo: `Ctrl + C`.
 
-## El correo de contacto (un solo lugar)
+## Correo y WhatsApp (un solo lugar)
 
-En `index.html`, el atributo `data-correo="equipo@coddvisor.com"` decide a qué
-correo escribe el botón "Escríbanos". Para cambiarlo, se cambia solo ahí. Si se
-deja vacío (`data-correo=""`), el sitio muestra "Muy pronto publicaremos aquí un
-correo de contacto" en vez de un botón.
+En `index.html`, la etiqueta `<body>` lleva dos datos:
+
+- `data-correo="equipo@coddvisor.com"`: a qué correo escriben los formularios.
+- `data-whatsapp=""`: el número con código de país, solo dígitos (ejemplo:
+  `51987654321`). Mientras esté vacío, los botones de WhatsApp no se muestran y
+  los dos formularios abren el correo con el mensaje ya escrito. Cuando se
+  llena, aparecen los botones y los formularios abren WhatsApp.
+
+## El movimiento
+
+Todo vive en `sitio.js` y nada se anima si la persona pidió menos movimiento en
+su teléfono o computadora:
+
+- **Panel «¿Cómo le va hoy?»:** cuando entra en pantalla, cuenta el día (seis
+  ventas y tres pendientes que se resuelven) y se queda en el estado final.
+- **Pestañas de «Qué hace»:** avanzan solas cada 6.6 s mientras se ven; se
+  pausan con el mouse o el teclado encima y se detienen al primer clic.
+- **Aparición al bajar:** las secciones entran con un fundido suave.
 
 ## El logotipo
 
 El gato y la palabra «coddvisor» están dibujados dentro de `index.html` (el
 `<symbol id="logotipo">`), copiados del logotipo horizontal de la marca. Sus
-colores salen de `--logo-gato` y `--logo-palabra` en `estilos.css`: sobre fondo
-claro, todo en cobalto; en modo oscuro, el gato ámbar y la palabra blanca. El
-gato ámbar nunca va sobre fondo claro, porque ahí no se distingue. La palabra
-es un dibujo, no una tipografía: no la reescribas con Space Grotesk. Alto
-mínimo: 24 px.
+colores salen de `--logo-gato` y `--logo-palabra` en `estilos.css`: en la
+cabecera oscura, gato y palabra claros; en el pie, todo en cobalto. El punto de
+la i siempre es ámbar. La palabra es un dibujo, no una tipografía: no la
+reescribas con Space Grotesk. Alto mínimo: 24 px.
 
 ## Reglas de contenido (no se negocian)
 
-1. **Nada que prometa lo que no existe.** Cada función lleva "Ya funciona en
-   CAYLA". Lo que está en diseño no se muestra.
-2. **Hoy es un solo negocio.** El sitio lo dice tal cual. No hay precios, planes,
-   clientes de fuera ni testimonios.
-3. **Solo información pública.** Nada de documentos internos ni planes
+1. **Nada que prometa lo que no existe.** Lo que todavía no funciona va marcado
+   «En desarrollo».
+2. **Empresa independiente.** El sitio no menciona a ningún otro negocio ni usa
+   sus cifras. No hay clientes, logos de clientes ni testimonios.
+3. **Toda maqueta se rotula:** «Maqueta con datos inventados; no es una captura.»
+4. **Solo información pública.** Nada de documentos internos ni planes
    financieros: este repositorio es público, y su historial también.
-4. **Cifras de CAYLA:** autorizadas por el fundador el 17-nov-2026, con su fecha
-   (14-nov-2026) y la aclaración de que son de un solo negocio.
-5. **Vocabulario:** "cliente", "integrante", "sede".
+5. **Trato de usted, soles con formato `S/ 4,820.50`.** Sin el punto medio «·»
+   como separador.
+6. **Vocabulario:** "cliente", "integrante", "sede".
 
 ---
 
@@ -72,14 +87,14 @@ mínimo: 24 px.
 Todo lo de esta guía es gratis. Si en algún paso una pantalla te pide tarjeta o
 un plan de pago, detente: no hace falta para este sitio.
 
-### Paso 0 · Cerrar con llave antes de abrir la tienda
+### Paso 0: Cerrar con llave antes de abrir la tienda
 
 Activa la **verificación en dos pasos** en GitHub, Cloudflare, GoDaddy y Zoho.
 Son las cuatro llaves de tu presencia pública: con la contraseña de cualquiera,
 alguien podría cambiar tu sitio o leer los correos de los interesados. La
 verificación en dos pasos lo impide aunque tenga la contraseña.
 
-### Paso 1 · Llevar el sitio a `main` en GitHub
+### Paso 1: Llevar el sitio a `main` en GitHub
 
 El repositorio ya existe en GitHub (`Coddvisor/coddvisor`, público) y el sitio
 está en la rama `web/sitio-inicial`.
@@ -98,7 +113,7 @@ solicitud de revisión es la puerta: nada llega a la vitrina sin que tú lo veas
 antes. Las demás ramas reciben una dirección de prueba, como el probador de la
 tienda: ves la prenda puesta antes de sacarla a vitrina.
 
-### Paso 2 · Crear el sitio en Cloudflare Pages
+### Paso 2: Crear el sitio en Cloudflare Pages
 
 1. Crea tu cuenta gratis en dash.cloudflare.com (si no la tienes).
 2. En el menú: **Workers & Pages → Create → pestaña Pages → Connect to Git**.
@@ -117,7 +132,7 @@ tienda: ves la prenda puesta antes de sacarla a vitrina.
 5. **Save and Deploy.** En un minuto te da la dirección `coddvisor.pages.dev`.
    Ábrela en el celular y en la computadora, y prueba el botón "Escríbanos".
 
-### Paso 3 · Apuntar coddvisor.com (sin tocar el correo)
+### Paso 3: Apuntar coddvisor.com (sin tocar el correo)
 
 El dominio **se queda en GoDaddy**, igual que su DNS (la libreta de direcciones
 del dominio, donde también viven los registros de Zoho). Solo se cambian dos
@@ -140,7 +155,7 @@ cosas:
 
 1. En GoDaddy, en la misma página del dominio: **Reenvío (Forwarding) →
    Dominio → Agregar reenvío**.
-2. Destino: `https://www.coddvisor.com` · Tipo: **permanente (301)** · Sin
+2. Destino: `https://www.coddvisor.com`. Tipo: **permanente (301)**. Sin
    "enmascarar" (*masking*).
 3. Guarda. GoDaddy ajusta solo el registro `A` de `@`; no lo cambies a mano.
 
@@ -153,7 +168,7 @@ correos de los interesados dejan de llegar sin aviso. Así, Zoho no se entera
 de nada. El costo: quien escriba `coddvisor.com` terminará en
 `www.coddvisor.com`, que es normal en internet.
 
-### Paso 4 · Probar el correo antes de anunciar el sitio
+### Paso 4: Probar el correo antes de anunciar el sitio
 
 El botón del sitio escribe a `equipo@coddvisor.com` (Zoho Mail). Antes de
 compartir el sitio:

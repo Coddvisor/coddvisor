@@ -1,8 +1,7 @@
 # Coddvisor
 
-Software de gestión para micro y pequeñas empresas del Perú. Nace de la
-experiencia real de CAYLA con sus dos sistemas propios: CAYLA Dynamic y
-CAYLA Retail.
+Software de gestión para micro y pequeñas empresas del Perú: venta, caja,
+inventario y planilla en un solo lugar.
 
 El nombre une a Edgar F. Codd (el creador de las bases de datos relacionales)
 con *advisor*: un sistema que ordena los datos del negocio y aconseja con ellos.

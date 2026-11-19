@@ -1,10 +1,12 @@
 <!doctype html>
-<html lang="es-PE">
+<!-- data-tema="claro": la página alterna sola franjas claras y oscuras, así que no sigue el modo
+     oscuro del teléfono (colores.css solo cambia la paleta cuando NO dice "claro"). -->
+<html lang="es-PE" data-tema="claro">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coddvisor · Software de gestión para micro y pequeñas empresas del Perú</title>
-<meta name="description" content="Coddvisor reúne la venta, la caja, el inventario y la planilla en un solo lugar. Nace del sistema con el que CAYLA trabaja todos los días. Hoy lo usa un solo negocio; buscamos los primeros que quieran probarlo.">
+<title>Coddvisor: software de gestión para micro y pequeñas empresas del Perú</title>
+<meta name="description" content="Coddvisor reúne la venta, la caja, el inventario y la planilla en un solo lugar. Estamos empezando y buscamos los primeros negocios que quieran probarlo.">
 <meta name="theme-color" content="#0B1841">
 <!-- Íconos: el gato va en cobalto si el sistema está en modo claro y en ámbar si está en
      modo oscuro. El SVG cambia solo; los dos PNG son el respaldo para navegadores que no
@@ -15,7 +17,7 @@
 <link rel="icon" href="/favicon.svg?v=5" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=5">
 <meta property="og:title" content="Coddvisor">
-<meta property="og:description" content="Software de gestión para micro y pequeñas empresas del Perú. Nace dentro de un negocio real.">
+<meta property="og:description" content="Software de gestión para micro y pequeñas empresas del Perú. Venta, caja, inventario y planilla en un solo lugar.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_PE">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,204 +25,447 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
 <link rel="stylesheet" href="/colores.css">
 <link rel="stylesheet" href="/estilos.css">
+<script src="/sitio.js" defer></script>
 </head>
-<body>
+<!-- Contacto en UN solo lugar:
+     data-correo    → a qué correo escriben los formularios y el enlace de correo.
+     data-whatsapp  → número con código de país, solo dígitos (ej. 51987654321). Mientras esté
+                      vacío, los botones de WhatsApp no se muestran y los formularios usan el correo. -->
+<body data-correo="equipo@coddvisor.com" data-whatsapp="">
 
 <!-- Logotipo horizontal de Coddvisor (guía de marca v3): el gato y la palabra dibujada con trazos.
      Copia fiel de coddvisor-logotipo-horizontal.svg; solo los colores se cambiaron por los tokens
-     --logo-gato y --logo-palabra de estilos.css (cobalto sobre claro; gato ámbar y palabra blanca
-     sobre oscuro). El punto de la i es siempre ámbar. La palabra no es una tipografía: no
-     reescribirla con Space Grotesk. -->
+     --logo-gato y --logo-palabra de estilos.css. El punto de la i es siempre ámbar. La palabra no
+     es una tipografía: no reescribirla con Space Grotesk. -->
 <svg class="oculto" aria-hidden="true" focusable="false"><symbol id="logotipo" viewBox="0 0 444.95 67"><g transform="translate(-11.93 -6.54) scale(1.27)"><path fill="var(--logo-gato)" fill-rule="evenodd" stroke="var(--logo-gato)" stroke-width="4.2" stroke-linejoin="round" d="M11.5 14.0L26.0 26.17H38.0L52.5 14.0V40.0A13.5 13.5 0 0 1 39.0 53.5H25.0A13.5 13.5 0 0 1 11.5 40.0ZM14.6 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0ZM33.4 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0Z"/></g><g transform="translate(72.34 0)"><g fill="none" stroke="var(--logo-palabra)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M30.91 32.3A16 16 0 1 0 30.91 55.7"/><circle cx="60.91" cy="44" r="16"/><circle cx="107.91" cy="44" r="16"/><path fill="var(--logo-palabra)" stroke="none" d="M126.71 3.2Q127.91 3.2 127.91 4.4V60A4.0 4.0 0 0 1 119.91 60V10.51Q119.91 9.51 120.81 8.81Z"/><circle cx="159.91" cy="44" r="16"/><path fill="var(--logo-palabra)" stroke="none" d="M178.71 3.2Q179.91 3.2 179.91 4.4V60A4.0 4.0 0 0 1 171.91 60V10.51Q171.91 9.51 172.81 8.81Z"/><path d="M192.91 28L207.91 60L222.91 28"/><path d="M240.41 28V60"/><circle fill="var(--ambar)" stroke="none" cx="240.41" cy="11" r="5.2"/><path d="M278.62 32.24A11 8 0 1 0 268.91 44A11 8 0 1 1 259.2 55.76"/><circle cx="310.91" cy="44" r="16"/><path d="M343.91 28V60"/><path d="M343.91 41A13 13 0 0 1 365.61 31.34"/></g></g></symbol></svg>
 
 <a class="saltar" href="#contenido">Ir al contenido</a>
 
-<header class="top">
-  <div class="col top-in">
-    <a class="marca" href="#" aria-label="Coddvisor, ir al inicio"><svg aria-hidden="true" viewBox="0 0 444.95 67"><use href="#logotipo"/></svg></a>
-    <nav class="top-nav" aria-label="Secciones">
-      <a href="#producto">Qué hace</a>
-      <a href="#etapa">En qué etapa estamos</a>
+<!-- 4.0 Barra superior -->
+<div class="aviso">
+  <div class="col col--ancho aviso-in">
+    <p><b>Primeros negocios.</b> Estamos empezando y buscamos a los primeros que quieran probarlo.</p>
+    <a href="#contacto">Postular</a>
+  </div>
+</div>
+
+<!-- 4.1 Cabecera -->
+<header class="cab osc">
+  <div class="col col--ancho cab-in">
+    <a class="marca" href="#inicio" aria-label="Coddvisor, ir al inicio"><svg aria-hidden="true" viewBox="0 0 444.95 67"><use href="#logotipo"/></svg></a>
+    <nav class="cab-nav" aria-label="Secciones">
+      <a href="#producto">Producto</a>
+      <a href="#etapa">Etapa</a>
+      <a href="#preguntas">Preguntas</a>
     </nav>
-    <a class="btn btn--2 btn--chico" href="#contacto">Quiero probarlo</a>
+    <div class="cab-acc">
+      <a class="pill pill--wa" data-wa hidden href="#contacto">WhatsApp</a>
+      <a class="pill pill--hielo" href="#contacto">Quiero probarlo <svg class="pill-flecha" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+    </div>
   </div>
 </header>
 
 <main id="contenido">
 
-<!-- 1. Portada: el problema y qué es Coddvisor -->
-<section class="portada noche" aria-labelledby="portada-t">
-  <div class="col portada-in">
-    <div class="portada-texto" data-tema="oscuro">
-      <span class="franja franja--sello" aria-hidden="true"></span>
-      <p class="rotulo">Software de gestión para micro y pequeñas empresas del Perú</p>
-      <h1 class="portada-t rise" id="portada-t">Tres de cada cuatro pequeños negocios del Perú <em>no saben cómo les va.</em></h1>
-      <p class="portada-dato rise d1"><b>76.5 %</b> de las micro y pequeñas empresas no lleva ningún registro de sus cuentas.<sup class="ref"><a href="#fuente-1" aria-label="Fuente 1">1</a></sup></p>
-      <p class="portada-baj rise d2">Coddvisor reúne en un solo lugar la venta, la caja, el inventario y la planilla, para que quien dirige un negocio sepa cada día cómo le va y decida con datos.</p>
-      <div class="acciones rise d3">
-        <a class="btn" href="#contacto">Quiero probarlo</a>
-        <a class="btn btn--2" href="#producto">Ver qué hace</a>
-      </div>
+<!-- 4.2 Portada -->
+<section class="portada osc" id="inicio" aria-labelledby="portada-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="brillo brillo--azul" aria-hidden="true"></div>
+  <div class="enmarcado">
+    <div class="portada-in">
+      <p class="chip-vivo"><span class="vivo" aria-hidden="true"></span>Software de gestión para mypes del Perú</p>
+      <h1 class="portada-t" id="portada-t">Sepa <span class="cel">cada día</span> cómo le va a su negocio.</h1>
+      <p class="portada-baj">Venta, caja, inventario y planilla en un solo lugar. <b>Lo que se vende descuenta el stock, entra a la caja y queda en las cuentas</b>, sede por sede.</p>
+
+      <!-- Los formularios los envía sitio.js (arma el mensaje y abre el correo o WhatsApp).
+           Sin JS se ocultan y queda el enlace de correo de abajo. -->
+      <form class="pildora" data-form="portada">
+        <label class="oculto" for="portada-contacto">Su WhatsApp o correo</label>
+        <input id="portada-contacto" name="contacto" type="text" autocomplete="email" placeholder="Su WhatsApp o correo" required>
+        <button class="btn btn--pildora" type="submit">Quiero probarlo</button>
+      </form>
+      <p class="form-estado form-estado--osc" data-estado="portada" role="status"></p>
+      <noscript><p class="sin-js"><a href="mailto:equipo@coddvisor.com">Escríbanos a equipo@coddvisor.com</a></p></noscript>
+
+      <ul class="confianza">
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Boletas y facturas electrónicas</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Varias sedes y almacén</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Funciona en el navegador</li>
+        <li><svg class="confianza-msj" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><a href="#contacto">Escríbanos y le respondemos</a></li>
+      </ul>
     </div>
 
-    <!-- Maqueta: inventario de una prenda por talla. Datos inventados. -->
-    <figure class="maqueta rise d2" aria-labelledby="mq-pie">
-      <p class="etiqueta" data-tema="oscuro"><span class="punto" aria-hidden="true"></span>Ya funciona en CAYLA <small>· datos inventados</small></p>
-      <div class="marco">
-        <div class="marco-barra"><i></i><i></i><i></i><span>coddvisor · inventario · Sede Centro</span></div>
-        <div class="ui">
-          <div class="ui-cab">
-            <span class="ui-prenda" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M17 8 L24 12 L31 8 L41 14 L38 22 L34 20 V40 H14 V20 L10 22 L7 14 Z"/></svg></span>
-            <div><p class="ui-tit">Casaca denim</p><p class="ui-rot">Azul · 4 tallas · 2 sedes</p></div>
-            <span class="ui-chip">Al día</span>
+    <!-- 5. Panel «¿Cómo le va hoy?»: maqueta animada con datos inventados (sitio.js la mueve). -->
+    <div class="banda-panel">
+      <p class="maqueta-rot">Maqueta con datos inventados; no es una captura.</p>
+      <div class="panel" id="panel" aria-hidden="true">
+        <div class="panel-barra">
+          <span class="panel-ventana"><i></i><i></i><i></i><span>Resumen del día de todas las sedes</span></span>
+          <span class="panel-ultima"><span class="vivo vivo--chico"></span><span class="panel-ultima-tx">Última venta: <span data-p="ultima">Blusa Emma talla M en Sede Centro, S/ 89.90</span></span></span>
+        </div>
+        <div class="panel-cuerpo">
+          <div class="panel-fila">
+            <div class="panel-veredicto">
+              <span class="panel-et">¿CÓMO LE VA HOY?</span>
+              <p class="panel-v" data-p="veredicto">Hoy va bien.</p>
+              <p class="panel-linea" data-p="linea">Le faltan S/ 679.50 para la meta. Quedan tres cosas por resolver antes del cierre.</p>
+              <div class="medidor">
+                <div class="medidor-cab">
+                  <span class="medidor-venta" data-p="venta">S/ 4,320.50</span>
+                  <span class="medidor-pct"><span data-p="pct">86 %</span> DE LA META</span>
+                </div>
+                <div class="medidor-barra"><div class="medidor-resto" data-p="resto" style="width:14%"></div></div>
+                <div class="medidor-ext"><span>S/ 0</span><span>Meta del día: S/ 5,000.00</span></div>
+              </div>
+            </div>
+
+            <div class="sedes-caja">
+              <div class="sedes">
+                <div class="sedes-cab"><span>SEDE POR SEDE</span><span>VENTAS</span><span>CAJA</span><span>STOCK</span><span>EQUIPO</span></div>
+                <div class="sedes-fila">
+                  <span class="sede"><i class="hilo hilo--centro"></i>Sede Centro</span>
+                  <span><span class="ver ver--ok">Va bien</span></span>
+                  <span><span class="ver ver--ok">Cuadra</span></span>
+                  <span><span class="ver ver--ok">Va bien</span></span>
+                  <span><span class="ver ver--filo" data-celda="3" data-ok="Va bien">2 tarde</span></span>
+                </div>
+                <div class="sedes-fila">
+                  <span class="sede"><i class="hilo hilo--norte"></i>Sede Norte</span>
+                  <span><span class="ver ver--ok">Va bien</span></span>
+                  <span><span class="ver ver--filo" data-celda="2" data-ok="Cuadra">Sin cerrar</span></span>
+                  <span><span class="ver ver--actuar" data-celda="1" data-ok="Va bien">Falta XL</span></span>
+                  <span><span class="ver ver--ok">Va bien</span></span>
+                </div>
+                <div class="sedes-fila">
+                  <span class="sede"><i class="hilo hilo--sur"></i>Sede Sur</span>
+                  <span><span class="ver ver--filo">Lenta</span></span>
+                  <span><span class="ver ver--ok">Cuadra</span></span>
+                  <span><span class="ver ver--ok">Va bien</span></span>
+                  <span><span class="ver ver--ok">Va bien</span></span>
+                </div>
+                <div class="leyenda">
+                  <span><i class="ley ley--ok"></i>Va bien</span>
+                  <span><i class="ley ley--filo"></i>Al filo</span>
+                  <span><i class="ley ley--actuar"></i>Hay que actuar</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <table class="ui-matriz">
-            <caption class="oculto">Unidades por talla: en piso, en almacén y en otra sede</caption>
-            <thead><tr><th scope="col"><span class="oculto">Dónde</span></th><th scope="col">S</th><th scope="col">M</th><th scope="col">L</th><th scope="col">XL</th></tr></thead>
-            <tbody>
-              <tr><th scope="row">En piso</th><td>3</td><td>5</td><td>4</td><td class="ui-falta">0</td></tr>
-              <tr><th scope="row">Almacén</th><td>6</td><td>8</td><td>2</td><td>1</td></tr>
-              <tr><th scope="row">Otra sede</th><td>2</td><td>4</td><td>3</td><td>5</td></tr>
-            </tbody>
-          </table>
-          <p class="ui-aviso"><span aria-hidden="true">▲ </span><b>XL:</b> no hay en piso. Bajar 1 del almacén.</p>
+
+          <div class="tareas">
+            <div class="tareas-cab"><span class="tareas-t">Lo que toca hoy</span><span class="tareas-n" data-p="hechas">0 de 3 hecho</span></div>
+            <ol class="tareas-lista">
+              <li class="tarea" data-tarea="1"><span class="tarea-n">01</span><span class="tarea-tx">Bajar 1 casaca denim XL del almacén al piso</span><span class="tarea-sede">Sede Norte</span><span class="tarea-acc">Hacerlo</span></li>
+              <li class="tarea" data-tarea="2"><span class="tarea-n">02</span><span class="tarea-tx">Cerrar la caja de la Sede Norte</span><span class="tarea-sede">Sede Norte</span><span class="tarea-acc">Ir a la caja</span></li>
+              <li class="tarea" data-tarea="3"><span class="tarea-n">03</span><span class="tarea-tx">Revisar 2 marcaciones fuera de hora</span><span class="tarea-sede">Sede Centro</span><span class="tarea-acc">Revisar</span></li>
+            </ol>
+          </div>
         </div>
       </div>
-      <figcaption id="mq-pie" class="maqueta-pie" data-tema="oscuro">Maqueta de Coddvisor con datos inventados; no es una captura.</figcaption>
-    </figure>
-  </div>
-</section>
-
-<!-- 2. Cómo nace -->
-<section class="banda" id="origen" aria-labelledby="origen-t">
-  <div class="col duo">
-    <div>
-      <p class="rotulo">Cómo nace</p>
-      <h2 class="titular" id="origen-t">No lo imaginamos en una oficina. <em>Nace dentro de un negocio real.</em></h2>
-      <div class="prosa">
-        <p>Coddvisor nace del sistema con el que CAYLA, un negocio peruano de indumentaria con varias sedes y taller propio, trabaja todos los días desde hace unos meses.</p>
-        <p>Lo construimos para resolver nuestros propios problemas: cuadrar la caja de cada sede, saber qué prenda hay y dónde, y pagar bien y a tiempo a cada integrante del equipo. Ahora queremos que sirva a otros negocios como el nuestro.</p>
-      </div>
     </div>
-    <blockquote class="cita">
-      <p>«La planilla tomaba de dos a tres días y era un tremendo dolor de cabeza. Ahora es solo una tarde.»</p>
-      <footer>Felipe Alvarez, fundador de CAYLA<span>Estimado suyo, no una medición.</span></footer>
-    </blockquote>
   </div>
 </section>
 
-<!-- 3. Qué hace -->
-<section class="banda banda--hundida" id="producto" aria-labelledby="producto-t">
+<!-- 4.4 Dato que abre -->
+<section class="dato" aria-label="El problema">
+  <div class="col dato-in" data-aparece>
+    <p class="dato-num">76.5<span>%</span></p>
+    <p class="dato-tx">de las micro y pequeñas empresas del Perú no lleva ningún registro de sus cuentas. Tres de cada cuatro no saben cómo les va.<sup class="ref"><a href="#fuente-1" aria-label="Fuente 1">1</a></sup></p>
+  </div>
+</section>
+
+<!-- 4.5 Tres beneficios -->
+<section class="beneficios" aria-labelledby="beneficios-t">
   <div class="col">
-    <p class="rotulo">Qué hace</p>
-    <h2 class="titular" id="producto-t">Cuatro partes del negocio, <em>una sola fuente de verdad.</em></h2>
-    <p class="bajada">Lo que se vende descuenta el inventario, entra a la caja y queda en las cuentas. Nadie copia una cifra de un cuaderno a otro.</p>
-    <ul class="modulos">
-      <li>
-        <p class="estado"><span class="punto" aria-hidden="true"></span>Ya funciona en CAYLA</p>
-        <h3>Vender y caja</h3>
-        <p>Venta en la tienda con comprobante electrónico, apertura y cierre de caja en cada sede, cambios y devoluciones.</p>
+    <h2 class="oculto" id="beneficios-t">Por qué Coddvisor</h2>
+    <ul class="beneficios-lista">
+      <li class="beneficio" data-aparece>
+        <span class="icono icono--ambar"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg></span>
+        <h3 class="beneficio-t beneficio-t--ambar">fácil de usar</h3>
+        <p>Pensado para que cualquiera en la tienda lo use sin que nadie se lo explique.</p>
       </li>
-      <li>
-        <p class="estado"><span class="punto" aria-hidden="true"></span>Ya funciona en CAYLA</p>
-        <h3>Inventario por sede</h3>
-        <p>Cuánto hay de cada producto, por talla y color, en el piso y en el almacén de cada sede, con traslados y conteos. Cada cifra sale de los movimientos registrados, no se escribe a mano.</p>
+      <li class="beneficio" data-aparece style="--d:.08s">
+        <span class="icono icono--azul"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><path d="M8 12h8"/></svg></span>
+        <h3 class="beneficio-t beneficio-t--azul">todo conectado</h3>
+        <p>Una venta mueve el stock, la caja y las cuentas a la vez. Nadie pasa cifras a mano.</p>
       </li>
-      <li>
-        <p class="estado"><span class="punto" aria-hidden="true"></span>Ya funciona en CAYLA</p>
-        <h3>Asistencia y planilla</h3>
-        <p>Marcación con un código que cambia en la pantalla de la sede, sin huellas ni fotos del rostro. Tardanzas según el reglamento interno de cada negocio. Hoy calcula la planilla del régimen de la pequeña empresa.</p>
-      </li>
-      <li>
-        <p class="estado"><span class="punto" aria-hidden="true"></span>Ya funciona en CAYLA · uso reciente</p>
-        <h3>Tienda en línea y club de clientes</h3>
-        <p>El cliente ve el catálogo con el stock de cada tienda, separa sin pagar y recoge en la sede. Fichas, puntos y beneficios, sobre la misma base que la venta.</p>
+      <li class="beneficio" data-aparece style="--d:.16s">
+        <span class="icono icono--verde"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <h3 class="beneficio-t beneficio-t--verde">hecho en el Perú</h3>
+        <p>Con boleta y factura electrónica, soles, Yape y Plin, y la planilla de la pequeña empresa.</p>
       </li>
     </ul>
-    <p class="nota">También lleva los gastos, las cuentas de dinero y los estados financieros por sede.</p>
   </div>
 </section>
 
-<!-- 4. Cifras de uso real -->
-<section class="banda" id="cifras" aria-labelledby="cifras-t">
-  <div class="col">
-    <p class="rotulo">Lo que ya registró</p>
-    <h2 class="titular" id="cifras-t">Unos meses de uso diario en CAYLA, <em>en cinco cifras.</em></h2>
-    <div class="cifras">
-      <div class="cifra"><p class="cifra-num">2,380</p><p class="cifra-tx">ventas</p></div>
-      <div class="cifra"><p class="cifra-num">2,383</p><p class="cifra-tx">comprobantes electrónicos emitidos</p></div>
-      <div class="cifra"><p class="cifra-num">12,000</p><p class="cifra-tx">movimientos de inventario</p></div>
-      <div class="cifra"><p class="cifra-num">4,064</p><p class="cifra-tx">variantes de producto (modelo, talla y color)</p></div>
-      <div class="cifra"><p class="cifra-num">20 a 30</p><p class="cifra-tx">integrantes que marcan asistencia y cobran su planilla</p></div>
+<!-- 4.6 Qué hace -->
+<section class="producto" id="producto" aria-labelledby="producto-t">
+  <div class="enmarcado enmarcado--claro producto-in">
+    <div class="producto-cab" data-aparece>
+      <p class="rotulo">Qué hace</p>
+      <h2 class="titular titular--xl" id="producto-t">Cuatro partes del negocio, <span class="az">una sola fuente de verdad.</span></h2>
     </div>
-    <p class="pie-tx">Cifras aproximadas tomadas del registro del propio sistema de CAYLA al 14 de noviembre de 2026. Son totales, sin montos ni datos de personas. Corresponden a un solo negocio, CAYLA; no son clientes de Coddvisor.</p>
+
+    <div class="producto-cuerpo" id="producto-cuerpo">
+      <div class="pestanas">
+        <div class="pestana es-activa">
+          <h3><button class="pestana-b" type="button" aria-expanded="true" aria-controls="pestana-1"><span class="pestana-n">01</span>Vender y caja</button></h3>
+          <div class="pestana-det" id="pestana-1">
+            <p>Venta en la tienda con comprobante electrónico, apertura y cierre de caja en cada sede.</p>
+            <ul class="checks">
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Boleta y factura electrónica</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Efectivo, Yape, Plin y tarjeta</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Cambios y devoluciones</li>
+            </ul>
+          </div>
+          <div class="pestana-prog" aria-hidden="true"><span></span></div>
+        </div>
+        <div class="pestana">
+          <h3><button class="pestana-b" type="button" aria-expanded="false" aria-controls="pestana-2"><span class="pestana-n">02</span>Inventario por sede</button></h3>
+          <div class="pestana-det" id="pestana-2">
+            <p>Cuánto hay de cada producto, por talla y color, en el piso y en el almacén de cada sede.</p>
+            <ul class="checks">
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Por talla y color</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Piso y almacén de cada sede</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Traslados y conteos</li>
+            </ul>
+          </div>
+          <div class="pestana-prog" aria-hidden="true"><span></span></div>
+        </div>
+        <div class="pestana">
+          <h3><button class="pestana-b" type="button" aria-expanded="false" aria-controls="pestana-3"><span class="pestana-n">03</span>Asistencia y planilla</button></h3>
+          <div class="pestana-det" id="pestana-3">
+            <p>Marcación con un código que cambia en la pantalla de la sede, sin huellas ni fotos del rostro.</p>
+            <ul class="checks">
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Tardanzas según su reglamento interno</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Planilla del régimen de la pequeña empresa</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Sin lectores de huella</li>
+            </ul>
+          </div>
+          <div class="pestana-prog" aria-hidden="true"><span></span></div>
+        </div>
+        <a class="btn pestanas-btn" href="#contacto">Quiero probarlo</a>
+      </div>
+
+      <div class="pantallas-caja">
+        <!-- Pantallas de ejemplo: maquetas con datos inventados. -->
+        <div class="pantallas" aria-hidden="true">
+          <div class="pantalla" data-pantalla="0">
+            <div class="pt">
+              <div class="pt-cab"><span class="pt-tit">Vender</span><span class="chip">Sede Centro</span></div>
+              <div class="pt-linea"><span>Blusa Emma, talla M</span><span>S/ 89.90</span></div>
+              <div class="pt-linea"><span>Casaca denim, talla L</span><span>S/ 159.90</span></div>
+              <div class="pt-linea pt-total"><span>Total</span><span>S/ 249.80</span></div>
+              <div class="pt-metodos"><span class="sel">Yape</span><span>Plin</span><span>Efectivo</span><span>Tarjeta</span></div>
+              <div class="pt-boton">Cobrar y emitir boleta</div>
+              <div class="pt-ok"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Comprobante electrónico listo para enviar</div>
+            </div>
+          </div>
+          <div class="pantalla" data-pantalla="1" hidden>
+            <div class="pt pt--ancha">
+              <div class="pt-cab"><span class="pt-tit">Casaca denim azul</span><span class="chip chip--ok">Al día</span></div>
+              <div class="pt-tallas">
+                <span></span><span class="t">S</span><span class="t">M</span><span class="t">L</span><span class="t">XL</span>
+                <span class="r">En piso</span><span>3</span><span>5</span><span>4</span><span class="cero">0</span>
+                <span class="r">Almacén</span><span>6</span><span>8</span><span>2</span><span>1</span>
+                <span class="r">Otra sede</span><span>2</span><span>4</span><span>3</span><span>5</span>
+              </div>
+              <div class="pt-aviso"><span><b>XL:</b> no hay en piso.</span><span class="pt-aviso-b">Bajar 1 del almacén</span></div>
+            </div>
+          </div>
+          <div class="pantalla" data-pantalla="2" hidden>
+            <div class="pt-doble">
+              <div class="pt-codigo">
+                <span class="pt-codigo-et">CÓDIGO DE LA SEDE</span>
+                <span class="pt-codigo-n">48 21</span>
+                <span class="pt-codigo-tx">Cambia en la pantalla de la sede. Sin huellas ni fotos.</span>
+              </div>
+              <div class="pt-lista">
+                <div><span>Ingreso 8:58</span><span class="ok">A tiempo</span></div>
+                <div><span>Ingreso 9:01</span><span class="ok">A tiempo</span></div>
+                <div><span>Ingreso 9:17</span><span class="mal">Tardanza</span></div>
+                <div class="fin"><span>Planilla de noviembre</span><span>Lista</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="maqueta-rot maqueta-rot--claro">Maqueta con datos inventados; no es una captura.</p>
+      </div>
+    </div>
+
+    <div class="tambien">
+      <p class="tambien-t">También lleva:</p>
+      <ul class="tambien-lista">
+        <li><span class="ico40"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></svg></span>Gastos</li>
+        <li><span class="ico40"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 20 7H4z"/></svg></span>Cuentas de dinero</li>
+        <li><span class="ico40"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>Estados financieros por sede</li>
+        <li class="en-des"><span class="ico40"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></span>Compras <span class="etq-des">EN DESARROLLO</span></li>
+        <li class="en-des"><span class="ico40"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88"/><path d="M14.47 14.48 20 20"/><path d="M8.12 8.12 12 12"/></svg></span>Producción en taller <span class="etq-des">EN DESARROLLO</span></li>
+      </ul>
+    </div>
   </div>
 </section>
 
-<!-- 5. En qué etapa estamos -->
-<section class="banda banda--hundida" id="etapa" aria-labelledby="etapa-t">
+<!-- 4.8 Para quién es -->
+<section class="para" aria-labelledby="para-t">
   <div class="col">
-    <p class="rotulo">En qué etapa estamos</p>
-    <h2 class="titular" id="etapa-t">Hoy lo usa un solo negocio. <em>Buscamos los primeros que quieran probarlo.</em></h2>
+    <div data-aparece>
+      <p class="rotulo">Para quién es</p>
+      <h2 class="titular titular--ancho" id="para-t">De una a cuarenta personas, <span class="az">con una o varias sedes.</span></h2>
+    </div>
+    <ul class="para-lista">
+      <li data-aparece>
+        <div class="para-vis" aria-hidden="true"><div class="vis-tile"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/><path d="M5 13v8h14v-8"/></svg><span class="vis-badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></svg></span></div></div>
+        <div class="para-tx">
+          <h3>Una tienda</h3>
+          <p>Venta con boleta y factura, caja que cuadra al cierre y el stock al día sin cuaderno.</p>
+        </div>
+      </li>
+      <li data-aparece style="--d:.08s">
+        <div class="para-vis" aria-hidden="true"><div class="vis-fila"><span class="vis-tile vis-tile--chica"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/><path d="M5 13v8h14v-8"/></svg></span><span class="vis-linea"></span><span class="vis-tile vis-tile--chica vis-tile--osc"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><rect width="12" height="12" x="6" y="10"/></svg></span><span class="vis-linea"></span><span class="vis-tile vis-tile--chica"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/><path d="M5 13v8h14v-8"/></svg></span></div></div>
+        <div class="para-tx">
+          <h3>Varias sedes</h3>
+          <p>Cada sede con su caja y su stock, traslados entre ellas y un resumen de todas en una pantalla.</p>
+        </div>
+      </li>
+      <li data-aparece style="--d:.16s">
+        <div class="para-vis" aria-hidden="true"><div class="vis-tile"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="vis-badge vis-badge--celeste"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span></div></div>
+        <div class="para-tx">
+          <h3>Con personal en planilla</h3>
+          <p>Asistencia con código, tardanzas según su reglamento y la planilla calculada en una tarde.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- 4.9 Etapa -->
+<section class="etapa osc" id="etapa" aria-labelledby="etapa-t">
+  <div class="enmarcado sec-in sec-in--56">
+    <div data-aparece>
+      <p class="rotulo">En qué etapa estamos</p>
+      <h2 class="titular titular--l" id="etapa-t">Estamos empezando. <span class="cel">Buscamos los primeros negocios que quieran probarlo.</span></h2>
+    </div>
     <ol class="pasos">
-      <li class="es-hoy">
-        <p class="pasos-n">Hoy</p>
-        <h3>Funciona todos los días en CAYLA</h3>
-        <p>Ventas, caja, inventario, asistencia y planilla de un negocio con varias sedes.</p>
+      <li data-aparece>
+        <span class="paso-ico paso-ico--hoy"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z"/><path d="M5 13v8h14v-8"/></svg></span>
+        <p class="paso-et paso-et--hoy">HOY</p>
+        <h3>El sistema ya funciona</h3>
+        <p>Venta, caja, inventario, asistencia y planilla, con varias sedes, en uso todos los días.</p>
       </li>
-      <li>
-        <p class="pasos-n">Ahora</p>
+      <li data-aparece style="--d:.08s">
+        <span class="paso-ico paso-ico--ahora"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        <p class="paso-et paso-et--ahora">AHORA</p>
         <h3>Lo preparamos para otros negocios</h3>
-        <p>Estamos trabajando para que cada negocio tenga su propio espacio, con sus datos separados y protegidos.</p>
+        <p>Para que cada negocio tenga su propio espacio, con sus datos separados y protegidos.</p>
       </li>
-      <li>
-        <p class="pasos-n">Después</p>
+      <li data-aparece style="--d:.16s">
+        <span class="paso-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+        <p class="paso-et">DESPUÉS</p>
         <h3>Lo probamos con un grupo pequeño</h3>
         <p>Pocos negocios, acompañados de cerca. Ajustaremos el producto con lo que aprendamos de ellos.</p>
       </li>
     </ol>
-    <p class="nota">Pensado para negocios de una a cuarenta personas: tiendas con una o varias sedes y negocios con personal en planilla.</p>
+    <div class="etapa-barra" aria-hidden="true"><span></span></div>
   </div>
 </section>
 
-<!-- 6. Contacto -->
-<section class="contacto noche" id="contacto" aria-labelledby="contacto-t">
-  <div class="col contacto-in" data-tema="oscuro">
-    <span class="franja franja--sello" aria-hidden="true"></span>
-    <h2 class="titular" id="contacto-t">¿Quiere que su negocio <em>sea de los primeros?</em></h2>
-    <p class="bajada">Cuéntenos qué vende, cuántas personas trabajan con usted y cuántas sedes tiene. Le respondemos nosotros.</p>
-    <!-- El correo se escribe en UN solo lugar: data-correo. Mientras esté vacío, se muestra el texto de "pronto". -->
-    <div class="acciones" id="contacto-acciones" data-correo="equipo@coddvisor.com">
-      <p class="contacto-pronto" id="contacto-pronto">Muy pronto publicaremos aquí un correo de contacto.</p>
+<!-- 4.10 Preguntas frecuentes -->
+<section class="preguntas" id="preguntas" aria-labelledby="preguntas-t">
+  <div class="col preguntas-in">
+    <div class="preguntas-cab">
+      <p class="rotulo">Preguntas frecuentes</p>
+      <h2 class="titular" id="preguntas-t">Lo que nos suelen preguntar.</h2>
     </div>
+    <div class="faq">
+      <details>
+        <summary>¿Emite boletas y facturas electrónicas?<span class="mas" aria-hidden="true">+</span></summary>
+        <p>Sí. Emite boletas y facturas electrónicas desde la caja de cada sede, en el momento de la venta.</p>
+      </details>
+      <details>
+        <summary>¿Sirve si tengo varias sedes?<span class="mas" aria-hidden="true">+</span></summary>
+        <p>Sí. Cada sede lleva su caja y su inventario, con traslados entre sedes y un resumen de todas.</p>
+      </details>
+      <details>
+        <summary>¿Tengo que instalar algo?<span class="mas" aria-hidden="true">+</span></summary>
+        <p>No. Funciona en el navegador, en la computadora de la caja.</p>
+      </details>
+      <details>
+        <summary>¿Mis datos quedan separados de otros negocios?<span class="mas" aria-hidden="true">+</span></summary>
+        <p>En eso trabajamos ahora: que cada negocio tenga su propio espacio, con sus datos separados y protegidos, antes de abrir la prueba.</p>
+      </details>
+      <!-- PENDIENTE: «¿Cuánto cuesta?» se agrega cuando tengamos la respuesta. No publicar un hueco. -->
+    </div>
+  </div>
+</section>
+
+<!-- 4.11 Contacto -->
+<section class="contacto osc" id="contacto" aria-labelledby="contacto-t">
+  <div class="brillo brillo--contacto" aria-hidden="true"></div>
+  <div class="enmarcado contacto-in">
+    <div class="contacto-tx">
+      <span class="franja-sello" aria-hidden="true"></span>
+      <h2 class="titular titular--contacto" id="contacto-t">¿Quiere que su negocio <span class="cel">sea de los primeros?</span></h2>
+      <p class="contacto-baj">Cuéntenos qué vende, cuántas personas trabajan con usted y cuántas sedes tiene. Le respondemos nosotros.</p>
+      <div class="contacto-vias">
+        <a data-wa data-wa-texto hidden href="#contacto"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><span>WhatsApp</span></a>
+        <a href="mailto:equipo@coddvisor.com" data-correo-enlace><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg><span>equipo@coddvisor.com</span></a>
+      </div>
+    </div>
+
+    <form class="form" data-form="contacto">
+      <div class="campo">
+        <label for="c-nombre">Su nombre</label>
+        <input id="c-nombre" name="nombre" type="text" autocomplete="name" required>
+      </div>
+      <div class="campo">
+        <label for="c-whatsapp">WhatsApp</label>
+        <input id="c-whatsapp" name="whatsapp" type="tel" autocomplete="tel" inputmode="tel" required>
+      </div>
+      <div class="campo campo--ancho">
+        <label for="c-vende">¿Qué vende?</label>
+        <input id="c-vende" name="vende" type="text" placeholder="Ej. ropa, calzado, abarrotes">
+      </div>
+      <div class="campo">
+        <label for="c-personas">Personas que trabajan</label>
+        <select id="c-personas" name="personas">
+          <option>1 a 5</option>
+          <option>6 a 15</option>
+          <option>16 a 40</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="c-sedes">Sedes</label>
+        <select id="c-sedes" name="sedes">
+          <option>1</option>
+          <option>2 o 3</option>
+          <option>4 o más</option>
+        </select>
+      </div>
+      <button class="btn form-btn" type="submit">Quiero ser de los primeros</button>
+      <p class="form-nota">Solo usamos estos datos para responderle.</p>
+      <p class="form-estado" data-estado="contacto" role="status"></p>
+    </form>
   </div>
 </section>
 
 </main>
 
+<!-- 4.12 Pie -->
 <footer class="pie">
   <div class="col pie-in">
-    <p class="marca marca--pie"><svg role="img" aria-label="Coddvisor" viewBox="0 0 444.95 67"><use href="#logotipo"/></svg></p>
-    <p>Software de gestión para micro y pequeñas empresas del Perú.</p>
-    <p class="pie-nombre">El nombre viene de Edgar F. Codd, el creador de las bases de datos relacionales, y de <i lang="en">advisor</i>, consejero.</p>
-    <ol class="fuentes">
-      <li id="fuente-1">ComexPerú, <i>Las micro y pequeñas empresas en el Perú: resultados en 2024</i> (ENAHO). <a href="https://www.comexperu.org.pe/upload/articles/reportes/reporte-mypes-2024.pdf" rel="noopener" target="_blank">comexperu.org.pe</a></li>
-    </ol>
-    <p class="pie-pie">© 2026 Coddvisor · Perú</p>
+    <div class="pie-a">
+      <p class="pie-marca"><svg role="img" aria-label="Coddvisor" viewBox="0 0 444.95 67"><use href="#logotipo"/></svg></p>
+      <p>Software de gestión para micro y pequeñas empresas del Perú. El nombre viene de Edgar F. Codd, el creador de las bases de datos relacionales, y de <i lang="en">advisor</i>, consejero.</p>
+    </div>
+    <div class="pie-b">
+      <ol class="fuentes">
+        <li id="fuente-1">ComexPerú, <i>Las micro y pequeñas empresas en el Perú: resultados en 2024</i> (ENAHO). <a href="https://www.comexperu.org.pe/upload/articles/reportes/reporte-mypes-2024.pdf" rel="noopener" target="_blank">comexperu.org.pe</a></li>
+      </ol>
+      <p class="pie-pie">© 2026 Coddvisor, Perú</p>
+    </div>
   </div>
 </footer>
 
-<script>
-// Contacto: si data-correo tiene una dirección, se muestra el botón; si no, queda el texto "pronto".
-(function () {
-  var caja = document.getElementById('contacto-acciones');
-  var correo = (caja && caja.getAttribute('data-correo') || '').trim();
-  if (!correo) return;
-  var asunto = encodeURIComponent('Quiero probar Coddvisor');
-  var cuerpo = encodeURIComponent('Hola. Mi negocio vende: \nPersonas que trabajan conmigo: \nSedes: \n');
-  caja.innerHTML = '<a class="btn" href="mailto:' + correo + '?subject=' + asunto + '&body=' + cuerpo + '">Escríbanos</a>' +
-    '<p class="contacto-correo">' + correo + '</p>';
-})();
-</script>
 </body>
 </html>
