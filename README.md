@@ -18,6 +18,7 @@ con *advisor*: un sistema que ordena los datos del negocio y aconseja con ellos.
 | `web/`          | El sitio público de coddvisor.com               | Vercel lo publica desde aquí |
 | `arquitectura/` | Estrategia y arquitectura del producto          | Fundador y equipo técnico    |
 | `docs/`         | Documentos de trabajo                           | Todo el equipo               |
+| `marca/`        | Logos, colores y guía de identidad              | Todo el equipo e imprentas   |
 
 `LEEME.md` tiene las notas internas de contexto (de dónde sale cada decisión).
 
