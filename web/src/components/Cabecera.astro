@@ -1,0 +1,47 @@
+---
+// Cabecera con el menú. Sale entero de src/datos/navegacion.ts: aquí no se escribe ningún enlace.
+// En computadora: los grupos con enlaces se abren como panel al tocarlos.
+// En celular (820 px o menos): el botón «Menú» abre el mismo menú a pantalla completa, y cada
+// grupo se despliega como acordeón. «Quiero probarlo» queda siempre a la vista, arriba.
+// Los grupos usan <details>: se abren y cierran aunque falle sitio.js, y el teclado los maneja solo.
+import { menu, llamado } from '../datos/navegacion';
+---
+<header class="cab osc" data-cab>
+  <div class="col col--ancho cab-in">
+    <a class="marca" href="/" aria-label="Coddvisor, ir al inicio"><svg aria-hidden="true" viewBox="0 0 444.95 67"><use href="#logotipo"/></svg></a>
+
+    <nav class="cab-nav" id="menu" aria-label="Principal">
+      <ul class="menu">
+        {menu.map((g) => g.enlaces ? (
+          <li class="menu-g">
+            <details class="menu-d">
+              <summary class="menu-b">{g.texto}<svg class="menu-flecha" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+              <div class="menu-panel">
+                <ul class="menu-lista">
+                  {g.enlaces.map((e) => (
+                    <li><a class="menu-item" href={e.href}><span class="menu-item-t">{e.texto}</span>{e.frase && <span class="menu-item-f">{e.frase}</span>}</a></li>
+                  ))}
+                </ul>
+                {g.recorrido && <a class="menu-recorrido" href={g.recorrido.href}>{g.recorrido.texto}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>}
+              </div>
+            </details>
+          </li>
+        ) : (
+          <li><a class="menu-a" href={g.href}>{g.texto}</a></li>
+        ))}
+      </ul>
+      <!-- Solo en el menú del celular: el botón lleno al final de la lista. -->
+      <a class="btn menu-llamado" href={llamado.href}>{llamado.texto}</a>
+    </nav>
+
+    <div class="cab-acc">
+      <a class="pill pill--wa" data-wa hidden href="/#contacto">WhatsApp</a>
+      <a class="pill pill--hielo" href={llamado.href} aria-label={llamado.texto}><span class="pill-largo">{llamado.texto}</span><span class="pill-corto">Probar</span> <svg class="pill-flecha" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      <button class="cab-boton" type="button" aria-controls="menu" aria-expanded="false" data-menu-boton>
+        <svg class="cab-boton-abrir" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
+        <svg class="cab-boton-cerrar" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg>
+        <span class="cab-boton-tx">Menú</span>
+      </button>
+    </div>
+  </div>
+</header>

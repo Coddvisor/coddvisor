@@ -1,0 +1,29 @@
+---
+// Página de error. Cloudflare la muestra sola cuando alguien entra a una dirección que no existe.
+// No culpa a la persona: le ofrece los caminos más probables.
+import Base from '../layouts/Base.astro';
+import { productos, llamado } from '../datos/navegacion';
+---
+<Base
+  titulo="Esta página no existe | Coddvisor"
+  descripcion="La dirección que abrió no existe en el sitio de Coddvisor.">
+
+<section class="portada portada--interior osc" aria-labelledby="error-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot">Error 404</p>
+    <h1 class="portada-t interior-t" id="error-t">Esta página no existe. <span class="cel">Puede que la hayamos movido.</span></h1>
+    <p class="portada-baj">Quizás buscaba alguna de estas:</p>
+    <ul class="error-lista">
+      <li><a href="/">La portada</a></li>
+      {productos.filter((e, i, t) => t.findIndex((x) => x.href === e.href) === i).map((e) => <li><a href={e.href}>{e.texto}</a></li>)}
+      <li><a href="/nosotros/">Nosotros</a></li>
+    </ul>
+    <div class="portada-acc">
+      <a class="btn" href={llamado.href}>{llamado.texto}</a>
+    </div>
+  </div>
+</section>
+
+</Base>

@@ -30,6 +30,7 @@ node_modules/
 .next/
 out/
 dist/
+.astro/
 build/
 .vercel/
 .turbo/

@@ -4,6 +4,7 @@
    3. Panel «¿Cómo le va hoy?»: la maqueta cuenta el día y se queda en el estado final.
    4. Pestañas de «Qué hace»: avanzan solas cada 6.6 s hasta que la persona las toca.
    5. Aparición suave de las secciones al bajar.
+   6. Menú: un grupo abierto a la vez, Escape lo cierra, y en celular se abre a pantalla completa.
    Si la persona pidió menos movimiento, no se anima nada: se ve el estado inicial. */
 (function () {
   'use strict';
@@ -154,7 +155,18 @@
       pantallas.forEach(function (s, k) { s.hidden = k !== i; });
       actual = i;
     };
-    activar(0);
+    // Si se llega con /#vender, /#inventario o /#planilla (desde el menú), se abre esa pestaña
+    // y deja de avanzar sola: la persona vino a ver justo esa.
+    var desdeAncla = function () {
+      var id = (window.location.hash || '').slice(1);
+      var k = pestanas.findIndex(function (p) { return p.id === id; });
+      if (k < 0) return false;
+      cuerpo.classList.add('quieto');
+      activar(k);
+      return true;
+    };
+    if (!desdeAncla()) activar(0);
+    window.addEventListener('hashchange', desdeAncla);
 
     // Al primer clic (o Enter/Espacio, que también dan clic) el auto-avance se detiene para siempre.
     pestanas.forEach(function (p, k) {
@@ -193,5 +205,53 @@
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
     aparecen.forEach(function (el) { io.observe(el); });
+  }
+
+  /* ---------- 6. Menú ---------- */
+  var cab = document.querySelector('[data-cab]');
+  if (cab) {
+    var grupos = Array.prototype.slice.call(cab.querySelectorAll('.menu-d'));
+    var boton = cab.querySelector('[data-menu-boton]');
+    var cerrarGrupos = function (salvo) {
+      grupos.forEach(function (g) { if (g !== salvo) g.open = false; });
+    };
+    // Un solo grupo abierto a la vez.
+    grupos.forEach(function (g) {
+      g.addEventListener('toggle', function () { if (g.open) cerrarGrupos(g); });
+    });
+
+    var abierto = false;
+    var celular = function () { return boton && window.getComputedStyle(boton).display !== 'none'; };
+    var menuCelular = function (on) {
+      if (!boton) return;
+      abierto = on;
+      if (on) cab.style.setProperty('--menu-top', Math.max(0, cab.getBoundingClientRect().bottom) + 'px');
+      cab.classList.toggle('abierta', on);
+      raiz.classList.toggle('menu-abierto', on);
+      boton.setAttribute('aria-expanded', on ? 'true' : 'false');
+      boton.querySelector('.cab-boton-tx').textContent = on ? 'Cerrar' : 'Menú';
+      if (!on) cerrarGrupos(null);
+    };
+    if (boton) boton.addEventListener('click', function () { menuCelular(!abierto); });
+
+    // Tocar un enlace del menú lo cierra (si no, en celular taparía la sección a la que lleva).
+    cab.addEventListener('click', function (e) {
+      if (!e.target.closest('.cab-nav a')) return;
+      cerrarGrupos(null);
+      if (abierto) menuCelular(false);
+    });
+    // En computadora, tocar fuera del panel lo cierra.
+    document.addEventListener('click', function (e) {
+      if (!celular() && !e.target.closest('.menu-g')) cerrarGrupos(null);
+    });
+    // Escape cierra lo que esté abierto y devuelve el foco a donde estaba la persona.
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      var g = grupos.find(function (x) { return x.open; });
+      if (g && !celular()) { g.open = false; g.querySelector('summary').focus(); return; }
+      if (abierto) { menuCelular(false); boton.focus(); }
+    });
+    // Si la pantalla crece (celular girado, ventana más ancha), el menú de celular se cierra.
+    window.addEventListener('resize', function () { if (abierto && !celular()) menuCelular(false); });
   }
 })();

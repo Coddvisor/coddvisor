@@ -1,84 +1,10 @@
-<!doctype html>
-<!-- data-tema="claro": la página alterna sola franjas claras y oscuras, así que no sigue el modo
-     oscuro del teléfono (colores.css solo cambia la paleta cuando NO dice "claro"). -->
-<html lang="es-PE" data-tema="claro">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coddvisor: software de gestión para micro y pequeñas empresas del Perú</title>
-<meta name="description" content="Coddvisor reúne la venta, la caja, el inventario y la planilla en un solo lugar. Estamos empezando y buscamos los primeros negocios que quieran probarlo.">
-<meta name="theme-color" content="#0B1841">
-<!-- Íconos: el gato va en cobalto si el sistema está en modo claro y en ámbar si está en
-     modo oscuro. El SVG cambia solo; los dos PNG son el respaldo para navegadores que no
-     leen SVG, y el navegador elige uno con media. El ?v=5 obliga a pedir el ícono de nuevo:
-     si un ícono cambia, sube el número en las cuatro líneas (v=6, v=7...). -->
-<link rel="icon" href="/favicon-32-claro.png?v=5" sizes="32x32" type="image/png" media="(prefers-color-scheme: light)">
-<link rel="icon" href="/favicon-32-oscuro.png?v=5" sizes="32x32" type="image/png" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="/favicon.svg?v=5" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=5">
-<meta property="og:title" content="Coddvisor">
-<meta property="og:description" content="Software de gestión para micro y pequeñas empresas del Perú. Venta, caja, inventario y planilla en un solo lugar.">
-<meta property="og:type" content="website">
-<meta property="og:locale" content="es_PE">
-<meta property="og:site_name" content="Coddvisor">
-<meta property="og:url" content="https://www.coddvisor.com/">
-<!-- Vista previa al compartir el enlace (WhatsApp, LinkedIn, Facebook, X). Es la imagen de la marca
-     marca/logo/redes/coddvisor-vista-previa-enlace.png: logotipo completo sobre cobalto, 1200 × 630.
-     La dirección va completa porque las redes no entienden direcciones relativas. Las redes guardan
-     la imagen en su memoria: si la imagen cambia, sube ?v=1 a ?v=2 aquí y en twitter:image. -->
-<meta property="og:image" content="https://www.coddvisor.com/vista-previa.png?v=1">
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Logotipo de Coddvisor: gato ámbar y la palabra coddvisor en blanco sobre fondo azul cobalto.">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://www.coddvisor.com/vista-previa.png?v=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
-<link rel="stylesheet" href="/colores.css">
-<link rel="stylesheet" href="/estilos.css">
-<script src="/sitio.js" defer></script>
-</head>
-<!-- Contacto en UN solo lugar:
-     data-correo    → a qué correo escriben los formularios y el enlace de correo.
-     data-whatsapp  → número con código de país, solo dígitos (ej. 51987654321). Mientras esté
-                      vacío, los botones de WhatsApp no se muestran y los formularios usan el correo. -->
-<body data-correo="equipo@coddvisor.com" data-whatsapp="">
-
-<!-- Logotipo horizontal de Coddvisor (guía de marca v3): el gato y la palabra dibujada con trazos.
-     Copia fiel de coddvisor-logotipo-horizontal.svg; solo los colores se cambiaron por los tokens
-     --logo-gato y --logo-palabra de estilos.css. El punto de la i es siempre ámbar. La palabra no
-     es una tipografía: no reescribirla con Space Grotesk. -->
-<svg class="oculto" aria-hidden="true" focusable="false"><symbol id="logotipo" viewBox="0 0 444.95 67"><g transform="translate(-11.93 -6.54) scale(1.27)"><path fill="var(--logo-gato)" fill-rule="evenodd" stroke="var(--logo-gato)" stroke-width="4.2" stroke-linejoin="round" d="M11.5 14.0L26.0 26.17H38.0L52.5 14.0V40.0A13.5 13.5 0 0 1 39.0 53.5H25.0A13.5 13.5 0 0 1 11.5 40.0ZM14.6 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0ZM33.4 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0Z"/></g><g transform="translate(72.34 0)"><g fill="none" stroke="var(--logo-palabra)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M30.91 32.3A16 16 0 1 0 30.91 55.7"/><circle cx="60.91" cy="44" r="16"/><circle cx="107.91" cy="44" r="16"/><path fill="var(--logo-palabra)" stroke="none" d="M126.71 3.2Q127.91 3.2 127.91 4.4V60A4.0 4.0 0 0 1 119.91 60V10.51Q119.91 9.51 120.81 8.81Z"/><circle cx="159.91" cy="44" r="16"/><path fill="var(--logo-palabra)" stroke="none" d="M178.71 3.2Q179.91 3.2 179.91 4.4V60A4.0 4.0 0 0 1 171.91 60V10.51Q171.91 9.51 172.81 8.81Z"/><path d="M192.91 28L207.91 60L222.91 28"/><path d="M240.41 28V60"/><circle fill="var(--ambar)" stroke="none" cx="240.41" cy="11" r="5.2"/><path d="M278.62 32.24A11 8 0 1 0 268.91 44A11 8 0 1 1 259.2 55.76"/><circle cx="310.91" cy="44" r="16"/><path d="M343.91 28V60"/><path d="M343.91 41A13 13 0 0 1 365.61 31.34"/></g></g></symbol></svg>
-
-<a class="saltar" href="#contenido">Ir al contenido</a>
-
-<!-- 4.0 Barra superior -->
-<div class="aviso">
-  <div class="col col--ancho aviso-in">
-    <p><b>Primeros negocios.</b> Estamos empezando y buscamos a los primeros que quieran probarlo.</p>
-    <a href="#contacto">Postular</a>
-  </div>
-</div>
-
-<!-- 4.1 Cabecera -->
-<header class="cab osc">
-  <div class="col col--ancho cab-in">
-    <a class="marca" href="#inicio" aria-label="Coddvisor, ir al inicio"><svg aria-hidden="true" viewBox="0 0 444.95 67"><use href="#logotipo"/></svg></a>
-    <nav class="cab-nav" aria-label="Secciones">
-      <a href="#producto">Producto</a>
-      <a href="#etapa">Etapa</a>
-      <a href="#preguntas">Preguntas</a>
-    </nav>
-    <div class="cab-acc">
-      <a class="pill pill--wa" data-wa hidden href="#contacto">WhatsApp</a>
-      <a class="pill pill--hielo" href="#contacto">Quiero probarlo <svg class="pill-flecha" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-    </div>
-  </div>
-</header>
-
-<main id="contenido">
+---
+// Portada. El molde (Base) pone el <head>, el menú y el pie; aquí va solo el contenido.
+import Base from '../layouts/Base.astro';
+---
+<Base
+  titulo="Coddvisor: software de gestión para micro y pequeñas empresas del Perú"
+  descripcion="Coddvisor reúne la venta, la caja, el inventario y la planilla en un solo lugar. Estamos empezando y buscamos los primeros negocios que quieran probarlo.">
 
 <!-- 4.2 Portada -->
 <section class="portada osc" id="inicio" aria-labelledby="portada-t">
@@ -91,8 +17,8 @@
       <h1 class="portada-t" id="portada-t">Sepa <span class="cel">cada día</span> cómo le va a su negocio.</h1>
       <p class="portada-baj">Venta, caja, inventario y planilla en un solo lugar. <b>Lo que se vende descuenta el stock, entra a la caja y queda en las cuentas</b>, sede por sede.</p>
       <div class="portada-acc">
-        <a class="btn" href="#contacto">Quiero probarlo</a>
-        <a class="btn-2" href="#producto">Ver qué hace</a>
+        <a class="btn" href="/#contacto">Quiero probarlo</a>
+        <a class="btn-2" href="/#producto">Ver qué hace</a>
       </div>
       <ul class="confianza">
         <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Boletas y facturas electrónicas</li>
@@ -214,8 +140,8 @@
 
     <div class="producto-cuerpo" id="producto-cuerpo">
       <div class="pestanas">
-        <div class="pestana es-activa">
-          <h3><button class="pestana-b" type="button" aria-expanded="true" aria-controls="pestana-1"><span class="pestana-n">01</span>Vender y caja</button></h3>
+        <div class="pestana es-activa" id="vender">
+          <h3><button class="pestana-b" type="button" aria-expanded="true" aria-controls="pestana-1"><span class="pestana-n">01</span>Venda y cuadre la caja</button></h3>
           <div class="pestana-det" id="pestana-1">
             <p>Venta en la tienda con comprobante electrónico, apertura y cierre de caja en cada sede.</p>
             <ul class="checks">
@@ -226,8 +152,8 @@
           </div>
           <div class="pestana-prog" aria-hidden="true"><span></span></div>
         </div>
-        <div class="pestana">
-          <h3><button class="pestana-b" type="button" aria-expanded="false" aria-controls="pestana-2"><span class="pestana-n">02</span>Inventario por sede</button></h3>
+        <div class="pestana" id="inventario">
+          <h3><button class="pestana-b" type="button" aria-expanded="false" aria-controls="pestana-2"><span class="pestana-n">02</span>Controle el inventario de cada sede</button></h3>
           <div class="pestana-det" id="pestana-2">
             <p>Cuánto hay de cada producto, por talla y color, en el piso y en el almacén de cada sede.</p>
             <ul class="checks">
@@ -238,8 +164,8 @@
           </div>
           <div class="pestana-prog" aria-hidden="true"><span></span></div>
         </div>
-        <div class="pestana">
-          <h3><button class="pestana-b" type="button" aria-expanded="false" aria-controls="pestana-3"><span class="pestana-n">03</span>Asistencia y planilla</button></h3>
+        <div class="pestana" id="planilla">
+          <h3><button class="pestana-b" type="button" aria-expanded="false" aria-controls="pestana-3"><span class="pestana-n">03</span>Marque asistencia y pague la planilla</button></h3>
           <div class="pestana-det" id="pestana-3">
             <p>Marcación con un código que cambia en la pantalla de la sede, sin huellas ni fotos del rostro.</p>
             <ul class="checks">
@@ -250,7 +176,7 @@
           </div>
           <div class="pestana-prog" aria-hidden="true"><span></span></div>
         </div>
-        <a class="btn pestanas-btn" href="#contacto">Quiero probarlo</a>
+        <a class="btn pestanas-btn" href="/#contacto">Quiero probarlo</a>
       </div>
 
       <div class="pantallas-caja">
@@ -312,8 +238,46 @@
   </div>
 </section>
 
+<!-- 4.7 Recorrido: cómo una venta mueve todo el negocio. Es la idea que une las partes del producto:
+     se registra una vez y llega sola a donde tiene que llegar. Datos inventados. -->
+<section class="recorrido" id="recorrido" aria-labelledby="recorrido-t">
+  <div class="col">
+    <div data-aparece>
+      <p class="rotulo">Cómo una venta mueve todo el negocio</p>
+      <h2 class="titular titular--ancho" id="recorrido-t">Se registra una vez. <span class="az">Llega sola a donde tiene que llegar.</span></h2>
+    </div>
+    <ol class="recorrido-pasos">
+      <li class="rpaso" data-aparece>
+        <span class="rpaso-n">01</span>
+        <h3 class="rpaso-t">Se vende</h3>
+        <div class="rpaso-dato" aria-hidden="true"><span>Blusa Emma, talla M</span><b>S/ 89.90</b></div>
+        <p>La caja cobra con Yape y emite la boleta electrónica en el mismo momento.</p>
+      </li>
+      <li class="rpaso" data-aparece style="--d:.08s">
+        <span class="rpaso-n">02</span>
+        <h3 class="rpaso-t">Baja el stock</h3>
+        <div class="rpaso-dato" aria-hidden="true"><span>Talla M en Sede Centro</span><b>5 → 4</b></div>
+        <p>Se descuenta de esa talla, ese color y esa sede. Nadie lo anota en un cuaderno.</p>
+      </li>
+      <li class="rpaso" data-aparece style="--d:.16s">
+        <span class="rpaso-n">03</span>
+        <h3 class="rpaso-t">Entra a la caja</h3>
+        <div class="rpaso-dato" aria-hidden="true"><span>Caja de Sede Centro, Yape</span><b>+ S/ 89.90</b></div>
+        <p>Al cierre, la caja sabe cuánto debe haber en efectivo y cuánto en cada medio de pago.</p>
+      </li>
+      <li class="rpaso" data-aparece style="--d:.24s">
+        <span class="rpaso-n">04</span>
+        <h3 class="rpaso-t">Queda en las cuentas</h3>
+        <div class="rpaso-dato" aria-hidden="true"><span>Ventas del mes, Sede Centro</span><b>Al día</b></div>
+        <p>Los estados financieros de cada sede se arman con lo que ya pasó, sin pasar cifras a mano.</p>
+      </li>
+    </ol>
+    <p class="maqueta-rot maqueta-rot--claro">Ejemplo con datos inventados.</p>
+  </div>
+</section>
+
 <!-- 4.8 Para quién es -->
-<section class="para" aria-labelledby="para-t">
+<section class="para" id="para" aria-labelledby="para-t">
   <div class="col">
     <div data-aparece>
       <p class="rotulo">Para quién es</p>
@@ -414,7 +378,7 @@
       <h2 class="titular titular--contacto" id="contacto-t">¿Quiere que su negocio <span class="cel">sea de los primeros?</span></h2>
       <p class="contacto-baj">Cuéntenos qué vende, cuántas personas trabajan con usted y cuántas sedes tiene. Le respondemos nosotros.</p>
       <div class="contacto-vias">
-        <a data-wa data-wa-texto hidden href="#contacto"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><span>WhatsApp</span></a>
+        <a data-wa data-wa-texto hidden href="/#contacto"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><span>WhatsApp</span></a>
         <a href="mailto:equipo@coddvisor.com" data-correo-enlace><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg><span>equipo@coddvisor.com</span></a>
       </div>
     </div>
@@ -455,23 +419,4 @@
   </div>
 </section>
 
-</main>
-
-<!-- 4.12 Pie -->
-<footer class="pie">
-  <div class="col pie-in">
-    <div class="pie-a">
-      <p class="pie-marca"><svg role="img" aria-label="Coddvisor" viewBox="0 0 444.95 67"><use href="#logotipo"/></svg></p>
-      <p>Software de gestión para micro y pequeñas empresas del Perú. El nombre viene de Edgar F. Codd, el creador de las bases de datos relacionales, y de <i lang="en">advisor</i>, consejero.</p>
-    </div>
-    <div class="pie-b">
-      <ol class="fuentes">
-        <li id="fuente-1">ComexPerú, <i>Las micro y pequeñas empresas en el Perú: resultados en 2024</i> (ENAHO). <a href="https://www.comexperu.org.pe/upload/articles/reportes/reporte-mypes-2024.pdf" rel="noopener" target="_blank">comexperu.org.pe</a></li>
-      </ol>
-      <p class="pie-pie">© 2026 Coddvisor, Perú</p>
-    </div>
-  </div>
-</footer>
-
-</body>
-</html>
+</Base>

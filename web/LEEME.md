@@ -1,46 +1,110 @@
 # Sitio público de Coddvisor (`web/`)
 
-Una sola página de presentación. Son estos archivos y nada más:
+El sitio se arma con **Astro**, un programa que toma las piezas (menú, pie,
+páginas) y genera páginas HTML normales. Al visitante no le llega ningún
+programa extra: recibe HTML, CSS y `sitio.js`, igual que antes.
 
-| Archivo                | Qué es                                                       |
-|------------------------|--------------------------------------------------------------|
-| `index.html`           | El contenido: textos, el logotipo y las maquetas             |
-| `colores.css`          | Los colores de marca. Copia fiel del archivo de marca: no se edita aquí |
-| `estilos.css`          | Tonos de apoyo, qué color usa cada pieza, letras, espacios, celular |
-| `sitio.js`             | El movimiento: panel de la portada, pestañas, formularios y aparición al bajar |
-| `favicon.svg`          | El ícono de la pestaña: gato cobalto en modo claro, ámbar en oscuro |
-| `favicon-32-claro.png` | El mismo ícono en cobalto, para navegadores que no leen SVG  |
-| `favicon-32-oscuro.png`| El mismo ícono en ámbar, para navegadores que no leen SVG    |
-| `apple-touch-icon.png` | El ícono cuando alguien guarda el sitio en su iPhone         |
-| `vista-previa.png`     | La imagen que sale al compartir el enlace (WhatsApp, redes). Copia de `marca/logo/redes/coddvisor-vista-previa-enlace.png` |
-| `robots.txt`           | Les dice a los buscadores que pueden leer todo el sitio      |
+**Por qué Astro:** el sitio va a tener más de 30 páginas (productos,
+herramientas gratis, blog). Sin Astro, el menú y el pie se copiarían a mano en
+cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar.
+
+| Carpeta o archivo        | Qué es                                                       |
+|--------------------------|--------------------------------------------------------------|
+| `src/pages/`             | Las páginas. Cada archivo es una dirección: `index.astro` es la portada, `nosotros.astro` es `/nosotros/`, `404.astro` es la página de error |
+| `src/datos/navegacion.ts`| **El menú y el pie**: la única lista de enlaces del sitio      |
+| `src/layouts/Base.astro` | El molde de todas las páginas: `<head>`, íconos, correo y WhatsApp, cabecera y pie |
+| `src/components/`        | Piezas del molde: `Cabecera` (con el menú), `Pie` y `Logotipo` |
+| `public/`                | Lo que se publica tal cual, sin pasar por Astro:             |
+| `public/colores.css`     | Los colores de marca. Copia fiel del archivo de marca: no se edita aquí |
+| `public/estilos.css`     | Tonos de apoyo, qué color usa cada pieza, letras, espacios, celular |
+| `public/sitio.js`        | El movimiento: panel de la portada, pestañas, formularios y aparición al bajar |
+| `public/favicon*`, `public/apple-touch-icon.png` | Los íconos de la pestaña y del iPhone |
+| `public/vista-previa.png`| La imagen que sale al compartir el enlace (WhatsApp, redes). Copia de `marca/logo/redes/coddvisor-vista-previa-enlace.png` |
+| `public/robots.txt`      | Les dice a los buscadores que pueden leer todo el sitio      |
+| `package.json`           | Qué versión de Astro usa el sitio. Va **fija** (sin `^`)      |
+| `astro.config.mjs`       | La configuración de Astro                                     |
+| `dist/`                  | Lo que Astro genera. No se sube a GitHub: Cloudflare lo arma solo |
+
+## El menú (un solo lugar)
+
+El menú de arriba, el menú del celular y el pie salen de `src/datos/navegacion.ts`.
+Para que una página aparezca en los tres, se agrega **una línea** ahí.
+
+- **Solo entra lo que ya existe.** Un enlace a una página vacía enseña que el
+  menú no es confiable. «Recursos» (herramientas gratis, blog) entra cuando
+  exista la primera herramienta.
+- **Los productos se nombran con un verbo** («Venda y cobre», «Pague la
+  planilla»): la persona busca qué puede hacer, no el nombre de un módulo.
+  Mientras no tengan página propia, llevan a su pestaña en la portada
+  (`/#vender`, `/#inventario`, `/#planilla`). Cuando la tengan, solo cambia su
+  dirección en la lista.
+- **Un solo botón lleno:** «Quiero probarlo», en ámbar. Lo demás es secundario.
+
+En celular (820 px o menos), el botón con tres rayas abre el menú a pantalla
+completa. Por debajo de 400 px, el botón de arriba dice «Probar» para que
+quepan el logotipo y el menú.
+
+## Una página nueva
+
+1. Crea el archivo en `src/pages/` (por ejemplo `seguridad.astro` → `/seguridad/`).
+2. Empieza con el molde, que pone el menú, el pie y los íconos:
+
+```astro
+---
+import Base from '../layouts/Base.astro';
+---
+<Base titulo="Título en la pestaña | Coddvisor" descripcion="Lo que dice Google debajo.">
+  <!-- contenido -->
+</Base>
+```
+
+3. Si debe ir en el menú o en el pie, agrégala en `src/datos/navegacion.ts`.
+
+## La versión de Astro va fija
+
+En `package.json` dice `"astro": "7.4.5"`, sin `^` delante. Así, el sitio se
+arma siempre con la misma versión, en tu computadora y en Cloudflare. Una
+versión nueva de Astro no entra sola: se actualiza a propósito, en una rama de
+prueba, y se revisa como cualquier otro cambio.
 
 ## Los colores (un solo lugar)
 
-`colores.css` es una copia exacta del archivo de colores de la marca. Si la marca
-cambia un color, se reemplaza ese archivo entero por el nuevo, y no se toca
-nada más. `estilos.css` solo agrega siete tonos de apoyo para las franjas
-oscuras (al inicio del archivo, en `:root`) y dice qué color usa cada pieza.
+`public/colores.css` es una copia exacta del archivo de colores de la marca.
+Si la marca cambia un color, se reemplaza ese archivo entero por el nuevo, y no
+se toca nada más. `estilos.css` solo agrega siete tonos de apoyo para las
+franjas oscuras (al inicio del archivo, en `:root`) y dice qué color usa cada
+pieza.
 
 La página alterna franjas claras y oscuras: portada, Etapa y Contacto van en
 cobalto (clase `osc`). Por eso `<html>` lleva `data-tema="claro"`: la página no
 cambia con el modo oscuro del teléfono, porque ya tiene su propio ritmo.
 
-No hay "programa" que compilar ni librerías que instalar. Por eso cualquier
-servicio lo publica tal cual (hoy, Cloudflare Pages), y por eso no se rompe
-cuando una librería se actualiza.
-
 ## Verlo en tu computadora
 
+Necesitas Node 24 (el archivo `.nvmrc` lo dice). La primera vez, dentro de `web/`:
+
 ```bash
-python3 -m http.server 4321 --directory web
+npm ci
 ```
 
-Luego abre `http://localhost:4321` en el navegador. Para apagarlo: `Ctrl + C`.
+Después, cada vez que quieras verlo:
+
+```bash
+npm run dev
+```
+
+Abre `http://localhost:4321` en el navegador. Cada cambio que guardes se ve al
+instante. Para apagarlo: `Ctrl + C`.
+
+Para revisar exactamente lo que se va a publicar:
+
+```bash
+npm run build && npm run preview
+```
 
 ## Correo y WhatsApp (un solo lugar)
 
-En `index.html`, la etiqueta `<body>` lleva dos datos:
+En `src/layouts/Base.astro`, la etiqueta `<body>` lleva dos datos:
 
 - `data-correo="equipo@coddvisor.com"`: a qué correo escriben los formularios.
 - `data-whatsapp=""`: el número con código de país, solo dígitos (ejemplo:
@@ -50,7 +114,7 @@ En `index.html`, la etiqueta `<body>` lleva dos datos:
 
 ## El movimiento
 
-Todo vive en `sitio.js` y nada se anima si la persona pidió menos movimiento en
+Todo vive en `public/sitio.js` y nada se anima si la persona pidió menos movimiento en
 su teléfono o computadora:
 
 - **Panel «¿Cómo le va hoy?»:** cuando entra en pantalla, cuenta el día (seis
@@ -58,10 +122,13 @@ su teléfono o computadora:
 - **Pestañas de «Qué hace»:** avanzan solas cada 6.6 s mientras se ven; se
   pausan con el mouse o el teclado encima y se detienen al primer clic.
 - **Aparición al bajar:** las secciones entran con un fundido suave.
+- **Menú:** un grupo abierto a la vez; Escape lo cierra; en celular se cierra
+  solo al tocar un enlace. Si `sitio.js` no carga, los grupos igual se abren
+  (son `<details>`), y en celular el menú no aparece, como antes.
 
 ## El logotipo
 
-El gato y la palabra «coddvisor» están dibujados dentro de `index.html` (el
+El gato y la palabra «coddvisor» están dibujados dentro de la página (el
 `<symbol id="logotipo">`), copiados del logotipo horizontal de la marca. Sus
 colores salen de `--logo-gato` y `--logo-palabra` en `estilos.css`: en la
 cabecera oscura, gato y palabra claros; en el pie, todo en cobalto. El punto de
@@ -126,12 +193,32 @@ tienda: ves la prenda puesta antes de sacarla a vitrina.
    - **Project name:** `coddvisor` (la dirección de prueba será
      `coddvisor.pages.dev`; si ese nombre está tomado, Cloudflare propone otro).
    - **Production branch:** `main`.
-   - **Framework preset:** `None`.
-   - **Build command:** vacío.
-   - **Build output directory:** `web` ← lo más importante. El repositorio
+   - **Framework preset:** `Astro`.
+   - **Build command:** `npm run build`.
+   - **Build output directory:** `dist`.
+   - **Root directory (advanced):** `web` ← lo más importante. El repositorio
      tiene otras carpetas (arquitectura, documentos) que no deben publicarse.
 5. **Save and Deploy.** En un minuto te da la dirección `coddvisor.pages.dev`.
    Ábrela en el celular y en la computadora, y prueba el botón "Escríbanos".
+
+### Paso 2b: Si el proyecto de Cloudflare ya existía sin Astro
+
+Hay que cambiar la configuración **antes** de aprobar el PR que trae Astro, en
+este orden:
+
+1. En Cloudflare: tu proyecto → **Settings → Build** → edita la configuración
+   y deja los cuatro campos del paso 2 (preset `Astro`, `npm run build`,
+   `dist`, raíz `web`). En **Variables and secrets** no hace falta nada: la
+   versión de Node sale de `web/.nvmrc`.
+2. Ve a **Deployments**, busca la rama del PR y pulsa **Retry deployment**. Esa
+   dirección de prueba ya muestra el sitio armado con Astro: revísalo ahí.
+3. Recién entonces aprueba el PR.
+
+**Por qué en ese orden:** si cambias la configuración primero, `main` todavía
+no tiene Astro y su armado falla, pero Cloudflare **deja publicado el último
+sitio que sí funcionó**: nadie ve un error. Si aprobaras el PR primero,
+Cloudflare publicaría la carpeta `web` sin armar y el sitio mostraría una
+página en blanco hasta que cambies la configuración.
 
 ### Paso 3: Apuntar coddvisor.com (sin tocar el correo)
 

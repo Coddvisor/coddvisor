@@ -1,0 +1,89 @@
+---
+// Molde de TODAS las páginas: lo que va en <head>, el logotipo, la cabecera con el menú y el pie.
+// Cada página solo pone su título, su descripción y su contenido. Así, un cambio en el menú o en
+// los íconos se hace una vez y llega a todas las páginas.
+import Logotipo from '../components/Logotipo.astro';
+import Cabecera from '../components/Cabecera.astro';
+import Pie from '../components/Pie.astro';
+
+interface Props {
+  /** Lo que se ve en la pestaña del navegador y en Google. */
+  titulo: string;
+  /** El texto gris bajo el título en Google. Máximo unos 155 caracteres. */
+  descripcion: string;
+}
+const { titulo, descripcion } = Astro.props;
+// Dirección completa de esta página: Google y las redes no entienden direcciones relativas.
+const url = new URL(Astro.url.pathname, Astro.site).href;
+---
+<!doctype html>
+<!-- data-tema="claro": la página alterna sola franjas claras y oscuras, así que no sigue el modo
+     oscuro del teléfono (colores.css solo cambia la paleta cuando NO dice "claro"). -->
+<html lang="es-PE" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{titulo}</title>
+<meta name="description" content={descripcion}>
+<link rel="canonical" href={url}>
+<meta name="theme-color" content="#0B1841">
+<!-- Íconos: el gato va en cobalto si el sistema está en modo claro y en ámbar si está en
+     modo oscuro. El SVG cambia solo; los dos PNG son el respaldo para navegadores que no
+     leen SVG, y el navegador elige uno con media. El ?v=5 obliga a pedir el ícono de nuevo:
+     si un ícono cambia, sube el número en las cuatro líneas (v=6, v=7...). -->
+<link rel="icon" href="/favicon-32-claro.png?v=5" sizes="32x32" type="image/png" media="(prefers-color-scheme: light)">
+<link rel="icon" href="/favicon-32-oscuro.png?v=5" sizes="32x32" type="image/png" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.svg?v=5" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=5">
+<meta property="og:title" content={titulo}>
+<meta property="og:description" content={descripcion}>
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_PE">
+<meta property="og:site_name" content="Coddvisor">
+<meta property="og:url" content={url}>
+<!-- Vista previa al compartir el enlace (WhatsApp, LinkedIn, Facebook, X). Es la imagen de la marca
+     marca/logo/redes/coddvisor-vista-previa-enlace.png: logotipo completo sobre cobalto, 1200 × 630.
+     La dirección va completa porque las redes no entienden direcciones relativas. Las redes guardan
+     la imagen en su memoria: si la imagen cambia, sube ?v=1 a ?v=2 aquí y en twitter:image. -->
+<meta property="og:image" content="https://www.coddvisor.com/vista-previa.png?v=1">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Logotipo de Coddvisor: gato ámbar y la palabra coddvisor en blanco sobre fondo azul cobalto.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.coddvisor.com/vista-previa.png?v=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="/colores.css">
+<link rel="stylesheet" href="/estilos.css">
+<script is:inline src="/sitio.js" defer></script>
+</head>
+<!-- Contacto en UN solo lugar:
+     data-correo    → a qué correo escriben los formularios y el enlace de correo.
+     data-whatsapp  → número con código de país, solo dígitos (ej. 51987654321). Mientras esté
+                      vacío, los botones de WhatsApp no se muestran y los formularios usan el correo. -->
+<body data-correo="equipo@coddvisor.com" data-whatsapp="">
+
+<Logotipo />
+
+<a class="saltar" href="#contenido">Ir al contenido</a>
+
+<!-- Barra superior -->
+<div class="aviso">
+  <div class="col col--ancho aviso-in">
+    <p><b>Primeros negocios.</b> Estamos empezando y buscamos a los primeros que quieran probarlo.</p>
+    <a href="/#contacto">Postular</a>
+  </div>
+</div>
+
+<Cabecera />
+
+<main id="contenido">
+<slot />
+</main>
+
+<Pie />
+
+</body>
+</html>
