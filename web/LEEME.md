@@ -36,7 +36,7 @@ Para que una página aparezca en los tres, se agrega **una línea** ahí.
 - **Los productos se nombran con un verbo** («Venda y cobre», «Pague la
   planilla»): la persona busca qué puede hacer, no el nombre de un módulo.
   Mientras no tengan página propia, llevan a su pestaña en la portada
-  (`/#vender`, `/#inventario`, `/#planilla`). Cuando la tengan, solo cambia su
+  (`/#vender`, `/#inventario`, `/#planilla`). Son las mismas tres partes que muestra la portada. Cuando la tengan, solo cambia su
   dirección en la lista.
 - **Un solo botón lleno:** «Quiero probarlo», en ámbar. Lo demás es secundario.
 
