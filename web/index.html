@@ -71,33 +71,25 @@
 <section class="portada osc" id="inicio" aria-labelledby="portada-t">
   <div class="brillo brillo--ambar" aria-hidden="true"></div>
   <div class="brillo brillo--azul" aria-hidden="true"></div>
-  <div class="enmarcado">
-    <div class="portada-in">
-      <p class="chip-vivo"><span class="vivo" aria-hidden="true"></span>Software de gestión para mypes del Perú</p>
+  <div class="enmarcado portada-in">
+    <div class="portada-texto">
+      <span class="franja-sello" aria-hidden="true"></span>
+      <p class="rotulo portada-rot">Software de gestión para mypes del Perú</p>
       <h1 class="portada-t" id="portada-t">Sepa <span class="cel">cada día</span> cómo le va a su negocio.</h1>
       <p class="portada-baj">Venta, caja, inventario y planilla en un solo lugar. <b>Lo que se vende descuenta el stock, entra a la caja y queda en las cuentas</b>, sede por sede.</p>
-
-      <!-- Los formularios los envía sitio.js (arma el mensaje y abre el correo o WhatsApp).
-           Sin JS se ocultan y queda el enlace de correo de abajo. -->
-      <form class="pildora" data-form="portada">
-        <label class="oculto" for="portada-contacto">Su WhatsApp o correo</label>
-        <input id="portada-contacto" name="contacto" type="text" autocomplete="email" placeholder="Su WhatsApp o correo" required>
-        <button class="btn btn--pildora" type="submit">Quiero probarlo</button>
-      </form>
-      <p class="form-estado form-estado--osc" data-estado="portada" role="status"></p>
-      <noscript><p class="sin-js"><a href="mailto:equipo@coddvisor.com">Escríbanos a equipo@coddvisor.com</a></p></noscript>
-
+      <div class="portada-acc">
+        <a class="btn" href="#contacto">Quiero probarlo</a>
+        <a class="btn-2" href="#producto">Ver qué hace</a>
+      </div>
       <ul class="confianza">
         <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Boletas y facturas electrónicas</li>
         <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Varias sedes y almacén</li>
         <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Funciona en el navegador</li>
-        <li><svg class="confianza-msj" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg><a href="#contacto">Escríbanos y le respondemos</a></li>
       </ul>
     </div>
 
     <!-- 5. Panel «¿Cómo le va hoy?»: maqueta animada con datos inventados (sitio.js la mueve). -->
-    <div class="banda-panel">
-      <p class="maqueta-rot">Maqueta con datos inventados; no es una captura.</p>
+    <div class="portada-panel">
       <div class="panel" id="panel" aria-hidden="true">
         <div class="panel-barra">
           <span class="panel-ventana"><i></i><i></i><i></i><span>Resumen del día de todas las sedes</span></span>
@@ -162,6 +154,7 @@
           </div>
         </div>
       </div>
+      <p class="maqueta-rot">Maqueta con datos inventados; no es una captura.</p>
     </div>
   </div>
 </section>
@@ -200,7 +193,7 @@
 
 <!-- 4.6 Qué hace -->
 <section class="producto" id="producto" aria-labelledby="producto-t">
-  <div class="enmarcado enmarcado--claro producto-in">
+  <div class="enmarcado producto-in">
     <div class="producto-cab" data-aparece>
       <p class="rotulo">Qué hace</p>
       <h2 class="titular titular--xl" id="producto-t">Cuatro partes del negocio, <span class="az">una sola fuente de verdad.</span></h2>
