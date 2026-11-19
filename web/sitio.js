@@ -65,17 +65,12 @@
       if (!form.reportValidity()) return;
       var d = new FormData(form);
       var v = function (k) { return String(d.get(k) || '').trim(); };
-      var texto;
-      if (form.getAttribute('data-form') === 'portada') {
-        texto = 'Hola. Quiero probar Coddvisor.\nMi WhatsApp o correo: ' + v('contacto');
-      } else {
-        texto = 'Hola. Quiero que mi negocio sea de los primeros en probar Coddvisor.\n' +
-          'Nombre: ' + v('nombre') + '\n' +
-          'WhatsApp: ' + v('whatsapp') + '\n' +
-          'Qué vende: ' + (v('vende') || '-') + '\n' +
-          'Personas que trabajan: ' + v('personas') + '\n' +
-          'Sedes: ' + v('sedes');
-      }
+      var texto = 'Hola. Quiero que mi negocio sea de los primeros en probar Coddvisor.\n' +
+        'Nombre: ' + v('nombre') + '\n' +
+        'WhatsApp: ' + v('whatsapp') + '\n' +
+        'Qué vende: ' + (v('vende') || '-') + '\n' +
+        'Personas que trabajan: ' + v('personas') + '\n' +
+        'Sedes: ' + v('sedes');
       avisar(form.getAttribute('data-form'), abrir(texto));
     });
   });
