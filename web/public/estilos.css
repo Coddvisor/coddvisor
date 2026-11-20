@@ -112,7 +112,7 @@ sup.ref a { color:var(--azul-real); text-underline-offset:2px; display:inline-bl
 .aviso a svg { display:none; }
 
 /* ---------- 4.1 Cabecera ---------- */
-.cab { position:sticky; top:0; z-index:30; background:var(--cobalto); border-bottom:1px solid var(--linea-oscura); --logo-gato:var(--fondo); --logo-palabra:var(--fondo); }
+.cab { position:sticky; top:0; z-index:30; background:var(--cobalto); border-bottom:1px solid var(--linea-oscura); --logo-gato:var(--ambar); --logo-palabra:var(--fondo); }
 .cab-in { min-height:var(--cab-h); display:flex; align-items:center; justify-content:space-between; gap:24px; }
 /* Logotipo: 444,95 × 67 de proporción; alto mínimo 24 px (regla de marca). */
 .marca { display:inline-flex; align-items:center; min-height:44px; flex-shrink:0; }
