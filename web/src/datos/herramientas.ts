@@ -40,6 +40,17 @@ export const herramientas: Herramienta[] = [
     publicada: '2026-11-19',
     lectura: 5,
   },
+  {
+    nombre: 'IGV de una venta',
+    frase: 'Saque el IGV de un precio, con boleta o con factura',
+    href: '/herramientas/igv/',
+    guia: 'Cómo calcular el IGV de una venta, con boleta o con factura',
+    resumen: 'Cómo sacar el IGV de un precio que ya lo incluye y qué cambia en restaurantes, hoteles y el Nuevo RUS. Con una calculadora gratis.',
+    categoria: 'SUNAT y comprobantes',
+    publicada: '2026-11-19',
+    lectura: 5,
+    verificada: '2026-11-19',
+  },
 ];
 
 /** "2026-11-19" → "19 de noviembre de 2026" (sin depender del reloj del visitante). */
