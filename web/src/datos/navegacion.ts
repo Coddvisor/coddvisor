@@ -3,9 +3,9 @@
 // Para agregar una página al menú se agrega una línea aquí, y aparece en los tres lugares a la vez.
 //
 // Regla: solo entra lo que ya existe. Un enlace que lleva a una página vacía le enseña a la
-// persona que el menú no es confiable. Por eso «Recursos» (herramientas gratis, blog) no aparece
-// hasta que exista la primera herramienta, y por eso, mientras no tengan página propia, los
-// productos llevan a su parte de la portada.
+// persona que el menú no es confiable. Por eso, mientras no tengan página propia, los productos
+// llevan a su parte de la portada. Las herramientas gratis salen de src/datos/herramientas.ts.
+import { herramientas } from './herramientas';
 
 export type Enlace = {
   texto: string;
@@ -38,8 +38,15 @@ export const menu: Grupo[] = [
     enlaces: productos,
     recorrido: { texto: 'Cómo una venta mueve todo el negocio', href: '/#recorrido' },
   },
+  {
+    texto: 'Recursos',
+    enlaces: [
+      ...herramientas.map((h) => ({ texto: h.nombre, frase: h.frase, href: h.href })),
+      { texto: 'Blog', frase: 'Guías prácticas de caja, ventas, planilla y SUNAT', href: '/blog/' },
+    ],
+    recorrido: { texto: 'Todas las herramientas gratis', href: '/herramientas/' },
+  },
   { texto: 'Para quién es', href: '/#para' },
-  { texto: 'Preguntas', href: '/#preguntas' },
   { texto: 'Nosotros', href: '/nosotros/' },
 ];
 
@@ -49,6 +56,14 @@ export const llamado: Enlace = { texto: 'Quiero probarlo', href: '/#contacto' };
 // Pie de página: repite el menú agrupado, para quien llega al final y no encontró lo que buscaba.
 export const pie: { titulo: string; enlaces: Enlace[] }[] = [
   { titulo: 'Producto', enlaces: [...productos, { texto: 'Cómo una venta mueve todo', href: '/#recorrido' }] },
+  {
+    titulo: 'Herramientas gratis',
+    enlaces: [
+      ...herramientas.map((h) => ({ texto: h.nombre, href: h.href })),
+      { texto: 'Todas las herramientas', href: '/herramientas/' },
+      { texto: 'Blog', href: '/blog/' },
+    ],
+  },
   {
     titulo: 'Coddvisor',
     enlaces: [
