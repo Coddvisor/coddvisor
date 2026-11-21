@@ -348,3 +348,5 @@
 .igv-res .tres > div:first-child { border-color:var(--celeste); }
 .igv-res .tres-t { color:var(--celeste-claro); }
 .igv-res .tres-d { color:var(--texto-claro-2); }
+/* La caja clara de «La cuenta» dentro del resultado oscuro: su rótulo vuelve al color para fondo claro. */
+.igv-res .igv-cuenta .igv-et { color:var(--texto-2); }
