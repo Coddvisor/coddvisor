@@ -16,6 +16,8 @@
    12. «A dónde va cada sol» (Sankey, alargado en computadora y vertical en celular): se dibuja
        al aparecer; al tocar o pasar el mouse por una sede, un medio o un destino se encienden
        sus cintas y se explica con montos.
+   13. Líneas que se juntan (bajo el 76.5 %): cada hilo sale a su tiempo, ondula como si se
+       tejiera y llega a «Un solo lugar», al centro. Con el mouse encima, los hilos se apartan.
    11. Enlaces a una sección (#para, #contacto...): la sección queda centrada en la pantalla si
        cabe; si es más alta, su título queda justo debajo de la cabecera, sin el espacio vacío
        de arriba. También al llegar desde otra página con la dirección ya puesta.
@@ -339,6 +341,112 @@
   window.addEventListener('scroll', pedir, { passive: true });
   window.addEventListener('resize', pedir);
   alBajar();
+
+  /* ---------- 13. Líneas que se juntan ----------
+     El dibujo quieto viene armado desde Hilos.astro; aquí cada hilo se recalcula en cada cuadro.
+     Ciclo de 14 s: los hilos salen dispersos (cada uno con su retraso y su velocidad), ondulan
+     y llegan al centro; se quedan, se apagan y vuelve a empezar con otros tiempos.
+     El mouse empuja los hilos cercanos; al salir, vuelven solos a su lugar. */
+  var hilosEl = $('[data-hilos]');
+  if (hilosEl && !menos && window.requestAnimationFrame) iniciarHilos(hilosEl);
+
+  function iniciarHilos(el) {
+    var svg = $('svg', el);
+    var caminos = $$('.hilos-g path', el), puntos = $$('.hilos-puntos circle', el);
+    var grupo = $('.hilos-g', el), fin = $('.hilos-fin', el), brillo = $('.hilos-brillo', el);
+    var W = +el.dataset.w, H = +el.dataset.h, X0 = +el.dataset.x0, P = +el.dataset.pastilla;
+    var cx = W / 2, cy = H / 2;
+    var M = 64, CICLO = 14000, APAGA = 11600, FUNDE = 1400;
+    var azar = function (a, b) { return a + Math.random() * (b - a); };
+    var suave = function (t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+
+    var hilos = caminos.map(function (c) {
+      var lado = +c.getAttribute('data-lado'), y0 = +c.getAttribute('data-y');
+      var x0 = lado === 1 ? X0 : W - X0, ex = cx - lado * P, ey = cy + (y0 - cy) * .05;
+      var c1x = x0 + lado * 230, c2x = ex - lado * 150, base = [];
+      for (var k = 0; k < M; k++) {
+        var u = k / (M - 1), v = 1 - u;
+        base.push([
+          v * v * v * x0 + 3 * v * v * u * c1x + 3 * v * u * u * c2x + u * u * u * ex,
+          v * v * v * y0 + 3 * v * v * u * y0 + 3 * v * u * u * ey + u * u * u * ey
+        ]);
+      }
+      return { camino: c, base: base };
+    });
+
+    function sortear() {
+      hilos.forEach(function (h) {
+        h.retraso = azar(0, 4200);       // cuándo sale
+        h.dura = azar(1500, 2900);       // cuánto tarda en llegar
+        h.amp = azar(4, 15);             // cuánto ondula
+        h.ondas = azar(1.2, 2.8);        // cuántas ondas tiene el camino
+        h.fase = azar(0, Math.PI * 2);
+        h.vel = azar(.6, 1.4) * (Math.random() < .5 ? -1 : 1);
+      });
+    }
+    sortear();
+
+    var raton = { x: 0, y: 0, tx: 0, ty: 0, f: 0, objetivo: 0 };
+    el.addEventListener('pointermove', function (e) {
+      var m = svg.getScreenCTM();
+      if (!m) return;
+      var p = svg.createSVGPoint();
+      p.x = e.clientX; p.y = e.clientY;
+      p = p.matrixTransform(m.inverse());
+      if (raton.f < .02) { raton.x = p.x; raton.y = p.y; }
+      raton.tx = p.x; raton.ty = p.y; raton.objetivo = 1;
+    });
+    el.addEventListener('pointerleave', function () { raton.objetivo = 0; });
+
+    var inicio = performance.now(), pausa = 0;
+    function cuadro(ahora) {
+      requestAnimationFrame(cuadro);
+      if (!el.classList.contains('en-pantalla')) { if (!pausa) pausa = ahora; return; }
+      if (pausa) { inicio += ahora - pausa; pausa = 0; }
+      var t = ahora - inicio;
+      if (t >= CICLO) { inicio = ahora; t = 0; sortear(); }
+      var seg = ahora / 1000;
+
+      raton.x += (raton.tx - raton.x) * .18;
+      raton.y += (raton.ty - raton.y) * .18;
+      raton.f += (raton.objetivo - raton.f) * .08;
+      var conRaton = raton.f > .01, S2 = 2 * 75 * 75;
+
+      var llegaron = 0;
+      hilos.forEach(function (h, n) {
+        var p = limitar((t - h.retraso) / h.dura, 0, 1), avance = suave(p);
+        if (p >= 1) llegaron++;
+        puntos[n].style.opacity = p > 0 ? .75 : .22;
+        if (avance <= 0) { h.camino.setAttribute('d', ''); return; }
+        // Mientras avanza ondula más; al llegar se asienta, sin quedarse del todo quieto.
+        var amp = h.amp * (1.15 - .55 * avance);
+        var hasta = avance * (M - 1), ult = Math.floor(hasta), d = '', px = 0, py = 0;
+        for (var k = 0; k <= Math.min(ult + 1, M - 1); k++) {
+          var u = k / (M - 1), env = Math.sin(Math.PI * u);
+          var x = h.base[k][0];
+          var y = h.base[k][1] + amp * env * Math.sin(Math.PI * 2 * h.ondas * u + h.fase + seg * h.vel * 1.6);
+          if (conRaton) {
+            var dx = x - raton.x, dy = y - raton.y, d2 = dx * dx + dy * dy;
+            var g = Math.exp(-d2 / S2) * raton.f * Math.pow(env, .6) * 38, dist = Math.sqrt(d2) + 1;
+            x += dx / dist * g; y += dy / dist * g;
+          }
+          if (k > ult) { var r = hasta - ult; x = px + (x - px) * r; y = py + (y - py) * r; }
+          d += (k ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+          px = x; py = y;
+        }
+        h.camino.setAttribute('d', d);
+      });
+
+      var parte = llegaron / hilos.length;
+      var apagado = t > APAGA ? 1 - limitar((t - APAGA) / FUNDE, 0, 1) : 1;
+      var aparece = suave(limitar((parte - .35) / .5, 0, 1));
+      grupo.style.opacity = apagado;
+      fin.style.opacity = aparece * apagado;
+      fin.style.transform = 'scale(' + (.82 + .18 * aparece + .02 * Math.sin(seg * 2.4) * aparece).toFixed(3) + ')';
+      brillo.style.opacity = (aparece * (.85 + .15 * Math.sin(seg * 1.7)) * apagado).toFixed(3);
+    }
+    requestAnimationFrame(cuadro);
+  }
 
   if (menos || !fino) return;
 
