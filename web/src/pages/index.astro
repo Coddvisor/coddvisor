@@ -192,6 +192,8 @@ import Base from '../layouts/Base.astro';
               <div class="pt-boton">Cobrar y emitir boleta</div>
               <div class="pt-ok"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Comprobante electrónico listo para enviar</div>
             </div>
+            <!-- Aviso flotante (capa fluida): solo se ve con la clase fluido. Mismos datos de la maqueta. -->
+            <span class="pt-flota pt-flota--abajo"><i class="pt-flota-ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></i>Boleta emitida por S/ 249.80</span>
           </div>
           <div class="pantalla" data-pantalla="1" hidden>
             <div class="pt pt--ancha">
@@ -204,6 +206,7 @@ import Base from '../layouts/Base.astro';
               </div>
               <div class="pt-aviso"><span><b>XL:</b> no hay en piso.</span><span class="pt-aviso-b">Bajar 1 del almacén</span></div>
             </div>
+            <span class="pt-flota pt-flota--arriba"><i class="pt-flota-info"></i>En otra sede quedan 5 XL</span>
           </div>
           <div class="pantalla" data-pantalla="2" hidden>
             <div class="pt-doble">
@@ -219,6 +222,7 @@ import Base from '../layouts/Base.astro';
                 <div class="fin"><span>Planilla de noviembre</span><span>Lista</span></div>
               </div>
             </div>
+            <span class="pt-flota pt-flota--abajo"><i class="pt-flota-ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></i>3 marcaciones hoy, 1 tardanza</span>
           </div>
         </div>
         <p class="maqueta-rot maqueta-rot--claro">Maqueta con datos inventados; no es una captura.</p>

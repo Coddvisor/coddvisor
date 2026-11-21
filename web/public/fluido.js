@@ -8,6 +8,9 @@
    5. Dato que abre: la cifra cuenta desde cero y las palabras se encienden al bajar.
    6. Recorrido: la línea se dibuja y cada paso se enciende al pasar.
    7. Pantallas de «Qué hace»: se inclinan un poco hacia el mouse.
+   8. Cabecera clara: sobre las franjas claras, la cabecera se vuelve blanca translúcida.
+   9. Barra flotante (solo en la portada): «Quiero probarlo» siempre a mano, salvo en la portada
+      y en Contacto, donde ya está a la vista.
    Si la persona pidió menos movimiento, solo queda el acabado: nada se mueve. */
 (function () {
   'use strict';
@@ -97,6 +100,34 @@
     }
   }
 
+  /* ---------- 9. Barra flotante: se arma con los enlaces que ya existen en la página ---------- */
+  var contacto = document.getElementById('contacto');
+  var llamado = $('.cab .pill--hielo');
+  var verQue = $('.portada-acc .btn-2');
+  var dock = null;
+  if (contacto && portada && llamado) {
+    dock = document.createElement('div');
+    dock.className = 'dock';
+    dock.innerHTML = '<span class="dock-tx"><b>Estamos empezando.</b> Buscamos los primeros negocios.</span>' +
+      (verQue ? '<a class="dock-sec"></a>' : '') + '<a class="dock-btn"></a>';
+    var a = dock.querySelector('.dock-btn');
+    a.href = llamado.getAttribute('href'); a.textContent = 'Quiero probarlo';
+    if (verQue) { var b = dock.querySelector('.dock-sec'); b.href = verQue.getAttribute('href'); b.textContent = verQue.textContent; }
+    document.body.appendChild(dock);
+  }
+
+  /* ---------- 8. ¿Qué franja pasa por debajo de la cabecera? ---------- */
+  function franjaClara() {
+    var y = cab.getBoundingClientRect().bottom + 2;
+    var pila = document.elementsFromPoint ? document.elementsFromPoint(window.innerWidth / 2, y) : [];
+    for (var i = 0; i < pila.length; i++) {
+      var el = pila[i];
+      if (cab.contains(el) || (dock && dock.contains(el)) || el === barra) continue;
+      return !el.closest('.osc, .aviso');
+    }
+    return false;
+  }
+
   /* ---------- Bucle de desplazamiento: un solo cálculo por cuadro ---------- */
   var pendiente = false;
   function alBajar() {
@@ -108,8 +139,19 @@
     // 2. Barra de lectura
     barra.style.setProperty('--leido', alto > 0 ? limitar(y / alto, 0, 1).toFixed(4) : 0);
 
-    // 3. Cabecera
-    if (cab) cab.classList.toggle('cab--bajo', y > 12);
+    // 3 y 8. Cabecera: sombra al bajar; clara sobre las franjas claras.
+    if (cab) {
+      cab.classList.toggle('cab--bajo', y > 12);
+      cab.classList.toggle('cab--clara', franjaClara());
+    }
+
+    // 9. Barra flotante: después de la portada y antes de Contacto; nunca con el menú abierto.
+    if (dock) {
+      var ver = portada.getBoundingClientRect().bottom < vh * .35 &&
+        contacto.getBoundingClientRect().top > vh * .92 &&
+        !raiz.classList.contains('menu-abierto');
+      dock.classList.toggle('ver', ver);
+    }
 
     if (menos) return;
 

@@ -165,6 +165,16 @@ No borran ni reemplazan nada: todo cuelga de la clase `fluido` en `<html>` (en `
 - **Etapa:** la barra se llena hasta «hoy» cuando aparece.
 - **Preguntas:** se abren deslizando (en navegadores que ya lo permiten; en los demás, como antes).
 - **Aparición al bajar:** más recorrido, con desenfoque; también para pestañas, preguntas y contacto.
+- **Cabecera clara:** sobre las franjas claras se vuelve blanca translúcida, con logotipo y menú en
+  cobalto; sobre las oscuras sigue en cobalto.
+- **Barra flotante (solo portada):** «Ver qué hace» y «Quiero probarlo» a mano después de la portada;
+  se esconde al llegar a Contacto y con el menú del celular abierto.
+- **Avisos sobre las maquetas de «Qué hace»:** una cápsula flotante por pantalla («Boleta emitida
+  por S/ 249.80»…). Usan los mismos datos inventados de la maqueta y solo se ven con la capa.
+
+Ideas tomadas de la portada de holded.com (estructura, no estética). Se descartaron a propósito sus
+logos de clientes, cifras de usuarios, reseñas, avisos de «alguien acaba de unirse» y ofertas con
+cuenta regresiva: van contra las reglas de contenido de abajo.
 
 Con «menos movimiento» activado en el teléfono o la computadora, queda el acabado y nada se mueve.
 

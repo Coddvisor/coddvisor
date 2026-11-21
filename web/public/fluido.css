@@ -163,6 +163,78 @@
 .fluido .contacto-vias a { transition:transform .4s var(--suave); }
 .fluido .contacto-vias a:hover { transform:translateX(4px); }
 
+
+/* ---------- Cabecera clara sobre las franjas claras ----------
+   fluido.js le pone .cab--clara cuando lo que pasa por debajo es una franja clara. Se vuelve blanca
+   translúcida, con el logotipo y el menú en cobalto. Sobre las franjas oscuras sigue en cobalto. */
+.fluido .cab.cab--clara:not(.abierta) {
+  --logo-gato:var(--cobalto); --logo-palabra:var(--cobalto);
+  background:color-mix(in srgb, var(--fondo) 78%, transparent);
+  border-bottom-color:color-mix(in srgb, var(--borde) 80%, transparent);
+  box-shadow:0 10px 30px -20px rgba(11,24,65,.35);
+}
+.fluido .cab--clara:not(.abierta) .menu-a, .fluido .cab--clara:not(.abierta) .menu-b { color:var(--texto-2); }
+.fluido .cab--clara:not(.abierta) .menu-a:hover, .fluido .cab--clara:not(.abierta) .menu-b:hover,
+.fluido .cab--clara:not(.abierta) .menu-d[open] .menu-b { color:var(--cobalto); }
+.fluido .cab--clara:not(.abierta) .cab-boton { background:var(--superficie); border-color:var(--borde); color:var(--cobalto); }
+.fluido .cab--clara:not(.abierta) .pill--hielo { background:var(--cobalto); color:var(--fondo); }
+.fluido .cab--clara:not(.abierta) :focus-visible { outline-color:var(--azul-real); }
+.fluido .cab .marca svg, .fluido .cab .pill--hielo { transition:color .5s var(--suave), background-color .5s var(--suave); }
+
+/* ---------- Barra flotante de llamado ----------
+   La arma fluido.js (solo en la portada). Aparece al dejar atrás la portada y se esconde al llegar a
+   Contacto: siempre hay a mano un «Quiero probarlo», sin tapar el formulario. */
+.dock { display:none; }
+.fluido .dock {
+  display:flex; align-items:center; gap:6px;
+  position:fixed; z-index:45; left:50%; bottom:calc(16px + env(safe-area-inset-bottom, 0px));
+  max-width:calc(100% - 24px); padding:6px 6px 6px 18px; border-radius:999px;
+  background:color-mix(in srgb, var(--cobalto) 84%, transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px);
+  box-shadow:0 0 0 1px rgba(255,255,255,.08), 0 20px 44px -16px rgba(8,18,51,.75);
+  color:var(--texto-claro-2); font-size:15px;
+  transform:translate(-50%, 24px); opacity:0; visibility:hidden;
+  transition:transform .6s var(--suave), opacity .4s var(--suave), visibility 0s linear .6s;
+}
+.fluido .dock.ver { transform:translate(-50%, 0); opacity:1; visibility:visible; transition-delay:0s; }
+.dock-tx { margin-right:10px; white-space:nowrap; }
+.dock-tx b { color:var(--fondo); font-weight:600; }
+.dock a { display:inline-flex; align-items:center; min-height:44px; padding:0 18px; border-radius:999px; font-weight:600; text-decoration:none; white-space:nowrap; transition:background-color .3s var(--suave), transform .4s var(--suave); }
+.dock-sec { color:var(--fondo); }
+.dock-sec:hover { background:rgba(255,255,255,.1); }
+.dock-btn { background:var(--ambar); color:var(--cobalto); box-shadow:inset 0 -3px 0 var(--ambar-tostado); }
+.dock-btn:hover { transform:translateY(-1px); }
+.dock :focus-visible { outline-color:var(--celeste); }
+.fluido.menu-abierto .dock { opacity:0; visibility:hidden; }
+@media (max-width:760px) { .dock-tx { display:none; } .fluido .dock { padding-left:6px; } }
+@media (max-width:380px) { .dock-sec { display:none; } }
+
+/* ---------- Avisos flotantes sobre las maquetas de «Qué hace» ---------- */
+.pt-flota { display:none; }
+.fluido .pantalla { position:relative; }
+.fluido .pt-flota {
+  display:inline-flex; align-items:center; gap:8px; position:absolute; z-index:2;
+  padding:8px 14px 8px 8px; border-radius:999px; background:var(--tarjeta);
+  border:1px solid color-mix(in srgb, var(--borde) 80%, transparent); box-shadow:var(--sombra-alta);
+  font-size:13px; font-weight:600; color:var(--cobalto); white-space:nowrap;
+}
+.pt-flota i { flex:none; width:22px; height:22px; border-radius:50%; display:grid; place-items:center; }
+.pt-flota-ok { background:var(--correcto-fondo); color:var(--correcto); }
+.pt-flota-info { background:var(--hielo); }
+.pt-flota-info::after { content:""; width:8px; height:8px; border-radius:50%; background:var(--azul-real); }
+.fluido .pt-flota--abajo { left:-6px; bottom:-18px; }
+.fluido .pt-flota--arriba { right:-6px; top:-18px; }
+@media (max-width:620px) {
+  .fluido .pt-flota--abajo { left:8px; bottom:-14px; }
+  .fluido .pt-flota--arriba { right:8px; top:-14px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fluido .pantalla:not([hidden]) .pt-flota { animation:flotaEntra .9s var(--resorte) .45s both, flota 6s ease-in-out 1.4s infinite; }
+}
+@keyframes flotaEntra { from { opacity:0; transform:translateY(12px) scale(.9); } to { opacity:1; transform:none; } }
+@keyframes flota { 0%, 100% { translate:0 0; } 50% { translate:0 -5px; } }
+
 /* =========================================================================================
    Movimiento: solo si la persona no pidió menos.
    ========================================================================================= */
@@ -219,6 +291,6 @@
 @keyframes panelMenu { from { opacity:0; transform:translateY(-8px) scale(.98); } to { opacity:1; transform:none; } }
 
 @media print {
-  .progreso { display:none !important; }
+  .progreso, .dock, .pt-flota { display:none !important; }
   .fluido .panel, .fluido .pantallas { transform:none !important; }
 }
