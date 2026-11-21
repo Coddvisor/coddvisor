@@ -1,10 +1,12 @@
 # Sitio público de Coddvisor (`web/`)
 
-Una sola página de presentación. Son estos archivos y nada más:
+Una página de presentación y dos textos largos (el Manifiesto y la Constitución). Son estos archivos y nada más:
 
 | Archivo                | Qué es                                                       |
 |------------------------|--------------------------------------------------------------|
 | `index.html`           | El contenido: textos, el logotipo y las maquetas             |
+| `manifiesto.html`      | El Manifiesto: una página de lectura, sin movimiento         |
+| `constitucion.html`    | La Constitución: la misma maqueta que el Manifiesto          |
 | `colores.css`          | Los colores de marca. Copia fiel del archivo de marca: no se edita aquí |
 | `estilos.css`          | Tonos de apoyo, qué color usa cada pieza, letras, espacios, celular |
 | `sitio.js`             | El movimiento: panel de la portada, pestañas, formularios y aparición al bajar |
@@ -14,6 +16,16 @@ Una sola página de presentación. Son estos archivos y nada más:
 | `apple-touch-icon.png` | El ícono cuando alguien guarda el sitio en su iPhone         |
 | `vista-previa.png`     | La imagen que sale al compartir el enlace (WhatsApp, redes). Copia de `marca/logo/redes/coddvisor-vista-previa-enlace.png` |
 | `robots.txt`           | Les dice a los buscadores que pueden leer todo el sitio      |
+
+## Manifiesto y Constitución
+
+Las dos páginas se generan de textos que viven fuera de `web/` (los borradores de la
+Constitución). Hoy llevan `<meta name="robots" content="noindex">`, para que los buscadores
+no las lean: **se quita esa línea al publicarlas**. Si el texto cambia, se regeneran las dos
+páginas y se revisan a mano; no se editan a ratos.
+
+Antes de publicarlas: que un abogado peruano revise los textos (lo decidió el fundador el
+19-nov-2026). Lo que una empresa ofrece en público se le puede exigir.
 
 ## Los colores (un solo lugar)
 
