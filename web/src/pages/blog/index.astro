@@ -1,13 +1,32 @@
 ---
-// Blog. Cada guía vive en la página de su herramienta (la herramienta arriba, la guía debajo);
-// aquí se listan todas, de la más nueva a la más antigua. Sale de src/datos/herramientas.ts.
+// Blog. Junta dos clases de texto, de la más nueva a la más antigua:
+// - las guías de las herramientas (viven debajo de su herramienta; salen de src/datos/herramientas.ts);
+// - los artículos sueltos, sin calculadora propia (src/articulos/*.md, en /blog/<nombre>/).
+// Un artículo con fecha de vencimiento ya pasada se marca «Terminó» (en el servidor al publicar, y
+// en el navegador de quien lee, por si nadie volvió a publicar el sitio).
 import Base from '../../layouts/Base.astro';
 import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
-const guias = [...herramientas].sort((a, b) => b.publicada.localeCompare(a.publicada));
+
+const archivos = import.meta.glob('../../articulos/*.md', { eager: true }) as Record<string, any>;
+const articulos = Object.entries(archivos).map(([ruta, md]) => ({
+  titulo: md.frontmatter.titulo as string,
+  resumen: md.frontmatter.resumen as string,
+  categoria: md.frontmatter.categoria as string,
+  publicada: md.frontmatter.publicada as string,
+  lectura: md.frontmatter.lectura as number,
+  vence: md.frontmatter.vence as string | undefined,
+  href: '/blog/' + ruta.split('/').pop()!.replace(/\.md$/, '') + '/',
+}));
+const guias = herramientas.map((h) => ({
+  titulo: h.guia, resumen: h.resumen, categoria: h.categoria, publicada: h.publicada, lectura: h.lectura,
+  vence: undefined as string | undefined, href: h.href + '#guia-t',
+}));
+const hoy = new Date().toISOString().slice(0, 10);
+const todos = [...articulos, ...guias].sort((a, b) => b.publicada.localeCompare(a.publicada));
 ---
 <Base
   titulo="Blog: guías prácticas para llevar su negocio | Coddvisor"
-  descripcion="Guías cortas y prácticas sobre caja, ventas, planilla y SUNAT para micro y pequeñas empresas del Perú. Cada una con una herramienta gratis.">
+  descripcion="Guías cortas y prácticas sobre caja, ventas, planilla y SUNAT para micro y pequeñas empresas del Perú, con herramientas gratis para hacerlo ahí mismo.">
 
 <section class="portada portada--interior osc" aria-labelledby="blog-t">
   <div class="brillo brillo--ambar" aria-hidden="true"></div>
@@ -15,23 +34,32 @@ const guias = [...herramientas].sort((a, b) => b.publicada.localeCompare(a.publi
     <span class="franja-sello" aria-hidden="true"></span>
     <p class="rotulo portada-rot">Blog</p>
     <h1 class="portada-t interior-t" id="blog-t">Guías prácticas <span class="cel">para llevar su negocio.</span></h1>
-    <p class="portada-baj">Caja, ventas, planilla y SUNAT, explicados con ejemplos. Cada guía viene con una herramienta gratis para hacerlo ahí mismo.</p>
+    <p class="portada-baj">Caja, ventas, planilla y SUNAT, explicados con ejemplos. La mayoría viene con una herramienta gratis para hacerlo ahí mismo.</p>
   </div>
 </section>
 
-<section class="lista-sec" aria-label="Guías">
+<section class="lista-sec" aria-label="Guías y artículos">
   <div class="col">
     <ul class="tarjetas tarjetas--blog">
-      {guias.map((h) => (
-        <li class="tarjeta">
-          <p class="tarjeta-cat">{h.categoria}</p>
-          <h2 class="tarjeta-t"><a href={h.href + '#guia-t'}>{h.guia}</a></h2>
-          <p class="tarjeta-tx">{h.resumen}</p>
-          <p class="tarjeta-meta">{autor} · <time datetime={h.publicada}>{fechaLarga(h.publicada)}</time> · {h.lectura} min</p>
+      {todos.map((x) => (
+        <li class="tarjeta" data-vence={x.vence}>
+          <p class="tarjeta-cat">{x.categoria}<span class="tarjeta-fin" hidden={!(x.vence && hoy > x.vence)}> · Terminó</span></p>
+          <h2 class="tarjeta-t"><a href={x.href}>{x.titulo}</a></h2>
+          <p class="tarjeta-tx">{x.resumen}</p>
+          <p class="tarjeta-meta">{autor} · <time datetime={x.publicada}>{fechaLarga(x.publicada)}</time> · {x.lectura} min</p>
         </li>
       ))}
     </ul>
   </div>
 </section>
 
+<script is:inline>
+  (function () {
+    var d = new Date(), dos = function (n) { return (n < 10 ? '0' : '') + n; };
+    var hoy = d.getFullYear() + '-' + dos(d.getMonth() + 1) + '-' + dos(d.getDate());
+    document.querySelectorAll('[data-vence]').forEach(function (li) {
+      if (hoy > li.getAttribute('data-vence')) li.querySelector('.tarjeta-fin').hidden = false;
+    });
+  })();
+</script>
 </Base>
