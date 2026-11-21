@@ -15,7 +15,13 @@
   var form = document.getElementById('grati');
   if (!form) return;
 
-  var ASIGNACION = 12300; // 10 % de S/ 1,230 (remuneración mínima desde el 1-oct-2026)
+  // Asignación familiar: 10 % de la remuneración mínima vigente hoy. La tabla de mínimas viene de
+  // src/datos/laboral.ts (la página la deja en window.CODDVISOR_MINIMAS); S/ 1,230 si no llegó.
+  var ASIGNACION = (function () {
+    var hoy = new Date().toISOString().slice(0, 10), rmv = 123000;
+    (window.CODDVISOR_MINIMAS || []).forEach(function (m) { if (m.desde <= hoy) rmv = m.rmv; });
+    return Math.round(rmv / 10);
+  })();
   var r = function (k) { return form.querySelector('[data-r="' + k + '"]'); };
   var el = function (n) { return form.elements[n]; };
 
