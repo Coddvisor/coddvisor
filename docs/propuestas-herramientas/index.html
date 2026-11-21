@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="es-PE" data-tema="claro" class="fluido">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuestas para las herramientas | Coddvisor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../../web/public/colores.css">
+<link rel="stylesheet" href="../../web/public/estilos.css">
+<link rel="stylesheet" href="../../web/public/fluido.css">
+<style>
+/* Documento de trabajo, NO es parte del sitio publicado. Se abre directo en el navegador desde
+   esta carpeta: toma los colores y estilos reales de web/public/. Ver LEEME.md de esta carpeta.
+   Propuestas: la calculadora del IGV, el cierre de caja y la guía, rediseñados.
+   Solo usa los colores de colores.css. Todo funciona: las cuentas se hacen en céntimos. */
+body { background:var(--fondo); }
+.pro-cab { background:var(--cobalto); color:var(--fondo); padding:clamp(40px, 6vw, 80px) 0 clamp(36px, 5vw, 64px); position:relative; overflow:clip; }
+.pro-cab .brillo--ambar { right:-300px; top:-300px; }
+.pro-cab .col { position:relative; }
+.pro-cab h1 { margin-top:16px; font-size:clamp(36px, 3vw + 18px, 60px); line-height:1; letter-spacing:-.04em; font-weight:700; max-width:18ch; text-wrap:balance; }
+.pro-cab p { margin-top:16px; max-width:60ch; color:var(--texto-claro-2); font-size:18px; }
+.pro-indice { margin-top:28px; display:flex; flex-wrap:wrap; gap:10px; }
+.pro-indice a { display:inline-flex; align-items:center; min-height:44px; padding:0 18px; border-radius:999px; background:var(--cobalto-2); color:var(--fondo); text-decoration:none; font-weight:600; border:1px solid var(--borde-oscuro); }
+.pro-indice a:hover { border-color:var(--celeste); }
+.pro-volver { color:var(--celeste-claro); font-size:15px; }
+
+.pro-sec { padding:clamp(64px, 8vw, 120px) 0 0; }
+.pro-sec:last-of-type { padding-bottom:clamp(64px, 8vw, 120px); }
+.pro-sec .titular { max-width:22ch; }
+.pro-nota { margin-top:14px; max-width:68ch; color:var(--texto-2); font-size:17px; line-height:1.6; }
+.pro-ideas { margin:18px 0 0; padding:0; list-style:none; display:flex; flex-wrap:wrap; gap:8px; }
+.pro-ideas li { padding:6px 12px; border-radius:999px; background:var(--hielo); color:var(--azul-real); font-size:13px; font-weight:600; }
+.pro-ideas li.h { background:var(--ambar-claro); color:var(--ambar-tostado); }
+.lienzo { margin-top:36px; border-radius:32px; background:var(--tarjeta); border:1px solid color-mix(in srgb, var(--borde) 80%, transparent); box-shadow:var(--sombra-alta); padding:clamp(20px, 4vw, 48px); overflow:hidden; }
+
+/* ---------- Control segmentado (estilo iOS) ---------- */
+.seg { position:relative; display:inline-grid; grid-auto-flow:column; grid-auto-columns:1fr; padding:4px; border-radius:14px; background:var(--superficie); border:1px solid var(--borde); }
+.seg input { position:absolute; opacity:0; pointer-events:none; }
+.seg label { position:relative; z-index:1; min-height:42px; padding:0 18px; display:grid; place-items:center; border-radius:10px; font-weight:600; font-size:15px; color:var(--texto-2); cursor:pointer; white-space:nowrap; transition:color .3s var(--suave); }
+.seg input:checked + label { color:var(--cobalto); }
+.seg input:focus-visible + label { outline:3px solid var(--azul-real); outline-offset:2px; }
+.seg-ficha { position:absolute; z-index:0; top:4px; bottom:4px; left:4px; border-radius:10px; background:var(--tarjeta); box-shadow:0 1px 2px rgba(11,24,65,.08), 0 6px 14px -6px rgba(11,24,65,.25); transition:transform .45s var(--suave), width .45s var(--suave); }
+
+/* ---------- IGV ---------- */
+.igv { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:clamp(24px, 4vw, 56px); align-items:start; }
+@media (max-width:900px) { .igv { grid-template-columns:minmax(0, 1fr); } }
+.igv-et { font:700 12px/1.4 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--texto-2); }
+.igv-monto { margin-top:10px; display:flex; align-items:baseline; gap:10px; padding:8px 0 14px; border-bottom:2px solid var(--cobalto); }
+.igv-monto span { font:700 28px var(--mono); color:var(--texto-3); }
+.igv-monto input { flex:1; min-width:0; border:0; background:transparent; font:700 clamp(48px, 5vw + 16px, 76px)/1 var(--sans); letter-spacing:-.04em; color:var(--cobalto); font-variant-numeric:tabular-nums; }
+.igv-monto input:focus { outline:none; }
+.igv-monto:focus-within { border-bottom-color:var(--azul-real); }
+.igv-rapidos { margin-top:14px; display:flex; flex-wrap:wrap; gap:8px; }
+.igv-rapidos button { min-height:38px; padding:0 14px; border-radius:999px; border:1px solid var(--borde-fuerte); background:var(--fondo); color:var(--cobalto); font:600 14px var(--sans); cursor:pointer; transition:background-color .2s, border-color .2s, transform .3s var(--resorte); }
+.igv-rapidos button:hover { border-color:var(--azul-real); transform:translateY(-1px); }
+.igv-grupo { margin-top:24px; display:grid; gap:10px; }
+.igv-grupo .seg { width:100%; }
+.igv-ayuda { font-size:14px; color:var(--texto-2); }
+
+.igv-res { position:relative; border-radius:24px; padding:clamp(20px, 3vw, 32px); background:var(--cobalto); color:var(--fondo); overflow:hidden; }
+.igv-res::before { content:""; position:absolute; right:-120px; top:-160px; width:420px; height:420px; border-radius:50%; background:radial-gradient(closest-side, rgba(255,143,31,.35), transparent); pointer-events:none; }
+.igv-res > * { position:relative; }
+.igv-res .igv-et { color:var(--celeste-claro); }
+.igv-grande { margin-top:10px; font:700 clamp(44px, 4vw + 18px, 72px)/1 var(--sans); letter-spacing:-.04em; color:var(--ambar); font-variant-numeric:tabular-nums; }
+.igv-frase { margin-top:10px; color:var(--texto-claro-2); font-size:17px; line-height:1.5; }
+.barra-rep { margin-top:24px; display:flex; height:56px; border-radius:16px; overflow:hidden; background:rgba(255,255,255,.08); }
+.barra-rep div { position:relative; display:flex; align-items:center; padding:0 12px; min-width:0; font:700 13px var(--mono); white-space:nowrap; overflow:hidden; transition:flex-grow .8s var(--suave); }
+.rep-suyo { background:linear-gradient(90deg, var(--azul-real), #3B74F0); }
+.rep-igv { background:var(--ambar); color:var(--cobalto); }
+.rep-ipm { background:var(--ambar-claro); color:var(--cobalto); }
+.leyenda-rep { margin-top:12px; display:grid; gap:8px; font-size:14px; }
+.leyenda-rep div { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.12); }
+.leyenda-rep b, .ver-dif b, .comp-mini p b, .balanza p b { white-space:nowrap; }
+.leyenda-rep span { display:inline-flex; align-items:center; gap:8px; color:var(--texto-claro-2); }
+.leyenda-rep i { width:10px; height:10px; border-radius:3px; }
+.leyenda-rep b { font-family:var(--mono); }
+.igv-acc { margin-top:18px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.boton-claro { min-height:44px; padding:0 18px; border-radius:12px; border:0; background:var(--hielo); color:var(--azul-real); font:600 15px var(--sans); cursor:pointer; }
+.boton-claro:hover { box-shadow:inset 0 0 0 1px currentColor; }
+.igv-aviso { font-size:13px; color:var(--celeste-claro); }
+.comp-mini { margin-top:20px; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
+.comp-mini > div { border-radius:14px; padding:12px 14px; background:rgba(255,255,255,.06); border:1px dashed rgba(255,255,255,.22); font-size:13px; }
+.comp-mini p { display:flex; justify-content:space-between; gap:8px; padding:3px 0; color:var(--texto-claro-2); }
+.comp-mini p b { color:var(--fondo); font-family:var(--mono); font-weight:700; }
+.comp-mini .t { font:700 11px var(--mono); letter-spacing:.06em; color:var(--celeste-claro); margin-bottom:6px; display:block; }
+@media (max-width:480px) { .comp-mini { grid-template-columns:minmax(0, 1fr); } }
+
+/* ---------- Cierre de caja ---------- */
+.cierre { display:grid; grid-template-columns:minmax(0, 1fr) minmax(280px, 340px); gap:clamp(20px, 3vw, 36px); align-items:start; }
+@media (max-width:1100px) { .cierre { grid-template-columns:minmax(0, 1fr); } .veredicto { position:static; } }
+.riel-caja { grid-column:1 / -1; }
+.riel { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); }
+.riel li { position:relative; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0 4px; text-align:center; font-weight:600; font-size:14px; line-height:1.25; color:var(--texto-3); }
+.riel li::before { content:""; position:absolute; z-index:0; top:16px; right:calc(50% + 22px); left:calc(-50% + 22px); height:2px; border-radius:2px; background:var(--borde); transition:background-color .5s var(--suave); }
+.riel li.hecho::before { background:var(--correcto); }
+.riel li:first-child::before { display:none; }
+.riel i { position:relative; z-index:1; flex:none; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:var(--superficie); border:2px solid var(--borde-fuerte); font:700 13px var(--mono); font-style:normal; color:var(--texto-2); transition:background-color .4s var(--suave), border-color .4s, color .4s, transform .5s var(--resorte); }
+.riel li.hecho i { background:var(--correcto); border-color:var(--correcto); color:var(--fondo); transform:scale(1.06); }
+.riel li.hecho { color:var(--cobalto); }
+.riel-barra { display:none; }
+.riel-tx { margin-top:12px; text-align:center; }
+@media (max-width:520px) { .riel li { font-size:12px; } .riel i { width:30px; height:30px; } .riel li::before { top:14px; } }
+.riel-tx { font:400 12px var(--mono); color:var(--texto-2); }
+
+.hoja { display:grid; gap:18px; min-width:0; }
+.paso { border-radius:22px; background:var(--fondo); border:1px solid var(--borde); padding:clamp(18px, 2.4vw, 26px); }
+.paso h3 { display:flex; align-items:center; gap:10px; font-size:19px; letter-spacing:-.01em; }
+.paso h3 i { width:28px; height:28px; border-radius:9px; display:inline-grid; place-items:center; background:var(--hielo); color:var(--azul-real); font:700 13px var(--mono); font-style:normal; }
+.paso-campos { margin-top:14px; display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px; }
+.paso .campo input { background:var(--tarjeta); }
+/* Conteo: dos columnas (billetes y monedas), una fila compacta por denominación. */
+.billetes { margin-top:14px; display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:4px 20px; }
+.conteo-g { display:grid; align-content:start; }
+.conteo-g-t { display:flex; justify-content:space-between; padding:0 2px 8px; border-bottom:2px solid var(--cobalto); font:700 11px/1.4 var(--mono); letter-spacing:.08em; color:var(--texto-2); }
+.billete { display:grid; grid-template-columns:64px auto minmax(0, 1fr); align-items:center; gap:10px; padding:7px 6px; border-bottom:1px solid var(--borde); border-radius:10px; transition:background-color .3s var(--suave); }
+.billete.tiene { background:color-mix(in srgb, var(--hielo) 70%, transparent); }
+.billete-cara { justify-self:center; display:grid; place-content:center; text-align:center; line-height:1; color:var(--fondo); transition:transform .35s var(--resorte); }
+.billete.toque .billete-cara { transform:scale(1.1); }
+.billete-cara b { font:700 14px/1 var(--mono); letter-spacing:-.02em; }
+.billete-cara small { font:600 9px/1 var(--sans); margin-top:2px; opacity:.85; }
+/* Billete: una ficha alargada con el monto centrado. */
+.billete:not(.moneda) .billete-cara { width:64px; height:34px; border-radius:8px; background:linear-gradient(120deg, var(--c), color-mix(in srgb, var(--c) 72%, #fff)); box-shadow:inset 0 0 0 1px rgba(255,255,255,.18); }
+.billete:not(.moneda) .billete-cara small { display:none; }
+/* Moneda: un círculo con el número centrado y la unidad pequeña debajo. */
+.moneda .billete-cara { width:40px; height:40px; border-radius:50%; color:var(--cobalto); }
+.moneda .billete-cara small { opacity:.75; }
+.moneda--sol .billete-cara { background:radial-gradient(circle at 34% 30%, #fff, transparent 62%), var(--hielo); border:2px solid var(--celeste-oscuro); }
+.moneda--cent .billete-cara { background:radial-gradient(circle at 34% 30%, #fff, transparent 62%), var(--ambar-claro); border:2px solid var(--ambar-tostado); }
+.contador { display:grid; grid-template-columns:32px 40px 32px; align-items:center; gap:4px; }
+.contador button { height:32px; border-radius:9px; border:1px solid var(--borde-fuerte); background:var(--tarjeta); color:var(--cobalto); font:700 17px/1 var(--sans); cursor:pointer; transition:border-color .2s, color .2s; }
+.contador button:hover { border-color:var(--azul-real); color:var(--azul-real); }
+.contador input { width:100%; min-height:32px; border:0; background:transparent; text-align:center; font:700 17px var(--mono); color:var(--cobalto); }
+.contador input:focus { outline:2px solid var(--azul-real); border-radius:8px; }
+.billete-sub { font:400 13px var(--mono); color:var(--texto-3); text-align:right; white-space:nowrap; }
+.billete.tiene .billete-sub { color:var(--cobalto); font-weight:700; }
+.paso-pie { margin-top:12px; display:flex; justify-content:space-between; font-weight:600; }
+.paso-pie b { font-family:var(--mono); }
+
+.veredicto { position:sticky; top:96px; border-radius:24px; padding:24px; background:var(--tarjeta); border:1px solid var(--borde); box-shadow:var(--sombra-alta); }
+.ver-estado { margin-top:10px; padding:18px; border-radius:18px; background:var(--superficie); transition:background-color .5s var(--suave); }
+.ver-estado[data-e="cuadra"] { background:var(--correcto-fondo); }
+.ver-estado[data-e="falta"] { background:var(--error-fondo); }
+.ver-estado[data-e="sobra"] { background:var(--ambar-claro); }
+.ver-v { font-size:28px; font-weight:700; letter-spacing:-.02em; line-height:1.1; }
+.ver-estado[data-e="cuadra"] .ver-v { color:var(--correcto); }
+.ver-estado[data-e="falta"] .ver-v { color:var(--error); }
+.ver-estado[data-e="sobra"] .ver-v { color:var(--ambar-tostado); }
+.ver-l { margin-top:6px; font-size:15px; color:var(--texto-2); }
+.balanza { margin-top:20px; display:grid; gap:12px; }
+.balanza > div { display:grid; gap:6px; }
+.balanza p { display:flex; justify-content:space-between; font-size:14px; color:var(--texto-2); }
+.balanza p b { font-family:var(--mono); color:var(--cobalto); }
+.balanza .pista { height:12px; border-radius:12px; background:var(--superficie); overflow:hidden; }
+.balanza .pista span { display:block; height:100%; border-radius:12px; width:0; transition:width .8s var(--suave); }
+.pista--deb .pista span { background:var(--cobalto-2); }
+.pista--hay .pista span { background:var(--franja); }
+.ver-dif { margin-top:16px; display:flex; justify-content:space-between; align-items:baseline; padding-top:14px; border-top:1px solid var(--borde); font-weight:700; }
+.ver-dif b { font:700 22px var(--mono); }
+.ver-acc { margin-top:18px; display:grid; gap:8px; }
+.ver-acc .btn { width:100%; }
+.enlace-boton { border:0; background:none; color:var(--texto-2); font:500 15px var(--sans); text-decoration:underline; text-underline-offset:3px; cursor:pointer; min-height:40px; }
+
+/* ---------- Guía: recorrido que se arma al bajar ---------- */
+.guia-pro { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:clamp(24px, 5vw, 72px); }
+@media (max-width:900px) { .guia-pro { grid-template-columns:minmax(0, 1fr); } .escena { position:relative !important; top:0 !important; order:-1; } }
+.pasos-pro { list-style:none; margin:0; padding:0; }
+.pasos-pro li { min-height:62vh; display:flex; flex-direction:column; justify-content:center; padding:24px 0; opacity:.32; transition:opacity .6s var(--suave); }
+.pasos-pro li.activo { opacity:1; }
+.pasos-pro li:first-child { min-height:50vh; }
+.pasos-pro li:last-child { min-height:80vh; justify-content:flex-start; padding-top:calc(40vh - 60px); }
+.pasos-pro .n { font:700 13px var(--mono); color:var(--azul-real); letter-spacing:.06em; }
+.pasos-pro h3 { margin-top:8px; font-size:clamp(24px, 1.4vw + 16px, 34px); line-height:1.1; letter-spacing:-.025em; }
+.pasos-pro p { margin-top:10px; font-size:18px; line-height:1.6; color:var(--texto-2); max-width:44ch; }
+@media (max-width:900px) { .pasos-pro li { min-height:auto; opacity:1; padding:18px 0; border-top:1px solid var(--borde); } }
+.escena { position:sticky; top:110px; align-self:start; border-radius:28px; padding:clamp(22px, 3vw, 36px); background:var(--cobalto); color:var(--fondo); min-height:420px; overflow:hidden; }
+.escena::before { content:""; position:absolute; left:-140px; bottom:-200px; width:460px; height:460px; border-radius:50%; background:radial-gradient(closest-side, rgba(21,84,224,.45), transparent); }
+.escena > * { position:relative; }
+.escena .igv-et { color:var(--celeste-claro); }
+.ecu { margin-top:18px; display:grid; gap:12px; }
+.ecu-l { display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; font:700 clamp(22px, 1.6vw + 12px, 32px)/1.2 var(--mono); opacity:0; transform:translateY(14px); filter:blur(6px); transition:opacity .6s var(--suave), transform .7s var(--suave), filter .6s var(--suave); }
+.ecu-l.ve { opacity:1; transform:none; filter:none; }
+.ecu-l small { font:500 14px var(--sans); color:var(--celeste-claro); }
+.ecu-l .am { color:var(--ambar); }
+.ecu-l .ce { color:var(--celeste); }
+.ecu-l .ok { color:#6FD3A5; }
+.escena-barra { margin-top:26px; display:flex; height:44px; border-radius:12px; overflow:hidden; background:rgba(255,255,255,.08); }
+.escena-barra div { display:flex; align-items:center; padding:0 12px; font:700 12px var(--mono); white-space:nowrap; overflow:hidden; flex-grow:0; transition:flex-grow 1s var(--suave); }
+.escena-barra .s { background:var(--azul-real); }
+.escena-barra .i { background:var(--ambar); color:var(--cobalto); }
+.escena-pie { margin-top:14px; font-size:14px; color:var(--texto-claro-2); }
+
+.errores { margin-top:clamp(48px, 6vw, 80px); display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:16px; }
+.error-c { border-radius:22px; border:1px solid var(--borde); background:var(--tarjeta); padding:22px; box-shadow:var(--sombra-suave); }
+.error-c h4 { font-size:18px; letter-spacing:-.01em; }
+.error-par { margin-top:14px; display:grid; gap:8px; }
+.error-par p { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; font:700 15px var(--mono); }
+.error-par .no { background:var(--error-fondo); color:var(--error); text-decoration:line-through; text-decoration-thickness:2px; }
+.error-par .si { background:var(--correcto-fondo); color:var(--correcto); }
+.error-par i { font-style:normal; text-decoration:none; display:inline-block; }
+.error-c > p { margin-top:12px; font-size:15px; color:var(--texto-2); line-height:1.5; }
+
+.resumen30 { margin-top:36px; display:grid; grid-template-columns:auto minmax(0, 1fr); gap:20px; align-items:center; padding:22px 26px; border-radius:22px; background:var(--hielo); }
+.resumen30 b.r { font:700 13px var(--mono); color:var(--azul-real); letter-spacing:.06em; }
+.resumen30 p { font-size:18px; line-height:1.55; }
+@media (max-width:620px) { .resumen30 { grid-template-columns:minmax(0, 1fr); } }
+
+/* ---------- Mejoras v2 ---------- */
+.resumen-cambios { margin-top:32px; display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap:12px; }
+.resumen-cambios div { border-radius:18px; padding:16px 18px; background:color-mix(in srgb, var(--cobalto-2) 80%, transparent); border:1px solid var(--borde-oscuro); }
+.resumen-cambios b { display:block; font-size:16px; }
+.resumen-cambios span { display:block; margin-top:6px; font-size:14px; line-height:1.45; color:var(--texto-claro-2); }
+.resumen-cambios em { font-style:normal; color:var(--ambar); font-weight:700; }
+
+.hoy { margin-top:18px; }
+.hoy summary { display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:0 14px; border-radius:999px; border:1px solid var(--borde-fuerte); background:var(--tarjeta); cursor:pointer; font-weight:600; font-size:14px; list-style:none; }
+.hoy summary::-webkit-details-marker { display:none; }
+.hoy summary::before { content:"+"; font-size:18px; line-height:1; color:var(--azul-real); transition:transform .3s var(--suave); }
+.hoy[open] summary::before { transform:rotate(45deg); }
+.hoy figure { margin:14px 0 0; }
+.hoy img { display:block; width:100%; max-width:860px; border-radius:18px; border:1px solid var(--borde); box-shadow:var(--sombra-suave); }
+.hoy figcaption { margin-top:8px; font:400 12px var(--mono); color:var(--texto-2); }
+
+.igv-cuenta { margin-top:24px; padding:16px 18px; border-radius:16px; background:var(--superficie); border:1px solid var(--borde); }
+.igv-cuenta-l { margin-top:6px; font:700 clamp(15px, .6vw + 11px, 18px)/1.7 var(--mono); color:var(--cobalto); }
+.igv-cuenta-l .ce { color:var(--azul-real); }
+.igv-cuenta-l .am { color:var(--ambar-tostado); }
+.igv-cuenta a { display:inline-block; margin-top:8px; font-size:14px; font-weight:600; }
+.comp-mini p.dni { margin-top:10px; display:none; justify-content:flex-start; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:12px; background:color-mix(in srgb, var(--ambar) 16%, transparent); border:1px solid color-mix(in srgb, var(--ambar) 55%, transparent); color:var(--ambar-claro); font-size:13px; font-weight:500; line-height:1.45; }
+.comp-mini p.dni b { color:#fff; font-family:var(--sans); font-weight:700; }
+.comp-mini p.dni.ve { display:flex; animation:pop .5s var(--resorte); }
+.dni i { flex:none; width:20px; height:20px; border-radius:50%; display:grid; place-items:center; background:var(--ambar); color:var(--cobalto); font:700 12px/1 var(--sans); font-style:normal; }
+
+.sugiere { margin-top:14px; display:grid; grid-template-columns:28px minmax(0, 1fr); gap:10px; padding:14px; border-radius:16px; background:var(--hielo); animation:pop .5s var(--resorte); }
+.sugiere[hidden] { display:none; }
+.sugiere svg { color:var(--azul-real); margin-top:2px; }
+.sugiere b { display:block; font:700 11px var(--mono); letter-spacing:.08em; color:var(--azul-real); }
+.sugiere p { margin-top:4px; font-size:14px; line-height:1.5; color:var(--cobalto); }
+.ver-nota { margin-top:10px; font-size:12px; line-height:1.5; color:var(--texto-2); text-align:center; }
+
+.ticket-caja { display:flex; justify-content:center; padding:8px 0 4px; }
+.ticket { position:relative; width:min(100%, 360px); padding:22px 22px 30px; background:var(--tarjeta); box-shadow:var(--sombra-alta); font:400 13px/1.6 var(--mono); color:var(--cobalto);
+  border-radius:4px 4px 0 0; }
+.ticket::after { content:""; position:absolute; left:0; right:0; bottom:-10px; height:10px; background:linear-gradient(135deg, var(--tarjeta) 50%, transparent 50%) 0 0 / 14px 10px repeat-x, linear-gradient(225deg, var(--tarjeta) 50%, transparent 50%) 0 0 / 14px 10px repeat-x; filter:drop-shadow(0 3px 2px rgba(11,24,65,.08)); }
+.ticket h4 { font:700 14px var(--mono); letter-spacing:.06em; text-align:center; }
+.ticket .sub { text-align:center; color:var(--texto-2); font-size:11px; }
+.ticket hr { border:0; border-top:1px dashed var(--borde-fuerte); margin:10px 0; }
+.ticket p { display:flex; justify-content:space-between; gap:10px; }
+.ticket .fuerte { font-weight:700; font-size:14px; }
+.ticket .estado { margin-top:8px; text-align:center; padding:6px; border-radius:6px; font-weight:700; background:var(--superficie); }
+.ticket .estado[data-e="cuadra"] { background:var(--correcto-fondo); color:var(--correcto); }
+.ticket .estado[data-e="falta"] { background:var(--error-fondo); color:var(--error); }
+.ticket .estado[data-e="sobra"] { background:var(--ambar-claro); color:var(--ambar-tostado); }
+.ticket .estado, .ticket .firma { display:block; }
+.ticket .firma { margin-top:26px; border-top:1px solid var(--cobalto); padding-top:4px; text-align:center; font-size:11px; color:var(--texto-2); }
+
+.guia-indice { position:sticky; top:12px; z-index:5; margin-top:28px; display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:6px; border-radius:16px; background:color-mix(in srgb, var(--tarjeta) 86%, transparent); -webkit-backdrop-filter:blur(16px) saturate(170%); backdrop-filter:blur(16px) saturate(170%); border:1px solid var(--borde); box-shadow:var(--sombra-suave); overflow:hidden; }
+.guia-indice a { min-height:36px; display:inline-flex; align-items:center; padding:0 14px; border-radius:10px; color:var(--texto-2); text-decoration:none; font-weight:600; font-size:14px; transition:background-color .3s, color .3s; }
+.guia-indice a.activo { background:var(--cobalto); color:var(--fondo); }
+.guia-indice .leido { position:absolute; left:0; bottom:0; height:3px; width:100%; background:var(--franja); transform-origin:0 50%; transform:scaleX(0); }
+.escena-prueba { margin-top:18px; display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); font-size:14px; color:var(--texto-claro-2); }
+.escena-prueba label { font-weight:600; color:var(--fondo); }
+.escena-prueba .monto-e { display:flex; align-items:center; gap:6px; padding:0 10px; border-radius:10px; background:var(--cobalto); border:1px solid var(--borde-oscuro); }
+.escena-prueba input { width:110px; min-height:38px; border:0; background:transparent; color:var(--ambar); font:700 16px var(--mono); }
+.escena-prueba input:focus { outline:none; }
+.escena-prueba .monto-e:focus-within { border-color:var(--celeste); }
+
+.barra-movil { display:none; }
+@media (max-width:1100px) {
+  .barra-movil.ve { display:flex; justify-content:space-between; align-items:center; gap:12px; position:fixed; z-index:55; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom, 0px)); min-height:56px; padding:0 18px; border-radius:16px; background:var(--cobalto); color:var(--fondo); font-weight:700; text-decoration:none; box-shadow:var(--sombra-honda); animation:pop .4s var(--resorte); }
+  .barra-movil b { font-family:var(--mono); color:var(--ambar); }
+  .barra-movil[data-e="cuadra"] { background:var(--correcto); }
+  .barra-movil[data-e="falta"] { background:var(--error); }
+  .barra-movil[data-e="cuadra"] b, .barra-movil[data-e="falta"] b { color:var(--fondo); }
+  .barra-movil span { font-weight:500; font-size:14px; }
+}
+
+@media (max-width:620px) {
+  .lienzo { padding:16px; border-radius:24px; margin-inline:calc(-1 * var(--gutter) + 8px); }
+  .igv-res, .veredicto, .escena { border-radius:20px; padding:18px; }
+  .igv-grande { font-size:44px; }
+  .seg label { padding:0 10px; font-size:14px; }
+  .ecu-l { font-size:18px; gap:4px 8px; }
+  .ecu-l small { flex-basis:100%; font-size:12px; margin-top:-2px; }
+  .escena { min-height:0; }
+  .escena-barra { height:38px; }
+  .guia-indice { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; }
+  .guia-indice::-webkit-scrollbar { display:none; }
+  .guia-indice a { flex:none; }
+  .resumen30 { padding:18px; }
+  .resumen30 p { font-size:16px; }
+  .pasos-pro h3 { font-size:22px; }
+  .pasos-pro p { font-size:16px; }
+  .paso { padding:16px; border-radius:18px; }
+  .billete { grid-template-columns:60px auto minmax(0, 1fr); padding:6px 2px; }
+  .ticket { padding:18px 16px 26px; font-size:12px; }
+  .pro-cab h1 { font-size:34px; }
+  .pro-indice a { min-height:40px; padding:0 14px; font-size:14px; }
+}
+@media (max-width:380px) {
+  .comp-mini { grid-template-columns:minmax(0, 1fr); }
+  .igv-monto input { font-size:44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dni.ve, .sugiere, .barra-movil.ve { animation:none !important; }
+  .seg-ficha, .barra-rep div, .riel-barra span, .balanza .pista span, .ecu-l, .escena-barra div, .pasos-pro li { transition:none !important; }
+}
+</style>
+</head>
+<body>
+<svg class="oculto" aria-hidden="true"><symbol id="logotipo" viewBox="0 0 10 10"></symbol></svg>
+
+<header class="pro-cab">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="col">
+    <p class="rotulo" style="margin-top:22px">Propuesta de diseño, todavía no está en el sitio</p>
+    <h1>Las herramientas, más fáciles de probar <span class="cel">y de entender.</span></h1>
+    <p>Tres piezas rediseñadas y funcionando: escriba montos y vea cómo responden. Cada una indica qué idea viene de Apple y cuál de Holded.</p>
+    <nav class="pro-indice" aria-label="Propuestas">
+      <a href="#p-igv">1. Calculadora del IGV</a>
+      <a href="#p-caja">2. Cierre de caja</a>
+      <a href="#p-guia">3. La guía, paso a paso</a>
+    </nav>
+    <div class="resumen-cambios">
+      <div><b>IGV</b><span>Se escribe y se responde al instante. Ahora muestra <em>la cuenta con sus números</em> y avisa cuando la boleta necesita el DNI.</span></div>
+      <div><b>Cierre de caja</b><span>Guiado, con ejemplo de un toque. Ahora <em>sugiere dónde buscar</em> la diferencia y muestra la hoja lista para firmar.</span></div>
+      <div><b>Guía</b><span>La cuenta se arma al bajar. Ahora <em>se prueba con su propio precio</em> y tiene un índice que acompaña la lectura.</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ================= 1. IGV ================= -->
+<section class="pro-sec" id="p-igv" aria-labelledby="p-igv-t">
+  <div class="col">
+    <p class="rotulo">Propuesta 1</p>
+    <h2 class="titular" id="p-igv-t">El IGV, <span class="az">como una calculadora.</span></h2>
+    <p class="pro-nota">Hoy son tarjetas de opciones grandes y un resultado en texto. Propuesta: un solo número grande para escribir, botones de un toque para elegir y una barra que muestra de un vistazo cuánto es suyo y cuánto es de la SUNAT.</p>
+    <ul class="pro-ideas">
+      <li>Apple: número protagonista y control segmentado</li>
+      <li>Apple: la respuesta cambia mientras escribe</li>
+      <li class="h">Holded: montos de ejemplo de un toque</li>
+      <li class="h">Holded: comprobante que se arma solo</li>
+    </ul>
+    <details class="hoy"><summary>Ver cómo está hoy</summary><figure><img src="hoy-igv.jpg" alt="La calculadora del IGV actual: campo de monto, tarjetas de opciones y resultado en texto a la derecha." loading="lazy"><figcaption>La calculadora del IGV en el sitio actual.</figcaption></figure></details>
+
+    <div class="lienzo">
+      <form class="igv" id="calc-igv" autocomplete="off" onsubmit="return false">
+        <div>
+          <label class="igv-et" for="igv-monto">Monto de la venta</label>
+          <div class="igv-monto"><span>S/</span><input id="igv-monto" type="text" inputmode="decimal" value="118.00" aria-describedby="igv-ayuda"></div>
+          <div class="igv-rapidos" aria-label="Montos de ejemplo">
+            <button type="button" data-m="25.90">S/ 25.90</button>
+            <button type="button" data-m="118">S/ 118</button>
+            <button type="button" data-m="500">S/ 500</button>
+            <button type="button" data-m="1180">S/ 1,180</button>
+          </div>
+
+          <div class="igv-grupo">
+            <p class="igv-et" id="g-incl">¿Ese monto ya incluye el IGV?</p>
+            <div class="seg" role="radiogroup" aria-labelledby="g-incl">
+              <span class="seg-ficha" aria-hidden="true"></span>
+              <input type="radio" name="incl" id="incl-si" value="si" checked><label for="incl-si">Ya lo incluye</label>
+              <input type="radio" name="incl" id="incl-no" value="no"><label for="incl-no">Todavía no</label>
+            </div>
+          </div>
+          <div class="igv-grupo">
+            <p class="igv-et" id="g-tasa">Su tasa</p>
+            <div class="seg" role="radiogroup" aria-labelledby="g-tasa">
+              <span class="seg-ficha" aria-hidden="true"></span>
+              <input type="radio" name="tasa" id="t-18" value="general" checked><label for="t-18">18 %</label>
+              <input type="radio" name="tasa" id="t-105" value="especial"><label for="t-105">10.5 %</label>
+              <input type="radio" name="tasa" id="t-rus" value="rus"><label for="t-rus">Nuevo RUS</label>
+            </div>
+            <p class="igv-ayuda" id="igv-ayuda" data-ayuda>La mayoría de negocios paga 18 %.</p>
+          </div>
+          <div class="igv-cuenta">
+            <p class="igv-et">La cuenta, con sus números</p>
+            <p class="igv-cuenta-l" data-o="cuenta">118.00 ÷ 1.18 = <span class="ce">100.00</span><br>118.00 − 100.00 = <span class="am">18.00</span></p>
+            <a href="#p-guia">Por qué se divide entre 1.18</a>
+          </div>
+        </div>
+
+        <div class="igv-res" aria-live="polite">
+          <p class="igv-et">De esta venta, es de la SUNAT</p>
+          <p class="igv-grande" data-o="igv">S/ 18.00</p>
+          <p class="igv-frase" data-o="frase">De los S/ 118.00 que paga el cliente, S/ 100.00 son suyos.</p>
+          <div class="barra-rep" aria-hidden="true">
+            <div class="rep-suyo" data-b="suyo" style="flex-grow:100">Suyo</div>
+            <div class="rep-igv" data-b="igv" style="flex-grow:15.5">IGV</div>
+            <div class="rep-ipm" data-b="ipm" style="flex-grow:2.5">IPM</div>
+          </div>
+          <div class="leyenda-rep">
+            <div><span><i style="background:var(--azul-real)"></i>Valor de venta (suyo)</span><b data-o="valor">S/ 100.00</b></div>
+            <div><span><i style="background:var(--ambar)"></i>IGV</span><b data-o="igvp">S/ 15.50</b></div>
+            <div><span><i style="background:var(--ambar-claro)"></i>Municipal (IPM)</span><b data-o="ipm">S/ 2.50</b></div>
+          </div>
+          <div class="comp-mini" aria-hidden="true">
+            <div><span class="t">BOLETA</span><p>Total<b data-o="b-total">S/ 118.00</b></p><p style="font-size:12px">El IGV va dentro</p><p class="dni" data-dni><i>!</i><span><b>Pasa de S/ 700.</b> La boleta lleva el nombre y el DNI del cliente.</span></p></div>
+            <div><span class="t">FACTURA</span><p>Op. gravada<b data-o="f-valor">S/ 100.00</b></p><p>IGV<b data-o="f-igv">S/ 18.00</b></p><p>Total<b data-o="f-total">S/ 118.00</b></p></div>
+          </div>
+          <div class="igv-acc">
+            <button type="button" class="boton-claro" data-copiar>Copiar resultado</button>
+            <span class="igv-aviso" data-copiado role="status"></span>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <a class="barra-movil" href="#p-igv" data-barra="igv">IGV de la venta <b data-o-barra="igv">S/ 18.00</b></a>
+</section>
+
+<!-- ================= 2. Cierre de caja ================= -->
+<section class="pro-sec" id="p-caja" aria-labelledby="p-caja-t">
+  <div class="col col--ancho">
+    <p class="rotulo">Propuesta 2</p>
+    <h2 class="titular" id="p-caja-t">El cierre de caja, <span class="az">guiado y con ejemplo.</span></h2>
+    <p class="pro-nota">Hoy hay que escribir cada número a mano y el resultado es una lista. Propuesta: un riel que marca cada paso al completarlo, billetes y monedas que se cuentan con + y −, y una balanza que compara lo que debería haber con lo que hay. El botón «Probar con un ejemplo» llena la hoja con el caso de la guía, para ver el resultado sin escribir nada.</p>
+    <ul class="pro-ideas">
+      <li>Apple: progreso visible paso a paso</li>
+      <li>Apple: contadores grandes para el dedo</li>
+      <li class="h">Holded: probar con datos de ejemplo</li>
+      <li class="h">Holded: resultado siempre a la vista</li>
+    </ul>
+    <details class="hoy"><summary>Ver cómo está hoy</summary><figure><img src="hoy-caja.jpg" alt="El cierre de caja actual: bloques de campos a la izquierda y lista de resultados a la derecha." loading="lazy"><figcaption>El cierre de caja en el sitio actual.</figcaption></figure></details>
+
+    <div class="lienzo">
+      <div class="cierre" id="cierre">
+        <div class="riel-caja">
+          <ol class="riel" aria-label="Avance">
+            <li data-r="1"><i>1</i>El turno</li>
+            <li data-r="2"><i>2</i>Lo que debería haber</li>
+            <li data-r="3"><i>3</i>Billetes y monedas</li>
+            <li data-r="4"><i>4</i>Otros medios</li>
+          </ol>
+          <div class="riel-barra"><span data-avance></span></div>
+          <p class="riel-tx" data-avance-tx>0 de 4 pasos</p>
+        </div>
+
+        <form class="hoja" autocomplete="off" onsubmit="return false">
+          <fieldset class="paso" data-p="1" style="margin:0">
+            <h3><i>1</i>El turno</h3>
+            <div class="paso-campos">
+              <div class="campo"><label for="c-sede">Sede o caja</label><input id="c-sede" type="text" placeholder="Ej. Sede Centro"></div>
+              <div class="campo"><label for="c-fecha">Fecha</label><input id="c-fecha" type="date"></div>
+              <div class="campo"><label for="c-quien">Quién cierra</label><input id="c-quien" type="text" placeholder="Nombre"></div>
+            </div>
+          </fieldset>
+          <fieldset class="paso" data-p="2" style="margin:0">
+            <h3><i>2</i>Lo que debería haber en efectivo</h3>
+            <div class="paso-campos">
+              <div class="campo"><label for="c-fondo">Fondo al abrir</label><div class="monto"><span>S/</span><input id="c-fondo" data-n="fondo" type="text" inputmode="decimal"></div></div>
+              <div class="campo"><label for="c-ventas">Ventas en efectivo</label><div class="monto"><span>S/</span><input id="c-ventas" data-n="ventas" type="text" inputmode="decimal"></div></div>
+              <div class="campo"><label for="c-gastos">Gastos pagados</label><div class="monto"><span>S/</span><input id="c-gastos" data-n="gastos" type="text" inputmode="decimal"></div></div>
+              <div class="campo"><label for="c-retiros">Retiros y depósitos</label><div class="monto"><span>S/</span><input id="c-retiros" data-n="retiros" type="text" inputmode="decimal"></div></div>
+            </div>
+          </fieldset>
+          <fieldset class="paso" data-p="3" style="margin:0">
+            <h3><i>3</i>Cuente billetes y monedas</h3>
+            <div class="billetes" data-billetes></div>
+            <p class="paso-pie"><span>Total contado</span><b data-o="contado">S/ 0.00</b></p>
+          </fieldset>
+          <fieldset class="paso" data-p="4" style="margin:0">
+            <h3><i>4</i>Lo que entró por otros medios <small style="font-weight:400;color:var(--texto-2)">(no está en el cajón)</small></h3>
+            <div class="paso-campos">
+              <div class="campo"><label for="c-yape">Yape y Plin</label><div class="monto"><span>S/</span><input id="c-yape" data-n="yape" type="text" inputmode="decimal"></div></div>
+              <div class="campo"><label for="c-tarjeta">Tarjeta y transferencias</label><div class="monto"><span>S/</span><input id="c-tarjeta" data-n="tarjeta" type="text" inputmode="decimal"></div></div>
+            </div>
+          </fieldset>
+          <div class="paso">
+            <h3><i>✓</i>Así queda su hoja</h3>
+            <div class="ticket-caja">
+              <div class="ticket" aria-label="Vista previa de la hoja de cierre">
+                <h4>CIERRE DE CAJA</h4>
+                <p class="sub" data-t="cab">Sede, fecha y quién cierra</p>
+                <hr>
+                <p><span>Fondo al abrir</span><span data-t="fondo">0.00</span></p>
+                <p><span>+ Ventas en efectivo</span><span data-t="ventas">0.00</span></p>
+                <p><span>− Gastos</span><span data-t="gastos">0.00</span></p>
+                <p><span>− Retiros</span><span data-t="retiros">0.00</span></p>
+                <hr>
+                <p class="fuerte"><span>Debería haber</span><span data-t="deb">0.00</span></p>
+                <p class="fuerte"><span>Hay contado</span><span data-t="hay">0.00</span></p>
+                <p class="estado" data-t="estado" data-e="vacio">Sin cerrar</p>
+                <p class="firma" data-t="firma">Firma de quien cierra</p>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <aside class="veredicto" aria-live="polite">
+          <p class="igv-et">Resultado</p>
+          <div class="ver-estado" data-e="vacio"><p class="ver-v" data-o="ver">Llene la hoja</p><p class="ver-l" data-o="ver-l">O pruebe con un ejemplo para ver cómo funciona.</p></div>
+          <div class="balanza">
+            <div class="pista--deb"><p><span>Debería haber</span><b data-o="deberia">S/ 0.00</b></p><div class="pista"><span data-pista="deb"></span></div></div>
+            <div class="pista--hay"><p><span>Hay contado</span><b data-o="hay">S/ 0.00</b></p><div class="pista"><span data-pista="hay"></span></div></div>
+          </div>
+          <div class="sugiere" data-sugiere hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2Z"/></svg><div><b>DÓNDE BUSCAR</b><p data-sugiere-tx></p></div></div>
+          <p class="ver-dif"><span>Diferencia</span><b data-o="dif">S/ 0.00</b></p>
+          <p class="ver-dif" style="border:0;padding-top:4px;font-weight:500"><span>Venta total del día</span><b data-o="total" style="font-size:16px">S/ 0.00</b></p>
+          <div class="ver-acc">
+            <button type="button" class="btn" data-ejemplo>Probar con un ejemplo</button>
+            <button type="button" class="enlace-boton" data-limpiar>Empezar de nuevo</button>
+          </div>
+          <p class="ver-nota">Lo que escribe se queda en este navegador. No llega a nosotros.</p>
+        </aside>
+      </div>
+    </div>
+  </div>
+</section>
+
+<a class="barra-movil" href="#cierre" data-barra="caja" data-e="vacio"><span data-o-barra="caja-tx">Llene la hoja</span><b data-o-barra="caja">S/ 0.00</b></a>
+
+<!-- ================= 3. Guía ================= -->
+<section class="pro-sec" id="p-guia" aria-labelledby="p-guia-t">
+  <div class="col">
+    <p class="rotulo">Propuesta 3</p>
+    <h2 class="titular" id="p-guia-t">La guía, <span class="az">que se arma mientras baja.</span></h2>
+    <p class="pro-nota">Hoy la guía es un artículo largo y la fórmula es un recuadro de texto. Propuesta: arriba, la respuesta en 30 segundos. Debajo, el paso a paso: a la izquierda cada paso y a la derecha la cuenta, que se va armando al bajar, como en las páginas de producto de Apple. Al final, los errores comunes como tarjetas de «así no / así sí». El texto completo de la guía se queda igual, para Google.</p>
+    <ul class="pro-ideas">
+      <li>Apple: recorrido fijo que cambia al bajar</li>
+      <li>Apple: una idea por pantalla</li>
+      <li class="h">Holded: respuesta corta primero</li>
+      <li class="h">Holded: errores como tarjetas</li>
+    </ul>
+    <details class="hoy"><summary>Ver cómo está hoy</summary><figure><img src="hoy-guia.jpg" alt="La guía actual del IGV: texto corrido con un recuadro de fórmula." loading="lazy"><figcaption>La guía del IGV en el sitio actual.</figcaption></figure></details>
+
+    <nav class="guia-indice" aria-label="En esta guía">
+      <a href="#g-resumen" data-ind="g-resumen">En 30 segundos</a>
+      <a href="#g-pasos" data-ind="g-pasos">Paso a paso</a>
+      <a href="#g-errores" data-ind="g-errores">Errores comunes</a>
+      <span class="leido" data-leido></span>
+    </nav>
+
+    <div class="resumen30" id="g-resumen">
+      <b class="r">EN 30 SEGUNDOS</b>
+      <p>Si el precio ya incluye el IGV, <b>divídalo entre 1.18</b>: eso es suyo. Lo que sobra es el IGV. Con S/ 118, son S/ 100 suyos y S/ 18 de la SUNAT.</p>
+    </div>
+
+    <div class="guia-pro" style="margin-top:24px" id="g-pasos">
+      <ol class="pasos-pro" data-pasos>
+        <li data-paso="0"><span class="n">PASO 1</span><h3>Vea si el precio ya incluye el IGV.</h3><p>En una tienda, casi siempre sí: el precio de la etiqueta es lo que paga el cliente. Tomemos una prenda de S/ 118.</p></li>
+        <li data-paso="1"><span class="n">PASO 2</span><h3>Confirme su tasa.</h3><p>Para la mayoría es 18 %. Por eso el precio es el valor de venta multiplicado por 1.18.</p></li>
+        <li data-paso="2"><span class="n">PASO 3</span><h3>Saque el valor de venta.</h3><p>Divida el precio entre 1.18. Lo que queda es lo que realmente vendió.</p></li>
+        <li data-paso="3"><span class="n">PASO 4</span><h3>Saque el IGV.</h3><p>Reste el valor de venta del precio. Ese dinero solo pasa por su caja: es de la SUNAT.</p></li>
+        <li data-paso="4"><span class="n">PASO 5</span><h3>Compruebe que cuadra.</h3><p>Redondee a dos decimales al final, una sola vez, y revise que valor de venta más IGV dé exactamente el precio.</p></li>
+      </ol>
+      <div class="escena">
+        <p class="igv-et">La cuenta, paso a paso</p>
+        <div class="ecu" aria-live="polite">
+          <p class="ecu-l" data-l="0"><span data-e="p">S/ 118.00</span> <small>precio de la etiqueta</small></p>
+          <p class="ecu-l" data-l="1"><span class="ce">= valor × 1.18</span> <small>con la tasa de 18 %</small></p>
+          <p class="ecu-l" data-l="2"><span data-e="p2">118.00</span> ÷ 1.18 = <span class="ce" data-e="v">100.00</span> <small>suyo</small></p>
+          <p class="ecu-l" data-l="3"><span data-e="p3">118.00</span> − <span data-e="v2">100.00</span> = <span class="am" data-e="i">18.00</span> <small>de la SUNAT</small></p>
+          <p class="ecu-l" data-l="4"><span class="ok"><span data-e="v3">100.00</span> + <span data-e="i2">18.00</span> = <span data-e="p4">118.00</span> ✓</span></p>
+        </div>
+        <div class="escena-barra">
+          <div class="s" data-eb="s">Suyo S/ 100.00</div>
+          <div class="i" data-eb="i">IGV S/ 18.00</div>
+        </div>
+        <div class="escena-prueba"><label for="esc-precio">Pruebe con su precio</label><span class="monto-e"><span>S/</span><input id="esc-precio" type="text" inputmode="decimal" value="118.00"></span></div>
+      </div>
+    </div>
+
+    <div class="errores" id="g-errores">
+      <article class="error-c">
+        <h4>Multiplicar el precio por 0.18</h4>
+        <div class="error-par"><p class="no">118 × 0.18 = 21.24</p><p class="si"><i>✓</i> 118 ÷ 1.18 = 100 → IGV 18.00</p></div>
+        <p>El 18 % se aplica sobre el valor de venta, no sobre el precio final.</p>
+      </article>
+      <article class="error-c">
+        <h4>Sumarle IGV a un precio que ya lo tenía</h4>
+        <div class="error-par"><p class="no">118 + 18 % = 139.24</p><p class="si"><i>✓</i> Cobrar 118.00, con IGV incluido</p></div>
+        <p>Ponga en la etiqueta el precio final, con el IGV adentro.</p>
+      </article>
+      <article class="error-c">
+        <h4>Redondear en cada paso</h4>
+        <div class="error-par"><p class="no">Redondear cada línea</p><p class="si"><i>✓</i> Redondear una vez, al final</p></div>
+        <p>Los céntimos que se pierden en cada paso se acumulan en el mes.</p>
+      </article>
+    </div>
+    <p class="maqueta-rot maqueta-rot--claro" style="text-align:left">Las cifras de la guía son las mismas de la guía actual del IGV (tasas de 2026).</p>
+  </div>
+</section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var menos = false;
+  try { menos = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  function cent(t) { var n = parseFloat(String(t || '').replace(/,/g, '').trim()); return isFinite(n) && n > 0 ? Math.round(n * 100) : 0; }
+  function soles(c) { var neg = c < 0; c = Math.abs(c); return (neg ? '− ' : '') + 'S/ ' + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+  /* Número que cuenta hasta su valor (como en las páginas de Apple). */
+  var anim = new WeakMap();
+  function contar(el, c) {
+    var desde = anim.has(el) ? anim.get(el) : c;
+    anim.set(el, c);
+    if (menos || desde === c) { el.textContent = soles(c); return; }
+    var t0 = performance.now(), dur = 500;
+    (function paso(t) {
+      var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = soles(Math.round(desde + (c - desde) * e));
+      if (p < 1 && anim.get(el) === c) requestAnimationFrame(paso);
+    })(t0);
+  }
+
+  /* Ficha deslizante de los controles segmentados. */
+  function segmentos() {
+    document.querySelectorAll('.seg').forEach(function (s) {
+      var f = s.querySelector('.seg-ficha'), l = s.querySelector('input:checked + label');
+      if (!f || !l) return;
+      f.style.width = l.offsetWidth + 'px';
+      f.style.transform = 'translateX(' + (l.offsetLeft - 4) + 'px)';
+    });
+  }
+
+  /* ---------- 1. IGV (tasas 2026 en centésimas de punto, como igv.js) ---------- */
+  var TASAS = { general: { igv: 1550, ipm: 250 }, especial: { igv: 800, ipm: 250 } };
+  var f = document.getElementById('calc-igv');
+  var o = function (k) { return f.querySelector('[data-o="' + k + '"]'); };
+  var b = function (k) { return f.querySelector('[data-b="' + k + '"]'); };
+  function igv() {
+    var monto = cent(f.querySelector('#igv-monto').value);
+    var incl = f.querySelector('input[name="incl"]:checked').value === 'si';
+    var tasa = f.querySelector('input[name="tasa"]:checked').value;
+    var ayuda = f.querySelector('[data-ayuda]');
+    var valor, igvT, igvP, ipm, precio;
+    if (tasa === 'rus') {
+      valor = monto; igvT = 0; igvP = 0; ipm = 0; precio = monto;
+      ayuda.textContent = 'En el Nuevo RUS no se cobra IGV aparte: paga una cuota fija al mes.';
+    } else {
+      var t = TASAS[tasa], total = t.igv + t.ipm;
+      ayuda.textContent = tasa === 'general' ? 'La mayoría de negocios paga 18 %. En 2026: 15.5 % de IGV + 2.5 % municipal.' : 'Solo restaurantes, hoteles y alojamientos mype que cumplen los requisitos de SUNAT.';
+      if (incl) { precio = monto; valor = Math.round(monto * 10000 / (10000 + total)); igvT = precio - valor; }
+      else { valor = monto; igvT = Math.round(monto * total / 10000); precio = valor + igvT; }
+      ipm = Math.round(igvT * t.ipm / total); igvP = igvT - ipm;
+    }
+    contar(o('igv'), igvT);
+    o('frase').textContent = tasa === 'rus'
+      ? 'Con el Nuevo RUS, los ' + soles(precio) + ' son suyos; el impuesto va en su cuota mensual.'
+      : 'De los ' + soles(precio) + ' que paga el cliente, ' + soles(valor) + ' son suyos.';
+    o('valor').textContent = soles(valor); o('igvp').textContent = soles(igvP); o('ipm').textContent = soles(ipm);
+    o('b-total').textContent = soles(precio); o('f-valor').textContent = soles(valor); o('f-igv').textContent = soles(igvT); o('f-total').textContent = soles(precio);
+    // La cuenta con los números de la persona (une la calculadora con la guía).
+    var d = function (c) { return (c / 100).toFixed(2); };
+    var div = tasa === 'especial' ? '1.105' : '1.18';
+    o('cuenta').innerHTML = tasa === 'rus'
+      ? 'Nuevo RUS: sin IGV aparte.<br>Todo el monto es suyo.'
+      : (incl ? d(precio) + ' ÷ ' + div + ' = <span class="ce">' + d(valor) + '</span><br>' + d(precio) + ' − ' + d(valor) + ' = <span class="am">' + d(igvT) + '</span>'
+              : d(valor) + ' × ' + (tasa === 'especial' ? '0.105' : '0.18') + ' = <span class="am">' + d(igvT) + '</span><br>' + d(valor) + ' + ' + d(igvT) + ' = <span class="ce">' + d(precio) + '</span>');
+    f.querySelector('[data-dni]').classList.toggle('ve', precio > 70000);
+    var bm = document.querySelector('[data-o-barra="igv"]'); if (bm) bm.textContent = soles(igvT);
+    var base = Math.max(1, precio);
+    b('suyo').style.flexGrow = (valor / base * 100).toFixed(2);
+    b('igv').style.flexGrow = (igvP / base * 100).toFixed(2);
+    b('ipm').style.flexGrow = (ipm / base * 100).toFixed(2);
+    segmentos();
+  }
+  f.addEventListener('input', igv);
+  f.addEventListener('change', igv);
+  f.querySelectorAll('[data-m]').forEach(function (x) {
+    x.addEventListener('click', function () { f.querySelector('#igv-monto').value = x.getAttribute('data-m'); igv(); });
+  });
+  f.querySelector('[data-copiar]').addEventListener('click', function () {
+    var txt = 'Precio ' + f.querySelector('[data-o="b-total"]').textContent + ': valor de venta ' + o('valor').textContent + ', IGV ' + o('f-igv').textContent + '.';
+    var aviso = f.querySelector('[data-copiado]');
+    var ok = function () { aviso.textContent = 'Copiado.'; setTimeout(function () { aviso.textContent = ''; }, 2400); };
+    try { navigator.clipboard.writeText(txt).then(ok, function () { aviso.textContent = txt; }); } catch (e) { aviso.textContent = txt; }
+  });
+
+  /* ---------- 2. Cierre de caja ---------- */
+  var c = document.getElementById('cierre');
+  var DEN = [[20000, 'Billete'], [10000, 'Billete'], [5000, 'Billete'], [2000, 'Billete'], [1000, 'Billete'], [500, 'Moneda'], [200, 'Moneda'], [100, 'Moneda'], [50, 'Moneda'], [20, 'Moneda'], [10, 'Moneda']];
+  var COLOR = { 20000: '#0B1841', 10000: '#1554E0', 5000: '#B05008', 2000: '#0A86C7', 1000: '#0B6B41' };
+  var cont = c.querySelector('[data-billetes]');
+  // Dos grupos: billetes a la izquierda, monedas a la derecha (en celular, uno debajo del otro).
+  var grupos = { Billete: document.createElement('div'), Moneda: document.createElement('div') };
+  [['Billete', 'BILLETES'], ['Moneda', 'MONEDAS']].forEach(function (g) {
+    grupos[g[0]].className = 'conteo-g';
+    grupos[g[0]].innerHTML = '<p class="conteo-g-t"><span>' + g[1] + '</span><span>SUBTOTAL</span></p>';
+    cont.appendChild(grupos[g[0]]);
+  });
+  DEN.forEach(function (d) {
+    var v = d[0], esSol = v >= 100, nombre = esSol ? 'S/ ' + v / 100 : v + ' céntimos';
+    var cara = d[1] === 'Billete'
+      ? '<b>S/ ' + v / 100 + '</b>'
+      : '<b>' + (esSol ? v / 100 : v) + '</b><small>' + (esSol ? 'S/' : 'cént.') + '</small>';
+    var el = document.createElement('div');
+    el.className = 'billete' + (d[1] === 'Moneda' ? ' moneda ' + (esSol ? 'moneda--sol' : 'moneda--cent') : '');
+    if (COLOR[v]) el.style.setProperty('--c', COLOR[v]);
+    el.innerHTML = '<span class="billete-cara" aria-hidden="true">' + cara + '</span>' +
+      '<div class="contador"><button type="button" aria-label="Uno menos de ' + nombre + '" data-d="-1">−</button><input type="text" inputmode="numeric" value="0" aria-label="Cantidad de ' + nombre + '" data-den="' + v + '"><button type="button" aria-label="Uno más de ' + nombre + '" data-d="1">+</button></div>' +
+      '<span class="billete-sub">—</span>';
+    grupos[d[1]].appendChild(el);
+  });
+  var maxPista = 1;
+  function cierre() {
+    var n = function (k) { var x = c.querySelector('[data-n="' + k + '"]'); return cent(x && x.value); };
+    var deb = n('fondo') + n('ventas') - n('gastos') - n('retiros');
+    var hay = 0, alguno = false;
+    c.querySelectorAll('[data-den]').forEach(function (inp) {
+      var q = Math.max(0, parseInt(inp.value, 10) || 0), sub = q * +inp.getAttribute('data-den');
+      hay += sub; if (q) alguno = true;
+      var caja = inp.closest('.billete');
+      caja.classList.toggle('tiene', q > 0);
+      caja.querySelector('.billete-sub').textContent = q ? soles(sub) : '—';
+    });
+    contar(c.querySelector('[data-o="contado"]'), hay);
+    contar(c.querySelector('[data-o="deberia"]'), deb);
+    contar(c.querySelector('[data-o="hay"]'), hay);
+    contar(c.querySelector('[data-o="total"]'), n('ventas') + n('yape') + n('tarjeta'));
+    var dif = hay - deb;
+    c.querySelector('[data-o="dif"]').textContent = soles(dif);
+    maxPista = Math.max(deb, hay, 1);
+    c.querySelector('[data-pista="deb"]').style.width = (Math.max(0, deb) / maxPista * 100) + '%';
+    c.querySelector('[data-pista="hay"]').style.width = (hay / maxPista * 100) + '%';
+    var est = c.querySelector('.ver-estado'), v = c.querySelector('[data-o="ver"]'), l = c.querySelector('[data-o="ver-l"]');
+    var paso2 = n('fondo') || n('ventas');
+    if (!paso2 || !alguno) { est.setAttribute('data-e', 'vacio'); v.textContent = 'Llene la hoja'; l.textContent = 'O pruebe con un ejemplo para ver cómo funciona.'; }
+    else if (dif === 0) { est.setAttribute('data-e', 'cuadra'); v.textContent = 'La caja cuadra'; l.textContent = 'Lo contado es igual a lo que debería haber.'; }
+    else if (dif < 0) { est.setAttribute('data-e', 'falta'); v.textContent = 'Faltan ' + soles(-dif); l.textContent = 'Revise primero un Yape anotado como efectivo o un gasto sin anotar.'; }
+    else { est.setAttribute('data-e', 'sobra'); v.textContent = 'Sobran ' + soles(dif); l.textContent = 'Revise el vuelto y las ventas en efectivo sin anotar.'; }
+    // Dónde buscar: Coddvisor aconseja con los números de la hoja.
+    var sg = c.querySelector('[data-sugiere]'), sgt = c.querySelector('[data-sugiere-tx]');
+    var a = Math.abs(dif), pista = '';
+    if (paso2 && alguno && dif !== 0) {
+      var DENS = [20000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10];
+      var confusion = null;
+      for (var x = 0; x < DENS.length && !confusion; x++) for (var y = 0; y < DENS.length; y++) if (DENS[x] - DENS[y] === a) { confusion = [DENS[x], DENS[y]]; break; }
+      var nombre = function (v) { return v >= 100 ? 'S/ ' + v / 100 : v + ' céntimos'; };
+      if (a <= 50) pista = 'Son céntimos: revise las monedas de 10, 20 y 50 céntimos y los vueltos redondeados.';
+      else if (DENS.indexOf(a) >= 0) pista = 'Es justo ' + (a >= 1000 ? 'un billete' : 'una moneda') + ' de ' + nombre(a) + ': revise si en un vuelto se dio o se recibió uno de más.' + (dif < 0 && (n('yape') || n('tarjeta')) ? ' También puede ser un Yape anotado como efectivo.' : '');
+      else if (confusion) pista = 'Coincide con confundir un billete de ' + nombre(confusion[0]) + ' con uno de ' + nombre(confusion[1]) + ' en un vuelto.';
+      else if (dif < 0) pista = 'Revise primero un Yape o Plin anotado como efectivo, y después un gasto que no se apuntó.';
+      else pista = 'Revise una venta en efectivo que no se anotó o un gasto anotado dos veces.';
+    }
+    sg.hidden = !pista; sgt.textContent = pista;
+    // La hoja final, como queda para imprimir y firmar.
+    var t = function (k) { return c.querySelector('[data-t="' + k + '"]'); };
+    var dd = function (v) { return (v < 0 ? '−' : '') + (Math.abs(v) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+    var sede = c.querySelector('#c-sede').value.trim(), quien = c.querySelector('#c-quien').value.trim(), fecha = c.querySelector('#c-fecha').value;
+    var fechaTx = fecha ? fecha.split('-').reverse().join('/') : '';
+    t('cab').textContent = [sede, fechaTx, quien].filter(Boolean).join('  |  ') || 'Sede, fecha y quién cierra';
+    t('fondo').textContent = dd(n('fondo')); t('ventas').textContent = dd(n('ventas')); t('gastos').textContent = dd(n('gastos')); t('retiros').textContent = dd(n('retiros'));
+    t('deb').textContent = dd(deb); t('hay').textContent = dd(hay);
+    var e = est.getAttribute('data-e');
+    t('estado').setAttribute('data-e', e);
+    t('estado').textContent = e === 'cuadra' ? 'CUADRA' : e === 'falta' ? 'FALTAN ' + dd(-dif) : e === 'sobra' ? 'SOBRAN ' + dd(dif) : 'Sin cerrar';
+    t('firma').textContent = quien ? 'Firma de ' + quien : 'Firma de quien cierra';
+    var bc = document.querySelector('[data-barra="caja"]');
+    bc.setAttribute('data-e', e);
+    document.querySelector('[data-o-barra="caja-tx"]').textContent = e === 'vacio' ? 'Llene la hoja' : v.textContent;
+    document.querySelector('[data-o-barra="caja"]').textContent = soles(dif);
+    // Riel: un paso está hecho cuando tiene datos.
+    var hechos = [c.querySelector('#c-sede').value.trim() || c.querySelector('#c-quien').value.trim(), paso2, alguno, n('yape') || n('tarjeta')];
+    var cuenta = 0;
+    hechos.forEach(function (h, i) { var li = c.querySelector('[data-r="' + (i + 1) + '"]'); li.classList.toggle('hecho', !!h); if (h) cuenta++; });
+    c.querySelector('[data-avance]').style.width = (cuenta / 4 * 100) + '%';
+    c.querySelector('[data-avance-tx]').textContent = cuenta + ' de 4 pasos';
+  }
+  c.addEventListener('input', cierre);
+  c.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-d]');
+    if (!btn) return;
+    var inp = btn.parentNode.querySelector('input');
+    inp.value = Math.max(0, (parseInt(inp.value, 10) || 0) + +btn.getAttribute('data-d'));
+    var caja = btn.closest('.billete'); caja.classList.toggle('toque', true); setTimeout(function () { caja.classList.toggle('toque', false); }, 200);
+    cierre();
+  });
+  // El ejemplo de la guía: abrió con S/ 200, vendió S/ 1,350 en efectivo, taxi S/ 25, depósito S/ 1,000.
+  // Debería haber S/ 525; se cuentan S/ 515, así que faltan S/ 10.
+  var hoy = new Date(); c.querySelector('#c-fecha').value = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+  var EJEMPLO = { 'c-sede': 'Sede Centro', 'c-quien': 'Ana', 'c-fondo': '200', 'c-ventas': '1350', 'c-gastos': '25', 'c-retiros': '1000', 'c-yape': '480.50', 'c-tarjeta': '120' };
+  var CONTEO = { 20000: 1, 10000: 2, 5000: 1, 2000: 2, 1000: 2, 500: 1 }; // = S/ 515.00
+  c.querySelector('[data-ejemplo]').addEventListener('click', function () {
+    Object.keys(EJEMPLO).forEach(function (id) { c.querySelector('#' + id).value = EJEMPLO[id]; });
+    c.querySelectorAll('[data-den]').forEach(function (inp) { inp.value = CONTEO[inp.getAttribute('data-den')] || 0; });
+    cierre();
+  });
+  c.querySelector('[data-limpiar]').addEventListener('click', function () {
+    c.querySelectorAll('input').forEach(function (i) { if (i.type !== 'date') i.value = i.hasAttribute('data-den') ? '0' : ''; });
+    cierre();
+  });
+
+  /* ---------- 3. Guía: la cuenta se arma al bajar ---------- */
+  var pasos = Array.prototype.slice.call(document.querySelectorAll('[data-paso]'));
+  var lineas = Array.prototype.slice.call(document.querySelectorAll('[data-l]'));
+  var eS = document.querySelector('[data-eb="s"]'), eI = document.querySelector('[data-eb="i"]');
+  var actual = 4;
+  function mostrar(k) {
+    actual = k;
+    pasos.forEach(function (p, i) { p.classList.toggle('activo', i === k); });
+    lineas.forEach(function (l, i) { l.classList.toggle('ve', i <= k); });
+    eS.style.flexGrow = k >= 2 ? (eS.dataset.peso || 100) : 0;
+    eI.style.flexGrow = k >= 3 ? (eI.dataset.peso || 18) : 0;
+  }
+  var angosto = matchMedia('(max-width: 900px)');
+  if (menos || angosto.matches || !('IntersectionObserver' in window)) { mostrar(4); }
+  else {
+    // El paso activo es el que tiene su texto más cerca del centro de la pantalla.
+    // La tarjeta de la cuenta queda centrada en vertical mientras se recorren los pasos.
+    var escenaEl = document.querySelector('.escena');
+    var centrar = function () { escenaEl.style.top = Math.max(84, Math.round((innerHeight - escenaEl.offsetHeight) / 2)) + 'px'; };
+    var elegir = function () {
+      var mitad = innerHeight / 2, mejor = 0, dist = Infinity;
+      pasos.forEach(function (p, i) {
+        var t = p.querySelector('h3').getBoundingClientRect(), d = Math.abs((t.top + t.bottom) / 2 - mitad);
+        if (d < dist) { dist = d; mejor = i; }
+      });
+      if (mejor !== actual) mostrar(mejor);
+      centrar();
+    };
+    mostrar(0); centrar(); elegir();
+    addEventListener('scroll', function () { requestAnimationFrame(elegir); }, { passive: true });
+    addEventListener('resize', function () { centrar(); elegir(); });
+  }
+
+  /* La cuenta de la guía con el precio de la persona. */
+  var ep = document.getElementById('esc-precio');
+  function escena() {
+    var pr = cent(ep.value) || 11800, va = Math.round(pr * 10000 / 11800), ig = pr - va;
+    var d2 = function (c) { return (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+    var put = function (k, v) { document.querySelectorAll('[data-e="' + k + '"]').forEach(function (el) { el.textContent = v; }); };
+    put('p', 'S/ ' + d2(pr)); put('p2', d2(pr)); put('p3', d2(pr)); put('p4', d2(pr));
+    put('v', d2(va)); put('v2', d2(va)); put('v3', d2(va)); put('i', d2(ig)); put('i2', d2(ig));
+    eS.textContent = 'Suyo S/ ' + d2(va); eI.textContent = 'IGV S/ ' + d2(ig);
+    eI.dataset.peso = (ig / pr * 100).toFixed(2); eS.dataset.peso = (va / pr * 100).toFixed(2);
+    mostrar(actual);
+  }
+  ep.addEventListener('input', escena);
+
+  /* Índice de la guía: marca la parte que se lee y la barra de lectura. */
+  var ind = Array.prototype.slice.call(document.querySelectorAll('[data-ind]'));
+  var leido = document.querySelector('[data-leido]'), guiaSec = document.getElementById('p-guia');
+  function indice() {
+    var r = guiaSec.getBoundingClientRect(), vh = innerHeight;
+    leido.style.transform = 'scaleX(' + Math.min(1, Math.max(0, (vh * .3 - r.top) / (r.height - vh * .5))).toFixed(3) + ')';
+    var act = ind[0];
+    ind.forEach(function (a) { var el = document.getElementById(a.getAttribute('data-ind')); if (el && el.getBoundingClientRect().top < vh * .4) act = a; });
+    ind.forEach(function (a) { a.classList.toggle('activo', a === act); });
+  }
+  addEventListener('scroll', function () { requestAnimationFrame(indice); }, { passive: true });
+
+  /* Celular: el resultado viaja abajo mientras se escribe y no se ve la tarjeta. */
+  function barra(sel, objetivo, seccion) {
+    var bm = document.querySelector(sel), obj = document.querySelector(objetivo), sec = document.querySelector(seccion);
+    if (!bm || !obj || !('IntersectionObserver' in window)) return;
+    var verObj = true, verSec = false;
+    var poner = function () { bm.classList.toggle('ve', verSec && !verObj); };
+    new IntersectionObserver(function (es) { verObj = es[0].isIntersecting; poner(); }).observe(obj);
+    new IntersectionObserver(function (es) { verSec = es[0].isIntersecting; poner(); }, { rootMargin: '0px 0px -30% 0px' }).observe(sec);
+  }
+  barra('[data-barra="igv"]', '.igv-res', '#calc-igv');
+  barra('[data-barra="caja"]', '.veredicto', '#cierre .hoja');
+
+  window.addEventListener('resize', segmentos);
+  igv(); cierre(); escena(); indice();
+  if (document.fonts) document.fonts.ready.then(segmentos);
+})();
+</script>
+</body>
+</html>
