@@ -591,6 +591,31 @@ html:not(.js) form[data-form] { display:none; }
 .guia-faq { margin-top:16px; }
 .guia-faq summary { font-size:18px; }
 
+/* Artículos sueltos del blog (src/articulos/*.md, en /blog/<nombre>/). El texto viene de Markdown:
+   sus ## son h2 y su primer «>» es el aviso destacado de arriba. */
+.art-volver { color:var(--celeste-claro); text-underline-offset:3px; }
+.art-t { max-width:22ch; font-size:clamp(34px, 3vw + 16px, 56px); }
+.art-meta { color:var(--celeste-claro); }
+.art { padding-top:clamp(40px, 5vw, 64px); }
+.art-cuerpo { margin-top:0; }
+.art-cuerpo > p:first-of-type { font-size:20px; color:var(--cobalto); }
+.art-cuerpo h2 { margin-top:40px; font-size:24px; line-height:1.2; letter-spacing:-.01em; font-weight:700; }
+.art-cuerpo ul, .art-cuerpo ol { margin:14px 0 0; padding-left:1.3em; display:grid; gap:10px; color:var(--texto-2); }
+.art-cuerpo ol li::marker { font:700 15px var(--mono); color:var(--azul-real); }
+.art-cuerpo blockquote { margin:0 0 24px; padding:16px 18px; border-radius:14px; background:var(--aviso-fondo); color:var(--aviso); font-size:17px; line-height:1.55; }
+.art-cuerpo blockquote p { margin:0; color:inherit; }
+.art-cuerpo blockquote p::before { content:"▲ "; font-size:.8em; }
+.art-cuerpo table { margin-top:16px; width:100%; border-collapse:collapse; font-size:15px; font-variant-numeric:tabular-nums; }
+.art-cuerpo th, .art-cuerpo td { padding:10px 12px; border-bottom:1px solid var(--borde); text-align:left; }
+.art-cuerpo th { font:700 12px/1.4 var(--mono); letter-spacing:.06em; text-transform:uppercase; color:var(--texto-2); }
+.art-cuerpo td:not(:first-child), .art-cuerpo th:not(:first-child) { text-align:right; font-family:var(--mono); }
+.art-cierre { margin-top:48px; padding:24px; border-radius:20px; background:var(--superficie); border:1px solid var(--borde); }
+.art-cierre p { color:var(--cobalto); font-size:18px; line-height:1.55; }
+.art-cierre .portada-acc { margin-top:18px; }
+.art-vencido { margin:0 0 24px; padding:14px 16px; border-radius:14px; background:var(--error-fondo); color:var(--error); font-weight:600; }
+.art-vencido::before { content:"✕ "; }
+.tarjeta-fin { color:var(--error); }
+
 /* Índices de herramientas y del blog */
 .lista-sec { padding:clamp(40px, 5vw, 72px) 0 var(--pad-sec); }
 .tarjetas { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px; }

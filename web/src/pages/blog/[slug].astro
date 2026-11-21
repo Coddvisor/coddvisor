@@ -1,0 +1,81 @@
+---
+// Artículos del blog que no tienen calculadora propia (por ejemplo, el subsidio o el sueldo mínimo).
+// Cada uno es un archivo de texto en src/articulos/<nombre>.md y se publica en /blog/<nombre>/.
+// Las guías de las herramientas NO van aquí: viven debajo de su herramienta.
+//
+// Encabezado de cada archivo: titulo, resumen, categoria, lectura (min), publicada, verificada,
+// cierre (la única mención de Coddvisor), enlace { texto, href } a una herramienta, fuentes
+// [{ norma, enlace }] y, si el tema tiene fecha de fin, vence (AAAA-MM-DD) y vencido (el aviso).
+import Base from '../../layouts/Base.astro';
+import { llamado } from '../../datos/navegacion';
+import { autor, fechaLarga } from '../../datos/herramientas';
+
+export function getStaticPaths() {
+  const archivos = import.meta.glob('../../articulos/*.md', { eager: true }) as Record<string, any>;
+  return Object.entries(archivos).map(([ruta, md]) => ({
+    params: { slug: ruta.split('/').pop()!.replace(/\.md$/, '') },
+    props: { md },
+  }));
+}
+
+const { md } = Astro.props;
+const a = md.frontmatter;
+const Contenido = md.Content;
+// Si el sitio se vuelve a publicar después del vencimiento, el aviso ya sale visible desde el servidor.
+const hoy = new Date().toISOString().slice(0, 10);
+const vencidoYa = a.vence && hoy > a.vence;
+---
+<Base titulo={a.titulo + ' | Coddvisor'} descripcion={a.resumen}>
+
+<section class="portada portada--interior osc" aria-labelledby="art-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot"><a class="art-volver" href="/blog/">Blog</a> · {a.categoria}</p>
+    <h1 class="portada-t interior-t art-t" id="art-t">{a.titulo}</h1>
+    <p class="guia-meta art-meta">{autor} · <time datetime={a.publicada}>{fechaLarga(a.publicada)}</time> · {a.lectura} min de lectura</p>
+  </div>
+</section>
+
+<article class="guia art" aria-labelledby="art-t">
+  <div class="col guia-in">
+    {a.vence && (
+      <p class="art-vencido" data-vence={a.vence} hidden={!vencidoYa}>{a.vencido}</p>
+    )}
+    <div class="guia-cuerpo art-cuerpo">
+      <Contenido />
+    </div>
+
+    <div class="art-cierre">
+      <p>{a.cierre}</p>
+      <div class="portada-acc">
+        <a class="btn" href={llamado.href}>{llamado.texto}</a>
+        {a.enlace && <a class="btn-2 btn-2--claro" href={a.enlace.href}>{a.enlace.texto}</a>}
+      </div>
+    </div>
+
+    <div class="verificada">
+      <p><b>Verificada contra la norma el {fechaLarga(a.verificada)}.</b> Revísela con su contador.</p>
+      <ul>
+        {(a.fuentes || []).map((f: { norma: string; enlace: string }) => (
+          <li><a href={f.enlace} rel="noopener" target="_blank">{f.norma}</a></li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</article>
+
+{a.vence && (
+  <script is:inline>
+    // El aviso de vencimiento se enciende en el navegador de quien lee, aunque el sitio no se haya
+    // vuelto a publicar después de la fecha.
+    (function () {
+      var p = document.querySelector('[data-vence]');
+      if (!p) return;
+      var d = new Date(), dos = function (n) { return (n < 10 ? '0' : '') + n; };
+      var hoy = d.getFullYear() + '-' + dos(d.getMonth() + 1) + '-' + dos(d.getDate());
+      if (hoy > p.getAttribute('data-vence')) p.hidden = false;
+    })();
+  </script>
+)}
+</Base>
