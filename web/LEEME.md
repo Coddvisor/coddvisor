@@ -100,6 +100,33 @@ con capturas de cómo estaban antes, está en `docs/propuestas-herramientas/`.
   centro de la pantalla enciende sus líneas en la tarjeta de al lado (`data-paso` y `data-l`).
   «Si no cuadra» va en tarjetas, con las mismas palabras.
 
+## Artículos del blog sin calculadora
+
+Hay temas que no llevan una herramienta propia (un subsidio, el sueldo mínimo).
+Cada uno es un archivo de texto en `src/articulos/<nombre>.md` y se publica solo
+en `/blog/<nombre>/`, con el mismo molde (`src/pages/blog/[slug].astro`). El
+índice del blog los junta con las guías de las herramientas, por fecha.
+
+Para agregar uno: copie el borrador aprobado a `src/articulos/`, sin las notas
+internas, y complete su encabezado: `titulo`, `resumen`, `categoria`,
+`lectura`, `publicada`, `verificada`, `cierre` (la única mención de Coddvisor),
+`enlaces` (una lista de herramientas a las que lleva) y `fuentes`. Si el tema tiene fecha de fin, sume
+`vence` y `vencido`: desde el día siguiente el artículo muestra ese aviso
+arriba y el blog lo marca «Terminó», aunque nadie vuelva a publicar el sitio.
+
+## Calendario de revisión
+
+Fechas en que algo del sitio queda viejo si nadie lo revisa:
+
+| Cuándo | Qué revisar |
+|---|---|
+| Cuando salga la lista del subsidio (hacia el 2 de diciembre de 2026) | `src/articulos/subsidio-microempresas.md`: poner arriba la fecha real y el enlace a la resolución |
+| 31 de diciembre de 2026 | El subsidio termina. El aviso sale solo; decidir si se retira el artículo |
+| Enero de 2027 | IGV: el texto dice «en 2026 es 10.5 %» (la tasa especial pasa a 15 %). CTS: revisar si se aprobó el proyecto de ley que amplía el retiro total |
+| Cuando salga el decreto del mínimo de S/ 1,300 (primer semestre de 2027) | Agregar la fila en `src/datos/laboral.ts` y actualizar `src/articulos/sueldo-minimo.md` (su tabla dice «estimado») |
+| Junio de 2027 | Gratificación: pasar al semestre de enero a junio y al plazo del 15 de julio |
+| Abril y octubre de cada año | Revisión de las fórmulas laborales antes de los depósitos de CTS y las gratificaciones |
+
 ## Una página nueva
 
 1. Crea el archivo en `src/pages/` (por ejemplo `seguridad.astro` → `/seguridad/`).
