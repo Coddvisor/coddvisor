@@ -1,6 +1,8 @@
 # Propuestas para las herramientas gratis
 
-Documento de trabajo, **no está publicado**: es una propuesta de diseño para las herramientas
+Documento de trabajo. **Ya está implementada** en las páginas de cada herramienta
+(`web/src/pages/herramientas/`); esta carpeta queda como registro de la propuesta original y de
+cómo se veían antes. Es una propuesta de diseño para las herramientas
 del sitio (calculadora del IGV, cierre de caja y la guía de cada una). Todo funciona: las cuentas
 se hacen en céntimos y con las tasas de 2026, igual que `web/public/herramientas/`.
 

@@ -67,6 +67,26 @@ Reglas de toda herramienta:
 Orden acordado: cierre de caja → IGV → gratificación → vacaciones → CTS →
 costo real de un integrante.
 
+### El diseño de las herramientas (un solo lugar)
+
+Todas comparten `public/herramientas/herramienta.css` (se carga solo en esas páginas, con
+`<link slot="cabeza">`) y `public/herramientas/guia.js` (la guía de abajo). La propuesta original,
+con capturas de cómo estaban antes, está en `docs/propuestas-herramientas/`.
+
+- **La herramienta** va en una tarjeta grande (`.lienzo`). Botones de un toque (`.seg`) en lugar de
+  menús; el resultado cuenta hasta su valor; en celular y tableta, el resultado viaja en una barra
+  fija abajo (`.barra-movil`) mientras se escribe.
+- **Cierre de caja:** pasos arriba que se marcan al completarse, conteo con + y −, «Dónde buscar»
+  cuando no cuadra (según el monto: un billete justo, dos billetes confundidos en un vuelto,
+  céntimos o un Yape anotado como efectivo), la hoja final lista para firmar (es lo único que sale
+  al imprimir) y «Probar con un ejemplo» (el caso de la guía: faltan S/ 10).
+- **IGV:** la cuenta escrita con los números de la persona, la barra «suyo / SUNAT» y los
+  comprobantes que se arman solos (con el aviso del DNI en boletas de más de S/ 700).
+- **La guía conserva todo su texto** (es lo que posiciona en Google). Arriba, «En 30 segundos» y
+  un índice que acompaña la lectura. El paso a paso se arma al bajar: el paso cuyo título está al
+  centro de la pantalla enciende sus líneas en la tarjeta de al lado (`data-paso` y `data-l`).
+  «Si no cuadra» va en tarjetas, con las mismas palabras.
+
 ## Una página nueva
 
 1. Crea el archivo en `src/pages/` (por ejemplo `seguridad.astro` → `/seguridad/`).

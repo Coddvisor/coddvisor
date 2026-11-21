@@ -161,7 +161,7 @@
     var cabH = cab ? cab.getBoundingClientRect().height : 0;
     var arriba = cabH + 28, libre = window.innerHeight - arriba - 24;
     // En una sección: se mide desde su contenido (sin el relleno de arriba) hasta su final.
-    var caja = el.matches('section') ? el.querySelector(':scope > .col, :scope > .enmarcado, :scope > div:not(.brillo)') : null;
+    var caja = el.matches('section') ? (el.querySelector(':scope > .col, :scope > .enmarcado, :scope > div:not(.brillo)') || el) : null;
     var primero = caja ? caja.firstElementChild : null;
     while (primero && !primero.getBoundingClientRect().height) primero = primero.nextElementSibling;
     // Posición real en la página (offsetTop no cuenta las animaciones de aparición, que mueven
