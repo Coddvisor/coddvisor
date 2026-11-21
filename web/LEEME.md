@@ -18,6 +18,7 @@ cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar
 | `public/colores.css`     | Los colores de marca. Copia fiel del archivo de marca: no se edita aquí |
 | `public/estilos.css`     | Tonos de apoyo, qué color usa cada pieza, letras, espacios, celular |
 | `public/sitio.js`        | El movimiento: panel de la portada, pestañas, formularios y aparición al bajar |
+| `public/fluido.css`, `public/fluido.js` | La capa «fluida»: acabado (vidrio, sombras suaves, degradados) y movimiento al estilo de las páginas de Apple. Solo agrega; ver «La capa fluida» |
 | `functions/api/contacto.js` | Lo único que corre en el servidor: recibe el formulario de contacto, lo guarda y avisa por correo |
 | `migrations/`            | Cómo es la tabla donde se guardan los pedidos de contacto    |
 | `public/favicon*`, `public/apple-touch-icon.png` | Los íconos de la pestaña y del iPhone |
@@ -67,6 +68,26 @@ Reglas de toda herramienta:
 
 Orden acordado: cierre de caja → IGV → gratificación → vacaciones → CTS →
 costo real de un integrante.
+
+### El diseño de las herramientas (un solo lugar)
+
+Todas comparten `public/herramientas/herramienta.css` (se carga solo en esas páginas, con
+`<link slot="cabeza">`) y `public/herramientas/guia.js` (la guía de abajo). La propuesta original,
+con capturas de cómo estaban antes, está en `docs/propuestas-herramientas/`.
+
+- **La herramienta** va en una tarjeta grande (`.lienzo`). Botones de un toque (`.seg`) en lugar de
+  menús; el resultado cuenta hasta su valor; en celular y tableta, el resultado viaja en una barra
+  fija abajo (`.barra-movil`) mientras se escribe.
+- **Cierre de caja:** pasos arriba que se marcan al completarse, conteo con + y −, «Dónde buscar»
+  cuando no cuadra (según el monto: un billete justo, dos billetes confundidos en un vuelto,
+  céntimos o un Yape anotado como efectivo), la hoja final lista para firmar (es lo único que sale
+  al imprimir) y «Probar con un ejemplo» (el caso de la guía: faltan S/ 10).
+- **IGV:** la cuenta escrita con los números de la persona, la barra «suyo / SUNAT» y los
+  comprobantes que se arman solos (con el aviso del DNI en boletas de más de S/ 700).
+- **La guía conserva todo su texto** (es lo que posiciona en Google). Arriba, «En 30 segundos» y
+  un índice que acompaña la lectura. El paso a paso se arma al bajar: el paso cuyo título está al
+  centro de la pantalla enciende sus líneas en la tarjeta de al lado (`data-paso` y `data-l`).
+  «Si no cuadra» va en tarjetas, con las mismas palabras.
 
 ## Una página nueva
 
@@ -196,13 +217,70 @@ Todo vive en `public/sitio.js` y nada se anima si la persona pidió menos movimi
 su teléfono o computadora:
 
 - **Panel «¿Cómo le va hoy?»:** cuando entra en pantalla, cuenta el día (seis
-  ventas y tres pendientes que se resuelven) y se queda en el estado final.
+  ventas y tres pendientes que se resuelven), se queda unos segundos en el estado final y
+  vuelve a empezar. Solo avanza mientras se ve.
 - **Pestañas de «Qué hace»:** avanzan solas cada 6.6 s mientras se ven; se
   pausan con el mouse o el teclado encima y se detienen al primer clic.
 - **Aparición al bajar:** las secciones entran con un fundido suave.
 - **Menú:** un grupo abierto a la vez; Escape lo cierra; en celular se cierra
   solo al tocar un enlace. Si `sitio.js` no carga, los grupos igual se abren
   (son `<details>`), y en celular el menú no aparece, como antes.
+
+## La capa fluida
+
+`fluido.css` y `fluido.js` se cargan después de `estilos.css` (y `fluido.js` antes de `sitio.js`).
+No borran ni reemplazan nada: todo cuelga de la clase `fluido` en `<html>` (en `Base.astro`).
+**Para volver al diseño anterior basta con quitar esa clase.** Qué agrega:
+
+- **Cabecera de vidrio:** sólida arriba; al bajar se vuelve algo transparente y desenfoca lo de atrás.
+- **Barra de lectura:** la franja de marca crece arriba de todo mientras se baja.
+- **Portada:** el texto entra línea por línea; el panel llega inclinado y se endereza al bajar; con
+  mouse, el panel y los brillos siguen un poco al puntero.
+- **Dato que abre:** el 76.5 % cuenta desde cero y las palabras del párrafo se encienden al bajar.
+- **Tarjetas:** borde fino, sombra en capas, y se elevan al pasar el mouse.
+- **Recorrido:** en pantallas anchas, una línea une los cuatro pasos y se dibuja al bajar.
+- **Etapa:** la barra se llena hasta «hoy» cuando aparece.
+- **Preguntas:** se abren deslizando (en navegadores que ya lo permiten; en los demás, como antes).
+- **Aparición al bajar:** más recorrido, con desenfoque; también para pestañas, preguntas y contacto.
+- **Cabecera clara:** sobre las franjas claras se vuelve blanca translúcida, con logotipo y menú en
+  cobalto; sobre las oscuras sigue en cobalto.
+- **Barra flotante (solo portada):** «Ver qué hace» y «Quiero probarlo» a mano después de la portada;
+  se esconde al llegar a Contacto y con el menú del celular abierto.
+- **Avisos sobre las maquetas de «Qué hace»:** una cápsula flotante por pantalla («Boleta emitida
+  por S/ 249.80»…). Usan los mismos datos inventados de la maqueta y solo se ven con la capa.
+
+- **Líneas bajo el 76.5 %:** los registros sueltos (cuaderno, Excel, WhatsApp...) se juntan en
+  «Un solo lugar». Las curvas se calculan en `Hilos.astro` al armar el sitio.
+- **«A dónde va cada sol»** (`Flujo.astro`): un diagrama de Sankey con un día de ventas de ejemplo
+  (sedes → medio de pago → IGV, costo, gastos y planilla, y lo que queda). Cuadra al céntimo: las
+  sedes suman los S/ 4,320.50 del panel de la portada y el IGV es venta ÷ 1.18, como en la
+  herramienta. Se dibuja al aparecer; al tocar una parte se encienden sus cintas y se explica con
+  montos. Las etiquetas de la columna del medio, que quedan encima de las cintas, van en una
+  cápsula blanca para distinguirlas. Hay una tabla oculta con los mismos datos para lectores de
+  pantalla.
+- **«Lo que ya funciona»** (`Modulos.astro`): cada parte que la portada dice que existe, con una
+  mini pantalla en bucle. Compras y Producción en taller van «EN DESARROLLO».
+- **«Todo conectado»** (`Conectado.astro`): el núcleo con cada parte alrededor y un mapa del Perú
+  hecho de puntos con tres sedes ilustrativas. Los puntos salen de `src/datos/mapa-peru.ts`
+  (Natural Earth, dominio público). Los montos suman S/ 4,320.50, como el panel de la portada.
+- Las ilustraciones en bucle solo se mueven mientras están en pantalla.
+
+Ideas tomadas de la portada de holded.com (estructura, no estética). Se descartaron a propósito sus
+logos de clientes, cifras de usuarios, reseñas, avisos de «alguien acaba de unirse» y ofertas con
+cuenta regresiva: van contra las reglas de contenido de abajo.
+
+Con «menos movimiento» activado en el teléfono o la computadora, queda el acabado y nada se mueve.
+
+## La página de error (404)
+
+Arriba, el mensaje y una escena en bucle de unos 36 segundos (`src/components/GatoError.astro`
+y `public/gato-error.js`): el gato del logo persigue un ovillo que deja el hilo en el piso, da
+vueltas, se echa a dormir, lo despierta una luciérnaga y se va detrás de ella; reaparece por la
+izquierda. La cabeza es el isotipo de la marca, en ámbar como sobre fondo oscuro. El reloj solo
+avanza mientras la escena se ve; con «menos movimiento» el gato se queda dormido y quieto.
+
+Debajo, los caminos en tres grupos de tarjetas (Producto, Herramientas gratis y Coddvisor), que
+salen de `navegacion.ts` y `herramientas.ts`. Al final, «Quiero probarlo»: el único botón lleno.
 
 ## El logotipo
 

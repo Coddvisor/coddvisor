@@ -1,0 +1,105 @@
+---
+// Sección «Todo conectado» (capa fluida): dos ilustraciones animadas, en bucle.
+// 1. El núcleo: Coddvisor al centro y cada parte del sistema alrededor, con pulsos que viajan.
+//    Solo entran las partes que ya funcionan (las mismas que dice la portada).
+// 2. El mapa: un Perú hecho de puntos con tres sedes ilustrativas que mandan su venta del día al
+//    resumen. Los montos suman S/ 4,320.50, igual que el panel de la portada. Datos inventados.
+import { ancho, alto, puntos, sedes } from '../datos/mapa-peru';
+
+// ---- Núcleo ----
+const NW = 560, NH = 420, ncx = NW / 2, ncy = NH / 2;
+const partes = ['Venta', 'Caja', 'Inventario', 'Asistencia', 'Planilla', 'Gastos', 'Cuentas de dinero', 'Estados financieros'];
+const nodos = partes.map((t, i) => {
+  const a = -Math.PI / 2 + (i * 2 * Math.PI) / partes.length;
+  const x = ncx + Math.cos(a) * 205, y = ncy + Math.sin(a) * 158;
+  const w = t.length * 8.3 + 46;
+  // Curva suave del centro al nodo: el punto de control se corre un poco hacia un lado.
+  const mx = (ncx + x) / 2 + Math.sin(a) * 26, my = (ncy + y) / 2 - Math.cos(a) * 26;
+  return { t, x, y, w, d: `M${ncx} ${ncy}Q${mx.toFixed(1)} ${my.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}` };
+});
+
+// ---- Mapa ----
+const vx = -70, vy = -14, vw = ancho + 150, vh = alto + 28;
+const pct = ([x, y]: readonly [number, number]) => ({ l: (((x - vx) / vw) * 100).toFixed(2), t: (((y - vy) / vh) * 100).toFixed(2) });
+const [nx, ny] = sedes.norte, [cx, cy] = sedes.centro, [sx, sy] = sedes.sur;
+const arcos = [
+  `M${nx} ${ny}Q${nx - 34} ${(ny + cy) / 2 + 10} ${cx} ${cy}`,
+  `M${sx} ${sy}Q${(sx + cx) / 2 - 30} ${sy + 22} ${cx} ${cy}`,
+];
+const pN = pct(sedes.norte), pC = pct(sedes.centro), pS = pct(sedes.sur);
+---
+<section class="conectado solo-fluido" aria-labelledby="conectado-t">
+  <div class="col">
+    <div data-aparece>
+      <p class="rotulo">Todo conectado</p>
+      <h2 class="titular titular--ancho" id="conectado-t">Todo pasa por el mismo lugar. <span class="az">Esté donde esté cada sede.</span></h2>
+    </div>
+
+    <div class="bento bento--2">
+      <article class="bloque" data-aparece>
+        <div class="bloque-tx">
+          <h3>Un solo sistema</h3>
+          <p>Venta, caja, inventario, asistencia y planilla usan los mismos datos. Lo que pasa en una parte ya está en las demás.</p>
+        </div>
+        <div class="nucleo" data-bucle>
+          <svg viewBox={`-50 0 ${NW + 100} ${NH}`} role="img" aria-label={`Coddvisor al centro, conectado con: ${partes.join(', ')}.`}>
+            <circle class="nucleo-orbita" cx={ncx} cy={ncy} r="120" />
+            <circle class="nucleo-orbita nucleo-orbita--2" cx={ncx} cy={ncy} r="190" />
+            <g class="nucleo-lineas">
+              {nodos.map((n, i) => <>
+                <path class="nucleo-l" d={n.d} pathLength="1" />
+                <path class="nucleo-pulso" d={n.d} pathLength="1" style={`--i:${i}`} />
+              </>)}
+            </g>
+            <g class="nucleo-centro">
+              <circle class="nucleo-halo" cx={ncx} cy={ncy} r="78" />
+              <circle class="nucleo-disco" cx={ncx} cy={ncy} r="60" />
+              <svg x={ncx - 46} y={ncy - 7} width="92" height="14" viewBox="0 0 444.95 67" class="nucleo-logo"><use href="#logotipo" /></svg>
+            </g>
+            {nodos.map((n, i) => (
+              <g class="nucleo-nodo" style={`--i:${i}`}>
+                <rect x={(n.x - n.w / 2).toFixed(1)} y={(n.y - 17).toFixed(1)} width={n.w.toFixed(1)} height="34" rx="17" />
+                <circle cx={(n.x - n.w / 2 + 16).toFixed(1)} cy={n.y.toFixed(1)} r="4.5" />
+                <text x={(n.x + 8).toFixed(1)} y={(n.y + 4.5).toFixed(1)} text-anchor="middle">{n.t}</text>
+              </g>
+            ))}
+          </svg>
+        </div>
+      </article>
+
+      <article class="bloque" data-aparece style="--d:.1s">
+        <div class="bloque-tx">
+          <h3>Varias sedes, un solo resumen</h3>
+          <p>Cada sede con su caja y su stock. Usted ve todas juntas en una pantalla, desde donde esté.</p>
+        </div>
+        <div class="mapa" data-bucle>
+          <svg viewBox={`${vx} ${vy} ${vw} ${vh}`} aria-hidden="true">
+            <defs>
+              <linearGradient id="mapa-tono" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={alto}>
+                <stop offset="0" style="stop-color:var(--azul-real)" />
+                <stop offset="1" style="stop-color:var(--celeste)" />
+              </linearGradient>
+            </defs>
+            <g class="mapa-puntos" fill="url(#mapa-tono)">
+              {puntos.map(([x, y]) => <circle cx={x} cy={y} r="2.5" />)}
+            </g>
+            <g class="mapa-arcos" fill="none">
+              {arcos.map((d, i) => <><path class="mapa-arco" d={d} pathLength="1" /><path class="mapa-viaje" d={d} pathLength="1" style={`--i:${i}`} /></>)}
+            </g>
+            {[sedes.norte, sedes.centro, sedes.sur].map(([x, y], i) => (
+              <g class="mapa-sede" style={`--i:${i}`}>
+                <circle class="mapa-onda" cx={x} cy={y} r="7" />
+                <circle class="mapa-punto" cx={x} cy={y} r="6" />
+              </g>
+            ))}
+          </svg>
+          <span class="mapa-chip mapa-chip--norte" style={`left:${pN.l}%;top:${pN.t}%`} aria-hidden="true"><i>S/</i><span><b>+ S/ 1,284.60</b><small>Sede Norte</small></span></span>
+          <span class="mapa-chip mapa-chip--sur" style={`left:${pS.l}%;top:${pS.t}%`} aria-hidden="true"><i>S/</i><span><b>+ S/ 930.00</b><small>Sede Sur</small></span></span>
+          <span class="mapa-chip mapa-chip--centro" style={`left:${pC.l}%;top:${pC.t}%`} aria-hidden="true"><i>S/</i><span><b>+ S/ 2,105.90</b><small>Sede Centro</small></span></span>
+          <p class="mapa-total"><span>Todas las sedes, hoy</span><b>S/ 4,320.50</b></p>
+        </div>
+      </article>
+    </div>
+    <p class="maqueta-rot maqueta-rot--claro">Ilustraciones con datos inventados; las sedes no son reales.</p>
+  </div>
+</section>

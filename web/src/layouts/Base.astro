@@ -18,8 +18,10 @@ const url = new URL(Astro.url.pathname, Astro.site).href;
 ---
 <!doctype html>
 <!-- data-tema="claro": la página alterna sola franjas claras y oscuras, así que no sigue el modo
-     oscuro del teléfono (colores.css solo cambia la paleta cuando NO dice "claro"). -->
-<html lang="es-PE" data-tema="claro">
+     oscuro del teléfono (colores.css solo cambia la paleta cuando NO dice "claro").
+     class="fluido": enciende la capa de acabado y movimiento (fluido.css y fluido.js). Sin esa
+     clase, el sitio se ve exactamente como antes. -->
+<html lang="es-PE" data-tema="claro" class="fluido">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -57,7 +59,12 @@ const url = new URL(Astro.url.pathname, Astro.site).href;
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
 <link rel="stylesheet" href="/colores.css">
 <link rel="stylesheet" href="/estilos.css">
+<link rel="stylesheet" href="/fluido.css">
+<!-- fluido.js va antes que sitio.js: suma piezas a la aparición al bajar, que anima sitio.js. -->
+<script is:inline src="/fluido.js" defer></script>
 <script is:inline src="/sitio.js" defer></script>
+<!-- Lo que una página agrega a su <head> (por ejemplo, los estilos de las herramientas). -->
+<slot name="cabeza" />
 </head>
 <!-- Contacto en UN solo lugar:
      data-correo    → a qué correo escriben los formularios y el enlace de correo.
@@ -72,8 +79,8 @@ const url = new URL(Astro.url.pathname, Astro.site).href;
 <!-- Barra superior -->
 <div class="aviso">
   <div class="col col--ancho aviso-in">
-    <p><b>Primeros negocios.</b> Estamos empezando y buscamos a los primeros que quieran probarlo.</p>
-    <a href="/#contacto">Postular</a>
+    <p><span class="aviso-punto" aria-hidden="true"></span><b>Primeros negocios.</b> <span class="aviso-largo">Estamos empezando y buscamos a los primeros que quieran probarlo.</span><span class="aviso-corto">Buscamos a los primeros que quieran probarlo.</span></p>
+    <a href="/#contacto">Postular<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
   </div>
 </div>
 

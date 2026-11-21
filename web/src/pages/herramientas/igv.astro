@@ -2,6 +2,11 @@
 // Herramienta gratis: IGV de una venta. La calculadora arriba y la guía debajo.
 // Tasas por año en public/herramientas/igv.js (tabla TASAS), comparadas contra SUNAT.
 // La guía viene del borrador revisado por la sesión del blog (web/borradores/igv.md).
+//
+// Diseño (propuesta aprobada, docs/propuestas-herramientas/): un monto grande, botones de un toque
+// para «incluye o no» y la tasa, montos de ejemplo, la barra «suyo / SUNAT», la cuenta con los
+// números de la persona y los comprobantes que se arman solos. La guía conserva TODO su texto: el
+// paso a paso se arma al bajar (y se prueba con el precio propio) y los errores van en tarjetas.
 import Base from '../../layouts/Base.astro';
 import { llamado } from '../../datos/navegacion';
 import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
@@ -11,6 +16,7 @@ const h = herramientas.find((x) => x.href === '/herramientas/igv/')!;
 <Base
   titulo="Calculadora de IGV gratis: sáquelo de un precio en segundos | Coddvisor"
   descripcion="Calcule el IGV de una venta con boleta o factura: 18 %, tasa especial de restaurantes y hoteles, y Nuevo RUS. Gratis y sin registrarse.">
+<link slot="cabeza" rel="stylesheet" href="/herramientas/herramienta.css">
 
 <section class="portada portada--interior osc" aria-labelledby="hi-t">
   <div class="brillo brillo--ambar" aria-hidden="true"></div>
@@ -27,133 +33,216 @@ const h = herramientas.find((x) => x.href === '/herramientas/igv/')!;
   </div>
 </section>
 
-<section class="caja-sec" aria-label="Calculadora de IGV">
-  <div class="col">
-    <form class="caja" id="igv" autocomplete="off" novalidate>
-      <div class="caja-hoja">
-        <fieldset class="caja-bloque">
-          <legend><span class="caja-n">1</span>El monto</legend>
-          <div class="caja-campos">
-            <div class="campo campo--monto"><label for="ig-monto">Monto de la venta</label><div class="monto"><span>S/</span><input id="ig-monto" name="monto" type="number" inputmode="decimal" min="0" step="0.01" value="118.00"></div></div>
+<section class="her-sec" aria-label="Calculadora de IGV">
+  <div class="col col--ancho">
+    <div class="lienzo">
+      <form class="igv" id="igv" autocomplete="off" novalidate>
+        <div>
+          <label class="igv-et" for="ig-monto">Monto de la venta</label>
+          <div class="igv-monto"><span>S/</span><input id="ig-monto" name="monto" type="text" inputmode="decimal" value="118.00" aria-describedby="ig-ayuda-incl"></div>
+          <div class="igv-rapidos" role="group" aria-label="Montos de ejemplo">
+            <button type="button" data-m="25.90">S/ 25.90</button>
+            <button type="button" data-m="118">S/ 118</button>
+            <button type="button" data-m="500">S/ 500</button>
+            <button type="button" data-m="1180">S/ 1,180</button>
           </div>
-          <div class="opciones opciones--2" role="radiogroup" aria-label="¿El monto ya incluye el IGV?">
-            <label class="opcion"><input type="radio" name="incluye" value="si" checked><span><b>Ya incluye IGV</b><small>Es el precio que paga el cliente, como el de la etiqueta</small></span></label>
-            <label class="opcion"><input type="radio" name="incluye" value="no"><span><b>Todavía no lo incluye</b><small>Es su valor de venta, y quiere saber cuánto cobrar</small></span></label>
-          </div>
-        </fieldset>
 
-        <fieldset class="caja-bloque">
-          <legend><span class="caja-n">2</span>Su tasa</legend>
-          <p class="caja-ayuda">Si no sabe cuál es la suya, use la primera: es la de la mayoría de negocios.</p>
-          <div class="opciones" role="radiogroup" aria-label="Tasa">
-            <label class="opcion"><input type="radio" name="tasa" value="general" checked><span><b>18 %, la tasa general</b><small data-r="reparto-general">En 2026: 15.5 % de IGV + 2.5 % municipal</small></span></label>
-            <label class="opcion"><input type="radio" name="tasa" value="especial"><span><b>Restaurante, hotel o alojamiento mype con tasa especial: <span data-r="tasa-especial">10.5 % en 2026</span></b><small>Solo si su negocio cumple los requisitos de SUNAT (ver la guía)</small></span></label>
-            <label class="opcion"><input type="radio" name="tasa" value="rus"><span><b>Nuevo RUS</b><small>No cobra IGV aparte: paga una cuota fija al mes</small></span></label>
+          <div class="igv-grupo">
+            <p class="igv-et" id="ig-g-incl">¿Ese monto ya incluye el IGV?</p>
+            <div class="seg" role="radiogroup" aria-labelledby="ig-g-incl">
+              <span class="seg-ficha" aria-hidden="true"></span>
+              <input type="radio" name="incluye" id="ig-si" value="si" checked><label for="ig-si">Ya lo incluye</label>
+              <input type="radio" name="incluye" id="ig-no" value="no"><label for="ig-no">Todavía no</label>
+            </div>
+            <p class="igv-ayuda" id="ig-ayuda-incl" data-r="ayuda-incl">Es el precio que paga el cliente, como el de la etiqueta.</p>
           </div>
-          <p class="caja-aviso" data-r="aviso-anio" hidden>Las tasas de esta herramienta llegan hasta 2029. Confirme la tasa de este año en SUNAT antes de usarla.</p>
-        </fieldset>
 
-      </div>
+          <div class="igv-grupo">
+            <p class="igv-et" id="ig-g-tasa">Su tasa</p>
+            <div class="seg" role="radiogroup" aria-labelledby="ig-g-tasa">
+              <span class="seg-ficha" aria-hidden="true"></span>
+              <input type="radio" name="tasa" id="ig-general" value="general" checked><label for="ig-general">18 %</label>
+              <input type="radio" name="tasa" id="ig-especial" value="especial"><label for="ig-especial" data-r="tasa-especial">10.5 %</label>
+              <input type="radio" name="tasa" id="ig-rus" value="rus"><label for="ig-rus">Nuevo RUS</label>
+            </div>
+            <p class="igv-ayuda" data-r="ayuda-tasa">La mayoría de negocios paga 18 %.</p>
+            <p class="igv-aviso-anio" data-r="aviso-anio" hidden>Las tasas de esta herramienta llegan hasta 2029. Confirme la tasa de este año en SUNAT antes de usarla.</p>
+          </div>
 
-      <aside class="caja-res" aria-labelledby="ig-res-t">
-        <div class="res-tarjeta">
-          <p class="rotulo" id="ig-res-t">Resultado</p>
-          <div class="res-estado" data-estado="info" role="status" aria-live="polite">
-            <p class="res-v" data-r="veredicto">El IGV es S/ 18.00</p>
-            <p class="res-linea" data-r="linea">De los S/ 118.00 que paga el cliente, S/ 18.00 son de la SUNAT.</p>
-          </div>
-          <dl class="res-lista">
-            <div><dt>Valor de venta</dt><dd data-r="base">S/ 100.00</dd></div>
-            <div><dt>IGV (<span data-r="tasa">18 %</span>)</dt><dd data-r="igv">S/ 18.00</dd></div>
-            <div class="res-total"><dt>Precio con IGV</dt><dd data-r="total">S/ 118.00</dd></div>
-          </dl>
-          <p class="res-nota" data-r="reparto">De los S/ 18.00: S/ 15.50 de IGV (15.5 %) y S/ 2.50 municipal (2.5 %).</p>
-        </div>
-      </aside>
-
-      <fieldset class="caja-bloque caja-bloque--ancho">
-        <legend><span class="caja-n">3</span>Cómo se ve en el comprobante</legend>
-        <div class="comprobantes">
-          <div class="comp">
-            <p class="comp-t">Boleta de venta electrónica</p>
-            <div class="comp-fila"><span>Venta</span><span data-c="total">S/ 118.00</span></div>
-            <div class="comp-fila comp-total"><span>Importe total</span><span data-c="total">S/ 118.00</span></div>
-            <p class="comp-nota">El IGV va dentro del total; la boleta no lo separa.</p>
-            <p class="comp-dni" data-c="dni" hidden>Pasa de S/ 700: esta boleta debe llevar el nombre y el DNI del cliente.</p>
-          </div>
-          <div class="comp" data-c="factura">
-            <p class="comp-t">Factura electrónica</p>
-            <div class="comp-fila"><span>Op. gravada</span><span data-r="c-base">S/ 100.00</span></div>
-            <div class="comp-fila"><span data-r="c-igv-tasa">IGV 18 %</span><span data-r="c-igv">S/ 18.00</span></div>
-            <div class="comp-fila comp-total"><span>Importe total</span><span data-c="total">S/ 118.00</span></div>
-            <p class="comp-nota">Para clientes con RUC: les sirve para descontar ese IGV.</p>
-          </div>
-          <div class="comp comp--no" data-c="sin-factura" hidden>
-            <p class="comp-t">Factura</p>
-            <p class="comp-nota">En el Nuevo RUS solo se emiten boletas, no facturas.</p>
+          <div class="igv-cuenta">
+            <p class="igv-et">La cuenta, con sus números</p>
+            <p class="igv-cuenta-l" data-r="cuenta">118.00 ÷ 1.18 = <span class="ce">100.00</span><br>118.00 − 100.00 = <span class="am">18.00</span></p>
+            <a href="#g-pasos">Por qué se divide entre 1.18</a>
           </div>
         </div>
-        <p class="maqueta-rot maqueta-rot--claro">Ejemplos de cómo se ven; no son comprobantes válidos.</p>
-      </fieldset>
-    </form>
+
+        <div class="igv-res" role="status" aria-live="polite">
+          <p class="igv-et" data-r="et">De esta venta, es de la SUNAT</p>
+          <p class="igv-grande" data-r="igv">S/ 18.00</p>
+          <p class="igv-frase" data-r="frase">De los S/ 118.00 que paga el cliente, S/ 100.00 son suyos.</p>
+          <div class="barra-rep" aria-hidden="true">
+            <div class="rep-suyo" data-b="suyo" style="flex-grow:100">Suyo</div>
+            <div class="rep-igv" data-b="igv" style="flex-grow:15.5">IGV</div>
+            <div class="rep-ipm" data-b="ipm" style="flex-grow:2.5">IPM</div>
+          </div>
+          <div class="leyenda-rep">
+            <div><span><i style="background:var(--azul-real)"></i>Valor de venta (suyo)</span><b data-r="base">S/ 100.00</b></div>
+            <div><span><i style="background:var(--ambar)"></i><span data-r="lbl-igv">IGV (15.5 %)</span></span><b data-r="igv-solo">S/ 15.50</b></div>
+            <div><span><i style="background:var(--ambar-claro)"></i><span data-r="lbl-ipm">Municipal (2.5 %)</span></span><b data-r="ipm">S/ 2.50</b></div>
+          </div>
+          <div class="comp-mini">
+            <div>
+              <span class="t">BOLETA</span>
+              <p>Total<b data-c="total">S/ 118.00</b></p>
+              <p style="font-size:12px">El IGV va dentro; la boleta no lo separa.</p>
+              <p class="dni" data-c="dni"><i>!</i><span><b>Pasa de S/ 700.</b> La boleta lleva el nombre y el DNI del cliente.</span></p>
+            </div>
+            <div data-c="factura">
+              <span class="t">FACTURA</span>
+              <p>Op. gravada<b data-r="c-base">S/ 100.00</b></p>
+              <p><span data-r="c-igv-tasa">IGV 18 %</span><b data-r="c-igv">S/ 18.00</b></p>
+              <p>Total<b data-c="total">S/ 118.00</b></p>
+            </div>
+            <div data-c="sin-factura" hidden>
+              <span class="t">FACTURA</span>
+              <p class="comp-no">En el Nuevo RUS solo se emiten boletas, no facturas.</p>
+            </div>
+          </div>
+          <p class="comp-mini-rot">Ejemplos de cómo se ven; no son comprobantes válidos.</p>
+          <div class="igv-acc">
+            <button type="button" class="boton-claro" data-copiar>Copiar resultado</button>
+            <span class="igv-aviso" data-copiado role="status"></span>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
+  <a class="barra-movil" href="#igv" data-barra>IGV de la venta <b data-barra-n>S/ 18.00</b></a>
 </section>
 
-<article class="guia" aria-labelledby="guia-t">
-  <div class="col guia-in">
-    <header class="guia-cab">
+<!-- Guía: el artículo del blog vive aquí, debajo de la herramienta. -->
+<article class="guia guia-nueva" aria-labelledby="guia-t">
+  <div class="col">
+    <header class="guia-cab guia-in">
       <p class="rotulo">Guía · {h.categoria}</p>
       <h2 class="titular guia-t" id="guia-t">{h.guia}</h2>
       <p class="guia-meta">{autor} · <time datetime={h.publicada}>{fechaLarga(h.publicada)}</time> · {h.lectura} min de lectura</p>
     </header>
 
-    <div class="guia-cuerpo">
+    <nav class="guia-indice" aria-label="En esta guía">
+      <a href="#g-resumen" data-ind="g-resumen">En 30 segundos</a>
+      <a href="#g-que" data-ind="g-que">Qué es</a>
+      <a href="#g-comp" data-ind="g-comp">Boleta o factura</a>
+      <a href="#g-pasos" data-ind="g-pasos">Paso a paso</a>
+      <a href="#g-calculo" data-ind="g-calculo">Cómo se calcula</a>
+      <a href="#g-tasas" data-ind="g-tasas">Otras tasas</a>
+      <a href="#g-revisar" data-ind="g-revisar">Si no cuadra</a>
+      <a href="#g-preguntas" data-ind="g-preguntas">Preguntas</a>
+      <span class="leido" data-leido></span>
+    </nav>
+
+    <div class="resumen30 guia-sec" id="g-resumen">
+      <b class="r">EN 30 SEGUNDOS</b>
       <p>Para sacar el IGV de un precio que ya lo incluye, divida el precio entre 1.18 y reste el resultado del precio. Con S/ 118, el IGV es S/ 18. Esta guía le muestra cómo hacerlo con boleta y con factura, y qué cambia en los rubros que no pagan 18 %.</p>
+    </div>
 
-      <h3>Qué es el IGV</h3>
-      <p>El IGV es el impuesto que paga quien compra. Usted lo cobra dentro del precio y luego lo entrega a la SUNAT cada mes. No es su ganancia: es dinero que solo pasa por su caja.</p>
-      <p>La tasa general es <b>18 %</b>. Ese 18 % tiene dos partes: el IGV propiamente dicho y el Impuesto de Promoción Municipal, que va a las municipalidades. En la boleta y en la factura se muestran juntos, como un solo 18 %.</p>
-      <p>Desde 2026, el reparto interno cambia cada año: ahora es 15.5 % + 2.5 %, y en 2029 será 14 % + 4 %. El total sigue en 18 %, así que su cuenta no cambia.</p>
-
-      <h3>Boleta o factura: el IGV está en las dos</h3>
-      <ul class="guia-lista">
-        <li><b>Boleta:</b> es para el cliente que no pide factura. Muestra el total, con el IGV ya incluido. Si la venta pasa de S/ 700, debe llevar el nombre y el DNI del cliente.</li>
-        <li><b>Factura:</b> es para otra empresa o persona con RUC. Muestra por separado el valor de venta, el IGV y el total. A su cliente le sirve para descontar ese IGV del que él debe pagar: eso se llama <i>crédito fiscal</i>.</li>
-      </ul>
-
-      <h3>Paso a paso</h3>
-      <ol class="guia-pasos">
-        <li><b>Vea si su precio ya incluye el IGV.</b> En una tienda, casi siempre sí: el precio de la etiqueta es lo que paga el cliente.</li>
-        <li><b>Confirme su tasa.</b> Para la mayoría es 18 %. Más abajo están los rubros donde no.</li>
-        <li><b>Saque el valor de venta.</b> Divida el precio entre 1.18.</li>
-        <li><b>Saque el IGV.</b> Reste el valor de venta del precio.</li>
-        <li><b>Redondee a dos decimales al final.</b> Y revise que valor de venta + IGV dé exactamente el precio.</li>
-      </ol>
-
-      <h3>Cómo se calcula</h3>
-      <div class="formula" aria-label="Fórmula">
-        <p><b>Si el precio ya incluye el IGV:</b> valor de venta = precio ÷ 1.18, e IGV = precio − valor de venta</p>
-        <p><b>Si todavía no lo incluye:</b> IGV = valor de venta × 0.18, y precio = valor de venta + IGV</p>
+    <section class="guia-sec" id="g-que" aria-labelledby="g-que-t">
+      <h3 class="guia-sec-t" id="g-que-t">Qué es el IGV</h3>
+      <div class="guia-texto">
+        <p>El IGV es el impuesto que paga quien compra. Usted lo cobra dentro del precio y luego lo entrega a la SUNAT cada mes. No es su ganancia: es dinero que solo pasa por su caja.</p>
+        <p>La tasa general es <b>18 %</b>. Ese 18 % tiene dos partes: el IGV propiamente dicho y el Impuesto de Promoción Municipal, que va a las municipalidades. En la boleta y en la factura se muestran juntos, como un solo 18 %.</p>
+        <p>Desde 2026, el reparto interno cambia cada año: ahora es 15.5 % + 2.5 %, y en 2029 será 14 % + 4 %. El total sigue en 18 %, así que su cuenta no cambia.</p>
       </div>
-      <p><b>Un ejemplo.</b> Usted vende una prenda en S/ 118 con boleta. El valor de venta es S/ 118 ÷ 1.18 = <b>S/ 100</b>. El IGV es S/ 118 − S/ 100 = <b>S/ 18</b>. De esos S/ 118, S/ 18 son de la SUNAT.</p>
-      <p><b>Con céntimos.</b> Un producto a S/ 25.90: valor de venta S/ 25.90 ÷ 1.18 = S/ 21.95. IGV = S/ 25.90 − S/ 21.95 = <b>S/ 3.95</b>.</p>
+    </section>
 
-      <h3>No todos los rubros pagan 18 %</h3>
-      <p><b>Restaurantes, hoteles y alojamientos turísticos.</b> Si su negocio es micro o pequeña empresa, vende hasta 1,700 UIT al año y al menos el 70 % de sus ingresos viene de esa actividad, puede pagar una tasa especial. En 2026 es <b>10.5 %</b> (8 % de IGV + 2.5 % municipal), y en 2027 será 15 %. Si deja de cumplir un requisito, vuelve al 18 % desde el mes siguiente.</p>
-      <p>Con 10.5 %, se divide entre 1.105. Un menú de S/ 50: valor de venta S/ 50 ÷ 1.105 = S/ 45.25, e IGV = <b>S/ 4.75</b>.</p>
-      <p><b>Nuevo RUS.</b> Si su negocio está en el Nuevo RUS, usted no cobra IGV aparte: paga una cuota fija al mes que lo reemplaza. Solo emite boletas, no facturas.</p>
-      <p><b>Productos exonerados.</b> Algunos bienes no pagan IGV, como ciertos productos agrarios sin procesar. La lista está en la ley y cambia cada cierto tiempo. Si vende alimentos frescos, confírmelo con su contador.</p>
-      <p><b>¿No sabe en qué régimen está?</b> Pregúntele a su contador o revise los datos de su RUC en SUNAT con su Clave SOL. Ese dato decide si cobra 18 %, 10.5 % o nada aparte.</p>
+    <section class="guia-sec" id="g-comp" aria-labelledby="g-comp-t">
+      <h3 class="guia-sec-t" id="g-comp-t">Boleta o factura: el IGV está en las dos</h3>
+      <div class="guia-texto">
+        <ul class="guia-lista">
+          <li><b>Boleta:</b> es para el cliente que no pide factura. Muestra el total, con el IGV ya incluido. Si la venta pasa de S/ 700, debe llevar el nombre y el DNI del cliente.</li>
+          <li><b>Factura:</b> es para otra empresa o persona con RUC. Muestra por separado el valor de venta, el IGV y el total. A su cliente le sirve para descontar ese IGV del que él debe pagar: eso se llama <i>crédito fiscal</i>.</li>
+        </ul>
+      </div>
+    </section>
 
-      <h3>Si no cuadra, revise esto primero</h3>
-      <ol class="revisar">
-        <li><b>Multiplicó el precio por 0.18.</b> Es el error más común: con S/ 118 da S/ 21.24, cuando el IGV real es S/ 18. Divida entre 1.18 primero, porque el 18 % se aplica sobre el valor de venta.</li>
-        <li><b>Le sumó IGV a un precio que ya lo tenía.</b> Si la etiqueta dice S/ 118 y cobra S/ 139.24, cobró el impuesto dos veces. Ponga en la etiqueta el precio final, con IGV.</li>
-        <li><b>Usó la tasa equivocada.</b> Un restaurante acogido a la tasa especial que calcula con 18 %, o al revés. Confirme su tasa cada enero, porque la especial cambia de año en año.</li>
-        <li><b>Redondeó antes de tiempo.</b> Redondee al final, una sola vez por comprobante. Redondear cada paso deja diferencias de céntimos que se acumulan en el mes.</li>
+    <section class="guia-sec" id="g-pasos" aria-labelledby="g-pasos-t">
+      <h3 class="guia-sec-t" id="g-pasos-t">Paso a paso</h3>
+      <div class="guia-pro">
+        <ol class="pasos-pro" data-pasos>
+          <li data-paso="0"><span class="n">PASO 1</span><h4>Vea si su precio ya incluye el IGV.</h4><p>En una tienda, casi siempre sí: el precio de la etiqueta es lo que paga el cliente.</p></li>
+          <li data-paso="1"><span class="n">PASO 2</span><h4>Confirme su tasa.</h4><p>Para la mayoría es 18 %. Más abajo están los rubros donde no.</p></li>
+          <li data-paso="2"><span class="n">PASO 3</span><h4>Saque el valor de venta.</h4><p>Divida el precio entre 1.18.</p></li>
+          <li data-paso="3"><span class="n">PASO 4</span><h4>Saque el IGV.</h4><p>Reste el valor de venta del precio.</p></li>
+          <li data-paso="4"><span class="n">PASO 5</span><h4>Redondee a dos decimales al final.</h4><p>Y revise que valor de venta + IGV dé exactamente el precio.</p></li>
+        </ol>
+        <div class="escena">
+          <p class="igv-et">La cuenta, paso a paso</p>
+          <div class="ecu" aria-live="polite">
+            <p class="ecu-l" data-l="0"><span data-e="p">S/ 118.00</span> <small>precio de la etiqueta</small></p>
+            <p class="ecu-l" data-l="1"><span class="ce">= valor × 1.18</span> <small>con la tasa de 18 %</small></p>
+            <p class="ecu-l" data-l="2"><span data-e="p2">118.00</span> ÷ 1.18 = <span class="ce" data-e="v">100.00</span> <small>suyo</small></p>
+            <p class="ecu-l" data-l="3"><span data-e="p3">118.00</span> − <span data-e="v2">100.00</span> = <span class="am" data-e="i">18.00</span> <small>de la SUNAT</small></p>
+            <p class="ecu-l" data-l="4"><span class="ok"><span data-e="v3">100.00</span> + <span data-e="i2">18.00</span> = <span data-e="p4">118.00</span> ✓</span></p>
+          </div>
+          <div class="escena-barra" aria-hidden="true">
+            <div class="s" data-eb="s">Suyo S/ 100.00</div>
+            <div class="i" data-eb="i">IGV S/ 18.00</div>
+          </div>
+          <div class="escena-prueba"><label for="esc-precio">Pruebe con su precio</label><span class="monto-e"><span>S/</span><input id="esc-precio" type="text" inputmode="decimal" value="118.00"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-calculo" aria-labelledby="g-calculo-t">
+      <h3 class="guia-sec-t" id="g-calculo-t">Cómo se calcula</h3>
+      <div class="guia-texto">
+        <div class="formula" aria-label="Fórmula">
+          <p><b>Si el precio ya incluye el IGV:</b> valor de venta = precio ÷ 1.18, e IGV = precio − valor de venta</p>
+          <p><b>Si todavía no lo incluye:</b> IGV = valor de venta × 0.18, y precio = valor de venta + IGV</p>
+        </div>
+        <p style="margin-top:18px"><b>Un ejemplo.</b> Usted vende una prenda en S/ 118 con boleta. El valor de venta es S/ 118 ÷ 1.18 = <b>S/ 100</b>. El IGV es S/ 118 − S/ 100 = <b>S/ 18</b>. De esos S/ 118, S/ 18 son de la SUNAT.</p>
+        <p><b>Con céntimos.</b> Un producto a S/ 25.90: valor de venta S/ 25.90 ÷ 1.18 = S/ 21.95. IGV = S/ 25.90 − S/ 21.95 = <b>S/ 3.95</b>.</p>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-tasas" aria-labelledby="g-tasas-t">
+      <h3 class="guia-sec-t" id="g-tasas-t">No todos los rubros pagan 18 %</h3>
+      <div class="guia-texto">
+        <p><b>Restaurantes, hoteles y alojamientos turísticos.</b> Si su negocio es micro o pequeña empresa, vende hasta 1,700 UIT al año y al menos el 70 % de sus ingresos viene de esa actividad, puede pagar una tasa especial. En 2026 es <b>10.5 %</b> (8 % de IGV + 2.5 % municipal), y en 2027 será 15 %. Si deja de cumplir un requisito, vuelve al 18 % desde el mes siguiente.</p>
+        <p>Con 10.5 %, se divide entre 1.105. Un menú de S/ 50: valor de venta S/ 50 ÷ 1.105 = S/ 45.25, e IGV = <b>S/ 4.75</b>.</p>
+        <p><b>Nuevo RUS.</b> Si su negocio está en el Nuevo RUS, usted no cobra IGV aparte: paga una cuota fija al mes que lo reemplaza. Solo emite boletas, no facturas.</p>
+        <p><b>Productos exonerados.</b> Algunos bienes no pagan IGV, como ciertos productos agrarios sin procesar. La lista está en la ley y cambia cada cierto tiempo. Si vende alimentos frescos, confírmelo con su contador.</p>
+        <p><b>¿No sabe en qué régimen está?</b> Pregúntele a su contador o revise los datos de su RUC en SUNAT con su Clave SOL. Ese dato decide si cobra 18 %, 10.5 % o nada aparte.</p>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-revisar" aria-labelledby="g-revisar-t">
+      <h3 class="guia-sec-t" id="g-revisar-t">Si no cuadra, revise esto primero</h3>
+      <ol class="errores" style="list-style:none;padding:0">
+        <li class="error-c">
+          <span class="n">1</span><h4>Multiplicó el precio por 0.18.</h4>
+          <div class="error-par" aria-hidden="true"><p class="no">118 × 0.18 = 21.24</p><p class="si"><i>✓</i> 118 ÷ 1.18 = 100 → IGV 18.00</p></div>
+          <p>Es el error más común: con S/ 118 da S/ 21.24, cuando el IGV real es S/ 18. Divida entre 1.18 primero, porque el 18 % se aplica sobre el valor de venta.</p>
+        </li>
+        <li class="error-c">
+          <span class="n">2</span><h4>Le sumó IGV a un precio que ya lo tenía.</h4>
+          <div class="error-par" aria-hidden="true"><p class="no">118 + 18 % = 139.24</p><p class="si"><i>✓</i> Cobrar 118.00, con IGV incluido</p></div>
+          <p>Si la etiqueta dice S/ 118 y cobra S/ 139.24, cobró el impuesto dos veces. Ponga en la etiqueta el precio final, con IGV.</p>
+        </li>
+        <li class="error-c">
+          <span class="n">3</span><h4>Usó la tasa equivocada.</h4>
+          <p>Un restaurante acogido a la tasa especial que calcula con 18 %, o al revés. Confirme su tasa cada enero, porque la especial cambia de año en año.</p>
+        </li>
+        <li class="error-c">
+          <span class="n">4</span><h4>Redondeó antes de tiempo.</h4>
+          <div class="error-par" aria-hidden="true"><p class="no">Redondear cada paso</p><p class="si"><i>✓</i> Una vez, al final</p></div>
+          <p>Redondee al final, una sola vez por comprobante. Redondear cada paso deja diferencias de céntimos que se acumulan en el mes.</p>
+        </li>
       </ol>
+    </section>
 
-      <h3>Preguntas frecuentes</h3>
+    <section class="guia-sec" id="g-preguntas" aria-labelledby="g-preguntas-t">
+      <h3 class="guia-sec-t" id="g-preguntas-t">Preguntas frecuentes</h3>
       <div class="faq guia-faq">
         <details>
           <summary>¿La boleta lleva IGV?<span class="mas" aria-hidden="true">+</span></summary>
@@ -183,7 +272,7 @@ const h = herramientas.find((x) => x.href === '/herramientas/igv/')!;
           <li>Nuevo RUS, solo boletas: <a href="https://www.gob.pe/7010-comprobantes-que-emites-en-el-nrus-emitir-boleta-de-venta-electronica-en-el-nuevo-rus" rel="noopener" target="_blank">gob.pe</a></li>
         </ul>
       </div>
-    </div>
+    </section>
   </div>
 </article>
 
@@ -203,4 +292,5 @@ const h = herramientas.find((x) => x.href === '/herramientas/igv/')!;
 </section>
 
 <script is:inline src="/herramientas/igv.js" defer></script>
+<script is:inline src="/herramientas/guia.js" defer></script>
 </Base>

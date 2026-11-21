@@ -1,6 +1,11 @@
 ---
 // Portada. El molde (Base) pone el <head>, el menú y el pie; aquí va solo el contenido.
 import Base from '../layouts/Base.astro';
+// Piezas de la capa fluida: solo se ven con la clase fluido en <html> (ver LEEME, «La capa fluida»).
+import Hilos from '../components/Hilos.astro';
+import Modulos from '../components/Modulos.astro';
+import Conectado from '../components/Conectado.astro';
+import Flujo from '../components/Flujo.astro';
 ---
 <Base
   titulo="Coddvisor: software de gestión para micro y pequeñas empresas del Perú"
@@ -104,6 +109,7 @@ import Base from '../layouts/Base.astro';
     <p class="dato-num">76.5<span>%</span></p>
     <p class="dato-tx">de las micro y pequeñas empresas del Perú no lleva ningún registro de sus cuentas. Tres de cada cuatro no saben cómo les va.<sup class="ref"><a href="#fuente-1" aria-label="Fuente 1">1</a></sup></p>
   </div>
+  <div class="col"><Hilos /></div>
 </section>
 
 <!-- 4.5 Tres beneficios -->
@@ -192,6 +198,8 @@ import Base from '../layouts/Base.astro';
               <div class="pt-boton">Cobrar y emitir boleta</div>
               <div class="pt-ok"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Comprobante electrónico listo para enviar</div>
             </div>
+            <!-- Aviso flotante (capa fluida): solo se ve con la clase fluido. Mismos datos de la maqueta. -->
+            <span class="pt-flota pt-flota--abajo"><i class="pt-flota-ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></i>Boleta emitida por S/ 249.80</span>
           </div>
           <div class="pantalla" data-pantalla="1" hidden>
             <div class="pt pt--ancha">
@@ -204,6 +212,7 @@ import Base from '../layouts/Base.astro';
               </div>
               <div class="pt-aviso"><span><b>XL:</b> no hay en piso.</span><span class="pt-aviso-b">Bajar 1 del almacén</span></div>
             </div>
+            <span class="pt-flota pt-flota--arriba"><i class="pt-flota-info"></i>En otra sede quedan 5 XL</span>
           </div>
           <div class="pantalla" data-pantalla="2" hidden>
             <div class="pt-doble">
@@ -219,6 +228,7 @@ import Base from '../layouts/Base.astro';
                 <div class="fin"><span>Planilla de noviembre</span><span>Lista</span></div>
               </div>
             </div>
+            <span class="pt-flota pt-flota--abajo"><i class="pt-flota-ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></i>3 marcaciones hoy, 1 tardanza</span>
           </div>
         </div>
         <p class="maqueta-rot maqueta-rot--claro">Maqueta con datos inventados; no es una captura.</p>
@@ -275,6 +285,11 @@ import Base from '../layouts/Base.astro';
     <p class="maqueta-rot maqueta-rot--claro">Ejemplo con datos inventados.</p>
   </div>
 </section>
+
+<!-- Capa fluida: a dónde va cada sol (Sankey), todo lo que ya funciona y cómo se conecta. -->
+<Flujo />
+<Modulos />
+<Conectado />
 
 <!-- 4.8 Para quién es -->
 <section class="para" id="para" aria-labelledby="para-t">
@@ -396,22 +411,24 @@ import Base from '../layouts/Base.astro';
         <label for="c-vende">¿Qué vende?</label>
         <input id="c-vende" name="vende" type="text" placeholder="Ej. ropa, calzado, abarrotes">
       </div>
-      <div class="campo">
-        <label for="c-personas">Personas que trabajan</label>
-        <select id="c-personas" name="personas">
-          <option>1 a 5</option>
-          <option>6 a 15</option>
-          <option>16 a 40</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label for="c-sedes">Sedes</label>
-        <select id="c-sedes" name="sedes">
-          <option>1</option>
-          <option>2 o 3</option>
-          <option>4 o más</option>
-        </select>
-      </div>
+      <!-- Opciones de un toque (antes, un menú desplegable): se ven todas y se eligen con un dedo. -->
+      <fieldset class="campo campo--fichas" id="c-personas">
+        <legend>Personas que trabajan</legend>
+        <div class="fichas">
+          <label class="ficha"><input type="radio" name="personas" value="1 a 5" checked><span>1 a 5</span></label>
+          <label class="ficha"><input type="radio" name="personas" value="6 a 15"><span>6 a 15</span></label>
+          <label class="ficha"><input type="radio" name="personas" value="16 a 40"><span>16 a 40</span></label>
+        </div>
+      </fieldset>
+      <!-- Opciones de un toque (antes, un menú desplegable): se ven todas y se eligen con un dedo. -->
+      <fieldset class="campo campo--fichas" id="c-sedes">
+        <legend>Sedes</legend>
+        <div class="fichas">
+          <label class="ficha"><input type="radio" name="sedes" value="1" checked><span>1</span></label>
+          <label class="ficha"><input type="radio" name="sedes" value="2 o 3"><span>2 o 3</span></label>
+          <label class="ficha"><input type="radio" name="sedes" value="4 o más"><span>4 o más</span></label>
+        </div>
+      </fieldset>
       <!-- Campo trampa: las personas no lo ven; los robots que llenan todo, sí. -->
       <div class="trampa" aria-hidden="true">
         <label for="c-sitio">No llene este campo</label>

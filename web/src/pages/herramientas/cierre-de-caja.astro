@@ -4,6 +4,11 @@
 // computadora (no hay servidor: todo el cálculo está en cierre-de-caja.js, en su navegador).
 // No es una fórmula legal (a diferencia de gratificación o CTS): es una resta. Por eso puede salir
 // antes que las calculadoras laborales, que necesitan un revisor.
+//
+// Diseño (propuesta aprobada, docs/propuestas-herramientas/): pasos arriba que se marcan al
+// completarse, conteo compacto con + y −, resultado con «Dónde buscar» y balanza, y la hoja final
+// lista para firmar (es lo que sale al imprimir). La guía de abajo conserva TODO su texto: el paso
+// a paso se arma al bajar y «Si no cuadra» va en tarjetas, con las mismas palabras.
 import Base from '../../layouts/Base.astro';
 import { llamado } from '../../datos/navegacion';
 import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
@@ -11,14 +16,18 @@ import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
 const h = herramientas.find((x) => x.href === '/herramientas/cierre-de-caja/')!;
 
 // Billetes y monedas en circulación en el Perú (BCRP). Valores en céntimos para no perder
-// centavos al sumar.
-const billetes = [20000, 10000, 5000, 2000, 1000];
+// centavos al sumar. El color de cada billete es solo para reconocerlo de un vistazo.
+const billetes = [
+  { c: 20000, color: '#0B1841' }, { c: 10000, color: '#1554E0' }, { c: 5000, color: '#B05008' },
+  { c: 2000, color: '#0A86C7' }, { c: 1000, color: '#0B6B41' },
+];
 const monedas = [500, 200, 100, 50, 20, 10];
-const soles = (c: number) => 'S/ ' + (c / 100).toFixed(c % 100 === 0 ? 0 : 2);
+const nombre = (c: number) => (c >= 100 ? 'S/ ' + c / 100 : c + ' céntimos');
 ---
 <Base
   titulo="Cierre de caja gratis: cuadre la caja de su tienda en minutos | Coddvisor"
   descripcion="Plantilla gratis para el cierre de caja de cada sede: cuente billetes y monedas, reste gastos y retiros, y vea si la caja cuadra, sobra o falta. Sin registrarse.">
+<link slot="cabeza" rel="stylesheet" href="/herramientas/herramienta.css">
 
 <section class="portada portada--interior osc" aria-labelledby="hc-t">
   <div class="brillo brillo--ambar" aria-hidden="true"></div>
@@ -35,149 +44,232 @@ const soles = (c: number) => 'S/ ' + (c / 100).toFixed(c % 100 === 0 ? 0 : 2);
   </div>
 </section>
 
-<section class="caja-sec" aria-label="Hoja de cierre de caja">
-  <div class="col">
-    <form class="caja" id="caja" autocomplete="off" novalidate>
-      <div class="caja-hoja">
-
-        <!-- Encabezado que solo se ve al imprimir -->
-        <div class="caja-impresa" aria-hidden="true">
-          <p class="caja-impresa-t">Cierre de caja</p>
-          <p class="caja-impresa-tx">Hecho con la herramienta gratis de coddvisor.com</p>
+<section class="her-sec" aria-label="Hoja de cierre de caja">
+  <div class="col col--ancho">
+    <div class="lienzo">
+      <form class="cierre" id="cierre" autocomplete="off" novalidate>
+        <div class="riel-caja">
+          <ol class="riel" aria-label="Avance de la hoja">
+            <li data-riel="1"><i>1</i>El turno</li>
+            <li data-riel="2"><i>2</i>Lo que debería haber</li>
+            <li data-riel="3"><i>3</i>Billetes y monedas</li>
+            <li data-riel="4"><i>4</i>Otros medios</li>
+          </ol>
+          <p class="riel-tx" data-avance-tx>0 de 4 pasos</p>
         </div>
 
-        <fieldset class="caja-bloque">
-          <legend><span class="caja-n">1</span>El turno</legend>
-          <div class="caja-campos caja-campos--3">
-            <div class="campo"><label for="cc-sede">Sede o caja</label><input id="cc-sede" name="sede" type="text" placeholder="Ej. Sede Centro"></div>
-            <div class="campo"><label for="cc-fecha">Fecha</label><input id="cc-fecha" name="fecha" type="date"></div>
-            <div class="campo"><label for="cc-quien">Quién cierra</label><input id="cc-quien" name="quien" type="text" placeholder="Nombre"></div>
-          </div>
-        </fieldset>
-
-        <fieldset class="caja-bloque">
-          <legend><span class="caja-n">2</span>Lo que debería haber en efectivo</legend>
-          <p class="caja-ayuda">Use los montos de su cuaderno o de su sistema de ventas.</p>
-          <div class="caja-campos">
-            <div class="campo campo--monto"><label for="cc-fondo">Fondo con que abrió la caja</label><div class="monto"><span>S/</span><input id="cc-fondo" name="fondo" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></div></div>
-            <div class="campo campo--monto"><label for="cc-ventas">Ventas cobradas en efectivo</label><div class="monto"><span>S/</span><input id="cc-ventas" name="ventas" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></div></div>
-            <div class="campo campo--monto"><label for="cc-gastos">Gastos pagados con la caja <small>(se restan)</small></label><div class="monto"><span>S/</span><input id="cc-gastos" name="gastos" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></div></div>
-            <div class="campo campo--monto"><label for="cc-retiros">Retiros y depósitos <small>(se restan)</small></label><div class="monto"><span>S/</span><input id="cc-retiros" name="retiros" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></div></div>
-          </div>
-        </fieldset>
-
-        <fieldset class="caja-bloque">
-          <legend><span class="caja-n">3</span>Lo que hay: cuente billetes y monedas</legend>
-          <p class="caja-ayuda">Escriba cuántos hay de cada uno. El total se suma solo.</p>
-          <div class="conteo">
-            <div class="conteo-g">
-              <p class="conteo-t">Billetes</p>
-              {billetes.map((c) => (
-                <div class="conteo-fila">
-                  <label for={`cc-d${c}`}>{soles(c)}</label>
-                  <span class="conteo-x" aria-hidden="true">×</span>
-                  <input id={`cc-d${c}`} name={`d${c}`} data-valor={c} type="number" inputmode="numeric" min="0" step="1" placeholder="0">
-                  <output class="conteo-sub" for={`cc-d${c}`} data-sub={c}>S/ 0.00</output>
-                </div>
-              ))}
+        <div class="hoja">
+          <fieldset class="paso">
+            <legend><i>1</i>El turno</legend>
+            <div class="paso-campos">
+              <div class="campo"><label for="cc-sede">Sede o caja</label><input id="cc-sede" name="sede" type="text" placeholder="Ej. Sede Centro"></div>
+              <div class="campo"><label for="cc-fecha">Fecha</label><input id="cc-fecha" name="fecha" type="date"></div>
+              <div class="campo"><label for="cc-quien">Quién cierra</label><input id="cc-quien" name="quien" type="text" placeholder="Nombre"></div>
             </div>
-            <div class="conteo-g">
-              <p class="conteo-t">Monedas</p>
-              {monedas.map((c) => (
-                <div class="conteo-fila">
-                  <label for={`cc-d${c}`}>{soles(c)}</label>
-                  <span class="conteo-x" aria-hidden="true">×</span>
-                  <input id={`cc-d${c}`} name={`d${c}`} data-valor={c} type="number" inputmode="numeric" min="0" step="1" placeholder="0">
-                  <output class="conteo-sub" for={`cc-d${c}`} data-sub={c}>S/ 0.00</output>
-                </div>
-              ))}
+          </fieldset>
+
+          <fieldset class="paso">
+            <legend><i>2</i>Lo que debería haber en efectivo</legend>
+            <p class="paso-ayuda">Use los montos de su cuaderno o de su sistema de ventas.</p>
+            <div class="paso-campos paso-campos--4">
+              <div class="campo"><label for="cc-fondo">Fondo con que abrió la caja</label><div class="monto"><span>S/</span><input id="cc-fondo" name="fondo" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+              <div class="campo"><label for="cc-ventas">Ventas cobradas en efectivo</label><div class="monto"><span>S/</span><input id="cc-ventas" name="ventas" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+              <div class="campo"><label for="cc-gastos">Gastos pagados con la caja</label><div class="monto"><span>S/</span><input id="cc-gastos" name="gastos" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+              <div class="campo"><label for="cc-retiros">Retiros y depósitos</label><div class="monto"><span>S/</span><input id="cc-retiros" name="retiros" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="paso">
+            <legend><i>3</i>Lo que hay: cuente billetes y monedas</legend>
+            <p class="paso-ayuda">Escriba cuántos hay de cada uno o use + y −. El total se suma solo.</p>
+            <div class="billetes">
+              <div class="conteo-g">
+                <p class="conteo-g-t"><span>BILLETES</span><span>SUBTOTAL</span></p>
+                {billetes.map((b) => (
+                  <div class="billete" style={`--c:${b.color}`}>
+                    <span class="billete-cara" aria-hidden="true"><b>S/ {b.c / 100}</b></span>
+                    <div class="contador">
+                      <button type="button" data-d="-1" aria-label={`Un billete menos de ${nombre(b.c)}`}>−</button>
+                      <input id={`cc-d${b.c}`} name={`d${b.c}`} data-valor={b.c} type="text" inputmode="numeric" placeholder="0" aria-label={`Cantidad de billetes de ${nombre(b.c)}`}>
+                      <button type="button" data-d="1" aria-label={`Un billete más de ${nombre(b.c)}`}>+</button>
+                    </div>
+                    <output class="billete-sub" for={`cc-d${b.c}`} data-sub={b.c}>—</output>
+                  </div>
+                ))}
+              </div>
+              <div class="conteo-g">
+                <p class="conteo-g-t"><span>MONEDAS</span><span>SUBTOTAL</span></p>
+                {monedas.map((c) => (
+                  <div class={`billete moneda ${c >= 100 ? 'moneda--sol' : 'moneda--cent'}`}>
+                    <span class="billete-cara" aria-hidden="true"><b>{c >= 100 ? c / 100 : c}</b><small>{c >= 100 ? 'S/' : 'cént.'}</small></span>
+                    <div class="contador">
+                      <button type="button" data-d="-1" aria-label={`Una moneda menos de ${nombre(c)}`}>−</button>
+                      <input id={`cc-d${c}`} name={`d${c}`} data-valor={c} type="text" inputmode="numeric" placeholder="0" aria-label={`Cantidad de monedas de ${nombre(c)}`}>
+                      <button type="button" data-d="1" aria-label={`Una moneda más de ${nombre(c)}`}>+</button>
+                    </div>
+                    <output class="billete-sub" for={`cc-d${c}`} data-sub={c}>—</output>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <p class="paso-pie"><span>Total contado</span><b data-r="contado-pie">S/ 0.00</b></p>
+          </fieldset>
+
+          <fieldset class="paso">
+            <legend><i>4</i>Lo que entró por otros medios <small>(no está en la caja)</small></legend>
+            <p class="paso-ayuda">No cambia el cuadre del efectivo, pero completa la venta del día.</p>
+            <div class="paso-campos paso-campos--4">
+              <div class="campo"><label for="cc-yape">Yape</label><div class="monto"><span>S/</span><input id="cc-yape" name="yape" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+              <div class="campo"><label for="cc-plin">Plin</label><div class="monto"><span>S/</span><input id="cc-plin" name="plin" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+              <div class="campo"><label for="cc-tarjeta">Tarjeta</label><div class="monto"><span>S/</span><input id="cc-tarjeta" name="tarjeta" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+              <div class="campo"><label for="cc-transf">Transferencias</label><div class="monto"><span>S/</span><input id="cc-transf" name="transf" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+            </div>
+          </fieldset>
+
+          <!-- La hoja final: se arma mientras se llena y es lo único que sale al imprimir. -->
+          <div class="paso paso--hoja">
+            <h3><i>✓</i>Así queda su hoja</h3>
+            <div class="ticket-caja">
+              <div class="ticket" aria-label="Vista previa de la hoja de cierre">
+                <h4>CIERRE DE CAJA</h4>
+                <p class="sub" data-t="cab">Sede, fecha y quién cierra</p>
+                <hr>
+                <p><span>Fondo al abrir</span><span data-t="fondo">0.00</span></p>
+                <p><span>+ Ventas en efectivo</span><span data-t="ventas">0.00</span></p>
+                <p><span>− Gastos</span><span data-t="gastos">0.00</span></p>
+                <p><span>− Retiros y depósitos</span><span data-t="retiros">0.00</span></p>
+                <hr>
+                <p class="fuerte"><span>Debería haber</span><span data-t="deb">0.00</span></p>
+                <p class="fuerte"><span>Hay contado</span><span data-t="hay">0.00</span></p>
+                <p class="estado" data-t="estado" data-e="vacio">Sin cerrar</p>
+                <hr>
+                <p><span>Yape, Plin, tarjeta y transf.</span><span data-t="otros">0.00</span></p>
+                <p class="fuerte"><span>Venta total del día</span><span data-t="total">0.00</span></p>
+                <p class="firma" data-t="firma">Firma de quien cierra</p>
+                <p class="pie-t">Hecho con la herramienta gratis de coddvisor.com</p>
+              </div>
             </div>
           </div>
-        </fieldset>
-
-        <fieldset class="caja-bloque">
-          <legend><span class="caja-n">4</span>Lo que entró por otros medios <small>(no está en la caja)</small></legend>
-          <p class="caja-ayuda">No cambia el cuadre del efectivo, pero completa la venta del día.</p>
-          <div class="caja-campos">
-            <div class="campo campo--monto"><label for="cc-yape">Yape</label><div class="monto"><span>S/</span><input id="cc-yape" name="yape" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></div></div>
-            <div class="campo campo--monto"><label for="cc-plin">Plin</label><div class="monto"><span>S/</span><input id="cc-plin" name="plin" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></div></div>
-            <div class="campo campo--monto"><label for="cc-tarjeta">Tarjeta</label><div class="monto"><span>S/</span><input id="cc-tarjeta" name="tarjeta" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></div></div>
-            <div class="campo campo--monto"><label for="cc-transf">Transferencias</label><div class="monto"><span>S/</span><input id="cc-transf" name="transf" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></div></div>
-          </div>
-        </fieldset>
-      </div>
-
-      <!-- Resultado: a la derecha en computadora (acompaña al bajar), al final en celular. -->
-      <!-- En celular el resultado queda al final: esta barra lo muestra mientras se cuenta. -->
-      <a class="res-barra" href="#res-t" data-estado="vacio" aria-hidden="true" tabindex="-1"><span data-r2="veredicto">Llene la hoja</span><span class="res-barra-ir">Ver detalle ↓</span></a>
-
-      <aside class="caja-res" aria-labelledby="res-t">
-        <div class="res-tarjeta">
-          <p class="rotulo" id="res-t">Resultado</p>
-          <div class="res-estado" data-estado="vacio" role="status" aria-live="polite">
-            <p class="res-v" data-r="veredicto">Llene la hoja</p>
-            <p class="res-linea" data-r="linea">Cuando cuente el efectivo, aquí verá si la caja cuadra.</p>
-          </div>
-          <dl class="res-lista">
-            <div><dt>Debería haber</dt><dd data-r="esperado">S/ 0.00</dd></div>
-            <div><dt>Hay contado</dt><dd data-r="contado">S/ 0.00</dd></div>
-            <div class="res-dif"><dt>Diferencia</dt><dd data-r="diferencia">S/ 0.00</dd></div>
-          </dl>
-          <dl class="res-lista res-lista--dia">
-            <div><dt>Ventas en efectivo</dt><dd data-r="v-efectivo">S/ 0.00</dd></div>
-            <div><dt>Yape, Plin, tarjeta y transferencias</dt><dd data-r="v-otros">S/ 0.00</dd></div>
-            <div class="res-total"><dt>Venta total del día</dt><dd data-r="v-total">S/ 0.00</dd></div>
-          </dl>
-          <div class="res-acc">
-            <button class="btn-2 btn-2--claro" type="button" data-accion="imprimir">Imprimir o guardar en PDF</button>
-            <button class="res-borrar" type="button" data-accion="borrar">Empezar de nuevo</button>
-          </div>
-          <p class="res-nota">Lo que escribe se guarda solo en este navegador, para que no lo pierda si cierra la página. No llega a nosotros.</p>
         </div>
-      </aside>
-    </form>
+
+        <aside class="veredicto" aria-labelledby="res-t">
+          <p class="igv-et" id="res-t">Resultado</p>
+          <div class="ver-estado" data-e="vacio" role="status" aria-live="polite">
+            <p class="ver-v" data-r="veredicto">Llene la hoja</p>
+            <p class="ver-l" data-r="linea">Cuando cuente el efectivo, aquí verá si la caja cuadra.</p>
+          </div>
+          <div class="sugiere" data-sugiere hidden>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2Z"/></svg>
+            <div><b>DÓNDE BUSCAR</b><p data-sugiere-tx></p></div>
+          </div>
+          <div class="balanza">
+            <div class="pista--deb"><p><span>Debería haber</span><b data-r="esperado">S/ 0.00</b></p><div class="pista"><span data-pista="deb"></span></div></div>
+            <div class="pista--hay"><p><span>Hay contado</span><b data-r="contado">S/ 0.00</b></p><div class="pista"><span data-pista="hay"></span></div></div>
+          </div>
+          <p class="ver-dif"><span>Diferencia</span><b data-r="diferencia">S/ 0.00</b></p>
+          <div class="ver-desglose">
+            <p><span>Ventas en efectivo</span><b data-r="v-efectivo">S/ 0.00</b></p>
+            <p><span>Yape, Plin, tarjeta y transferencias</span><b data-r="v-otros">S/ 0.00</b></p>
+          </div>
+          <p class="ver-dif" style="border:0;padding-top:6px;font-weight:600"><span>Venta total del día</span><b data-r="v-total" style="font-size:17px">S/ 0.00</b></p>
+          <div class="ver-acc">
+            <button type="button" class="boton-claro" data-accion="ejemplo">Probar con un ejemplo</button>
+            <button type="button" class="boton-claro" data-accion="imprimir">Imprimir o guardar en PDF</button>
+            <button type="button" class="enlace-boton" data-accion="borrar">Empezar de nuevo</button>
+          </div>
+          <p class="ver-nota">Lo que escribe se guarda solo en este navegador, para que no lo pierda si cierra la página. No llega a nosotros.</p>
+        </aside>
+      </form>
+    </div>
   </div>
+  <a class="barra-movil" href="#res-t" data-barra data-e="vacio"><span data-barra-tx>Llene la hoja</span><b data-barra-n>S/ 0.00</b></a>
 </section>
 
 <!-- Guía: el artículo del blog vive aquí, debajo de la herramienta. -->
-<article class="guia" aria-labelledby="guia-t">
-  <div class="col guia-in">
-    <header class="guia-cab">
+<article class="guia guia-nueva" aria-labelledby="guia-t">
+  <div class="col">
+    <header class="guia-cab guia-in">
       <p class="rotulo">Guía · {h.categoria}</p>
       <h2 class="titular guia-t" id="guia-t">{h.guia}</h2>
       <p class="guia-meta">{autor} · <time datetime={h.publicada}>{fechaLarga(h.publicada)}</time> · {h.lectura} min de lectura</p>
     </header>
 
-    <div class="guia-cuerpo">
-      <h3>Qué es el cierre de caja</h3>
-      <p>Es comparar dos números al final del turno: el efectivo que <b>debería</b> haber en el cajón, según lo que se vendió y lo que salió, y el efectivo que <b>hay</b> cuando se cuenta. Si son iguales, la caja cuadra. Si no, hay una diferencia que conviene encontrar el mismo día, cuando todavía se recuerda qué pasó.</p>
-      <p>Cada caja se cierra por separado. Si tiene dos sedes, son dos cierres: mezclar el efectivo de las dos esconde dónde estuvo el error.</p>
+    <nav class="guia-indice" aria-label="En esta guía">
+      <a href="#g-resumen" data-ind="g-resumen">En 30 segundos</a>
+      <a href="#g-que" data-ind="g-que">Qué es</a>
+      <a href="#g-pasos" data-ind="g-pasos">Paso a paso</a>
+      <a href="#g-calculo" data-ind="g-calculo">Cómo se calcula</a>
+      <a href="#g-revisar" data-ind="g-revisar">Si no cuadra</a>
+      <a href="#g-preguntas" data-ind="g-preguntas">Preguntas</a>
+      <span class="leido" data-leido></span>
+    </nav>
 
-      <h3>Paso a paso</h3>
-      <ol class="guia-pasos">
-        <li><b>Cuente el fondo al abrir.</b> Es el sencillo con que empieza el día, por ejemplo S/ 200. Sin este número, el cierre no tiene contra qué comparar.</li>
-        <li><b>Anote cada salida de efectivo en el momento.</b> Gastos (el taxi, el agua) y retiros (un depósito al banco, el dinero que se llevó la persona encargada). Con monto y motivo.</li>
-        <li><b>Al cerrar, separe el efectivo del resto.</b> Yape, Plin, tarjeta y transferencias no están en el cajón: se anotan aparte.</li>
-        <li><b>Cuente billetes y monedas por tipo.</b> Primero los de S/ 200, luego los de S/ 100, y así. Contar por montones evita saltarse un billete.</li>
-        <li><b>Compare y firme.</b> Escriba el resultado, aunque haya diferencia, y quién cerró. Una diferencia anotada se puede explicar; una escondida se repite.</li>
-      </ol>
+    <div class="resumen30 guia-sec" id="g-resumen">
+      <b class="r">EN 30 SEGUNDOS</b>
+      <p>Al final del turno compare dos números: lo que <b>debería</b> haber en el cajón (fondo + ventas en efectivo − gastos − retiros) y lo que <b>hay</b> al contar. Si son iguales, la caja cuadra.</p>
+    </div>
 
-      <h3>Cómo se calcula</h3>
-      <div class="formula" aria-label="Fórmula">
-        <p><b>Debería haber</b> = fondo inicial + ventas en efectivo − gastos − retiros</p>
-        <p><b>Diferencia</b> = lo que hay contado − lo que debería haber</p>
+    <section class="guia-sec" id="g-que" aria-labelledby="g-que-t">
+      <h3 class="guia-sec-t" id="g-que-t">Qué es el cierre de caja</h3>
+      <div class="guia-texto">
+        <p>Es comparar dos números al final del turno: el efectivo que <b>debería</b> haber en el cajón, según lo que se vendió y lo que salió, y el efectivo que <b>hay</b> cuando se cuenta. Si son iguales, la caja cuadra. Si no, hay una diferencia que conviene encontrar el mismo día, cuando todavía se recuerda qué pasó.</p>
+        <p>Cada caja se cierra por separado. Si tiene dos sedes, son dos cierres: mezclar el efectivo de las dos esconde dónde estuvo el error.</p>
       </div>
-      <p><b>Un ejemplo.</b> Abrió con S/ 200, vendió S/ 1,350 en efectivo, pagó S/ 25 de un taxi y depositó S/ 1,000. Debería haber S/ 200 + S/ 1,350 − S/ 25 − S/ 1,000 = <b>S/ 525</b>. Si al contar hay S/ 515, faltan S/ 10.</p>
+    </section>
 
-      <h3>Si no cuadra, revise esto primero</h3>
-      <ol class="revisar">
-        <li><b>Un Yape anotado como efectivo.</b> Es la causa más común de un «falta»: la venta se cobró, pero no en la caja.</li>
-        <li><b>Un gasto sin anotar.</b> El taxi, el agua, la bolsa de hielo. Pida que se apunte en el momento en que se paga.</li>
-        <li><b>El vuelto.</b> Un billete de S/ 100 recibido como uno de S/ 10, o al revés.</li>
-        <li><b>El fondo inicial.</b> Si no se contó al abrir, cualquier diferencia de la mañana aparece en la noche.</li>
+    <section class="guia-sec" id="g-pasos" aria-labelledby="g-pasos-t">
+      <h3 class="guia-sec-t" id="g-pasos-t">Paso a paso</h3>
+      <div class="guia-pro">
+        <ol class="pasos-pro" data-pasos>
+          <li data-paso="0"><span class="n">PASO 1</span><h4>Cuente el fondo al abrir.</h4><p>Es el sencillo con que empieza el día, por ejemplo S/ 200. Sin este número, el cierre no tiene contra qué comparar.</p></li>
+          <li data-paso="1"><span class="n">PASO 2</span><h4>Anote cada salida de efectivo en el momento.</h4><p>Gastos (el taxi, el agua) y retiros (un depósito al banco, el dinero que se llevó la persona encargada). Con monto y motivo.</p></li>
+          <li data-paso="2"><span class="n">PASO 3</span><h4>Al cerrar, separe el efectivo del resto.</h4><p>Yape, Plin, tarjeta y transferencias no están en el cajón: se anotan aparte.</p></li>
+          <li data-paso="3"><span class="n">PASO 4</span><h4>Cuente billetes y monedas por tipo.</h4><p>Primero los de S/ 200, luego los de S/ 100, y así. Contar por montones evita saltarse un billete.</p></li>
+          <li data-paso="4"><span class="n">PASO 5</span><h4>Compare y firme.</h4><p>Escriba el resultado, aunque haya diferencia, y quién cerró. Una diferencia anotada se puede explicar; una escondida se repite.</p></li>
+        </ol>
+        <div class="escena" aria-hidden="true">
+          <p class="igv-et">El cierre, paso a paso</p>
+          <div class="ecu">
+            <p class="ecu-l ecu-fila" data-l="0"><span>Fondo al abrir</span><span>200.00</span></p>
+            <p class="ecu-l ecu-fila" data-l="1"><span>+ Ventas en efectivo</span><span>1,350.00</span></p>
+            <p class="ecu-l ecu-fila" data-l="1"><span>− Taxi <small>(gasto)</small></span><span>25.00</span></p>
+            <p class="ecu-l ecu-fila" data-l="1"><span>− Depósito <small>(retiro)</small></span><span>1,000.00</span></p>
+            <p class="ecu-l ecu-fila" data-l="2"><span>Yape, Plin y tarjeta</span><span class="ce">aparte</span></p>
+            <p class="ecu-l ecu-fila tot" data-l="3"><span>Debería haber</span><span class="ce">525.00</span></p>
+            <p class="ecu-l ecu-fila tot" data-l="3"><span>Hay contado</span><span class="am">515.00</span></p>
+            <div class="ecu-l escena-balanza" data-l="3">
+              <p><span>Debería haber</span></p><i class="deb"><span style="--w:100%"></span></i>
+              <p><span>Hay contado</span></p><i class="hay"><span style="--w:98.1%"></span></i>
+            </div>
+            <p class="ecu-l ecu-fila tot" data-l="4"><span>Faltan S/ 10.00</span><span class="ok">anotado y firmado ✓</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-calculo" aria-labelledby="g-calculo-t">
+      <h3 class="guia-sec-t" id="g-calculo-t">Cómo se calcula</h3>
+      <div class="guia-texto">
+        <div class="formula" aria-label="Fórmula">
+          <p><b>Debería haber</b> = fondo inicial + ventas en efectivo − gastos − retiros</p>
+          <p><b>Diferencia</b> = lo que hay contado − lo que debería haber</p>
+        </div>
+        <p style="margin-top:18px"><b>Un ejemplo.</b> Abrió con S/ 200, vendió S/ 1,350 en efectivo, pagó S/ 25 de un taxi y depositó S/ 1,000. Debería haber S/ 200 + S/ 1,350 − S/ 25 − S/ 1,000 = <b>S/ 525</b>. Si al contar hay S/ 515, faltan S/ 10.</p>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-revisar" aria-labelledby="g-revisar-t">
+      <h3 class="guia-sec-t" id="g-revisar-t">Si no cuadra, revise esto primero</h3>
+      <ol class="errores" style="list-style:none;padding:0">
+        <li class="error-c"><span class="n">1</span><h4>Un Yape anotado como efectivo.</h4><p>Es la causa más común de un «falta»: la venta se cobró, pero no en la caja.</p></li>
+        <li class="error-c"><span class="n">2</span><h4>Un gasto sin anotar.</h4><p>El taxi, el agua, la bolsa de hielo. Pida que se apunte en el momento en que se paga.</p></li>
+        <li class="error-c"><span class="n">3</span><h4>El vuelto.</h4><p>Un billete de S/ 100 recibido como uno de S/ 10, o al revés.</p></li>
+        <li class="error-c"><span class="n">4</span><h4>El fondo inicial.</h4><p>Si no se contó al abrir, cualquier diferencia de la mañana aparece en la noche.</p></li>
       </ol>
+    </section>
 
-      <h3>Preguntas frecuentes</h3>
+    <section class="guia-sec" id="g-preguntas" aria-labelledby="g-preguntas-t">
+      <h3 class="guia-sec-t" id="g-preguntas-t">Preguntas frecuentes</h3>
       <div class="faq guia-faq">
         <details>
           <summary>¿El fondo inicial se cuenta como venta?<span class="mas" aria-hidden="true">+</span></summary>
@@ -192,7 +284,7 @@ const soles = (c: number) => 'S/ ' + (c / 100).toFixed(c % 100 === 0 ? 0 : 2);
           <p>Al final de cada turno. Si dos personas usan la misma caja en el día, lo más seguro es un cierre al cambiar de turno: así cada diferencia tiene a quién preguntar.</p>
         </details>
       </div>
-    </div>
+    </section>
   </div>
 </article>
 
@@ -212,4 +304,5 @@ const soles = (c: number) => 'S/ ' + (c / 100).toFixed(c % 100 === 0 ? 0 : 2);
 </section>
 
 <script is:inline src="/herramientas/cierre-de-caja.js" defer></script>
+<script is:inline src="/herramientas/guia.js" defer></script>
 </Base>
