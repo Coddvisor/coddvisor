@@ -3,9 +3,6 @@
 import Base from '../layouts/Base.astro';
 // Piezas de la capa fluida: solo se ven con la clase fluido en <html> (ver LEEME, «La capa fluida»).
 import Hilos from '../components/Hilos.astro';
-import Modulos from '../components/Modulos.astro';
-import Conectado from '../components/Conectado.astro';
-import Flujo from '../components/Flujo.astro';
 ---
 <Base
   titulo="Coddvisor: software de gestión para micro y pequeñas empresas del Perú"
@@ -119,17 +116,17 @@ import Flujo from '../components/Flujo.astro';
     <ul class="beneficios-lista">
       <li class="beneficio" data-aparece>
         <span class="icono icono--ambar"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg></span>
-        <h3 class="beneficio-t beneficio-t--ambar">fácil de usar</h3>
+        <h3 class="beneficio-t beneficio-t--ambar">Fácil de usar</h3>
         <p>Pensado para que cualquiera en la tienda lo use sin que nadie se lo explique.</p>
       </li>
       <li class="beneficio" data-aparece style="--d:.08s">
         <span class="icono icono--azul"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><path d="M8 12h8"/></svg></span>
-        <h3 class="beneficio-t beneficio-t--azul">todo conectado</h3>
+        <h3 class="beneficio-t beneficio-t--azul">Todo conectado</h3>
         <p>Una venta mueve el stock, la caja y las cuentas a la vez. Nadie pasa cifras a mano.</p>
       </li>
       <li class="beneficio" data-aparece style="--d:.16s">
         <span class="icono icono--verde"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg></span>
-        <h3 class="beneficio-t beneficio-t--verde">hecho en el Perú</h3>
+        <h3 class="beneficio-t beneficio-t--verde">Hecho en el Perú</h3>
         <p>Con boleta y factura electrónica, soles, Yape y Plin, y la planilla de la pequeña empresa.</p>
       </li>
     </ul>
@@ -283,13 +280,11 @@ import Flujo from '../components/Flujo.astro';
       </li>
     </ol>
     <p class="maqueta-rot maqueta-rot--claro">Ejemplo con datos inventados.</p>
+    <!-- El detalle (a dónde va cada sol, todo lo que ya funciona y cómo se conecta) vive en
+         /como-funciona/: la portada se queda con lo que convence y lleva al formulario. -->
+    <a class="recorrido-mas" href="/como-funciona/">Vea cómo funciona cada parte <span aria-hidden="true">→</span></a>
   </div>
 </section>
-
-<!-- Capa fluida: a dónde va cada sol (Sankey), todo lo que ya funciona y cómo se conecta. -->
-<Flujo />
-<Modulos />
-<Conectado />
 
 <!-- 4.8 Para quién es -->
 <section class="para" id="para" aria-labelledby="para-t">

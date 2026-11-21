@@ -1,0 +1,45 @@
+---
+// Cómo funciona: el detalle del sistema para quien quiere verlo antes de escribirnos.
+// Estas tres secciones vivían en la portada. Se mudaron aquí (21-nov-2026, aprobado por la fundadora)
+// porque en celular la portada medía unas 22 pantallas y cuatro secciones decían lo mismo: «una venta
+// llega sola a todas partes». La portada conserva el recorrido de una venta y enlaza aquí.
+import Base from '../layouts/Base.astro';
+import Flujo from '../components/Flujo.astro';
+import Modulos from '../components/Modulos.astro';
+import Conectado from '../components/Conectado.astro';
+import { llamado } from '../datos/navegacion';
+---
+<Base
+  titulo="Cómo funciona: venta, caja, inventario y planilla en un solo sistema | Coddvisor"
+  descripcion="Qué hace Coddvisor parte por parte: a dónde va cada sol de una venta, todo lo que ya funciona y cómo se conectan las sedes. Con ejemplos de datos inventados.">
+
+<section class="portada portada--interior osc" aria-labelledby="cf-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot">Cómo funciona</p>
+    <h1 class="portada-t interior-t" id="cf-t">Cada parte del negocio, <span class="cel">en un solo sistema.</span></h1>
+    <p class="portada-baj">Una venta se registra una vez y llega sola a la caja, al inventario y a las cuentas de su sede. Aquí está el detalle, parte por parte.</p>
+  </div>
+</section>
+
+<Flujo />
+<Modulos />
+<Conectado />
+
+<section class="contacto osc" aria-labelledby="cf-contacto-t">
+  <div class="brillo brillo--contacto" aria-hidden="true"></div>
+  <div class="enmarcado contacto-in contacto-in--simple">
+    <div class="contacto-tx">
+      <span class="franja-sello" aria-hidden="true"></span>
+      <h2 class="titular titular--contacto" id="cf-contacto-t">¿Quiere verlo <span class="cel">con los datos de su negocio?</span></h2>
+      <p class="contacto-baj">Estamos buscando los primeros negocios que quieran probarlo. Cuéntenos qué vende y cuántas sedes tiene.</p>
+      <div class="portada-acc">
+        <a class="btn" href={llamado.href}>{llamado.texto}</a>
+        <a class="btn-2" href="/#preguntas">Ver preguntas frecuentes</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</Base>

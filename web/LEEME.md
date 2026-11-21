@@ -24,6 +24,7 @@ cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar
 | `migrations/`            | Cómo es la tabla donde se guardan los pedidos de contacto    |
 | `public/favicon*`, `public/apple-touch-icon.png` | Los íconos de la pestaña y del iPhone |
 | `public/vista-previa.png`| La imagen que sale al compartir el enlace (WhatsApp, redes). Copia de `marca/logo/redes/coddvisor-vista-previa-enlace.png` |
+| `public/fuentes/`       | Space Grotesk y Space Mono, servidas desde el sitio (no desde Google). Licencia en `LICENCIA.txt` |
 | `public/robots.txt`      | Les dice a los buscadores que pueden leer todo el sitio      |
 | `package.json`           | Qué versión de Astro usa el sitio. Va **fija** (sin `^`)      |
 | `astro.config.mjs`       | La configuración de Astro                                     |

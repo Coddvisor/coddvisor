@@ -36,7 +36,7 @@ export const menu: Grupo[] = [
   {
     texto: 'Producto',
     enlaces: productos,
-    recorrido: { texto: 'Cómo una venta mueve todo el negocio', href: '/#recorrido' },
+    recorrido: { texto: 'Cómo funciona, parte por parte', href: '/como-funciona/' },
   },
   {
     texto: 'Recursos',
@@ -55,7 +55,7 @@ export const llamado: Enlace = { texto: 'Quiero probarlo', href: '/#contacto' };
 
 // Pie de página: repite el menú agrupado, para quien llega al final y no encontró lo que buscaba.
 export const pie: { titulo: string; enlaces: Enlace[] }[] = [
-  { titulo: 'Producto', enlaces: [...productos, { texto: 'Cómo una venta mueve todo', href: '/#recorrido' }] },
+  { titulo: 'Producto', enlaces: [...productos, { texto: 'Cómo una venta mueve todo', href: '/#recorrido' }, { texto: 'Cómo funciona', href: '/como-funciona/' }] },
   {
     titulo: 'Herramientas gratis',
     enlaces: [

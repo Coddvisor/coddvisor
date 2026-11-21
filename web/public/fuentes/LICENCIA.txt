@@ -1,0 +1,8 @@
+Space Grotesk (Florian Karsten) y Space Mono (Colophon Foundry), descargadas de Google Fonts
+(fonts.gstatic.com) el 21-nov-2026, solo el juego de letras latino (español completo).
+
+Las dos tienen la licencia SIL Open Font License 1.1: se pueden usar, copiar y publicar gratis,
+también en sitios comerciales. Texto completo: https://openfontlicense.org
+
+Por qué están aquí y no en Google: el texto aparece antes en celulares con señal lenta (una conexión
+menos a otro servidor) y Google no se entera de cada visita al sitio.
