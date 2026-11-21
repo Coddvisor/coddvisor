@@ -31,13 +31,12 @@ cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar
 
 ## Manifiesto y Constitución
 
-Las dos páginas salen de textos que viven fuera de `web/` (los borradores de la Constitución).
-Hoy llevan `<meta name="robots" content="noindex">`, para que los buscadores no las lean:
-**se quita esa línea al publicarlas**. Si el texto cambia, se regeneran las dos páginas y se
-revisan de nuevo; no se editan a ratos.
+Las dos páginas salen de textos que viven fuera de `web/` (los borradores de la Constitución) y se
+**generan**: si el texto cambia, se regeneran y se revisan de nuevo; no se editan a ratos.
 
-Antes de publicarlas: que un abogado peruano revise los textos (lo decidió el fundador el
-19-nov-2026). Lo que una empresa ofrece en público se le puede exigir.
+Publicadas el 21-nov-2026 por decisión del fundador. **Pendiente:** la revisión de un abogado
+peruano, que el fundador hará más adelante. Lo que una empresa ofrece en público se le puede
+exigir: si el abogado cambia una frase, se cambia el texto y se regenera la página.
 
 ## El menú (un solo lugar)
 
