@@ -326,7 +326,7 @@ salen de `navegacion.ts` y `herramientas.ts`. Al final, «Quiero probarlo»: el 
 El gato y la palabra «coddvisor» están dibujados dentro de la página (el
 `<symbol id="logotipo">`), copiados del logotipo horizontal de la marca. Sus
 colores salen de `--logo-gato` y `--logo-palabra` en `estilos.css`: en la
-cabecera oscura, gato y palabra claros; en el pie, todo en cobalto. El punto de
+cabecera oscura, el gato en ámbar y la palabra clara (como manda la guía de marca: sobre oscuro, el gato siempre es ámbar); en el pie, todo en cobalto. El punto de
 la i siempre es ámbar. La palabra es un dibujo, no una tipografía: no la
 reescribas con Space Grotesk. Alto mínimo: 24 px.
 
