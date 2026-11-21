@@ -1,0 +1,145 @@
+---
+// «A dónde va cada sol» (capa fluida): un diagrama de Sankey con un día de ventas de ejemplo.
+// Tres columnas: sedes → medios de pago → a dónde va el dinero (IGV, costo, gastos y planilla, lo
+// que queda). El ancho de cada cinta es proporcional al monto.
+//
+// Los números son inventados pero cuadran al céntimo:
+// - Las sedes son las del panel de la portada y suman su venta del día: S/ 4,320.50.
+// - El IGV es el 18 % incluido en esa venta, calculado como en la herramienta: venta ÷ 1.18.
+// - Cada columna suma lo mismo. Las cintas del medio al destino se reparten en proporción.
+// El dibujo se calcula aquí, al armar el sitio: al visitante le llega un SVG fijo. El movimiento
+// (aparecer de izquierda a derecha, resaltar al pasar el mouse) lo pone fluido.js.
+
+type Nodo = { id: string; nombre: string; valor: number; color: string; col: number };
+// Montos en céntimos.
+const sedes: Nodo[] = [
+  { id: 'centro', nombre: 'Sede Centro', valor: 210590, color: '#1554E0', col: 0 },
+  { id: 'norte', nombre: 'Sede Norte', valor: 128460, color: '#FF8F1F', col: 0 },
+  { id: 'sur', nombre: 'Sede Sur', valor: 93000, color: '#2CB7F5', col: 0 },
+];
+const medios: Nodo[] = [
+  { id: 'efectivo', nombre: 'Efectivo', valor: 0, color: '#14245E', col: 1 },
+  { id: 'yape', nombre: 'Yape y Plin', valor: 0, color: '#2E4A9A', col: 1 },
+  { id: 'tarjeta', nombre: 'Tarjeta', valor: 0, color: '#5B6785', col: 1 },
+];
+// Cuánto entró por cada medio en cada sede (cada fila suma la venta de su sede).
+const porMedio: Record<string, Record<string, number>> = {
+  centro: { efectivo: 98000, yape: 72590, tarjeta: 40000 },
+  norte: { efectivo: 61460, yape: 47000, tarjeta: 20000 },
+  sur: { efectivo: 52000, yape: 31000, tarjeta: 10000 },
+};
+medios.forEach((m) => { m.valor = sedes.reduce((s, x) => s + porMedio[x.id][m.id], 0); });
+const total = sedes.reduce((s, x) => s + x.valor, 0); // 432050
+const valorVenta = Math.round(total / 1.18);
+const igv = total - valorVenta;
+const costo = Math.round(valorVenta * 0.5);
+const gastos = 64400;
+const destinos: Nodo[] = [
+  { id: 'igv', nombre: 'IGV (es de la SUNAT)', valor: igv, color: '#B05008', col: 2 },
+  { id: 'costo', nombre: 'Costo de lo vendido', valor: costo, color: '#3A476B', col: 2 },
+  { id: 'gastos', nombre: 'Gastos y planilla', valor: gastos, color: '#0A86C7', col: 2 },
+  { id: 'queda', nombre: 'Queda para el negocio', valor: total - igv - costo - gastos, color: '#0B6B41', col: 2 },
+];
+
+// Cintas. Primera etapa: sede → medio. Segunda: medio → destino, en proporción; el último destino
+// de cada medio se lleva el resto, para que cada medio reparta exactamente lo que recibió.
+type Cinta = { de: Nodo; a: Nodo; valor: number };
+const cintas: Cinta[] = [];
+sedes.forEach((s) => medios.forEach((m) => cintas.push({ de: s, a: m, valor: porMedio[s.id][m.id] })));
+medios.forEach((m) => {
+  let usado = 0;
+  destinos.forEach((d, i) => {
+    const v = i === destinos.length - 1 ? m.valor - usado : Math.round(m.valor * d.valor / total);
+    usado += v;
+    cintas.push({ de: m, a: d, valor: v });
+  });
+});
+
+// Dibujo.
+const W = 1000, H = 470, ANCHO = 16, HUECO = 22, ARRIBA = 18;
+const X = [150, 470, 770];
+const columnas = [sedes, medios, destinos];
+const escala = Math.min(...columnas.map((c) => (H - ARRIBA * 2 - HUECO * (c.length - 1)) / total));
+const pos: Record<string, { x: number; y: number; h: number; sale: number; entra: number }> = {};
+columnas.forEach((c, ci) => {
+  const alto = c.reduce((s, n) => s + n.valor * escala, 0) + HUECO * (c.length - 1);
+  let y = (H - alto) / 2;
+  c.forEach((n) => { pos[n.id] = { x: X[ci], y, h: n.valor * escala, sale: y, entra: y }; y += n.valor * escala + HUECO; });
+});
+const r1 = (n: number) => Math.round(n * 10) / 10;
+const caminos = cintas.map((c, i) => {
+  const a = pos[c.de.id], b = pos[c.a.id], g = c.valor * escala;
+  const x0 = a.x + ANCHO, x1 = b.x, xm = (x0 + x1) / 2;
+  const y0 = a.sale, y1 = b.entra;
+  a.sale += g; b.entra += g;
+  const d = `M${r1(x0)} ${r1(y0)}C${r1(xm)} ${r1(y0)} ${r1(xm)} ${r1(y1)} ${r1(x1)} ${r1(y1)}L${r1(x1)} ${r1(y1 + g)}C${r1(xm)} ${r1(y1 + g)} ${r1(xm)} ${r1(y0 + g)} ${r1(x0)} ${r1(y0 + g)}Z`;
+  return { d, de: c.de.id, a: c.a.id, valor: c.valor, grad: `sk-g${i}`, c1: c.de.color, c2: c.a.color };
+});
+const soles = (c: number) => 'S/ ' + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pct = (c: number) => Math.round(c / total * 1000) / 10 + ' %';
+const nodos = [...sedes, ...medios, ...destinos];
+---
+<section class="flujo solo-fluido" id="flujo" aria-labelledby="flujo-t">
+  <div class="col">
+    <div data-aparece>
+      <p class="rotulo">A dónde va cada sol</p>
+      <h2 class="titular titular--ancho" id="flujo-t">Un día del negocio, <span class="az">de la venta a las cuentas.</span></h2>
+      <p class="flujo-baj">Cada venta entra por una sede y un medio de pago, y termina repartida: el IGV que es de la SUNAT, lo que costó la mercadería, los gastos y lo que queda para el negocio. Toque una parte para ver su camino.</p>
+    </div>
+
+    <div class="flujo-caja" data-flujo>
+      <p class="flujo-pista" aria-hidden="true">Deslice para ver todo →</p>
+      <div class="flujo-desliza">
+        <svg class="flujo-svg" viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="flujo-t flujo-desc">
+          <desc id="flujo-desc">Venta del día de ejemplo: {soles(total)}, repartida por sede, por medio de pago y por destino. Los montos están en la tabla que sigue al diagrama.</desc>
+          <defs>
+            {caminos.map((c) => (
+              <linearGradient id={c.grad} gradientUnits="userSpaceOnUse" x1={pos[c.de].x + ANCHO} x2={pos[c.a].x} y1="0" y2="0">
+                <stop offset="0" stop-color={c.c1} />
+                <stop offset="1" stop-color={c.c2} />
+              </linearGradient>
+            ))}
+          </defs>
+          <g class="sk-cintas">
+            {caminos.map((c) => (
+              <path class="sk-cinta" d={c.d} fill={`url(#${c.grad})`} data-de={c.de} data-a={c.a} data-valor={c.valor}>
+                <title>{nodos.find((n) => n.id === c.de)!.nombre} → {nodos.find((n) => n.id === c.a)!.nombre}: {soles(c.valor)}</title>
+              </path>
+            ))}
+          </g>
+          <g class="sk-nodos">
+            {nodos.map((n) => {
+              const p = pos[n.id];
+              const izq = n.col === 0;
+              const tx = izq ? p.x - 12 : p.x + ANCHO + 12;
+              const ty = p.y + p.h / 2;
+              return (
+                <g class="sk-nodo" data-n={n.id} data-col={n.col} data-nombre={n.nombre} data-valor={n.valor} tabindex="0" role="button" aria-label={`${n.nombre}: ${soles(n.valor)}, el ${pct(n.valor)} de la venta del día`}>
+                  <rect x={p.x} y={r1(p.y)} width={ANCHO} height={r1(p.h)} rx="4" fill={n.color} />
+                  <text x={tx} y={r1(ty - 3)} text-anchor={izq ? 'end' : 'start'} class="sk-nombre">{n.nombre}</text>
+                  <text x={tx} y={r1(ty + 15)} text-anchor={izq ? 'end' : 'start'} class="sk-valor">{soles(n.valor)}</text>
+                </g>
+              );
+            })}
+          </g>
+          <g class="sk-titulos" aria-hidden="true">
+            <text x={X[0] + ANCHO / 2} y="10" text-anchor="middle">SEDES</text>
+            <text x={X[1] + ANCHO / 2} y="10" text-anchor="middle">MEDIO DE PAGO</text>
+            <text x={X[2] + ANCHO / 2} y="10" text-anchor="middle">A DÓNDE VA</text>
+          </g>
+        </svg>
+      </div>
+      <p class="flujo-info" data-flujo-info aria-live="polite">Venta del día: <b>{soles(total)}</b>. Toque una sede, un medio de pago o un destino.</p>
+    </div>
+
+    <div class="oculto">
+    <table>
+      <caption>Venta del día de ejemplo, por sede, medio de pago y destino</caption>
+      <tbody>
+        {nodos.map((n) => <tr><th scope="row">{n.nombre}</th><td>{soles(n.valor)}</td><td>{pct(n.valor)}</td></tr>)}
+      </tbody>
+    </table>
+    </div>
+    <p class="maqueta-rot maqueta-rot--claro">Ejemplo con datos inventados. Las sedes suman la venta del día del panel de la portada; el IGV es el 18 % incluido en esa venta.</p>
+  </div>
+</section>

@@ -5,6 +5,7 @@ import Base from '../layouts/Base.astro';
 import Hilos from '../components/Hilos.astro';
 import Modulos from '../components/Modulos.astro';
 import Conectado from '../components/Conectado.astro';
+import Flujo from '../components/Flujo.astro';
 ---
 <Base
   titulo="Coddvisor: software de gestión para micro y pequeñas empresas del Perú"
@@ -285,7 +286,8 @@ import Conectado from '../components/Conectado.astro';
   </div>
 </section>
 
-<!-- Capa fluida: todo lo que ya funciona, y cómo se conecta. -->
+<!-- Capa fluida: a dónde va cada sol (Sankey), todo lo que ya funciona y cómo se conecta. -->
+<Flujo />
 <Modulos />
 <Conectado />
 

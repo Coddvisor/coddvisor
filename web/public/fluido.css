@@ -551,3 +551,35 @@
   .fluido .ficha input:checked + span { animation:fichaElegida .45s var(--resorte); }
 }
 @keyframes fichaElegida { from { transform:scale(.94); } to { transform:none; } }
+
+/* ---------- «A dónde va cada sol»: diagrama de Sankey (Flujo.astro) ---------- */
+.flujo { padding:var(--pad-sec) 0 0; }
+.flujo-baj { margin-top:16px; max-width:62ch; font-size:18px; line-height:1.6; color:var(--texto-2); text-wrap:pretty; }
+.flujo-caja { margin-top:36px; border-radius:28px; padding:clamp(16px, 3vw, 36px); background:var(--tarjeta); border:1px solid color-mix(in srgb, var(--borde) 80%, transparent); box-shadow:var(--sombra-suave); }
+.flujo-desliza { overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; }
+.flujo-svg { display:block; width:100%; min-width:680px; height:auto; overflow:visible; }
+.sk-cinta { opacity:.32; transition:opacity .45s var(--suave); cursor:pointer; }
+.sk-cinta:hover { opacity:.62; }
+.sk-nodo { cursor:pointer; outline:none; }
+.sk-nodo rect { transition:opacity .45s var(--suave), transform .45s var(--resorte); transform-box:fill-box; transform-origin:center; }
+.sk-nodo text { paint-order:stroke; stroke:var(--tarjeta); stroke-width:5px; stroke-linejoin:round; transition:opacity .45s var(--suave); }
+.sk-nombre { font:600 15px var(--sans); fill:var(--cobalto); }
+.sk-valor { font:700 13px var(--mono); fill:var(--texto-2); }
+.sk-titulos text { font:700 11px var(--mono); letter-spacing:.08em; fill:var(--texto-3); }
+.sk-nodo:focus-visible rect { outline:none; stroke:var(--azul-real); stroke-width:3; }
+/* Enfoque: al elegir una parte, sus cintas se encienden y lo demás se apaga. */
+.flujo-svg.foco .sk-cinta { opacity:.08; }
+.flujo-svg.foco .sk-cinta.on { opacity:.7; }
+.flujo-svg.foco .sk-nodo:not(.on) rect, .flujo-svg.foco .sk-nodo:not(.on) text { opacity:.3; }
+.flujo-svg.foco .sk-nodo.elegido rect { transform:scaleX(1.25); }
+.flujo-info { margin-top:16px; padding:14px 18px; border-radius:16px; background:var(--superficie); font-size:15px; line-height:1.55; color:var(--texto-2); min-height:3.2em; }
+.flujo-info b { color:var(--cobalto); font-family:var(--mono); white-space:nowrap; }
+.flujo-info strong { color:var(--cobalto); }
+@media (max-width:720px) { .flujo-desliza { margin-inline:calc(-1 * clamp(16px, 3vw, 36px)); padding-inline:clamp(16px, 3vw, 36px); } }
+@media (prefers-reduced-motion: no-preference) {
+  /* Se dibuja de izquierda a derecha al aparecer. */
+  .fluido.js .flujo-svg { clip-path:inset(0 100% 0 0); transition:clip-path 2.2s var(--suave); }
+  .fluido.js .flujo-caja.dibuja .flujo-svg { clip-path:inset(0 0 0 0); }
+}
+.flujo-pista { display:none; margin-bottom:8px; font:400 12px var(--mono); color:var(--texto-2); text-align:right; }
+@media (max-width:720px) { .flujo-pista { display:block; } }
