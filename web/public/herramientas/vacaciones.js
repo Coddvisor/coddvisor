@@ -144,7 +144,7 @@
     r('pago').textContent = soles(sueldo) + ' + ' + soles(sueldo);
     r('total').textContent = soles(sueldo * 2);
     return aviso('Debe ' + soles(sueldo * 2) + ' más',
-      'Además del sueldo que ya le pagó por trabajar. La indemnización, ' + soles(sueldo) + ', no lleva aportes ni impuestos.', 'falta');
+      'Además del sueldo que ya le pagó por trabajar. La indemnización, ' + soles(sueldo) + ', no lleva aportes ni impuestos.', 'aviso');
   }
 
   form.addEventListener('input', pintar);
