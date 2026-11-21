@@ -409,22 +409,24 @@ import Conectado from '../components/Conectado.astro';
         <label for="c-vende">¿Qué vende?</label>
         <input id="c-vende" name="vende" type="text" placeholder="Ej. ropa, calzado, abarrotes">
       </div>
-      <div class="campo">
-        <label for="c-personas">Personas que trabajan</label>
-        <select id="c-personas" name="personas">
-          <option>1 a 5</option>
-          <option>6 a 15</option>
-          <option>16 a 40</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label for="c-sedes">Sedes</label>
-        <select id="c-sedes" name="sedes">
-          <option>1</option>
-          <option>2 o 3</option>
-          <option>4 o más</option>
-        </select>
-      </div>
+      <!-- Opciones de un toque (antes, un menú desplegable): se ven todas y se eligen con un dedo. -->
+      <fieldset class="campo campo--fichas" id="c-personas">
+        <legend>Personas que trabajan</legend>
+        <div class="fichas">
+          <label class="ficha"><input type="radio" name="personas" value="1 a 5" checked><span>1 a 5</span></label>
+          <label class="ficha"><input type="radio" name="personas" value="6 a 15"><span>6 a 15</span></label>
+          <label class="ficha"><input type="radio" name="personas" value="16 a 40"><span>16 a 40</span></label>
+        </div>
+      </fieldset>
+      <!-- Opciones de un toque (antes, un menú desplegable): se ven todas y se eligen con un dedo. -->
+      <fieldset class="campo campo--fichas" id="c-sedes">
+        <legend>Sedes</legend>
+        <div class="fichas">
+          <label class="ficha"><input type="radio" name="sedes" value="1" checked><span>1</span></label>
+          <label class="ficha"><input type="radio" name="sedes" value="2 o 3"><span>2 o 3</span></label>
+          <label class="ficha"><input type="radio" name="sedes" value="4 o más"><span>4 o más</span></label>
+        </div>
+      </fieldset>
       <button class="btn form-btn" type="submit">Quiero ser de los primeros</button>
       <p class="form-nota">Solo usamos estos datos para responderle.</p>
       <p class="form-estado" data-estado="contacto" role="status"></p>

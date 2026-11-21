@@ -13,6 +13,9 @@
       y en Contacto, donde ya está a la vista.
    10. Ilustraciones en bucle ([data-bucle]): solo se mueven mientras se ven; el código de
        asistencia cambia cada vez que su barra se vacía.
+   11. Enlaces a una sección (#para, #contacto...): la sección queda centrada en la pantalla si
+       cabe; si es más alta, su título queda justo debajo de la cabecera, sin el espacio vacío
+       de arriba. También al llegar desde otra página con la dirección ya puesta.
    Si la persona pidió menos movimiento, solo queda el acabado: nada se mueve. */
 (function () {
   'use strict';
@@ -152,6 +155,51 @@
       codigo.classList.toggle('cambio', true);
     });
   }
+
+  /* ---------- 11. Llegar a una sección bien ubicada ---------- */
+  function destino(el) {
+    var cabH = cab ? cab.getBoundingClientRect().height : 0;
+    var arriba = cabH + 28, libre = window.innerHeight - arriba - 24;
+    // En una sección: se mide desde su contenido (sin el relleno de arriba) hasta su final.
+    var caja = el.matches('section') ? el.querySelector(':scope > .col, :scope > .enmarcado, :scope > div:not(.brillo)') : null;
+    var primero = caja ? caja.firstElementChild : null;
+    while (primero && !primero.getBoundingClientRect().height) primero = primero.nextElementSibling;
+    // Posición real en la página (offsetTop no cuenta las animaciones de aparición, que mueven
+    // el contenido 44 px mientras todavía no se ve).
+    var enPagina = function (n) { var y = 0; while (n) { y += n.offsetTop; n = n.offsetParent; } return y; };
+    var ini = enPagina(primero || el);
+    var fin = el.matches('section') ? enPagina(caja) + caja.offsetHeight - parseFloat(getComputedStyle(caja).paddingBottom || 0) : ini + el.offsetHeight;
+    var alto = fin - ini;
+    var top = ini - arriba;
+    if (alto < libre) top -= (libre - alto) / 2; // cabe: se centra
+    return Math.max(0, Math.round(top));
+  }
+  function ir(id, suave) {
+    var el = id && document.getElementById(id);
+    if (!el || el.closest('.pestanas')) return false; // las pestañas de «Qué hace» se abren con su propio enlace
+    window.scrollTo({ top: destino(el), behavior: suave && !menos ? 'smooth' : 'auto' });
+    return true;
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a[href*="#"]');
+    if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    var url = new URL(a.href, location.href);
+    if (url.pathname !== location.pathname || !url.hash) return;
+    var id = decodeURIComponent(url.hash.slice(1)), el = document.getElementById(id);
+    if (!el || el.closest('.pestanas')) return;
+    e.preventDefault();
+    if (location.hash !== url.hash) history.pushState(null, '', url.hash);
+    // La sección puede crecer al abrirse (el menú del celular se cierra): se mide en el cuadro siguiente.
+    requestAnimationFrame(function () { ir(id, true); });
+  });
+  if (location.hash) {
+    // El navegador salta solo a la sección al cargar; se corrige después de ese salto
+    // (cuando ya cargaron las letras y la página), sin animación.
+    var alCargar = function () { setTimeout(function () { ir(decodeURIComponent(location.hash.slice(1)), false); }, 80); };
+    if (document.readyState === 'complete') alCargar(); else window.addEventListener('load', alCargar);
+  }
+  // Saltos dentro de la misma página que no pasan por un clic (atrás y adelante del navegador).
+  window.addEventListener('hashchange', function () { ir(decodeURIComponent(location.hash.slice(1)), true); });
 
   /* ---------- Bucle de desplazamiento: un solo cálculo por cuadro ---------- */
   var pendiente = false;

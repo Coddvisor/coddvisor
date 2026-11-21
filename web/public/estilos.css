@@ -107,6 +107,9 @@ sup.ref a { color:var(--azul-real); text-underline-offset:2px; display:inline-bl
 .aviso b { color:var(--fondo); font-weight:600; }
 .aviso a { color:var(--fondo); font-weight:500; text-underline-offset:3px; }
 .aviso :focus-visible { outline-color:var(--celeste); }
+/* Partes nuevas de la barra (la capa fluida les da forma; sin ella, la barra queda como antes). */
+.aviso-punto, .aviso-corto { display:none; }
+.aviso a svg { display:none; }
 
 /* ---------- 4.1 Cabecera ---------- */
 .cab { position:sticky; top:0; z-index:30; background:var(--cobalto); border-bottom:1px solid var(--linea-oscura); --logo-gato:var(--fondo); --logo-palabra:var(--fondo); }
@@ -389,6 +392,16 @@ html:not(.js) form[data-form] { display:none; }
 .campo label { font-size:14px; font-weight:600; }
 .campo input, .campo select { width:100%; min-height:50px; border:2px solid var(--borde-fuerte); border-bottom-color:var(--texto-3); border-radius:14px; padding:0 14px; font:inherit; font-size:16px; background:var(--tarjeta); color:var(--cobalto); }
 .campo input::placeholder { color:var(--texto-3); opacity:1; }
+/* Opciones de un toque (personas y sedes): cápsulas del mismo alto que los campos. */
+.campo--fichas { margin:0; padding:0; border:0; min-width:0; }
+.campo--fichas legend { padding:0; margin-bottom:6px; font-size:14px; font-weight:600; }
+.fichas { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:4px; padding:4px; border-radius:14px; background:var(--superficie); border:2px solid var(--borde); }
+.ficha { position:relative; }
+.ficha input { position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+.ficha span { display:grid; place-items:center; min-height:42px; padding:0 6px; border-radius:10px; font-size:15px; font-weight:600; color:var(--texto-2); text-align:center; white-space:nowrap; transition:background-color .25s, color .25s, box-shadow .25s; }
+.ficha input:hover + span { color:var(--cobalto); }
+.ficha input:checked + span { background:var(--tarjeta); color:var(--cobalto); box-shadow:0 1px 2px rgba(11,24,65,.08), 0 6px 14px -6px rgba(11,24,65,.3), inset 0 0 0 1.5px var(--azul-real); }
+.ficha input:focus-visible + span { outline:3px solid var(--azul-real); outline-offset:2px; }
 .form-btn { grid-column:1 / -1; margin-top:6px; min-height:56px; font-size:17px; letter-spacing:.01em; }
 .form-nota { grid-column:1 / -1; font-size:13px; line-height:1.5; color:var(--texto-2); text-align:center; }
 .form .form-estado { grid-column:1 / -1; text-align:center; }

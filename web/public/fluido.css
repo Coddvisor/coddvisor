@@ -517,3 +517,37 @@
   .mapa-chip { font-size:12px; padding:5px 9px 5px 5px; }
   .mapa-chip i { width:22px; height:22px; }
 }
+
+/* ---------- Barra inicial («Primeros negocios»), al estilo de los avisos de Apple ----------
+   Centrada, con un punto que late (estamos en vivo), el texto y una cápsula «Postular →». Debajo,
+   una línea fina celeste y ámbar que recorre la barra muy despacio. En celular, texto corto. */
+.fluido .aviso { position:relative; border-bottom:0; background:linear-gradient(180deg, var(--cobalto-profundo), color-mix(in srgb, var(--cobalto-profundo) 70%, var(--cobalto))); }
+.fluido .aviso::after { content:""; position:absolute; left:0; right:0; bottom:0; height:1px; background:linear-gradient(90deg, transparent 0%, var(--celeste) 25%, var(--ambar) 50%, var(--celeste) 75%, transparent 100%); background-size:200% 100%; opacity:.75; }
+.fluido .aviso-in { justify-content:center; gap:6px 16px; padding-block:8px; text-align:center; }
+.fluido .aviso p { display:inline-flex; align-items:center; flex-wrap:wrap; justify-content:center; gap:0 6px; }
+.fluido .aviso-punto { display:inline-block; width:7px; height:7px; margin-right:4px; border-radius:50%; background:var(--ambar); box-shadow:0 0 0 0 color-mix(in srgb, var(--ambar) 55%, transparent); }
+.fluido .aviso a {
+  display:inline-flex; align-items:center; gap:6px; min-height:30px; padding:0 12px 0 14px; border-radius:999px;
+  background:color-mix(in srgb, var(--fondo) 10%, transparent); border:1px solid color-mix(in srgb, var(--fondo) 22%, transparent);
+  text-decoration:none; font-weight:600; font-size:13px; transition:background-color .3s var(--suave), border-color .3s var(--suave);
+}
+.fluido .aviso a svg { display:block; transition:transform .4s var(--resorte); }
+.fluido .aviso a:hover { background:color-mix(in srgb, var(--fondo) 18%, transparent); border-color:var(--celeste); }
+.fluido .aviso a:hover svg { transform:translateX(3px); }
+@media (max-width:640px) {
+  .fluido .aviso-largo { display:none; }
+  .fluido .aviso-corto { display:inline; }
+  .fluido .aviso-in { flex-wrap:nowrap; justify-content:space-between; text-align:left; font-size:13px; }
+  .fluido .aviso p { justify-content:flex-start; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fluido .aviso-punto { animation:latido 2.2s ease-in-out infinite; }
+  .fluido .aviso::after { animation:franjaViaja 14s linear infinite; }
+}
+@keyframes franjaViaja { from { background-position:0 0; } to { background-position:-200% 0; } }
+
+/* Opciones de un toque del formulario: la elegida se marca con un pequeño rebote. */
+@media (prefers-reduced-motion: no-preference) {
+  .fluido .ficha input:checked + span { animation:fichaElegida .45s var(--resorte); }
+}
+@keyframes fichaElegida { from { transform:scale(.94); } to { transform:none; } }
