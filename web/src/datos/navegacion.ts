@@ -71,6 +71,7 @@ export const pie: { titulo: string; enlaces: Enlace[] }[] = [
       { texto: 'En qué etapa estamos', href: '/#etapa' },
       { texto: 'Preguntas frecuentes', href: '/#preguntas' },
       { texto: 'Nosotros', href: '/nosotros/' },
+      { texto: 'Privacidad', href: '/privacidad/' },
     ],
   },
 ];

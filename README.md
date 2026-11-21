@@ -15,7 +15,7 @@ con *advisor*: un sistema que ordena los datos del negocio y aconseja con ellos.
 
 | Carpeta         | Qué guarda                                      | Quién la usa                 |
 |-----------------|-------------------------------------------------|------------------------------|
-| `web/`          | El sitio público de coddvisor.com               | Vercel lo publica desde aquí |
+| `web/`          | El sitio público de coddvisor.com               | Cloudflare Pages lo publica desde aquí |
 | `arquitectura/` | Estrategia y arquitectura del producto          | Fundador y equipo técnico    |
 | `docs/`         | Documentos de trabajo                           | Todo el equipo               |
 | `marca/`        | Logos, colores y guía de identidad              | Todo el equipo e imprentas   |
@@ -27,7 +27,7 @@ con *advisor*: un sistema que ordena los datos del negocio y aconseja con ellos.
 - **`main` es la vitrina.** Lo que está en `main` es lo que el público ve en
   coddvisor.com. Nadie escribe directo en `main`.
 - **Cada cambio va en su propia rama** (un borrador con nombre, por ejemplo
-  `web/pagina-precios` o `arquitectura/modulo-inventario`). Vercel publica cada
+  `web/pagina-precios` o `arquitectura/modulo-inventario`). Cloudflare publica cada
   rama en una dirección de prueba para revisarla antes.
 - **Se une a `main` solo cuando el fundador lo aprueba**, mediante una
   solicitud de revisión (*pull request*) en GitHub.

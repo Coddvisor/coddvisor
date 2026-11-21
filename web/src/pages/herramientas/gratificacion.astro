@@ -1,0 +1,192 @@
+---
+// Herramienta gratis: gratificación de diciembre. La calculadora arriba y la guía debajo.
+// Reglas en public/herramientas/gratificacion.js. Guía del borrador aprobado (web/borradores/gratificacion.md).
+import Base from '../../layouts/Base.astro';
+import { llamado } from '../../datos/navegacion';
+import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
+
+const h = herramientas.find((x) => x.href === '/herramientas/gratificacion/')!;
+const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+---
+<Base
+  titulo="Calculadora de gratificación de diciembre 2026 gratis | Coddvisor"
+  descripcion="Calcule la gratificación de diciembre de cada integrante según su régimen: general, pequeña o microempresa, con la bonificación del 9 %. Gratis y sin registrarse.">
+
+<section class="portada portada--interior osc" aria-labelledby="hg-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot">Herramienta gratis</p>
+    <h1 class="portada-t interior-t" id="hg-t">Gratificación de diciembre: <span class="cel">cuánto pagar a cada persona.</span></h1>
+    <p class="plazo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Se paga hasta el martes 15 de diciembre de 2026</p>
+    <p class="portada-baj">Según su régimen, sus meses y su sueldo, con la bonificación del 9 % incluida. Si no sabe su régimen, le mostramos los tres.</p>
+    <ul class="confianza">
+      <li set:html={ico + 'Gratis y sin registrarse'} />
+      <li set:html={ico + 'Verificada contra la norma el ' + fechaLarga(h.verificada!)} />
+      <li set:html={ico + 'Lo que escribe no sale de su computadora'} />
+    </ul>
+  </div>
+</section>
+
+<section class="caja-sec" aria-label="Calculadora de gratificación">
+  <div class="col">
+    <form class="caja" id="grati" autocomplete="off" novalidate>
+      <div class="caja-hoja">
+        <fieldset class="caja-bloque">
+          <legend><span class="caja-n">1</span>El régimen de su negocio</legend>
+          <p class="caja-ayuda">Depende de si su negocio está inscrito en el REMYPE. Si no lo sabe, elija «No lo sé».</p>
+          <div class="opciones opciones--2" role="radiogroup" aria-label="Régimen">
+            <label class="opcion"><input type="radio" name="regimen" value="general" checked><span><b>Régimen general</b><small>O no está inscrito en el REMYPE</small></span></label>
+            <label class="opcion"><input type="radio" name="regimen" value="pequena"><span><b>Pequeña empresa</b><small>Inscrita en el REMYPE: media gratificación</small></span></label>
+            <label class="opcion"><input type="radio" name="regimen" value="micro"><span><b>Microempresa</b><small>Inscrita en el REMYPE: no corresponde</small></span></label>
+            <label class="opcion"><input type="radio" name="regimen" value="nose"><span><b>No lo sé</b><small>Le mostramos los tres resultados</small></span></label>
+          </div>
+          <label class="casilla" data-antes hidden><input type="checkbox" name="antes"> Esta persona ya trabajaba aquí antes de la inscripción en el REMYPE <small>(entonces conserva el régimen general)</small></label>
+        </fieldset>
+
+        <fieldset class="caja-bloque">
+          <legend><span class="caja-n">2</span>Lo que gana</legend>
+          <div class="caja-campos">
+            <div class="campo campo--monto"><label for="gr-sueldo">Sueldo mensual al 30 de noviembre</label><div class="monto"><span>S/</span><input id="gr-sueldo" name="sueldo" type="number" inputmode="decimal" min="0" step="0.01" value="1500"></div></div>
+            <div class="campo campo--monto"><label for="gr-extras">Horas extra y comisiones del semestre <small>(total)</small></label><div class="monto"><span>S/</span><input id="gr-extras" name="extras" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></div></div>
+          </div>
+          <label class="casilla"><input type="checkbox" name="asignacion"> Recibe asignación familiar <small>(S/ 123 al mes)</small></label>
+          <label class="casilla"><input type="checkbox" name="extras3"> Las horas extra o comisiones se pagaron en 3 meses o más <small>(si no, no entran)</small></label>
+        </fieldset>
+
+        <fieldset class="caja-bloque">
+          <legend><span class="caja-n">3</span>Lo que trabajó de julio a diciembre</legend>
+          <div class="caja-campos caja-campos--3">
+            <div class="campo"><label for="gr-meses">Meses completos</label>
+              <select id="gr-meses" name="meses">
+                <option value="6" selected>6, todo el semestre</option>
+                <option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">Ninguno completo</option>
+              </select></div>
+            <div class="campo"><label for="gr-faltas">Días de falta sin justificar</label><input id="gr-faltas" name="faltas" type="number" inputmode="numeric" min="0" step="1" placeholder="0"></div>
+            <div class="campo"><label for="gr-personas">Personas que ganan lo mismo</label><input id="gr-personas" name="personas" type="number" inputmode="numeric" min="1" step="1" value="1"></div>
+          </div>
+          <p class="caja-ayuda">Solo cuentan los meses calendario enteros. Si entró el 10 de agosto, agosto no cuenta: son 4 meses. Las vacaciones y el descanso médico con subsidio cuentan como trabajados.</p>
+          <label class="casilla"><input type="checkbox" name="eps"> Está afiliada a una EPS <small>(la bonificación baja a 6.75 %)</small></label>
+        </fieldset>
+      </div>
+
+      <aside class="caja-res" aria-labelledby="gr-res-t">
+        <div class="res-tarjeta">
+          <p class="rotulo" id="gr-res-t">Resultado</p>
+          <div class="res-estado" data-estado="info" role="status" aria-live="polite">
+            <p class="res-v" data-r="veredicto">Pague S/ 1,635.00</p>
+            <p class="res-linea" data-r="linea">Hasta el 15 de diciembre, sin descontar AFP, ONP ni EsSalud.</p>
+          </div>
+          <dl class="res-lista" data-uno>
+            <div><dt>Base de cálculo</dt><dd data-r="base">S/ 1,500.00</dd></div>
+            <div><dt>Gratificación</dt><dd data-r="grati">S/ 1,500.00</dd></div>
+            <div><dt>Bonificación (<span data-r="bonif-tasa">9 %</span>)</dt><dd data-r="bonif">S/ 135.00</dd></div>
+            <div class="res-total"><dt>Total por persona</dt><dd data-r="total">S/ 1,635.00</dd></div>
+            <div class="res-total" data-todos hidden><dt>Total por <span data-r="personas-n">1</span> personas</dt><dd data-r="total-todos">S/ 1,635.00</dd></div>
+          </dl>
+          <div class="tres" data-tres hidden>
+            <div><p class="tres-t">Régimen general</p><p class="tres-v" data-r="t-general">S/ 0.00</p><p class="tres-d" data-r="t-general-det"></p></div>
+            <div><p class="tres-t">Pequeña empresa</p><p class="tres-v" data-r="t-pequena">S/ 0.00</p><p class="tres-d" data-r="t-pequena-det"></p></div>
+            <div><p class="tres-t">Microempresa</p><p class="tres-v" data-r="t-micro">S/ 0.00</p><p class="tres-d" data-r="t-micro-det"></p></div>
+          </div>
+          <p class="res-nota" data-r="base-det">Sueldo S/ 1,500.00.</p>
+          <p class="res-nota">Si la persona renuncia antes del 15, se le paga la gratificación trunca con los meses completos que trabajó, dentro de las 48 horas de su salida.</p>
+        </div>
+      </aside>
+    </form>
+  </div>
+</section>
+
+<article class="guia" aria-labelledby="guia-t">
+  <div class="col guia-in">
+    <header class="guia-cab">
+      <p class="rotulo">Guía · {h.categoria}</p>
+      <h2 class="titular guia-t" id="guia-t">{h.guia}</h2>
+      <p class="guia-meta">{autor} · <time datetime={h.publicada}>{fechaLarga(h.publicada)}</time> · {h.lectura} min de lectura</p>
+    </header>
+
+    <div class="guia-cuerpo">
+      <p>La gratificación de diciembre es un sueldo completo más 9 % si su negocio está en el régimen general. Si es pequeña empresa inscrita en el REMYPE, es la mitad más 9 %. Si es microempresa inscrita, no corresponde.</p>
+
+      <h3>Qué es la gratificación</h3>
+      <p>Es un pago extra que la ley da dos veces al año: en julio y en diciembre. La de diciembre premia el trabajo de julio a diciembre y se paga en la primera quincena del mes. Ese plazo no se puede cambiar, ni siquiera de común acuerdo.</p>
+      <p>Le toca a toda persona en planilla del sector privado, sea cual sea su contrato. Eso incluye a quien trabaja medio tiempo o menos de 4 horas al día.</p>
+      <p>Junto con la gratificación se paga una <b>bonificación extraordinaria del 9 %</b>. Es lo que su negocio pagaría a EsSalud por esa gratificación, pero la ley ordena entregárselo a la persona. Si la persona está en una EPS, la bonificación es 6.75 %.</p>
+
+      <h3>Paso a paso</h3>
+      <ol class="guia-pasos">
+        <li><b>Confirme su régimen.</b> Busque su RUC en la consulta del REMYPE. Si no está inscrito, paga como el régimen general, aunque su negocio sea pequeño.</li>
+        <li><b>Cuente los meses completos.</b> Cuente de julio a diciembre solo los meses calendario enteros trabajados. Si alguien entró el 10 de agosto, agosto no cuenta.</li>
+        <li><b>Arme la base.</b> Tome el sueldo vigente al 30 de noviembre y súmele la asignación familiar si la recibe. Si hubo horas extra o comisiones en al menos 3 meses del semestre, súmelas, divida el total entre 6 y agréguelo.</li>
+        <li><b>Calcule la gratificación.</b> Es la base completa si trabajó los 6 meses, o un sexto por cada mes completo. En la pequeña empresa, es la mitad.</li>
+        <li><b>Sume la bonificación.</b> Agregue el 9 % de la gratificación, o el 6.75 % si la persona tiene EPS.</li>
+        <li><b>Pague sin descontar AFP ni ONP.</b> Hágalo hasta el 15 de diciembre y entregue la boleta de pago.</li>
+      </ol>
+
+      <h3>Cómo se calcula</h3>
+      <div class="formula" aria-label="Fórmula">
+        <p><b>Gratificación</b> = base ÷ 6 × meses completos (en la pequeña empresa, la mitad)</p>
+        <p><b>Bonificación</b> = gratificación × 9 % (6.75 % si la persona tiene EPS)</p>
+        <p><b>Total a pagar</b> = gratificación + bonificación</p>
+      </div>
+      <p><b>Un ejemplo.</b> Una tienda con 3 integrantes que ganan S/ 1,500 y trabajaron todo el semestre.</p>
+      <ul class="guia-lista">
+        <li><b>Régimen general:</b> S/ 1,500 + S/ 135 de bonificación = <b>S/ 1,635</b> por persona.</li>
+        <li><b>Pequeña empresa inscrita:</b> S/ 750 + S/ 67.50 = <b>S/ 817.50</b> por persona.</li>
+        <li><b>Microempresa inscrita:</b> no corresponde, <b>S/ 0</b>.</li>
+      </ul>
+      <p>Si no sabe su régimen, prepare el monto del régimen general: S/ 4,905 por las 3 personas. Es el más alto y nunca se queda corto.</p>
+
+      <h3>Casos que generan dudas</h3>
+      <p><b>Entró a mitad del semestre.</b> Alguien entró el 10 de agosto y gana S/ 1,500. Cuenta septiembre, octubre, noviembre y diciembre: 4 meses. Le toca S/ 1,500 ÷ 6 × 4 = S/ 1,000, más S/ 90 de bonificación: <b>S/ 1,090</b>.</p>
+      <p><b>Renuncia antes del 15 de diciembre.</b> Se le paga la gratificación <i>trunca</i> si trabajó al menos un mes completo. Se calcula con el sueldo del mes anterior a la salida y se paga junto con su liquidación, dentro de las 48 horas. Si alguien gana S/ 1,500 y se va el 31 de agosto, le tocan 2 meses: S/ 500 más S/ 45 de bonificación, <b>S/ 545</b>.</p>
+      <p><b>Horas extra y comisiones.</b> Entran a la base solo si se pagaron en al menos 3 de los 6 meses. Si alguien hizo horas extra en 4 meses por S/ 480 en total, se suman S/ 480 ÷ 6 = S/ 80 a su sueldo. Con un sueldo de S/ 1,500, la base queda en S/ 1,580 y el total en <b>S/ 1,722.20</b>.</p>
+      <p><b>Descuentos.</b> A la gratificación y a la bonificación no se les descuenta AFP, ONP ni EsSalud. Solo puede haber retención del impuesto a la renta si lo que la persona gana en el año pasa de 7 UIT, S/ 38,500 en 2026. Con un sueldo de S/ 1,500, no hay retención.</p>
+
+      <h3>Si no cuadra, revise esto primero</h3>
+      <ol class="revisar">
+        <li><b>Cree que no paga porque es un negocio chico.</b> Sin inscripción en el REMYPE, paga como el régimen general. Haga la consulta por RUC antes de decidir.</li>
+        <li><b>Le descontó AFP u ONP.</b> La gratificación no paga aportes. Pague el monto completo y descuente solo lo que la persona haya autorizado por escrito.</li>
+        <li><b>Olvidó la bonificación del 9 %.</b> Es parte del pago y se entrega el mismo día. Súmela siempre, también en la gratificación trunca y en la pequeña empresa.</li>
+        <li><b>Contó un mes incompleto.</b> Solo cuentan los meses calendario enteros. Las faltas injustificadas descuentan un treintavo de ese mes por cada día.</li>
+      </ol>
+
+      <h3>Preguntas frecuentes</h3>
+      <div class="faq guia-faq">
+        <details><summary>¿Le toca a quien trabaja medio tiempo?<span class="mas" aria-hidden="true">+</span></summary><p>Sí. La ley no pide un mínimo de horas. Se calcula sobre lo que esa persona gana.</p></details>
+        <details><summary>¿Puedo pagarla después del 15 o en partes?<span class="mas" aria-hidden="true">+</span></summary><p>No. El plazo es la primera quincena de diciembre y no se puede cambiar. Pagar tarde o incompleto es una infracción grave ante la SUNAFIL.</p></details>
+        <details><summary>¿Cuentan los días de vacaciones o de descanso médico?<span class="mas" aria-hidden="true">+</span></summary><p>Sí, se consideran trabajados. También la licencia con goce de sueldo y el descanso médico con subsidio de EsSalud.</p></details>
+        <details><summary>¿La asignación familiar entra en la base?<span class="mas" aria-hidden="true">+</span></summary><p>Sí, porque se paga todos los meses. Con el sueldo mínimo de S/ 1,230, la base es S/ 1,353 y el total con bonificación es S/ 1,474.77.</p></details>
+      </div>
+
+      <div class="verificada">
+        <p><b>Verificada contra la norma el {fechaLarga(h.verificada!)}.</b> Revísela con su contador.</p>
+        <ul>
+          <li>Gratificación, plazo y trunca: <a href="https://leyes.congreso.gob.pe/Documentos/Leyes/27735.pdf" rel="noopener" target="_blank">Ley 27735</a>, arts. 1 a 7, y su reglamento, <a href="https://spij.minjus.gob.pe/spij-ext-web/#/detallenorma/H828327" rel="noopener" target="_blank">D.S. 005-2002-TR</a>, arts. 2 a 5.</li>
+          <li>Bonificación del 9 % y sin aportes: <a href="https://leyes.congreso.gob.pe/Documentos/Leyes/30334.pdf" rel="noopener" target="_blank">Ley 30334</a> y <a href="https://busquedas.elperuano.pe/dispositivo/NL/1436137-3" rel="noopener" target="_blank">D.S. 012-2016-TR</a>.</li>
+          <li>Pequeña y microempresa: <a href="https://elperuano.pe/NormasElperuano/2013/12/28/1033071-5.html" rel="noopener" target="_blank">TUO de la Ley MYPE, D.S. 013-2013-PRODUCE</a>, art. 50, y <a href="https://www.gob.pe/institucion/sunafil/noticias/676065" rel="noopener" target="_blank">SUNAFIL</a>.</li>
+          <li>Remuneración mínima de S/ 1,230: <a href="https://busquedas.elperuano.pe/dispositivo/EX/2559163-1" rel="noopener" target="_blank">D.S. 015-2026-TR</a>. Asignación familiar: <a href="https://leyes.congreso.gob.pe/Documentos/Leyes/25129.pdf" rel="noopener" target="_blank">Ley 25129</a>.</li>
+          <li>Guía oficial: <a href="https://cdn.www.gob.pe/uploads/document/file/3321103/guia_gratificaciones.pdf" rel="noopener" target="_blank">MTPE, guía de gratificaciones</a>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</article>
+
+<section class="contacto osc" aria-labelledby="hg-cta-t">
+  <div class="brillo brillo--contacto" aria-hidden="true"></div>
+  <div class="enmarcado contacto-in contacto-in--simple">
+    <div class="contacto-tx">
+      <span class="franja-sello" aria-hidden="true"></span>
+      <h2 class="titular titular--contacto" id="hg-cta-t">Llegue a diciembre <span class="cel">con todo ya contado.</span></h2>
+      <p class="contacto-baj">Coddvisor arma la planilla con la asistencia de cada integrante: los meses y las faltas quedan registrados día a día, sede por sede.</p>
+      <div class="portada-acc">
+        <a class="btn" href={llamado.href}>{llamado.texto}</a>
+        <a class="btn-2" href="/herramientas/">Ver más herramientas gratis</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline src="/herramientas/gratificacion.js" defer></script>
+</Base>

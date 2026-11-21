@@ -19,6 +19,8 @@ cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar
 | `public/estilos.css`     | Tonos de apoyo, qué color usa cada pieza, letras, espacios, celular |
 | `public/sitio.js`        | El movimiento: panel de la portada, pestañas, formularios y aparición al bajar |
 | `public/fluido.css`, `public/fluido.js` | La capa «fluida»: acabado (vidrio, sombras suaves, degradados) y movimiento al estilo de las páginas de Apple. Solo agrega; ver «La capa fluida» |
+| `functions/api/contacto.js` | Lo único que corre en el servidor: recibe el formulario de contacto, lo guarda y avisa por correo |
+| `migrations/`            | Cómo es la tabla donde se guardan los pedidos de contacto    |
 | `public/favicon*`, `public/apple-touch-icon.png` | Los íconos de la pestaña y del iPhone |
 | `public/vista-previa.png`| La imagen que sale al compartir el enlace (WhatsApp, redes). Copia de `marca/logo/redes/coddvisor-vista-previa-enlace.png` |
 | `public/robots.txt`      | Les dice a los buscadores que pueden leer todo el sitio      |
@@ -151,9 +153,63 @@ En `src/layouts/Base.astro`, la etiqueta `<body>` lleva dos datos:
 
 - `data-correo="equipo@coddvisor.com"`: a qué correo escriben los formularios.
 - `data-whatsapp=""`: el número con código de país, solo dígitos (ejemplo:
-  `51987654321`). Mientras esté vacío, los botones de WhatsApp no se muestran y
-  los dos formularios abren el correo con el mensaje ya escrito. Cuando se
-  llena, aparecen los botones y los formularios abren WhatsApp.
+  `51987654321`). Mientras esté vacío, los botones de WhatsApp no se muestran.
+  Cuando se llena, aparecen los botones.
+
+El formulario de contacto **ya no depende de esos dos datos para funcionar**:
+guarda el pedido en el servidor (ver «Pedidos de contacto»). Solo si el
+servidor no responde, abre WhatsApp (si hay número) o el correo con el mensaje
+ya escrito, y además lo muestra en pantalla con un botón «Copiar mensaje».
+
+## Pedidos de contacto
+
+Cuando alguien pulsa «Quiero ser de los primeros», pasa esto, en este orden:
+
+1. **Se guarda** en una base de datos de Cloudflare (D1), dentro de tu cuenta.
+   La persona ve «Listo, recibimos sus datos» solo cuando ya quedó guardado.
+2. **Se avisa** con un correo a `equipo@coddvisor.com`, que manda Resend. El
+   correo trae un enlace para escribirle por WhatsApp con un toque.
+
+**Por qué en dos pasos separados:** si el correo falla o cae en spam, el
+pedido no se pierde: sigue en la base. Es como el cuaderno de pedidos de una
+tienda: el aviso por teléfono puede no llegar, pero lo anotado queda anotado.
+
+**Si pulsa dos veces** o la señal del celular reenvía el formulario, el pedido
+queda una sola vez: cada formulario lleva un número único y la base rechaza el
+repetido. Tampoco llegan dos correos.
+
+**Si Cloudflare no responde**, el formulario usa el camino de antes (abre el
+correo o WhatsApp con el mensaje escrito) y muestra el mensaje para copiarlo.
+Lo peor que puede pasar es lo que pasaba antes; nunca menos.
+
+### Revisar los pedidos
+
+En Cloudflare: **Storage & Databases → D1 → `coddvisor-contacto` → Console**.
+Pega esto y pulsa **Execute** para ver lo que falta responder:
+
+```sql
+SELECT recibido_en, nombre, whatsapp, vende, personas, sedes, aviso_enviado_en
+FROM pedidos_contacto WHERE atendido_en IS NULL ORDER BY recibido_en;
+```
+
+Si `aviso_enviado_en` está vacío, **ese correo no salió**: es la lista que
+hay que mirar si Resend falló. Cuando ya le respondiste a alguien, márcalo
+(cambia el número por el de esa persona):
+
+```sql
+UPDATE pedidos_contacto SET atendido_en = strftime('%Y-%m-%dT%H:%M:%SZ','now')
+WHERE whatsapp = '51987654321';
+```
+
+Una vez al mes, borra lo que pasó el plazo que promete la página de privacidad
+(12 meses) sin que empezaran a trabajar juntos:
+
+```sql
+DELETE FROM pedidos_contacto WHERE recibido_en < strftime('%Y-%m-%dT%H:%M:%SZ','now','-12 months');
+```
+
+En tu computadora (`npm run dev`) no existe el servidor: el formulario siempre
+usa el camino de respaldo. Es lo esperado.
 
 ## El movimiento
 
@@ -367,6 +423,56 @@ compartir el sitio:
    lado. Si cae, a Zoho le falta un registro de autenticación (SPF o DKIM):
    Zoho te muestra cuál en su panel, en la sección de dominios.
 
+### Paso 5: Encender los pedidos de contacto
+
+Hasta que hagas estos pasos, el sitio publicado sigue funcionando como antes
+(el formulario abre el correo). Hazlos en orden.
+
+**5a. Crear la base de datos (Cloudflare)**
+
+1. **Storage & Databases → D1 SQL Database → Create**. Nombre:
+   `coddvisor-contacto`. Ubicación: la que proponga.
+2. Entra a la base → **Console**. Copia todo el archivo
+   `web/migrations/0001_pedidos_contacto.sql`, pégalo y pulsa **Execute**.
+3. Ve a tu proyecto de Pages → **Settings → Bindings → Add → D1 database**.
+   - **Variable name:** `DB` (exacto, en mayúsculas).
+   - **D1 database:** `coddvisor-contacto`.
+   - Hazlo para **Production** y también para **Preview**, para poder probarlo
+     en la dirección de prueba de la rama.
+
+**5b. Crear la cuenta que manda el aviso (Resend)**
+
+1. Crea tu cuenta gratis en resend.com (con verificación en dos pasos, como en
+   el paso 0).
+2. **Domains → Add domain** → `coddvisor.com`. Resend te muestra unos
+   registros (normalmente tres: uno MX y uno TXT con nombre `send`, y un TXT
+   con nombre `resend._domainkey`).
+3. En GoDaddy, en el DNS de `coddvisor.com`, **agrega** esos registros tal
+   cual. **No borres ni cambies** los registros de Zoho: los de Resend viven en
+   `send` y `resend._domainkey`, no chocan con el correo de `equipo@`.
+4. Vuelve a Resend y pulsa **Verify**. Puede tardar unos minutos.
+5. **API Keys → Create API key**, permiso **Sending access**, solo para
+   `coddvisor.com`. Cópiala: Resend la muestra una sola vez.
+
+**5c. Darle la clave a Cloudflare**
+
+1. Proyecto de Pages → **Settings → Variables and secrets → Add**.
+2. **Type:** `Secret`. **Name:** `RESEND_API_KEY`. **Value:** la clave.
+   Para **Production** y **Preview**.
+3. Nunca la pegues en un archivo del repositorio: es público.
+
+**5d. Probar**
+
+1. **Deployments** → en el último despliegue, **Retry deployment** (los
+   cambios de los pasos anteriores solo entran con un despliegue nuevo).
+2. Llena el formulario desde tu celular, con datos tuyos.
+3. Debe decir «Listo, recibimos sus datos», llegar un correo a
+   `equipo@coddvisor.com`, y aparecer en la consulta de «Revisar los pedidos»
+   con `aviso_enviado_en` lleno.
+4. Si dice «No pudimos guardar sus datos», el paso 5a no quedó bien (revisa
+   que la variable se llame `DB`). Si se guarda pero no llega el correo, el
+   paso 5b o 5c no quedó bien: Resend → **Logs** te dice por qué.
+
 ---
 
 ## Lo que cuesta
@@ -377,6 +483,10 @@ compartir el sitio:
 - **GoDaddy:** ya pagaste el dominio; el reenvío del dominio es gratis.
   Revisa la fecha de renovación del dominio.
 - **Zoho Mail:** según el plan que ya tienes.
+- **Cloudflare D1** (la base de los pedidos): gratis hasta 5 GB y 100 000
+  escrituras al día. Con 100 pedidos al mes se usa una fracción mínima.
+- **Resend:** gratis hasta 3 000 correos al mes y 100 al día. Cada pedido es un
+  correo.
 
 Cuándo revisar esta decisión: cuando exista la aplicación de Coddvisor (no esta
 página). Si se construye con Next.js, Vercel Pro puede convenir para la
