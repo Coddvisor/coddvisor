@@ -493,6 +493,7 @@ html:not(.js) form[data-form] { display:none; }
 .res-lista dd { margin:0; font:700 15px/1.4 var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap; }
 .res-dif dt, .res-total dt { color:var(--cobalto); font-weight:600; }
 .res-lista--dia { margin-top:20px; }
+.res-lista--partir dd { white-space:normal; text-align:right; }
 .res-acc { margin-top:20px; display:grid; gap:8px; }
 .btn-2--claro { width:100%; background:var(--hielo); border-color:transparent; color:var(--azul-real); }
 .btn-2--claro:hover { border-color:var(--azul-real); }
