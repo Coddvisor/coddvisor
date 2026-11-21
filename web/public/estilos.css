@@ -7,6 +7,13 @@
    La página tiene data-tema="claro" en <html>: no sigue el modo oscuro del teléfono, porque ya
    alterna franjas claras y oscuras. Las franjas oscuras llevan la clase .osc. */
 
+/* ---------- Fuentes (servidas desde el sitio, ver public/fuentes/LICENCIA.txt) ----------
+   Solo el juego latino: cubre todo el español. Space Grotesk es una sola fuente variable (pesos 300 a
+   700). font-display:swap muestra el texto con la letra del sistema mientras llega la fuente. */
+@font-face { font-family:"Space Grotesk"; font-style:normal; font-weight:300 700; font-display:swap; src:url("/fuentes/space-grotesk-latin.woff2") format("woff2"); }
+@font-face { font-family:"Space Mono"; font-style:normal; font-weight:400; font-display:swap; src:url("/fuentes/space-mono-400-latin.woff2") format("woff2"); }
+@font-face { font-family:"Space Mono"; font-style:normal; font-weight:700; font-display:swap; src:url("/fuentes/space-mono-700-latin.woff2") format("woff2"); }
+
 :root {
   /* La franja de siete tonos de la marca, del cobalto al ámbar tostado. */
   --franja:linear-gradient(90deg,var(--cobalto) 0 14.28%,var(--azul-real) 14.28% 28.57%,var(--celeste) 28.57% 42.85%,var(--celeste-claro) 42.85% 57.14%,var(--ambar-claro) 57.14% 71.42%,var(--ambar) 71.42% 85.71%,var(--ambar-tostado) 85.71%);
