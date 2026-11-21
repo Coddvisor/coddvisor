@@ -4,7 +4,7 @@
 // Las guías de las herramientas NO van aquí: viven debajo de su herramienta.
 //
 // Encabezado de cada archivo: titulo, resumen, categoria, lectura (min), publicada, verificada,
-// cierre (la única mención de Coddvisor), enlace { texto, href } a una herramienta, fuentes
+// cierre (la única mención de Coddvisor), enlaces [{ texto, href }] a herramientas, fuentes
 // [{ norma, enlace }] y, si el tema tiene fecha de fin, vence (AAAA-MM-DD) y vencido (el aviso).
 import Base from '../../layouts/Base.astro';
 import { llamado } from '../../datos/navegacion';
@@ -50,7 +50,7 @@ const vencidoYa = a.vence && hoy > a.vence;
       <p>{a.cierre}</p>
       <div class="portada-acc">
         <a class="btn" href={llamado.href}>{llamado.texto}</a>
-        {a.enlace && <a class="btn-2 btn-2--claro" href={a.enlace.href}>{a.enlace.texto}</a>}
+        {(a.enlaces || []).map((e: { texto: string; href: string }) => <a class="btn-2 btn-2--claro" href={e.href}>{e.texto}</a>)}
       </div>
     </div>
 

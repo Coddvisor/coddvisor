@@ -617,6 +617,11 @@ html:not(.js) form[data-form] { display:none; }
 .art-vencido { margin:0 0 24px; padding:14px 16px; border-radius:14px; background:var(--error-fondo); color:var(--error); font-weight:600; }
 .art-vencido::before { content:"✕ "; }
 .tarjeta-fin { color:var(--error); }
+/* Listas para marcar (- [ ] en Markdown): una casilla grande por línea, sin el punto de la lista. */
+.art-cuerpo .contains-task-list { list-style:none; padding-left:0; }
+.art-cuerpo .task-list-item { display:flex; gap:12px; align-items:flex-start; padding:12px 14px; border:1px solid var(--borde); border-radius:12px; background:var(--tarjeta); }
+.art-cuerpo .task-list-item input { flex:none; width:20px; height:20px; margin:3px 0 0; accent-color:var(--azul-real); }
+.art-cierre .btn-2 { text-align:center; }
 
 /* Índices de herramientas y del blog */
 .lista-sec { padding:clamp(40px, 5vw, 72px) 0 var(--pad-sec); }
