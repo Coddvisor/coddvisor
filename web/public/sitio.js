@@ -1,6 +1,6 @@
 /* Coddvisor, sitio público. Un solo archivo, sin librerías.
    1. Contacto: WhatsApp y correo salen de data-whatsapp y data-correo del <body>.
-   2. Formularios: arman el mensaje y abren WhatsApp (si hay número) o el correo.
+   2. Formularios: guardan el pedido en /api/contacto; si eso falla, abren WhatsApp o el correo.
    3. Panel «¿Cómo le va hoy?»: la maqueta cuenta el día y se queda en el estado final.
    4. Pestañas de «Qué hace»: avanzan solas cada 6.6 s hasta que la persona las toca.
    5. Aparición suave de las secciones al bajar.
@@ -44,26 +44,76 @@
     });
   }
 
-  /* ---------- 2. Formularios ---------- */
+  /* ---------- 2. Formularios ----------
+     Primero se guarda el pedido en el sitio (/api/contacto). Solo si eso falla (sin internet,
+     servidor caído, o en la computadora de desarrollo, donde /api no existe) se abre WhatsApp o
+     el correo con el mensaje listo, y además se muestra el mensaje para copiarlo a mano.
+     Así lo peor que puede pasar es lo que pasaba antes de tener servidor, nunca menos. */
   function abrir(texto) {
     if (whatsapp) {
-      window.open('https://wa.me/' + whatsapp + '?text=' + encodeURIComponent(texto), '_blank', 'noopener');
+      // Misma pestaña y no una ventana nueva: después de esperar al servidor, el navegador ya no
+      // considera que la persona hizo clic y bloquearía la ventana emergente.
+      window.location.href = 'https://wa.me/' + whatsapp + '?text=' + encodeURIComponent(texto);
       return 'whatsapp';
     }
     window.location.href = 'mailto:' + correo + '?subject=' + encodeURIComponent('Quiero probar Coddvisor') + '&body=' + encodeURIComponent(texto);
     return 'correo';
   }
-  function avisar(nombre, via) {
-    var p = document.querySelector('[data-estado="' + nombre + '"]');
-    if (!p) return;
-    p.textContent = via === 'whatsapp'
-      ? 'Se abrió WhatsApp con su mensaje listo. Solo falta enviarlo.'
-      : 'Se abrió su correo con el mensaje listo. Si no se abrió, escríbanos a ' + correo + '.';
+  // Número único del pedido: si la persona pulsa dos veces o la red reintenta, el servidor
+  // reconoce que es el mismo y no lo guarda dos veces.
+  function nuevoId() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    var b = new Uint8Array(16);
+    crypto.getRandomValues(b);
+    b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+    var h = Array.prototype.map.call(b, function (x) { return (x + 256).toString(16).slice(1); }).join('');
+    return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+  }
+  function guardar(datos) {
+    var control = 'AbortController' in window ? new AbortController() : null;
+    var reloj = setTimeout(function () { if (control) control.abort(); }, 10000);
+    return fetch('/api/contacto', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(datos),
+      signal: control ? control.signal : undefined
+    }).then(function (r) {
+      clearTimeout(reloj);
+      return r.json().catch(function () { return {}; }).then(function (j) { return { estado: r.status, cuerpo: j }; });
+    }, function () {
+      clearTimeout(reloj);
+      return { estado: 0, cuerpo: {} };
+    });
   }
   document.querySelectorAll('form[data-form]').forEach(function (form) {
+    var nombreForm = form.getAttribute('data-form');
+    var estado = form.querySelector('[data-estado="' + nombreForm + '"]');
+    var respaldo = form.querySelector('[data-respaldo="' + nombreForm + '"]');
+    var boton = form.querySelector('button[type="submit"]');
+    var textoBoton = boton ? boton.textContent : '';
+    var id = nuevoId();
+    var enviando = false;
+
+    function decir(t) { if (estado) estado.textContent = t; }
+    function mostrarRespaldo(texto, via) {
+      if (!respaldo) return;
+      respaldo.querySelector('[data-respaldo-texto]').value = texto;
+      respaldo.querySelector('[data-respaldo-a]').textContent = via === 'whatsapp' ? 'WhatsApp ' + formatoWhatsapp(whatsapp) : correo;
+      respaldo.hidden = false;
+    }
+    if (respaldo) {
+      respaldo.querySelector('[data-respaldo-copiar]').addEventListener('click', function () {
+        var area = respaldo.querySelector('[data-respaldo-texto]');
+        var listo = function () { decir('Mensaje copiado. Péguelo y envíelo.'); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(area.value).then(listo, function () { area.select(); });
+        } else { area.select(); try { document.execCommand('copy'); listo(); } catch (e) {} }
+      });
+    }
+
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
-      if (!form.reportValidity()) return;
+      if (enviando || !form.reportValidity()) return;
       var d = new FormData(form);
       var v = function (k) { return String(d.get(k) || '').trim(); };
       var texto = 'Hola. Quiero que mi negocio sea de los primeros en probar Coddvisor.\n' +
@@ -72,7 +122,37 @@
         'Qué vende: ' + (v('vende') || '-') + '\n' +
         'Personas que trabajan: ' + v('personas') + '\n' +
         'Sedes: ' + v('sedes');
-      avisar(form.getAttribute('data-form'), abrir(texto));
+
+      enviando = true;
+      if (boton) { boton.disabled = true; boton.textContent = 'Enviando…'; }
+      decir('');
+      if (respaldo) respaldo.hidden = true;
+
+      guardar({
+        id: id, nombre: v('nombre'), whatsapp: v('whatsapp'), vende: v('vende'),
+        personas: v('personas'), sedes: v('sedes'), sitio_web: v('sitio_web'),
+        pagina: location.pathname
+      }).then(function (r) {
+        enviando = false;
+        if (boton) { boton.disabled = false; boton.textContent = textoBoton; }
+        if (r.estado === 200 && r.cuerpo.ok) {
+          form.reset();
+          id = nuevoId();
+          decir('Listo, ' + (v('nombre').split(' ')[0] || '') + '. Recibimos sus datos y le escribimos al WhatsApp que nos dejó.');
+          return;
+        }
+        if (r.estado === 400 && r.cuerpo.error) {
+          // Un dato que corregir: la persona lo arregla y vuelve a enviar, sin salir del sitio.
+          decir(r.cuerpo.error);
+          return;
+        }
+        // No se pudo guardar: se usa el camino de antes, sin perder lo que escribió.
+        var via = abrir(texto);
+        decir(via === 'whatsapp'
+          ? 'No pudimos guardar sus datos. Se abrió WhatsApp con su mensaje listo: solo falta enviarlo.'
+          : 'No pudimos guardar sus datos. Se abrió su correo con el mensaje listo: solo falta enviarlo.');
+        mostrarRespaldo(texto, via);
+      });
     });
   });
 

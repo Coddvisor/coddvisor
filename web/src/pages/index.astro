@@ -412,9 +412,19 @@ import Base from '../layouts/Base.astro';
           <option>4 o más</option>
         </select>
       </div>
+      <!-- Campo trampa: las personas no lo ven; los robots que llenan todo, sí. -->
+      <div class="trampa" aria-hidden="true">
+        <label for="c-sitio">No llene este campo</label>
+        <input id="c-sitio" name="sitio_web" type="text" tabindex="-1" autocomplete="off">
+      </div>
       <button class="btn form-btn" type="submit">Quiero ser de los primeros</button>
-      <p class="form-nota">Solo usamos estos datos para responderle.</p>
+      <p class="form-nota">Solo usamos estos datos para responderle. <a href="/privacidad/">Cómo los cuidamos</a>.</p>
       <p class="form-estado" data-estado="contacto" role="status"></p>
+      <div class="form-respaldo" data-respaldo="contacto" hidden>
+        <p>Si no se abrió nada, copie este mensaje y envíelo a <span data-respaldo-a></span>:</p>
+        <textarea readonly rows="6" data-respaldo-texto aria-label="Mensaje listo para copiar"></textarea>
+        <button class="btn-2 btn-2--claro" type="button" data-respaldo-copiar>Copiar mensaje</button>
+      </div>
     </form>
   </div>
 </section>

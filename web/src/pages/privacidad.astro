@@ -1,0 +1,66 @@
+---
+// Aviso de privacidad del sitio (Ley 29733 de Protección de Datos Personales y su reglamento).
+// BORRADOR: debe revisarlo alguien que conozca la norma antes de publicarlo.
+// Si cambia lo que se guarda o para qué, se sube AVISO_VERSION en functions/api/contacto.js
+// y la fecha de abajo: así cada pedido sabe qué versión de este texto vio la persona.
+import Base from '../layouts/Base.astro';
+import { fechaLarga } from '../datos/herramientas';
+
+// PENDIENTE antes de publicar: razón social y RUC de quien es responsable de los datos.
+const titular = { nombre: 'Coddvisor', ruc: '' };
+const vigente = '2026-11-21';
+---
+<Base
+  titulo="Privacidad: qué datos guardamos y para qué | Coddvisor"
+  descripcion="Qué datos guarda Coddvisor cuando nos escribe desde el sitio, para qué los usa, cuánto tiempo los guarda y cómo pedir que los borremos.">
+
+<section class="portada portada--interior osc" aria-labelledby="pr-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot">Privacidad</p>
+    <h1 class="portada-t interior-t" id="pr-t">Sus datos, <span class="cel">solo para responderle.</span></h1>
+    <p class="portada-baj">Esto es lo que guardamos cuando nos escribe desde este sitio, para qué, por cuánto tiempo y cómo pedir que lo borremos.</p>
+  </div>
+</section>
+
+<article class="guia" aria-labelledby="pr-cuerpo-t">
+  <div class="col guia-in">
+    <header class="guia-cab">
+      <p class="rotulo">Aviso de privacidad</p>
+      <h2 class="titular guia-t" id="pr-cuerpo-t">En corto</h2>
+      <p class="guia-meta">Vigente desde el <time datetime={vigente}>{fechaLarga(vigente)}</time></p>
+    </header>
+
+    <div class="guia-cuerpo">
+      <p><b>Solo guardamos lo que usted escribe en el formulario «Quiero ser de los primeros».</b> Lo usamos para responderle. No lo vendemos, no lo prestamos y no le mandamos publicidad.</p>
+
+      <h3>Qué datos guardamos</h3>
+      <p>Su nombre, su número de WhatsApp, lo que vende, cuántas personas trabajan con usted y cuántas sedes tiene. Además, la fecha en que nos escribió y desde qué página del sitio.</p>
+      <p>Las herramientas gratis, como el <a href="/herramientas/cierre-de-caja/">cierre de caja</a>, no guardan nada: las cuentas se hacen en su computadora y lo que escribe no sale de ella.</p>
+
+      <h3>Para qué los usamos</h3>
+      <p>Para escribirle por WhatsApp y conversar sobre si Coddvisor le sirve a su negocio. Para nada más.</p>
+
+      <h3>Quién más los ve</h3>
+      <p>Nadie fuera del equipo de Coddvisor. Dos empresas nos dan el servicio técnico y por eso pasan por sus servidores, que están fuera del Perú:</p>
+      <ul class="revisar">
+        <li><b>Cloudflare</b> publica este sitio y guarda los datos del formulario.</li>
+        <li><b>Resend</b> nos envía un correo de aviso cada vez que alguien escribe.</li>
+      </ul>
+      <p>Ninguna de las dos puede usarlos para otra cosa.</p>
+
+      <h3>Cuánto tiempo los guardamos</h3>
+      <p>Doce meses desde que nos escribió. Si en ese tiempo no empezamos a trabajar juntos, los borramos.</p>
+
+      <h3>Cómo pedir que los veamos, corrijamos o borremos</h3>
+      <p>Escríbanos a <a href="mailto:equipo@coddvisor.com">equipo@coddvisor.com</a> desde cualquier correo, con su nombre y su número de WhatsApp para encontrarlos. Puede pedir verlos, corregirlos, borrarlos o que dejemos de usarlos. Le respondemos dentro de los plazos que fija la ley.</p>
+      <p>Si no le respondemos o no está de acuerdo con la respuesta, puede reclamar ante la Autoridad Nacional de Protección de Datos Personales del Ministerio de Justicia.</p>
+
+      <h3>Quién es responsable</h3>
+      <p>{titular.nombre}{titular.ruc && <>, RUC {titular.ruc}</>}. Correo: <a href="mailto:equipo@coddvisor.com">equipo@coddvisor.com</a>.</p>
+    </div>
+  </div>
+</article>
+
+</Base>
