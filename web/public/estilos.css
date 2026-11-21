@@ -684,6 +684,10 @@ html:not(.js) form[data-form] { display:none; }
   .sedes-fila .sede { grid-column:1 / -1; }
   .sedes-fila > span:not(.sede) { display:flex; justify-content:space-between; align-items:center; gap:8px; min-width:0; font:700 11px/1.3 var(--mono); letter-spacing:.06em; color:var(--texto-2); }
   .sedes-fila .ver { font-family:var(--sans); letter-spacing:0; }
+  /* «Para quién es» en celular: el dibujo pasa a una franja baja (antes, 4:3 ocupaba media pantalla
+     para mostrar un solo ícono). El dibujo se achica un poco para caber. */
+  .para-vis { aspect-ratio:auto; height:136px; }
+  .para-vis > * { transform:scale(.8); }
   .sedes-fila > span:nth-child(2)::before { content:"VENTAS"; }
   .sedes-fila > span:nth-child(3)::before { content:"CAJA"; }
   .sedes-fila > span:nth-child(4)::before { content:"STOCK"; }
