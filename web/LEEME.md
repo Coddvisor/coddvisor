@@ -109,7 +109,7 @@ en `/blog/<nombre>/`, con el mismo molde (`src/pages/blog/[slug].astro`). El
 Para agregar uno: copie el borrador aprobado a `src/articulos/`, sin las notas
 internas, y complete su encabezado: `titulo`, `resumen`, `categoria`,
 `lectura`, `publicada`, `verificada`, `cierre` (la única mención de Coddvisor),
-`enlace` (a una herramienta) y `fuentes`. Si el tema tiene fecha de fin, sume
+`enlaces` (una lista de herramientas a las que lleva) y `fuentes`. Si el tema tiene fecha de fin, sume
 `vence` y `vencido`: desde el día siguiente el artículo muestra ese aviso
 arriba y el blog lo marca «Terminó», aunque nadie vuelva a publicar el sitio.
 
