@@ -188,6 +188,17 @@ cuenta regresiva: van contra las reglas de contenido de abajo.
 
 Con «menos movimiento» activado en el teléfono o la computadora, queda el acabado y nada se mueve.
 
+## La página de error (404)
+
+Arriba, el mensaje y una escena en bucle de unos 36 segundos (`src/components/GatoError.astro`
+y `public/gato-error.js`): el gato del logo persigue un ovillo que deja el hilo en el piso, da
+vueltas, se echa a dormir, lo despierta una luciérnaga y se va detrás de ella; reaparece por la
+izquierda. La cabeza es el isotipo de la marca, en ámbar como sobre fondo oscuro. El reloj solo
+avanza mientras la escena se ve; con «menos movimiento» el gato se queda dormido y quieto.
+
+Debajo, los caminos en tres grupos de tarjetas (Producto, Herramientas gratis y Coddvisor), que
+salen de `navegacion.ts` y `herramientas.ts`. Al final, «Quiero probarlo»: el único botón lleno.
+
 ## El logotipo
 
 El gato y la palabra «coddvisor» están dibujados dentro de la página (el
