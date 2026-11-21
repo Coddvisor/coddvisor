@@ -13,8 +13,9 @@
       y en Contacto, donde ya está a la vista.
    10. Ilustraciones en bucle ([data-bucle]): solo se mueven mientras se ven; el código de
        asistencia cambia cada vez que su barra se vacía.
-   12. «A dónde va cada sol» (Sankey): se dibuja al aparecer; al tocar o pasar el mouse por una
-       sede, un medio o un destino se encienden sus cintas y se explica con montos.
+   12. «A dónde va cada sol» (Sankey, alargado en computadora y vertical en celular): se dibuja
+       al aparecer; al tocar o pasar el mouse por una sede, un medio o un destino se encienden
+       sus cintas y se explica con montos.
    11. Enlaces a una sección (#para, #contacto...): la sección queda centrada en la pantalla si
        cabe; si es más alta, su título queda justo debajo de la cabecera, sin el espacio vacío
        de arriba. También al llegar desde otra página con la dirección ya puesta.
@@ -161,63 +162,65 @@
   /* ---------- 12. Diagrama de Sankey ---------- */
   var flujo = $('[data-flujo]');
   if (flujo) {
-    var svgF = flujo.querySelector('svg');
+    // Hay dos dibujos (alargado y vertical) y se ve uno según el ancho; los dos responden igual
+    // y comparten la explicación de abajo.
     var info = flujo.querySelector('[data-flujo-info]');
     var infoBase = info.innerHTML;
-    var cintasF = $$('.sk-cinta', svgF), nodosF = $$('.sk-nodo', svgF);
     var solesF = function (c) { return 'S/ ' + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
-    var totalF = 0;
-    nodosF.forEach(function (n) { if (n.getAttribute('data-col') === '0') totalF += +n.getAttribute('data-valor'); });
-    var nombreF = function (id) { var n = svgF.querySelector('[data-n="' + id + '"]'); return n ? n.getAttribute('data-nombre') : id; };
     var lista = function (pares) {
       // En minúscula dentro de la frase, salvo nombres propios (Sede, Yape, IGV).
       var frase = function (n) { n = n.replace(' (es de la SUNAT)', ''); return /^(Sede|Yape|IGV)/.test(n) ? n : n.charAt(0).toLowerCase() + n.slice(1); };
       var partes = pares.map(function (x) { return frase(x[0]) + ' <b>' + solesF(x[1]) + '</b>'; });
       return partes.length > 1 ? partes.slice(0, -1).join(', ') + ' y ' + partes[partes.length - 1] : partes[0];
     };
-    var enfocar = function (id) {
-      if (!id) {
-        svgF.classList.toggle('foco', false);
-        cintasF.concat(nodosF).forEach(function (el) { el.classList.toggle('on', false); el.classList.toggle('elegido', false); });
-        info.innerHTML = infoBase;
-        return;
-      }
-      var nodo = svgF.querySelector('[data-n="' + id + '"]');
-      var entra = [], sale = [], vecinos = {};
-      vecinos[id] = true;
-      cintasF.forEach(function (c) {
-        var de = c.getAttribute('data-de'), a = c.getAttribute('data-a'), v = +c.getAttribute('data-valor');
-        var on = de === id || a === id;
-        c.classList.toggle('on', on);
-        if (de === id) { sale.push([nombreF(a), v]); vecinos[a] = true; }
-        if (a === id) { entra.push([nombreF(de), v]); vecinos[de] = true; }
-      });
+    $$('.flujo-svg', flujo).forEach(function (svgF) {
+      var cintasF = $$('.sk-cinta', svgF), nodosF = $$('.sk-nodo', svgF);
+      var totalF = 0;
+      nodosF.forEach(function (n) { if (n.getAttribute('data-col') === '0') totalF += +n.getAttribute('data-valor'); });
+      var nombreF = function (id) { var n = svgF.querySelector('[data-n="' + id + '"]'); return n ? n.getAttribute('data-nombre') : id; };
+      var enfocar = function (id) {
+        if (!id) {
+          svgF.classList.toggle('foco', false);
+          cintasF.concat(nodosF).forEach(function (el) { el.classList.toggle('on', false); el.classList.toggle('elegido', false); });
+          info.innerHTML = infoBase;
+          return;
+        }
+        var nodo = svgF.querySelector('[data-n="' + id + '"]');
+        var entra = [], sale = [], vecinos = {};
+        vecinos[id] = true;
+        cintasF.forEach(function (c) {
+          var de = c.getAttribute('data-de'), a = c.getAttribute('data-a'), v = +c.getAttribute('data-valor');
+          c.classList.toggle('on', de === id || a === id);
+          if (de === id) { sale.push([nombreF(a), v]); vecinos[a] = true; }
+          if (a === id) { entra.push([nombreF(de), v]); vecinos[de] = true; }
+        });
+        nodosF.forEach(function (n) {
+          var nid = n.getAttribute('data-n');
+          n.classList.toggle('on', !!vecinos[nid]);
+          n.classList.toggle('elegido', nid === id);
+        });
+        svgF.classList.toggle('foco', true);
+        var v = +nodo.getAttribute('data-valor');
+        var txt = '<strong>' + nodo.getAttribute('data-nombre') + ':</strong> <b>' + solesF(v) + '</b>, el ' + (Math.round(v / totalF * 1000) / 10) + ' % de la venta del día. ';
+        var col = nodo.getAttribute('data-col');
+        if (col === '0') txt += 'Entró por ' + lista(sale) + '.';
+        else if (col === '1') txt += 'Se reparte en ' + lista(sale) + '.';
+        else txt += 'Sale de ' + lista(entra) + '.';
+        info.innerHTML = txt;
+      };
       nodosF.forEach(function (n) {
-        var nid = n.getAttribute('data-n');
-        n.classList.toggle('on', !!vecinos[nid]);
-        n.classList.toggle('elegido', nid === id);
+        var id = n.getAttribute('data-n');
+        n.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') enfocar(id); });
+        n.addEventListener('focus', function () { enfocar(id); });
+        n.addEventListener('click', function (e) { e.stopPropagation(); enfocar(id); });
+        n.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); enfocar(id); } if (e.key === 'Escape') { enfocar(null); n.blur(); } });
       });
-      svgF.classList.toggle('foco', true);
-      var v = +nodo.getAttribute('data-valor');
-      var txt = '<strong>' + nodo.getAttribute('data-nombre') + ':</strong> <b>' + solesF(v) + '</b>, el ' + (Math.round(v / totalF * 1000) / 10) + ' % de la venta del día. ';
-      var col = nodo.getAttribute('data-col');
-      if (col === '0') txt += 'Entró por ' + lista(sale) + '.';
-      else if (col === '1') txt += 'Se reparte en ' + lista(sale) + '.';
-      else txt += 'Sale de ' + lista(entra) + '.';
-      info.innerHTML = txt;
-    };
-    nodosF.forEach(function (n) {
-      var id = n.getAttribute('data-n');
-      n.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') enfocar(id); });
-      n.addEventListener('focus', function () { enfocar(id); });
-      n.addEventListener('click', function (e) { e.stopPropagation(); enfocar(id); });
-      n.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); enfocar(id); } if (e.key === 'Escape') { enfocar(null); n.blur(); } });
+      cintasF.forEach(function (c) {
+        c.addEventListener('click', function (e) { e.stopPropagation(); enfocar(c.getAttribute('data-de')); });
+      });
+      svgF.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse' && !svgF.contains(document.activeElement)) enfocar(null); });
+      svgF.addEventListener('click', function () { enfocar(null); });
     });
-    cintasF.forEach(function (c) {
-      c.addEventListener('click', function (e) { e.stopPropagation(); enfocar(c.getAttribute('data-de')); });
-    });
-    svgF.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse' && !svgF.contains(document.activeElement)) enfocar(null); });
-    svgF.addEventListener('click', function () { enfocar(null); });
     if (hayObservador && !menos) {
       var ioF = new IntersectionObserver(function (es) {
         if (es[0].isIntersecting) { flujo.classList.add('dibuja'); ioF.disconnect(); }

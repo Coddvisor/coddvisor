@@ -7,8 +7,9 @@
 // - Las sedes son las del panel de la portada y suman su venta del día: S/ 4,320.50.
 // - El IGV es el 18 % incluido en esa venta, calculado como en la herramienta: venta ÷ 1.18.
 // - Cada columna suma lo mismo. Las cintas del medio al destino se reparten en proporción.
-// El dibujo se calcula aquí, al armar el sitio: al visitante le llega un SVG fijo. El movimiento
-// (aparecer de izquierda a derecha, resaltar al pasar el mouse) lo pone fluido.js.
+// El dibujo se calcula aquí, al armar el sitio: al visitante le llegan dos SVG fijos (alargado para
+// computadora, vertical para celular). El movimiento (aparecer en el sentido del recorrido,
+// resaltar al pasar el mouse o tocar) lo pone fluido.js.
 
 type Nodo = { id: string; nombre: string; valor: number; color: string; col: number };
 // Montos en céntimos.
@@ -55,29 +56,116 @@ medios.forEach((m) => {
   });
 });
 
-// Dibujo.
-const W = 1000, H = 470, ANCHO = 16, HUECO = 22, ARRIBA = 18;
-const X = [150, 470, 770];
+// Dibujo. Se arma dos veces: alargado (de izquierda a derecha) para computadora y vertical (de
+// arriba abajo) para celular; la hoja de estilos muestra uno u otro según el ancho de pantalla.
+// «f» es el eje del recorrido (columna → columna) y «c» el eje transversal (donde se apilan).
+type Forma = { pre: string; vert: boolean; W: number; H: number; F: number[]; T: number; gap: number; borde: number; fs: number };
+const ALARGADO: Forma = { pre: 'h', vert: false, W: 1400, H: 440, F: [230, 690, 1110], T: 10, gap: 16, borde: 26, fs: 1.3 };
+const VERTICAL: Forma = { pre: 'v', vert: true, W: 420, H: 0, F: [62, 322, 582], T: 12, gap: 14, borde: 14, fs: 1.2 };
+// Nombres en dos líneas para el vertical, donde cada destino tiene poco ancho.
+const corto: Record<string, string[]> = {
+  igv: ['IGV'], costo: ['Costo de lo', 'vendido'], gastos: ['Gastos y', 'planilla'], queda: ['Queda para', 'el negocio'],
+};
 const columnas = [sedes, medios, destinos];
-const escala = Math.min(...columnas.map((c) => (H - ARRIBA * 2 - HUECO * (c.length - 1)) / total));
-const pos: Record<string, { x: number; y: number; h: number; sale: number; entra: number }> = {};
-columnas.forEach((c, ci) => {
-  const alto = c.reduce((s, n) => s + n.valor * escala, 0) + HUECO * (c.length - 1);
-  let y = (H - alto) / 2;
-  c.forEach((n) => { pos[n.id] = { x: X[ci], y, h: n.valor * escala, sale: y, entra: y }; y += n.valor * escala + HUECO; });
-});
+const nodos = [...sedes, ...medios, ...destinos];
 const r1 = (n: number) => Math.round(n * 10) / 10;
-const caminos = cintas.map((c, i) => {
-  const a = pos[c.de.id], b = pos[c.a.id], g = c.valor * escala;
-  const x0 = a.x + ANCHO, x1 = b.x, xm = (x0 + x1) / 2;
-  const y0 = a.sale, y1 = b.entra;
-  a.sale += g; b.entra += g;
-  const d = `M${r1(x0)} ${r1(y0)}C${r1(xm)} ${r1(y0)} ${r1(xm)} ${r1(y1)} ${r1(x1)} ${r1(y1)}L${r1(x1)} ${r1(y1 + g)}C${r1(xm)} ${r1(y1 + g)} ${r1(xm)} ${r1(y0 + g)} ${r1(x0)} ${r1(y0 + g)}Z`;
-  return { d, de: c.de.id, a: c.a.id, valor: c.valor, grad: `sk-g${i}`, c1: c.de.color, c2: c.a.color };
-});
 const soles = (c: number) => 'S/ ' + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const pct = (c: number) => Math.round(c / total * 1000) / 10 + ' %';
-const nodos = [...sedes, ...medios, ...destinos];
+// Ancho aproximado de un texto (para que las etiquetas del vertical no se monten).
+const anchoNombre = (t: string, px: number) => t.length * px * 0.55;
+const anchoValor = (t: string, px: number) => t.length * px * 0.61;
+// Corre las etiquetas de una fila lo justo para que no se toquen ni se salgan del dibujo.
+function separar(items: { x: number; w: number }[], W: number, margen = 10) {
+  for (let i = 1; i < items.length; i++) {
+    const min = items[i - 1].x + items[i - 1].w / 2 + margen + items[i].w / 2;
+    if (items[i].x < min) items[i].x = min;
+  }
+  const ult = items[items.length - 1];
+  if (ult.x + ult.w / 2 > W - 4) ult.x = W - 4 - ult.w / 2;
+  for (let i = items.length - 2; i >= 0; i--) {
+    const max = items[i + 1].x - items[i + 1].w / 2 - margen - items[i].w / 2;
+    if (items[i].x > max) items[i].x = max;
+  }
+  if (items[0].x - items[0].w / 2 < 4) items[0].x = 4 + items[0].w / 2;
+}
+
+type Texto = { x: number; y: number; ancla: string; clase: string; s: string };
+function armar(o: Forma) {
+  const { vert, fs, T } = o;
+  const L = vert ? o.W : o.H;
+  const lo = vert ? o.borde : 46; // en el alargado, arriba van los títulos de columna
+  const hi = L - o.borde;
+  const k = Math.min(...columnas.map((c) => (hi - lo - o.gap * (c.length - 1)) / total));
+  const pos: Record<string, { f: number; c: number; h: number; sale: number; entra: number }> = {};
+  columnas.forEach((col, ci) => {
+    const alto = col.reduce((s, n) => s + n.valor * k, 0) + o.gap * (col.length - 1);
+    let c = (lo + hi) / 2 - alto / 2;
+    col.forEach((n) => { pos[n.id] = { f: o.F[ci], c, h: n.valor * k, sale: c, entra: c }; c += n.valor * k + o.gap; });
+  });
+  const p = (f: number, c: number) => (vert ? `${r1(c)} ${r1(f)}` : `${r1(f)} ${r1(c)}`);
+  const caminos = cintas.map((x, i) => {
+    const a = pos[x.de.id], b = pos[x.a.id], g = x.valor * k;
+    const f0 = a.f + T, f1 = b.f, fm = (f0 + f1) / 2, c0 = a.sale, c1 = b.entra;
+    a.sale += g; b.entra += g;
+    const d = `M${p(f0, c0)}C${p(fm, c0)} ${p(fm, c1)} ${p(f1, c1)}L${p(f1, c1 + g)}C${p(fm, c1 + g)} ${p(fm, c0 + g)} ${p(f0, c0 + g)}Z`;
+    const grad = { x1: vert ? 0 : f0, x2: vert ? 0 : f1, y1: vert ? f0 : 0, y2: vert ? f1 : 0 };
+    return { d, de: x.de.id, a: x.a.id, valor: x.valor, id: `sk-${o.pre}${i}`, grad, c1: x.de.color, c2: x.a.color };
+  });
+
+  const lh = 18 * fs;
+  const piezas = nodos.map((n) => {
+    const q = pos[n.id];
+    const barra = vert ? { x: q.c, y: q.f, w: q.h, h: T } : { x: q.f, y: q.c, w: T, h: q.h };
+    const cx = barra.x + barra.w / 2, cy = barra.y + barra.h / 2;
+    const v = soles(n.valor);
+    return { n, barra, cx, cy, v, textos: [] as Texto[], chip: null as null | { x: number; y: number; w: number; h: number } };
+  });
+  const de = (col: number) => piezas.filter((x) => x.n.col === col);
+
+  // Columna del medio: queda encima de las cintas, así que su etiqueta va en una cápsula blanca
+  // sobre la barra, para distinguirla de las cintas.
+  const medio = de(1).map((x) => ({ x: x.cx, w: (vert ? Math.max(anchoNombre(x.n.nombre, 16 * fs), anchoValor(x.v, 13 * fs)) + 20 * fs : (Math.max(x.n.nombre.length * 8.6, 96) + 30) * fs) }));
+  if (vert) separar(medio, o.W, 6);
+  de(1).forEach((x, i) => {
+    const m = medio[i];
+    x.chip = { x: m.x - m.w / 2, y: x.cy - 26 * fs, w: m.w, h: 52 * fs };
+    x.textos.push({ x: m.x, y: x.cy - 4 * fs, ancla: 'middle', clase: 'sk-nombre', s: x.n.nombre });
+    x.textos.push({ x: m.x, y: x.cy + 16 * fs, ancla: 'middle', clase: 'sk-valor', s: x.v });
+  });
+  if (!vert) {
+    // Alargado: sedes a la izquierda de su barra, destinos a la derecha.
+    [0, 2].forEach((col) => de(col).forEach((x) => {
+      const izq = col === 0;
+      const tx = izq ? x.barra.x - 14 * fs : x.barra.x + T + 14 * fs;
+      const ancla = izq ? 'end' : 'start';
+      x.textos.push({ x: tx, y: x.cy - 3 * fs, ancla, clase: 'sk-nombre', s: x.n.nombre });
+      x.textos.push({ x: tx, y: x.cy + 15 * fs, ancla, clase: 'sk-valor', s: x.v });
+    }));
+  } else {
+    // Vertical: sedes encima de su barra; destinos debajo, en dos líneas.
+    const arriba = de(0).map((x) => ({ x: x.cx, w: Math.max(anchoNombre(x.n.nombre, 15 * fs), anchoValor(x.v, 13 * fs)) }));
+    separar(arriba, o.W);
+    de(0).forEach((x, i) => {
+      x.textos.push({ x: arriba[i].x, y: x.barra.y - 12 * fs - lh, ancla: 'middle', clase: 'sk-nombre', s: x.n.nombre });
+      x.textos.push({ x: arriba[i].x, y: x.barra.y - 11 * fs, ancla: 'middle', clase: 'sk-valor', s: x.v });
+    });
+    const abajo = de(2).map((x) => ({ x: x.cx, w: Math.max(...corto[x.n.id].map((t) => anchoNombre(t, 15 * fs)), anchoValor(x.v, 13 * fs)) }));
+    separar(abajo, o.W, 7);
+    de(2).forEach((x, i) => {
+      const y0 = x.barra.y + T + 22 * fs;
+      corto[x.n.id].forEach((t, j) => x.textos.push({ x: abajo[i].x, y: y0 + j * lh, ancla: 'middle', clase: 'sk-nombre', s: t }));
+      x.textos.push({ x: abajo[i].x, y: y0 + 2 * lh + 1, ancla: 'middle', clase: 'sk-valor', s: x.v });
+    });
+  }
+  const titulos = vert ? [] : ['SEDES', 'MEDIO DE PAGO', 'A DÓNDE VA'].map((t, i) => ({ x: o.F[i] + T / 2, y: 20 * fs, s: t }));
+  // Vertical: el alto sale del dibujo (etiquetas de arriba y de abajo incluidas).
+  const caja = vert
+    ? { y: r1(o.F[0] - 12 * fs - lh - 18 * fs), h: 0 }
+    : { y: 0, h: o.H };
+  if (vert) caja.h = r1(o.F[2] + T + 22 * fs + 2 * lh + 1 + 10 * fs - caja.y);
+  return { o, caminos, piezas, titulos, caja };
+}
+const formas = [armar(ALARGADO), armar(VERTICAL)];
 ---
 <section class="flujo solo-fluido" id="flujo" aria-labelledby="flujo-t">
   <div class="col">
@@ -88,13 +176,12 @@ const nodos = [...sedes, ...medios, ...destinos];
     </div>
 
     <div class="flujo-caja" data-flujo>
-      <p class="flujo-pista" aria-hidden="true">Deslice para ver todo →</p>
-      <div class="flujo-desliza">
-        <svg class="flujo-svg" viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="flujo-t flujo-desc">
-          <desc id="flujo-desc">Venta del día de ejemplo: {soles(total)}, repartida por sede, por medio de pago y por destino. Los montos están en la tabla que sigue al diagrama.</desc>
+      {formas.map(({ o, caminos, piezas, titulos, caja }) => (
+        <svg class={`flujo-svg flujo-svg--${o.pre}`} viewBox={`0 ${caja.y} ${o.W} ${caja.h}`} style={`--fs:${o.fs}`} role="img" aria-labelledby={`flujo-t flujo-desc-${o.pre}`}>
+          <desc id={`flujo-desc-${o.pre}`}>Venta del día de ejemplo: {soles(total)}, repartida por sede, por medio de pago y por destino. Los montos están en la tabla que sigue al diagrama.</desc>
           <defs>
             {caminos.map((c) => (
-              <linearGradient id={c.grad} gradientUnits="userSpaceOnUse" x1={pos[c.de].x + ANCHO} x2={pos[c.a].x} y1="0" y2="0">
+              <linearGradient id={c.id} gradientUnits="userSpaceOnUse" x1={r1(c.grad.x1)} x2={r1(c.grad.x2)} y1={r1(c.grad.y1)} y2={r1(c.grad.y2)}>
                 <stop offset="0" stop-color={c.c1} />
                 <stop offset="1" stop-color={c.c2} />
               </linearGradient>
@@ -102,48 +189,27 @@ const nodos = [...sedes, ...medios, ...destinos];
           </defs>
           <g class="sk-cintas">
             {caminos.map((c) => (
-              <path class="sk-cinta" d={c.d} fill={`url(#${c.grad})`} data-de={c.de} data-a={c.a} data-valor={c.valor}>
+              <path class="sk-cinta" d={c.d} fill={`url(#${c.id})`} data-de={c.de} data-a={c.a} data-valor={c.valor}>
                 <title>{nodos.find((n) => n.id === c.de)!.nombre} → {nodos.find((n) => n.id === c.a)!.nombre}: {soles(c.valor)}</title>
               </path>
             ))}
           </g>
           <g class="sk-nodos">
-            {nodos.map((n) => {
-              const p = pos[n.id];
-              const izq = n.col === 0;
-              const ty = p.y + p.h / 2;
-              // La columna del medio queda encima de las cintas: su etiqueta va en una cápsula
-              // blanca centrada sobre la barra, para distinguirla de las cintas. Las de los
-              // costados quedan como texto, fuera del dibujo.
-              if (n.col === 1) {
-                const cx = p.x + ANCHO / 2;
-                const ancho = Math.max(n.nombre.length * 8.6, 96) + 30;
-                return (
-                  <g class="sk-nodo sk-nodo--medio" data-n={n.id} data-col={n.col} data-nombre={n.nombre} data-valor={n.valor} tabindex="0" role="button" aria-label={`${n.nombre}: ${soles(n.valor)}, el ${pct(n.valor)} de la venta del día`}>
-                    <rect x={p.x} y={r1(p.y)} width={ANCHO} height={r1(p.h)} rx="4" fill={n.color} />
-                    <rect class="sk-chip" x={r1(cx - ancho / 2)} y={r1(ty - 26)} width={r1(ancho)} height="52" rx="16" />
-                    <text x={cx} y={r1(ty - 4)} text-anchor="middle" class="sk-nombre">{n.nombre}</text>
-                    <text x={cx} y={r1(ty + 16)} text-anchor="middle" class="sk-valor">{soles(n.valor)}</text>
-                  </g>
-                );
-              }
-              const tx = izq ? p.x - 12 : p.x + ANCHO + 12;
-              return (
-                <g class="sk-nodo" data-n={n.id} data-col={n.col} data-nombre={n.nombre} data-valor={n.valor} tabindex="0" role="button" aria-label={`${n.nombre}: ${soles(n.valor)}, el ${pct(n.valor)} de la venta del día`}>
-                  <rect x={p.x} y={r1(p.y)} width={ANCHO} height={r1(p.h)} rx="4" fill={n.color} />
-                  <text x={tx} y={r1(ty - 3)} text-anchor={izq ? 'end' : 'start'} class="sk-nombre">{n.nombre}</text>
-                  <text x={tx} y={r1(ty + 15)} text-anchor={izq ? 'end' : 'start'} class="sk-valor">{soles(n.valor)}</text>
-                </g>
-              );
-            })}
+            {piezas.map(({ n, barra, chip, textos }) => (
+              <g class={n.col === 1 ? 'sk-nodo sk-nodo--medio' : 'sk-nodo'} data-n={n.id} data-col={n.col} data-nombre={n.nombre} data-valor={n.valor} tabindex="0" role="button" aria-label={`${n.nombre}: ${soles(n.valor)}, el ${pct(n.valor)} de la venta del día`}>
+                <rect class="sk-barra" x={r1(barra.x)} y={r1(barra.y)} width={r1(barra.w)} height={r1(barra.h)} rx={o.T / 2 - 1} fill={n.color} />
+                {chip && <rect class="sk-chip" x={r1(chip.x)} y={r1(chip.y)} width={r1(chip.w)} height={r1(chip.h)} rx={r1(16 * o.fs)} />}
+                {textos.map((t) => <text x={r1(t.x)} y={r1(t.y)} text-anchor={t.ancla} class={t.clase}>{t.s}</text>)}
+              </g>
+            ))}
           </g>
-          <g class="sk-titulos" aria-hidden="true">
-            <text x={X[0] + ANCHO / 2} y="10" text-anchor="middle">SEDES</text>
-            <text x={X[1] + ANCHO / 2} y="10" text-anchor="middle">MEDIO DE PAGO</text>
-            <text x={X[2] + ANCHO / 2} y="10" text-anchor="middle">A DÓNDE VA</text>
-          </g>
+          {titulos.length > 0 && (
+            <g class="sk-titulos" aria-hidden="true">
+              {titulos.map((t) => <text x={r1(t.x)} y={r1(t.y)} text-anchor="middle">{t.s}</text>)}
+            </g>
+          )}
         </svg>
-      </div>
+      ))}
       <p class="flujo-info" data-flujo-info aria-live="polite">Venta del día: <b>{soles(total)}</b>. Toque una sede, un medio de pago o un destino.</p>
     </div>
 

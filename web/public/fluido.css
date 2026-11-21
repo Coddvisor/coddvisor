@@ -556,36 +556,44 @@
 .flujo { padding:var(--pad-sec) 0 0; }
 .flujo-baj { margin-top:16px; max-width:62ch; font-size:18px; line-height:1.6; color:var(--texto-2); text-wrap:pretty; }
 .flujo-caja { margin-top:36px; border-radius:28px; padding:clamp(16px, 3vw, 36px); background:var(--tarjeta); border:1px solid color-mix(in srgb, var(--borde) 80%, transparent); box-shadow:var(--sombra-suave); }
-.flujo-desliza { overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; }
-.flujo-svg { display:block; width:100%; min-width:680px; height:auto; overflow:visible; }
-.sk-cinta { opacity:.32; transition:opacity .45s var(--suave); cursor:pointer; }
-.sk-cinta:hover { opacity:.62; }
+/* Dos dibujos: alargado (de izquierda a derecha) desde 960 px; vertical (de arriba abajo) por
+   debajo, donde el alargado ya no se leería. Los tamaños de letra van en unidades del dibujo y se
+   multiplican por --fs, que pone cada SVG. */
+.flujo-svg { display:block; width:100%; height:auto; }
+.flujo-svg--v { display:none; max-width:460px; margin-inline:auto; }
+@media (max-width:959px) {
+  .flujo-svg--h { display:none; }
+  .flujo-svg--v { display:block; }
+}
+.sk-cinta { opacity:.3; transition:opacity .45s var(--suave); cursor:pointer; }
+.sk-cinta:hover { opacity:.6; }
 .sk-nodo { cursor:pointer; outline:none; }
 .sk-nodo rect { transition:opacity .45s var(--suave), transform .45s var(--resorte); transform-box:fill-box; transform-origin:center; }
-.sk-nodo text { paint-order:stroke; stroke:var(--tarjeta); stroke-width:5px; stroke-linejoin:round; transition:opacity .45s var(--suave); }
-.sk-nombre { font:600 15px var(--sans); fill:var(--cobalto); }
+.sk-nodo text { paint-order:stroke; stroke:var(--tarjeta); stroke-width:calc(5px * var(--fs, 1)); stroke-linejoin:round; transition:opacity .45s var(--suave); }
+.sk-nombre { font:600 calc(15px * var(--fs, 1)) var(--sans); fill:var(--cobalto); }
 /* Etiquetas que quedan encima de las cintas (columna del medio): cápsula blanca con sombra. */
 .sk-chip { fill:var(--tarjeta); stroke:color-mix(in srgb, var(--borde) 90%, transparent); stroke-width:1; filter:drop-shadow(0 6px 12px rgba(11,24,65,.14)); }
 .sk-nodo--medio text { stroke:none; }
-.sk-nodo--medio .sk-nombre { font-size:16px; }
-.sk-valor { font:700 13px var(--mono); fill:var(--texto-2); }
-.sk-titulos text { font:700 11px var(--mono); letter-spacing:.08em; fill:var(--texto-3); }
-.sk-nodo:focus-visible rect { outline:none; stroke:var(--azul-real); stroke-width:3; }
+.sk-nodo--medio .sk-nombre { font-size:calc(16px * var(--fs, 1)); }
+.sk-valor { font:700 calc(13px * var(--fs, 1)) var(--mono); fill:var(--texto-2); }
+.sk-titulos text { font:700 calc(11px * var(--fs, 1)) var(--mono); letter-spacing:.08em; fill:var(--texto-3); }
+.sk-nodo:focus-visible .sk-barra, .sk-nodo:focus-visible .sk-chip { stroke:var(--azul-real); stroke-width:3; }
 /* Enfoque: al elegir una parte, sus cintas se encienden y lo demás se apaga. */
 .flujo-svg.foco .sk-cinta { opacity:.08; }
 .flujo-svg.foco .sk-cinta.on { opacity:.7; }
 .flujo-svg.foco .sk-nodo:not(.on) rect, .flujo-svg.foco .sk-nodo:not(.on) text { opacity:.3; }
 .flujo-svg.foco .sk-nodo--medio:not(.on) .sk-chip { opacity:.85; }
-.flujo-svg.foco .sk-nodo.elegido .sk-chip { transform:none; }
-.flujo-svg.foco .sk-nodo.elegido rect:first-child { transform:scaleX(1.25); }
+.flujo-svg--h.foco .sk-nodo.elegido .sk-barra { transform:scaleX(1.3); }
+.flujo-svg--v.foco .sk-nodo.elegido .sk-barra { transform:scaleY(1.3); }
 .flujo-info { margin-top:16px; padding:14px 18px; border-radius:16px; background:var(--superficie); font-size:15px; line-height:1.55; color:var(--texto-2); min-height:3.2em; }
 .flujo-info b { color:var(--cobalto); font-family:var(--mono); white-space:nowrap; }
 .flujo-info strong { color:var(--cobalto); }
-@media (max-width:720px) { .flujo-desliza { margin-inline:calc(-1 * clamp(16px, 3vw, 36px)); padding-inline:clamp(16px, 3vw, 36px); } }
+@media (max-width:959px) { .flujo-info { min-height:4.8em; } }
+@media (max-width:480px) { .flujo-caja { padding:18px 10px 12px; } .flujo-info { margin-top:12px; } }
 @media (prefers-reduced-motion: no-preference) {
-  /* Se dibuja de izquierda a derecha al aparecer. */
-  .fluido.js .flujo-svg { clip-path:inset(0 100% 0 0); transition:clip-path 2.2s var(--suave); }
+  /* Se dibuja en el sentido del recorrido al aparecer: de izquierda a derecha o de arriba abajo. */
+  .fluido.js .flujo-svg { transition:clip-path 2.2s var(--suave); }
+  .fluido.js .flujo-svg--h { clip-path:inset(0 100% 0 0); }
+  .fluido.js .flujo-svg--v { clip-path:inset(0 0 100% 0); }
   .fluido.js .flujo-caja.dibuja .flujo-svg { clip-path:inset(0 0 0 0); }
 }
-.flujo-pista { display:none; margin-bottom:8px; font:400 12px var(--mono); color:var(--texto-2); text-align:right; }
-@media (max-width:720px) { .flujo-pista { display:block; } }

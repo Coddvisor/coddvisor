@@ -256,8 +256,10 @@ No borran ni reemplazan nada: todo cuelga de la clase `fluido` en `<html>` (en `
   sedes suman los S/ 4,320.50 del panel de la portada y el IGV es venta ÷ 1.18, como en la
   herramienta. Se dibuja al aparecer; al tocar una parte se encienden sus cintas y se explica con
   montos. Las etiquetas de la columna del medio, que quedan encima de las cintas, van en una
-  cápsula blanca para distinguirlas. Hay una tabla oculta con los mismos datos para lectores de
-  pantalla.
+  cápsula blanca para distinguirlas. Se arma en dos formas: alargado (de izquierda a derecha) desde
+  960 px y vertical (de arriba abajo) por debajo; en el vertical los destinos llevan el nombre en
+  dos líneas y las etiquetas se corren lo justo para no montarse. Hay una tabla oculta con los
+  mismos datos para lectores de pantalla.
 - **«Lo que ya funciona»** (`Modulos.astro`): cada parte que la portada dice que existe, con una
   mini pantalla en bucle. Compras y Producción en taller van «EN DESARROLLO».
 - **«Todo conectado»** (`Conectado.astro`): el núcleo con cada parte alrededor y un mapa del Perú
