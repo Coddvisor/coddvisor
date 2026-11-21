@@ -307,7 +307,8 @@
 /* ---------- Líneas que se juntan (bajo el 76.5 %) ---------- */
 .hilos { margin-top:clamp(28px, 4vw, 56px); }
 .hilos svg { width:100%; height:auto; overflow:visible; }
-.hilos-g path { stroke-dasharray:1; stroke-dashoffset:0; }
+.hilos-g path { stroke-linecap:round; }
+.hilos-fin { transform-box:fill-box; transform-origin:center; }
 .hilos-puntos circle { fill:var(--azul-real); opacity:.55; }
 .hilos-et text { font:500 15px var(--sans); fill:var(--texto-2); }
 .hilos-fin rect { fill:var(--cobalto); }
@@ -436,10 +437,7 @@
 .fluido [data-bucle]:not(.en-pantalla), .fluido [data-bucle]:not(.en-pantalla) * { animation-play-state:paused !important; }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* Líneas: se dibujan, se quedan, se borran y vuelven (10 s). */
-  .fluido .hilos-g path { animation:hilo 10s var(--suave) infinite; animation-delay:calc(var(--i) * 40ms); }
-  .fluido .hilos-fin { animation:hiloFin 10s var(--suave) infinite; transform-origin:500px 296px; }
-  .fluido .hilos-brillo { animation:hiloBrillo 10s ease-in-out infinite; transform-origin:500px 296px; }
+  /* Líneas que se juntan: las mueve fluido.js (13), no esta hoja. */
 
   /* Venta: el aviso de la boleta aparece y se va (7 s). Yape late. */
   .fluido .mini-aviso { animation:avisoBucle 7s var(--resorte) infinite; }
@@ -479,9 +477,6 @@
   .fluido .mapa-chip--centro { animation-delay:1s; }
   .fluido .mapa-total { animation:chip 8s var(--suave) infinite 1.8s; }
 }
-@keyframes hilo { 0% { stroke-dashoffset:1; } 35%, 80% { stroke-dashoffset:0; opacity:1; } 94% { stroke-dashoffset:0; opacity:0; } 100% { stroke-dashoffset:1; opacity:0; } }
-@keyframes hiloFin { 0%, 28% { opacity:0; transform:scale(.8); } 38%, 82% { opacity:1; transform:none; } 94%, 100% { opacity:0; transform:scale(.9); } }
-@keyframes hiloBrillo { 0%, 25% { opacity:0; } 45%, 80% { opacity:1; } 100% { opacity:0; } }
 @keyframes avisoBucle { 0%, 18% { opacity:0; transform:translateY(10px) scale(.92); } 26%, 84% { opacity:1; transform:none; } 94%, 100% { opacity:0; transform:translateY(-4px); } }
 @keyframes parpadeo { 0%, 15% { color:var(--texto-3); } 16%, 100% { color:inherit; } }
 @keyframes primero { 0%, 40% { opacity:1; } 50%, 90% { opacity:0; } 100% { opacity:1; } }
@@ -519,7 +514,7 @@
 }
 
 /* ---------- Barra inicial («Primeros negocios»), al estilo de los avisos de Apple ----------
-   Centrada, con un punto que late (estamos en vivo), el texto y una cápsula «Postular →». Debajo,
+   Centrada, con un punto que late (estamos en vivo), el texto y una cápsula «Obtener acceso →». Debajo,
    una línea fina celeste y ámbar que recorre la barra muy despacio. En celular, texto corto. */
 .fluido .aviso { position:relative; border-bottom:0; background:linear-gradient(180deg, var(--cobalto-profundo), color-mix(in srgb, var(--cobalto-profundo) 70%, var(--cobalto))); }
 .fluido .aviso::after { content:""; position:absolute; left:0; right:0; bottom:0; height:1px; background:linear-gradient(90deg, transparent 0%, var(--celeste) 25%, var(--ambar) 50%, var(--celeste) 75%, transparent 100%); background-size:200% 100%; opacity:.75; }

@@ -105,7 +105,7 @@ sup.ref a { color:var(--azul-real); text-underline-offset:2px; display:inline-bl
 .aviso { background:var(--cobalto-profundo); color:var(--celeste-claro); font-size:14px; line-height:1.45; border-bottom:1px solid var(--linea-oscura); }
 .aviso-in { padding-block:9px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:6px 24px; }
 .aviso b { color:var(--fondo); font-weight:600; }
-.aviso a { color:var(--fondo); font-weight:500; text-underline-offset:3px; }
+.aviso a { color:var(--fondo); font-weight:500; white-space:nowrap; flex-shrink:0; text-underline-offset:3px; }
 .aviso :focus-visible { outline-color:var(--celeste); }
 /* Partes nuevas de la barra (la capa fluida les da forma; sin ella, la barra queda como antes). */
 .aviso-punto, .aviso-corto { display:none; }
