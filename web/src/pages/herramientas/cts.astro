@@ -34,7 +34,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
 </section>
 
 <section class="her-sec" aria-label="Calculadora de CTS">
-  <div class="col col--ancho">
+  <div class="col">
     <div class="lienzo">
       <form class="igv" id="cts" autocomplete="off" novalidate>
         <div>
@@ -262,6 +262,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
 
 <!-- La remuneración mínima sale de src/datos/laboral.ts: un solo lugar para todas las calculadoras. -->
 <script is:inline define:vars={{ minimas }}>window.CODDVISOR_MINIMAS = minimas;</script>
+<script is:inline src="/herramientas/laboral.js" defer></script>
 <script is:inline src="/herramientas/cts.js" defer></script>
 <script is:inline src="/herramientas/guia.js" defer></script>
 </Base>
