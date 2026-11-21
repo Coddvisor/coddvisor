@@ -341,3 +341,10 @@
 .escena-balanza.ve span { width:var(--w); }
 .guia-sec .errores { margin-top:24px; }
 .ticket .pie-t { display:block; }
+
+/* ---------- Piezas de las calculadoras laborales dentro del resultado oscuro (CTS) ---------- */
+.igv-res .igv-ayuda { color:var(--texto-claro-2); }
+.igv-res .tres > div { border-color:rgba(255,255,255,.16); }
+.igv-res .tres > div:first-child { border-color:var(--celeste); }
+.igv-res .tres-t { color:var(--celeste-claro); }
+.igv-res .tres-d { color:var(--texto-claro-2); }

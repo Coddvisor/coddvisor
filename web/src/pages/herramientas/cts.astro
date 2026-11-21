@@ -1,0 +1,267 @@
+---
+// Herramienta gratis: CTS (depósito de mayo de 2027). La calculadora arriba y la guía debajo.
+// Reglas en public/herramientas/cts.js. Guía del borrador aprobado (web/borradores/cts.md, commit 6d844eb).
+// Diseño: el mismo de las herramientas nuevas (herramienta.css): tarjeta grande, botones de un toque,
+// el número que cuenta, la cuenta con los números de la persona y la barra fija del celular.
+import Base from '../../layouts/Base.astro';
+import { llamado } from '../../datos/navegacion';
+import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
+import { minimas, minimaVigente, asignacionFamiliar, solesCortos } from '../../datos/laboral';
+
+const h = herramientas.find((x) => x.href === '/herramientas/cts/')!;
+const asignacion = solesCortos(asignacionFamiliar(minimaVigente().rmv));
+const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+---
+<Base
+  titulo="Calculadora de CTS mayo 2027 gratis: cuánto depositar | Coddvisor"
+  descripcion="Calcule la CTS de cada integrante según su régimen: general, pequeña o microempresa, con el sexto de la gratificación. También si entró o se va en el semestre. Gratis.">
+<link slot="cabeza" rel="stylesheet" href="/herramientas/herramienta.css">
+
+<section class="portada portada--interior osc" aria-labelledby="hc-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot">Herramienta gratis</p>
+    <h1 class="portada-t interior-t" id="hc-t">CTS de mayo: <span class="cel">cuánto depositar a cada persona.</span></h1>
+    <p class="plazo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Depósito de mayo: hasta el lunes 17 de mayo de 2027</p>
+    <p class="portada-baj">Con el sueldo, la gratificación y el régimen de cada persona. También si entró a mitad del semestre o si se va antes del depósito.</p>
+    <ul class="confianza">
+      <li set:html={ico + 'Gratis y sin registrarse'} />
+      <li set:html={ico + 'Verificada contra la norma el ' + fechaLarga(h.verificada!)} />
+      <li set:html={ico + 'Lo que escribe no sale de su computadora'} />
+    </ul>
+  </div>
+</section>
+
+<section class="her-sec" aria-label="Calculadora de CTS">
+  <div class="col col--ancho">
+    <div class="lienzo">
+      <form class="igv" id="cts" autocomplete="off" novalidate>
+        <div>
+          <label class="igv-et" for="ct-sueldo">Sueldo mensual de abril</label>
+          <div class="igv-monto"><span>S/</span><input id="ct-sueldo" name="sueldo" type="text" inputmode="decimal" value="1500.00"></div>
+
+          <div class="igv-grupo">
+            <p class="igv-et" id="ct-g-reg">El régimen de su negocio</p>
+            <div class="seg" role="radiogroup" aria-labelledby="ct-g-reg">
+              <span class="seg-ficha" aria-hidden="true"></span>
+              <input type="radio" name="regimen" id="ct-general" value="general" checked><label for="ct-general">General</label>
+              <input type="radio" name="regimen" id="ct-pequena" value="pequena"><label for="ct-pequena">Pequeña</label>
+              <input type="radio" name="regimen" id="ct-micro" value="micro"><label for="ct-micro">Micro</label>
+              <input type="radio" name="regimen" id="ct-nose" value="nose"><label for="ct-nose">No lo sé</label>
+            </div>
+            <p class="igv-ayuda">Pequeña y micro: solo si su negocio está inscrito en el REMYPE. Si no lo está, elija General.</p>
+            <label class="casilla" data-antes hidden><input type="checkbox" name="antes"> Esta persona ya trabajaba aquí antes de la inscripción en el REMYPE <small>(conserva el régimen general)</small></label>
+          </div>
+
+          <div class="igv-grupo">
+            <p class="igv-et" id="ct-g-modo">El tiempo, de noviembre a abril</p>
+            <div class="seg" role="radiogroup" aria-labelledby="ct-g-modo">
+              <span class="seg-ficha" aria-hidden="true"></span>
+              <input type="radio" name="modo" id="ct-completo" value="completo" checked><label for="ct-completo">Todo</label>
+              <input type="radio" name="modo" id="ct-entro" value="entro"><label for="ct-entro">Entró después</label>
+              <input type="radio" name="modo" id="ct-cese" value="cese"><label for="ct-cese">Se va</label>
+            </div>
+            <div class="caja-campos">
+              <div class="campo" data-f="ingreso" hidden><label for="ct-ingreso">Fecha de ingreso</label><input id="ct-ingreso" name="ingreso" type="date" min="2026-11-01" max="2027-04-30" value="2027-01-10"></div>
+              <div class="campo" data-f="cese" hidden><label for="ct-cese-f">Último día de trabajo</label><input id="ct-cese-f" name="cese" type="date" min="2026-11-01" max="2027-04-30" value="2027-03-20"></div>
+              <div class="campo"><label for="ct-faltas">Días de falta sin justificar</label><input id="ct-faltas" name="faltas" type="number" inputmode="numeric" min="0" step="1" placeholder="0"></div>
+            </div>
+          </div>
+
+          <div class="igv-grupo">
+            <p class="igv-et">Lo que entra en la base</p>
+            <div class="caja-campos">
+              <div class="campo campo--monto"><label for="ct-grati">Gratificación de diciembre</label><div class="monto"><span>S/</span><input id="ct-grati" name="grati" type="text" inputmode="decimal" placeholder="1500.00"></div><p class="igv-ayuda" data-r="grati-ayuda">Calculada con su sueldo. Cámbiela si fue otra.</p></div>
+              <div class="campo campo--monto"><label for="ct-extras">Horas extra y comisiones <small>(total del semestre)</small></label><div class="monto"><span>S/</span><input id="ct-extras" name="extras" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+            </div>
+            <label class="casilla"><input type="checkbox" name="asignacion"> Recibe asignación familiar <small>({asignacion} al mes)</small></label>
+            <label class="casilla"><input type="checkbox" name="extras3"> Las horas extra o comisiones se pagaron en 3 meses o más <small>(si no, no entran)</small></label>
+            <label class="casilla"><input type="checkbox" name="horas4" checked> Trabaja 4 horas diarias o más en promedio <small>(si no, no corresponde CTS)</small></label>
+          </div>
+        </div>
+
+        <div class="igv-res cts-res" role="status" aria-live="polite">
+          <p class="igv-et" data-r="et">Deposite hasta el <span data-limite>lunes 17 de mayo de 2027</span></p>
+          <p class="igv-grande" data-r="cts">S/ 875.00</p>
+          <p class="igv-frase" data-r="frase">Completo, sin descontar nada, en el banco que eligió la persona.</p>
+          <div data-uno>
+            <div class="leyenda-rep">
+              <div><span>Base mensual</span><b data-r="base">S/ 1,750.00</b></div>
+              <div><span>Tiempo</span><b data-r="tiempo">6 meses</b></div>
+              <div><span>Por los meses</span><b data-r="por-meses">S/ 875.00</b></div>
+              <div><span>Por los días</span><b data-r="por-dias">S/ 0.00</b></div>
+            </div>
+            <p class="igv-ayuda" data-r="base-det">S/ 1,500.00 + S/ 250.00 (un sexto de la gratificación)</p>
+            <div class="igv-cuenta">
+              <p class="igv-et">La cuenta, con sus números</p>
+              <p class="igv-cuenta-l" data-r="cuenta">1,750.00 ÷ 12 × 6 = <span class="ce">875.00</span><br>Total: <span class="am">875.00</span></p>
+              <a href="#g-calculo">Por qué se divide entre 12</a>
+            </div>
+          </div>
+          <div class="tres" data-tres hidden>
+            <div><p class="tres-t">Régimen general</p><p class="tres-v" data-r="t-general">S/ 0.00</p><p class="tres-d" data-r="t-general-det"></p></div>
+            <div><p class="tres-t">Pequeña empresa</p><p class="tres-v" data-r="t-pequena">S/ 0.00</p><p class="tres-d" data-r="t-pequena-det"></p></div>
+            <div><p class="tres-t">Microempresa</p><p class="tres-v" data-r="t-micro">S/ 0.00</p><p class="tres-d" data-r="t-micro-det"></p></div>
+          </div>
+          <div class="igv-acc">
+            <button type="button" class="boton-claro" data-copiar>Copiar resultado</button>
+            <span class="igv-aviso" data-copiado role="status"></span>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <a class="barra-movil" href="#cts" data-barra>CTS a depositar <b data-barra-n>S/ 875.00</b></a>
+</section>
+
+<!-- Guía: el artículo del blog vive aquí, debajo de la herramienta. -->
+<article class="guia guia-nueva" aria-labelledby="guia-t">
+  <div class="col">
+    <header class="guia-cab guia-in">
+      <p class="rotulo">Guía · {h.categoria}</p>
+      <h2 class="titular guia-t" id="guia-t">{h.guia}</h2>
+      <p class="guia-meta">{autor} · <time datetime={h.publicada}>{fechaLarga(h.publicada)}</time> · {h.lectura} min de lectura</p>
+    </header>
+
+    <nav class="guia-indice" aria-label="En esta guía">
+      <a href="#g-resumen" data-ind="g-resumen">En 30 segundos</a>
+      <a href="#g-que" data-ind="g-que">Qué es</a>
+      <a href="#g-pasos" data-ind="g-pasos">Paso a paso</a>
+      <a href="#g-calculo" data-ind="g-calculo">Cómo se calcula</a>
+      <a href="#g-dudas" data-ind="g-dudas">Dudas</a>
+      <a href="#g-revisar" data-ind="g-revisar">Si no cuadra</a>
+      <a href="#g-preguntas" data-ind="g-preguntas">Preguntas</a>
+      <span class="leido" data-leido></span>
+    </nav>
+
+    <div class="resumen30 guia-sec" id="g-resumen">
+      <b class="r">EN 30 SEGUNDOS</b>
+      <p>La CTS de un semestre completo es la mitad de la base: el sueldo más un sexto de la gratificación. Con un sueldo de S/ 1,500, son S/ 875 en el régimen general y S/ 406.25 en una pequeña empresa inscrita en el REMYPE. La microempresa inscrita no deposita CTS.</p>
+    </div>
+
+    <section class="guia-sec" id="g-que" aria-labelledby="g-que-t">
+      <h3 class="guia-sec-t" id="g-que-t">Qué es la CTS</h3>
+      <div class="guia-texto">
+        <p>Es un ahorro que la ley obliga a guardar para cuando la persona deje de trabajar. Su negocio lo deposita dos veces al año en una cuenta a nombre de la persona: en mayo por noviembre a abril, y en noviembre por mayo a octubre. El dinero es de la persona, no del negocio.</p>
+        <p>Le toca a quien trabaja en planilla al menos 4 horas diarias en promedio. Se gana desde el primer mes completo de trabajo.</p>
+        <p><b>Depósito de mayo: hasta el lunes 17 de mayo de 2027.</b> El 15 cae sábado y la ley lo corre al siguiente día hábil.</p>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-pasos" aria-labelledby="g-pasos-t">
+      <h3 class="guia-sec-t" id="g-pasos-t">Paso a paso</h3>
+      <div class="guia-pro">
+        <ol class="pasos-pro" data-pasos>
+          <li data-paso="0"><span class="n">PASO 1</span><h4>Confirme su régimen.</h4><p>Busque su RUC en la consulta del REMYPE. La pequeña empresa que no está inscrita paga la CTS completa, como el régimen general.</p></li>
+          <li data-paso="1"><span class="n">PASO 2</span><h4>Pida a cada persona que elija su banco.</h4><p>Debe hacerlo por escrito hasta el 30 de abril. Si no elige, usted deposita a plazo fijo en el banco que prefiera.</p></li>
+          <li data-paso="2"><span class="n">PASO 3</span><h4>Arme la base.</h4><p>Sume el sueldo de abril, la asignación familiar si la recibe y un sexto de la gratificación de diciembre. Si hubo horas extra o comisiones en al menos 3 de los 6 meses, súmelas, divida el total entre 6 y agréguelo.</p></li>
+          <li data-paso="3"><span class="n">PASO 4</span><h4>Cuente los meses y días.</h4><p>Use solo el tiempo trabajado de noviembre a abril. Cada falta injustificada resta un día.</p></li>
+          <li data-paso="4"><span class="n">PASO 5</span><h4>Deposite y entregue la constancia.</h4><p>Deposite el monto completo, sin descontar nada. Entregue la constancia del depósito dentro de los 5 días hábiles siguientes.</p></li>
+        </ol>
+        <div class="escena">
+          <p class="igv-et">La cuenta, paso a paso</p>
+          <div class="ecu" aria-live="polite">
+            <p class="ecu-l" data-l="0"><span>Régimen general</span> <small>CTS completa</small></p>
+            <p class="ecu-l" data-l="1"><span>Banco elegido ✓</span> <small>por escrito, hasta el 30 de abril</small></p>
+            <p class="ecu-l" data-l="2">1,500.00 + 1,500.00 ÷ 6 = <span class="ce">1,750.00</span> <small>base</small></p>
+            <p class="ecu-l" data-l="3">1,750.00 ÷ 12 × 6 = <span class="am">875.00</span> <small>6 meses</small></p>
+            <p class="ecu-l" data-l="4"><span class="ok">Depositar S/ 875.00 hasta el 17 de mayo ✓</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-calculo" aria-labelledby="g-calculo-t">
+      <h3 class="guia-sec-t" id="g-calculo-t">Cómo se calcula</h3>
+      <div class="guia-texto">
+        <div class="formula" aria-label="Fórmula">
+          <p><b>Base</b> = sueldo + asignación familiar + pagos regulares + gratificación ÷ 6</p>
+          <p><b>CTS (régimen general)</b> = base ÷ 12 × meses + base ÷ 360 × días</p>
+          <p><b>CTS (pequeña empresa)</b> = la mitad de lo anterior</p>
+        </div>
+        <p style="margin-top:18px"><b>Un ejemplo.</b> Una persona gana S/ 1,500 y trabajó de noviembre a abril. Su gratificación de diciembre fue de S/ 1,500 en el régimen general y de S/ 750 en la pequeña empresa.</p>
+        <ul class="guia-lista">
+          <li><b>Régimen general:</b> base S/ 1,500 + S/ 250 = S/ 1,750. CTS = S/ 1,750 ÷ 12 × 6 = <b>S/ 875</b>.</li>
+          <li><b>Pequeña empresa inscrita:</b> base S/ 1,500 + S/ 125 = S/ 1,625. CTS = S/ 1,625 ÷ 24 × 6 = <b>S/ 406.25</b>.</li>
+          <li><b>Microempresa inscrita:</b> <b>S/ 0</b>.</li>
+        </ul>
+        <p>Escriba el sueldo y la gratificación de cada persona en la calculadora de arriba y verá su depósito.</p>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-dudas" aria-labelledby="g-dudas-t">
+      <h3 class="guia-sec-t" id="g-dudas-t">Casos que generan dudas</h3>
+      <div class="guia-texto">
+        <p><b>Qué entra en la base.</b> El sueldo, la asignación familiar, los pagos que se repiten al menos 3 de cada 6 meses y un sexto de la gratificación. No entran las utilidades, la canasta de Navidad, la movilidad ni los viáticos. Con S/ 1,500 de sueldo y S/ 123 de asignación familiar, la gratificación fue S/ 1,623, la base queda en S/ 1,893.50 y la CTS en <b>S/ 946.75</b>.</p>
+        <p><b>Se va entre depósitos.</b> La CTS del tiempo que no se depositó se le paga a la persona directamente, dentro de las 48 horas de su salida. Si gana S/ 1,500 y se va el 20 de marzo, le tocan 4 meses y 20 días: S/ 583.33 + S/ 97.22 = <b>S/ 680.55</b>. En el mismo plazo, entréguele la constancia de cese para que retire su cuenta.</p>
+        <p><b>Se atrasó en depositar.</b> Deposite cuanto antes, con los intereses que habría ganado ese dinero en el banco: la ley lo obliga sin que nadie lo pida. No depositar a tiempo es una infracción grave ante la SUNAFIL, y la multa se suma a los intereses.</p>
+        <p><b>Cuánto puede retirar la persona.</b> Hasta el 31 de diciembre de 2026, puede retirar el 100 % de su cuenta. Desde 2027, la regla cambia: los retiros quedan limitados y el banco le indica cuánto puede sacar. Hay un proyecto de ley para ampliar el retiro total, pero hoy no está aprobado.</p>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-revisar" aria-labelledby="g-revisar-t">
+      <h3 class="guia-sec-t" id="g-revisar-t">Si no cuadra, revise esto primero</h3>
+      <ol class="errores" style="list-style:none;padding:0">
+        <li class="error-c">
+          <span class="n">1</span><h4>Olvidó el sexto de la gratificación.</h4>
+          <div class="error-par" aria-hidden="true"><p class="no">1,500 ÷ 12 × 6 = 750.00</p><p class="si"><i>✓</i> 1,750 ÷ 12 × 6 = 875.00</p></div>
+          <p>Es el error más común y deja el depósito corto. Súmelo siempre en el depósito de mayo.</p>
+        </li>
+        <li class="error-c">
+          <span class="n">2</span><h4>Depositó media CTS sin estar inscrito.</h4>
+          <p>La media CTS es solo para la pequeña empresa inscrita en el REMYPE. Haga la consulta por RUC antes de depositar.</p>
+        </li>
+        <li class="error-c">
+          <span class="n">3</span><h4>Le descontó algo al depósito.</h4>
+          <p>La CTS se deposita completa. Retener montos no permitidos se sanciona con el doble de lo retenido.</p>
+        </li>
+        <li class="error-c">
+          <span class="n">4</span><h4>No entregó las constancias.</h4>
+          <p>Sin la constancia de cese, la persona no puede retirar su dinero. Entréguela dentro de las 48 horas de su salida.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="guia-sec" id="g-preguntas" aria-labelledby="g-preguntas-t">
+      <h3 class="guia-sec-t" id="g-preguntas-t">Preguntas frecuentes</h3>
+      <div class="faq guia-faq">
+        <details><summary>¿La CTS paga impuesto a la renta?<span class="mas" aria-hidden="true">+</span></summary><p>No. La ley la considera un ingreso que no paga ese impuesto.</p></details>
+        <details><summary>¿Le toca a quien trabaja medio tiempo?<span class="mas" aria-hidden="true">+</span></summary><p>Solo si trabaja 4 horas diarias o más en promedio. Si trabaja menos de 5 días a la semana, el mínimo es de 20 horas semanales.</p></details>
+        <details><summary>¿Qué pasa si no completó un mes antes del 30 de abril?<span class="mas" aria-hidden="true">+</span></summary><p>No se pierde. Ese tiempo se deposita junto con el período siguiente, en noviembre.</p></details>
+        <details><summary>¿Puede cambiar de banco?<span class="mas" aria-hidden="true">+</span></summary><p>Sí. La persona puede trasladar su CTS a otro banco cuando quiera.</p></details>
+      </div>
+
+      <div class="verificada">
+        <p><b>Verificada contra la norma el {fechaLarga(h.verificada!)}.</b> Revísela con su contador.</p>
+        <ul>
+          <li>Base, depósito, plazo, constancias y CTS al cese: <a href="https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=37" rel="noopener" target="_blank">TUO de la Ley de CTS, D.S. 001-97-TR</a>, y su reglamento, D.S. 004-97-TR.</li>
+          <li>Pequeña y microempresa: <a href="https://busquedas.elperuano.pe/api/visor_html/1033071-5" rel="noopener" target="_blank">TUO de la Ley MYPE</a>, art. 50, y <a href="https://www.gob.pe/institucion/sunafil/noticias/1389500-pequenas-empresas-que-no-esten-inscritas-en-el-remype-tienen-que-pagar-cts-completa" rel="noopener" target="_blank">SUNAFIL</a>.</li>
+          <li>Retiros: <a href="https://leyes.congreso.gob.pe/Documentos/2021_2026/ADLP/Texto_Consolidado/32322-TXM.pdf" rel="noopener" target="_blank">Ley 32322</a> y <a href="https://busquedas.elperuano.pe/dispositivo/NL/2469116-4" rel="noopener" target="_blank">D.S. 007-2025-TR</a>.</li>
+          <li>Impuesto a la renta: <a href="https://www.sunat.gob.pe/legislacion/renta/ley/capiv.pdf" rel="noopener" target="_blank">Ley del Impuesto a la Renta, art. 18</a>. Infracciones: <a href="https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=47" rel="noopener" target="_blank">D.S. 019-2006-TR</a>.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</article>
+
+<section class="contacto osc" aria-labelledby="hc-cta-t">
+  <div class="brillo brillo--contacto" aria-hidden="true"></div>
+  <div class="enmarcado contacto-in contacto-in--simple">
+    <div class="contacto-tx">
+      <span class="franja-sello" aria-hidden="true"></span>
+      <h2 class="titular titular--contacto" id="hc-cta-t">Llegue a mayo <span class="cel">con los días ya contados.</span></h2>
+      <p class="contacto-baj">Coddvisor arma la planilla con la asistencia de cada integrante, sede por sede. Los días trabajados y las faltas quedan registrados para cuando llegue mayo.</p>
+      <div class="portada-acc">
+        <a class="btn" href={llamado.href}>{llamado.texto}</a>
+        <a class="btn-2" href="/herramientas/">Ver más herramientas gratis</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- La remuneración mínima sale de src/datos/laboral.ts: un solo lugar para todas las calculadoras. -->
+<script is:inline define:vars={{ minimas }}>window.CODDVISOR_MINIMAS = minimas;</script>
+<script is:inline src="/herramientas/cts.js" defer></script>
+<script is:inline src="/herramientas/guia.js" defer></script>
+</Base>
