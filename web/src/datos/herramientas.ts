@@ -73,6 +73,17 @@ export const herramientas: Herramienta[] = [
     lectura: 6,
     verificada: '2026-11-20',
   },
+  {
+    nombre: 'CTS',
+    frase: 'Cuánto depositar en mayo según su régimen, con el sexto de la gratificación',
+    href: '/herramientas/cts/',
+    guia: 'CTS de mayo: cuánto depositar y cómo calcularla',
+    resumen: 'Cuánto depositar de CTS según su régimen, qué entra en la base, qué hacer si alguien se va entre depósitos y cuánto puede retirar la persona.',
+    categoria: 'Planilla y beneficios',
+    publicada: '2026-11-22',
+    lectura: 6,
+    verificada: '2026-11-21',
+  },
 ];
 
 /** "2026-11-19" → "19 de noviembre de 2026" (sin depender del reloj del visitante). */
