@@ -552,51 +552,40 @@
 }
 @keyframes fichaElegida { from { transform:scale(.94); } to { transform:none; } }
 
-/* ---------- «A dónde va cada sol»: diagrama de Sankey (Flujo.astro) ----------
-   Cintas de un solo color, translúcidas; barras sólidas; etiquetas fuera de las cintas (o en una
-   cápsula sobre las barras del medio). Al tocar una parte, su camino se enciende y lo demás se
-   apaga. «Por sede / Por medio de pago» cambia la columna de entrada con un fundido. */
+/* ---------- «A dónde va cada sol»: diagrama de Sankey (Flujo.astro) ---------- */
 .flujo { padding:var(--pad-sec) 0 0; }
 .flujo-baj { margin-top:16px; max-width:62ch; font-size:18px; line-height:1.6; color:var(--texto-2); text-wrap:pretty; }
 .flujo-caja { margin-top:36px; border-radius:28px; padding:clamp(16px, 3vw, 36px); background:var(--tarjeta); border:1px solid color-mix(in srgb, var(--borde) 80%, transparent); box-shadow:var(--sombra-suave); }
-.flujo-cab { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px 16px; margin-bottom:12px; }
-.flujo-seg { position:relative; display:inline-grid; grid-auto-flow:column; grid-auto-columns:1fr; padding:4px; border-radius:14px; background:var(--superficie); border:1px solid var(--borde); }
-.flujo-seg input { position:absolute; opacity:0; pointer-events:none; }
-.flujo-seg label { position:relative; z-index:1; min-height:38px; padding:0 16px; display:grid; place-items:center; border-radius:10px; font-weight:600; font-size:14px; color:var(--texto-2); cursor:pointer; white-space:nowrap; transition:color .3s var(--suave); }
-.flujo-seg input:checked + label { color:var(--cobalto); }
-.flujo-seg input:focus-visible + label { outline:3px solid var(--azul-real); outline-offset:2px; }
-.flujo-ficha { position:absolute; z-index:0; top:4px; bottom:4px; left:4px; border-radius:10px; background:var(--tarjeta); box-shadow:0 1px 2px rgba(11,24,65,.08), 0 6px 14px -6px rgba(11,24,65,.25); transition:transform .45s var(--suave), width .45s var(--suave); }
 .flujo-desliza { overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; }
-.flujo-svg { display:block; width:100%; min-width:720px; height:auto; overflow:visible; }
-.sk-cinta { opacity:.2; transition:opacity .5s var(--suave); cursor:pointer; }
-.sk-cinta:hover { opacity:.42; }
-.sk-nodo { cursor:pointer; outline:none; transition:opacity .5s var(--suave); }
-.sk-nodo > rect:first-child { transition:transform .45s var(--resorte); transform-box:fill-box; transform-origin:center; }
-.sk-chip { fill:var(--tarjeta); stroke:color-mix(in srgb, var(--borde) 90%, transparent); filter:drop-shadow(0 6px 10px rgba(11,24,65,.12)); }
+.flujo-svg { display:block; width:100%; min-width:680px; height:auto; overflow:visible; }
+.sk-cinta { opacity:.32; transition:opacity .45s var(--suave); cursor:pointer; }
+.sk-cinta:hover { opacity:.62; }
+.sk-nodo { cursor:pointer; outline:none; }
+.sk-nodo rect { transition:opacity .45s var(--suave), transform .45s var(--resorte); transform-box:fill-box; transform-origin:center; }
+.sk-nodo text { paint-order:stroke; stroke:var(--tarjeta); stroke-width:5px; stroke-linejoin:round; transition:opacity .45s var(--suave); }
 .sk-nombre { font:600 15px var(--sans); fill:var(--cobalto); }
+/* Etiquetas que quedan encima de las cintas (columna del medio): cápsula blanca con sombra. */
+.sk-chip { fill:var(--tarjeta); stroke:color-mix(in srgb, var(--borde) 90%, transparent); stroke-width:1; filter:drop-shadow(0 6px 12px rgba(11,24,65,.14)); }
+.sk-nodo--medio text { stroke:none; }
+.sk-nodo--medio .sk-nombre { font-size:16px; }
 .sk-valor { font:700 13px var(--mono); fill:var(--texto-2); }
-.sk-pct { font:500 12px var(--sans); fill:var(--texto-3); }
-.sk-nodo:focus-visible > rect:first-child { stroke:var(--azul-real); stroke-width:3; }
-/* Vista: por sede o por medio de pago (la otra se desvanece). */
-.sk-v-sedes, .sk-v-medios { transition:opacity .6s var(--suave); }
-.flujo-svg[data-vista="sedes"] .sk-v-medios, .flujo-svg[data-vista="medios"] .sk-v-sedes { opacity:0 !important; pointer-events:none; }
-/* Enfoque: el camino elegido se enciende y lo demás se apaga. */
-.flujo-svg.foco .sk-cinta { opacity:.07; }
-.flujo-svg.foco .sk-cinta.on { opacity:.5; }
-.flujo-svg.foco .sk-nodo:not(.on) { opacity:.35; }
-.flujo-svg.foco .sk-nodo.elegido > rect:first-child { transform:scaleX(1.3); }
+.sk-titulos text { font:700 11px var(--mono); letter-spacing:.08em; fill:var(--texto-3); }
+.sk-nodo:focus-visible rect { outline:none; stroke:var(--azul-real); stroke-width:3; }
+/* Enfoque: al elegir una parte, sus cintas se encienden y lo demás se apaga. */
+.flujo-svg.foco .sk-cinta { opacity:.08; }
+.flujo-svg.foco .sk-cinta.on { opacity:.7; }
+.flujo-svg.foco .sk-nodo:not(.on) rect, .flujo-svg.foco .sk-nodo:not(.on) text { opacity:.3; }
+.flujo-svg.foco .sk-nodo--medio:not(.on) .sk-chip { opacity:.85; }
+.flujo-svg.foco .sk-nodo.elegido .sk-chip { transform:none; }
+.flujo-svg.foco .sk-nodo.elegido rect:first-child { transform:scaleX(1.25); }
 .flujo-info { margin-top:16px; padding:14px 18px; border-radius:16px; background:var(--superficie); font-size:15px; line-height:1.55; color:var(--texto-2); min-height:3.2em; }
 .flujo-info b { color:var(--cobalto); font-family:var(--mono); white-space:nowrap; }
 .flujo-info strong { color:var(--cobalto); }
-.flujo-pista { display:none; font:400 12px var(--mono); color:var(--texto-2); }
-@media (max-width:720px) {
-  .flujo-pista { display:block; }
-  .flujo-desliza { margin-inline:calc(-1 * clamp(16px, 3vw, 36px)); padding-inline:clamp(16px, 3vw, 36px); }
-  .flujo-seg { width:100%; }
-  .flujo-svg { min-width:900px; }
-}
+@media (max-width:720px) { .flujo-desliza { margin-inline:calc(-1 * clamp(16px, 3vw, 36px)); padding-inline:clamp(16px, 3vw, 36px); } }
 @media (prefers-reduced-motion: no-preference) {
   /* Se dibuja de izquierda a derecha al aparecer. */
-  .fluido.js .flujo-svg { clip-path:inset(0 100% 0 0); transition:clip-path 2.4s var(--suave); }
+  .fluido.js .flujo-svg { clip-path:inset(0 100% 0 0); transition:clip-path 2.2s var(--suave); }
   .fluido.js .flujo-caja.dibuja .flujo-svg { clip-path:inset(0 0 0 0); }
 }
+.flujo-pista { display:none; margin-bottom:8px; font:400 12px var(--mono); color:var(--texto-2); text-align:right; }
+@media (max-width:720px) { .flujo-pista { display:block; } }

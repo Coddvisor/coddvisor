@@ -166,74 +166,58 @@
     var infoBase = info.innerHTML;
     var cintasF = $$('.sk-cinta', svgF), nodosF = $$('.sk-nodo', svgF);
     var solesF = function (c) { return 'S/ ' + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
-    var totalF = +svgF.querySelector('[data-n="venta"]').getAttribute('data-valor');
-    // De dónde viene cada parte (el camino hacia la venta del día).
-    var PADRE = { igv: 'venta', valor: 'venta', costo: 'valor', margen: 'valor', gastos: 'margen', queda: 'margen' };
-    var vista = function () { return svgF.getAttribute('data-vista'); };
-    var visible = function (el) { return !(el.classList.contains('sk-v-sedes') || el.classList.contains('sk-v-medios')) || el.classList.contains('sk-v-' + vista()); };
-
+    var totalF = 0;
+    nodosF.forEach(function (n) { if (n.getAttribute('data-col') === '0') totalF += +n.getAttribute('data-valor'); });
+    var nombreF = function (id) { var n = svgF.querySelector('[data-n="' + id + '"]'); return n ? n.getAttribute('data-nombre') : id; };
+    var lista = function (pares) {
+      // En minúscula dentro de la frase, salvo nombres propios (Sede, Yape, IGV).
+      var frase = function (n) { n = n.replace(' (es de la SUNAT)', ''); return /^(Sede|Yape|IGV)/.test(n) ? n : n.charAt(0).toLowerCase() + n.slice(1); };
+      var partes = pares.map(function (x) { return frase(x[0]) + ' <b>' + solesF(x[1]) + '</b>'; });
+      return partes.length > 1 ? partes.slice(0, -1).join(', ') + ' y ' + partes[partes.length - 1] : partes[0];
+    };
     var enfocar = function (id) {
-      cintasF.concat(nodosF).forEach(function (el) { el.classList.toggle('on', false); el.classList.toggle('elegido', false); });
-      if (!id) { svgF.classList.toggle('foco', false); info.innerHTML = infoBase; return; }
-      var encendidos = {};
-      encendidos[id] = true;
-      var cinta = function (de, a) { cintasF.forEach(function (c) { if (visible(c) && c.getAttribute('data-de') === de && c.getAttribute('data-a') === a) c.classList.add('on'); }); };
-      if (PADRE[id]) {
-        // Hacia atrás: el camino desde la venta del día.
-        for (var n = id; PADRE[n]; n = PADRE[n]) { cinta(PADRE[n], n); encendidos[PADRE[n]] = true; }
-        // Hacia adelante: en qué se reparte.
-        cintasF.forEach(function (c) { if (c.getAttribute('data-de') === id) { c.classList.add('on'); encendidos[c.getAttribute('data-a')] = true; } });
-      } else if (id === 'venta') {
-        cintasF.forEach(function (c) { if (visible(c)) c.classList.add('on'); });
-        nodosF.forEach(function (n) { encendidos[n.getAttribute('data-n')] = true; });
-      } else {
-        cinta(id, 'venta'); encendidos.venta = true;
+      if (!id) {
+        svgF.classList.toggle('foco', false);
+        cintasF.concat(nodosF).forEach(function (el) { el.classList.toggle('on', false); el.classList.toggle('elegido', false); });
+        info.innerHTML = infoBase;
+        return;
       }
+      var nodo = svgF.querySelector('[data-n="' + id + '"]');
+      var entra = [], sale = [], vecinos = {};
+      vecinos[id] = true;
+      cintasF.forEach(function (c) {
+        var de = c.getAttribute('data-de'), a = c.getAttribute('data-a'), v = +c.getAttribute('data-valor');
+        var on = de === id || a === id;
+        c.classList.toggle('on', on);
+        if (de === id) { sale.push([nombreF(a), v]); vecinos[a] = true; }
+        if (a === id) { entra.push([nombreF(de), v]); vecinos[de] = true; }
+      });
       nodosF.forEach(function (n) {
-        if (!visible(n)) return;
         var nid = n.getAttribute('data-n');
-        n.classList.toggle('on', !!encendidos[nid]);
+        n.classList.toggle('on', !!vecinos[nid]);
         n.classList.toggle('elegido', nid === id);
       });
       svgF.classList.toggle('foco', true);
-      var nodo = nodosF.filter(function (n) { return visible(n) && n.getAttribute('data-n') === id; })[0];
       var v = +nodo.getAttribute('data-valor');
-      info.innerHTML = '<strong>' + nodo.getAttribute('data-nombre') + ':</strong> <b>' + solesF(v) + '</b>, el ' +
-        (Math.round(v / totalF * 1000) / 10) + ' % de la venta del día. ' + nodo.getAttribute('data-nota');
+      var txt = '<strong>' + nodo.getAttribute('data-nombre') + ':</strong> <b>' + solesF(v) + '</b>, el ' + (Math.round(v / totalF * 1000) / 10) + ' % de la venta del día. ';
+      var col = nodo.getAttribute('data-col');
+      if (col === '0') txt += 'Entró por ' + lista(sale) + '.';
+      else if (col === '1') txt += 'Se reparte en ' + lista(sale) + '.';
+      else txt += 'Sale de ' + lista(entra) + '.';
+      info.innerHTML = txt;
     };
     nodosF.forEach(function (n) {
       var id = n.getAttribute('data-n');
-      n.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse' && visible(n)) enfocar(id); });
+      n.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') enfocar(id); });
       n.addEventListener('focus', function () { enfocar(id); });
       n.addEventListener('click', function (e) { e.stopPropagation(); enfocar(id); });
-      n.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); enfocar(id); }
-        if (e.key === 'Escape') { enfocar(null); n.blur(); }
-      });
+      n.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); enfocar(id); } if (e.key === 'Escape') { enfocar(null); n.blur(); } });
     });
     cintasF.forEach(function (c) {
-      c.addEventListener('click', function (e) { e.stopPropagation(); var a = c.getAttribute('data-a'); enfocar(a === 'venta' ? c.getAttribute('data-de') : a); });
+      c.addEventListener('click', function (e) { e.stopPropagation(); enfocar(c.getAttribute('data-de')); });
     });
     svgF.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse' && !svgF.contains(document.activeElement)) enfocar(null); });
     svgF.addEventListener('click', function () { enfocar(null); });
-
-    // Por sede / por medio de pago: la ficha blanca se desliza hasta la opción elegida.
-    var seg = flujo.querySelector('.flujo-seg'), ficha = seg && seg.querySelector('.flujo-ficha');
-    var moverFicha = function () {
-      var l = seg.querySelector('input:checked + label');
-      if (!ficha || !l) return;
-      ficha.style.width = l.offsetWidth + 'px';
-      ficha.style.transform = 'translateX(' + (l.offsetLeft - 4) + 'px)';
-    };
-    // Los nodos de la vista escondida no se alcanzan con el teclado.
-    var tabular = function () { nodosF.forEach(function (n) { n.setAttribute('tabindex', visible(n) ? '0' : '-1'); }); };
-    if (seg) {
-      seg.addEventListener('change', function (e) { svgF.setAttribute('data-vista', e.target.value); enfocar(null); tabular(); moverFicha(); });
-      window.addEventListener('resize', moverFicha);
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(moverFicha);
-      moverFicha(); tabular();
-    }
-
     if (hayObservador && !menos) {
       var ioF = new IntersectionObserver(function (es) {
         if (es[0].isIntersecting) { flujo.classList.add('dibuja'); ioF.disconnect(); }
