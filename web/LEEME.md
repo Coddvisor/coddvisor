@@ -141,7 +141,8 @@ Todo vive en `public/sitio.js` y nada se anima si la persona pidió menos movimi
 su teléfono o computadora:
 
 - **Panel «¿Cómo le va hoy?»:** cuando entra en pantalla, cuenta el día (seis
-  ventas y tres pendientes que se resuelven) y se queda en el estado final.
+  ventas y tres pendientes que se resuelven), se queda unos segundos en el estado final y
+  vuelve a empezar. Solo avanza mientras se ve.
 - **Pestañas de «Qué hace»:** avanzan solas cada 6.6 s mientras se ven; se
   pausan con el mouse o el teclado encima y se detienen al primer clic.
 - **Aparición al bajar:** las secciones entran con un fundido suave.
@@ -171,6 +172,15 @@ No borran ni reemplazan nada: todo cuelga de la clase `fluido` en `<html>` (en `
   se esconde al llegar a Contacto y con el menú del celular abierto.
 - **Avisos sobre las maquetas de «Qué hace»:** una cápsula flotante por pantalla («Boleta emitida
   por S/ 249.80»…). Usan los mismos datos inventados de la maqueta y solo se ven con la capa.
+
+- **Líneas bajo el 76.5 %:** los registros sueltos (cuaderno, Excel, WhatsApp...) se juntan en
+  «Un solo lugar». Las curvas se calculan en `Hilos.astro` al armar el sitio.
+- **«Lo que ya funciona»** (`Modulos.astro`): cada parte que la portada dice que existe, con una
+  mini pantalla en bucle. Compras y Producción en taller van «EN DESARROLLO».
+- **«Todo conectado»** (`Conectado.astro`): el núcleo con cada parte alrededor y un mapa del Perú
+  hecho de puntos con tres sedes ilustrativas. Los puntos salen de `src/datos/mapa-peru.ts`
+  (Natural Earth, dominio público). Los montos suman S/ 4,320.50, como el panel de la portada.
+- Las ilustraciones en bucle solo se mueven mientras están en pantalla.
 
 Ideas tomadas de la portada de holded.com (estructura, no estética). Se descartaron a propósito sus
 logos de clientes, cifras de usuarios, reseñas, avisos de «alguien acaba de unirse» y ofertas con

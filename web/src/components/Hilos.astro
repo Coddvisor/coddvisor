@@ -1,0 +1,60 @@
+---
+// Ilustración bajo el dato del 76.5 % (capa fluida): los registros sueltos de un negocio (cuaderno,
+// Excel, WhatsApp, boletas en papel...) son hilos que llegan de los dos lados y se juntan en un solo
+// lugar. Las curvas se calculan aquí, al armar el sitio: al visitante le llega un SVG fijo.
+// Se dibujan al aparecer y vuelven a dibujarse cada pocos segundos (fluido.css).
+const N = 22;                    // hilos por lado
+const W = 1000, H = 320;         // tamaño del dibujo
+const cx = W / 2, cy = H - 24;   // punto donde se juntan
+const izq: string[] = [], der: string[] = [], inicios: [number, number][] = [];
+for (let i = 0; i < N; i++) {
+  const y = 22 + (i * (H - 70)) / (N - 1);
+  const x = 190;
+  izq.push(`M${x} ${y.toFixed(1)}C${(x + 220).toFixed(0)} ${y.toFixed(1)} ${(cx - 70)} ${cy} ${cx} ${cy}`);
+  der.push(`M${W - x} ${y.toFixed(1)}C${(W - x - 220).toFixed(0)} ${y.toFixed(1)} ${(cx + 70)} ${cy} ${cx} ${cy}`);
+  inicios.push([x, y]);
+}
+const sueltos = [
+  { t: 'Cuaderno', y: 0 }, { t: 'Excel', y: 7 }, { t: 'WhatsApp', y: 14 }, { t: 'Calculadora', y: 21 },
+];
+const sueltosDer = [
+  { t: 'Boletas en papel', y: 2 }, { t: 'Caja chica', y: 9 }, { t: 'Planilla a mano', y: 16 }, { t: 'Kárdex', y: 21 },
+];
+const yDe = (i: number) => 22 + (i * (H - 70)) / (N - 1);
+---
+<div class="hilos solo-fluido" aria-hidden="true" data-bucle>
+  <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <linearGradient id="hilo-izq" gradientUnits="userSpaceOnUse" x1="190" y1="0" x2={cx} y2="0">
+        <stop offset="0" style="stop-color:var(--azul-real);stop-opacity:.55" />
+        <stop offset=".7" style="stop-color:var(--celeste);stop-opacity:.7" />
+        <stop offset="1" style="stop-color:var(--ambar)" />
+      </linearGradient>
+      <linearGradient id="hilo-der" gradientUnits="userSpaceOnUse" x1={W - 190} y1="0" x2={cx} y2="0">
+        <stop offset="0" style="stop-color:var(--azul-real);stop-opacity:.55" />
+        <stop offset=".7" style="stop-color:var(--celeste);stop-opacity:.7" />
+        <stop offset="1" style="stop-color:var(--ambar)" />
+      </linearGradient>
+      <radialGradient id="hilo-brillo">
+        <stop offset="0" style="stop-color:var(--ambar);stop-opacity:.35" />
+        <stop offset="1" style="stop-color:var(--ambar);stop-opacity:0" />
+      </radialGradient>
+    </defs>
+    <ellipse class="hilos-brillo" cx={cx} cy={cy} rx="220" ry="90" fill="url(#hilo-brillo)" />
+    <g class="hilos-g" fill="none" stroke-width="1.2">
+      {izq.map((d, i) => <path d={d} stroke="url(#hilo-izq)" pathLength="1" style={`--i:${i}`} />)}
+      {der.map((d, i) => <path d={d} stroke="url(#hilo-der)" pathLength="1" style={`--i:${i}`} />)}
+    </g>
+    <g class="hilos-puntos">
+      {inicios.map(([x, y]) => <><circle cx={x} cy={y} r="2.4" /><circle cx={W - x} cy={y} r="2.4" /></>)}
+    </g>
+    <g class="hilos-et">
+      {sueltos.map((s) => <text x="176" y={yDe(s.y) + 4} text-anchor="end">{s.t}</text>)}
+      {sueltosDer.map((s) => <text x={W - 176} y={yDe(s.y) + 4}>{s.t}</text>)}
+    </g>
+    <g class="hilos-fin">
+      <rect x={cx - 74} y={cy - 17} width="148" height="34" rx="17" />
+      <text x={cx} y={cy + 5} text-anchor="middle">Un solo lugar</text>
+    </g>
+  </svg>
+</div>

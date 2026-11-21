@@ -294,3 +294,226 @@
   .progreso, .dock, .pt-flota { display:none !important; }
   .fluido .panel, .fluido .pantallas { transform:none !important; }
 }
+
+/* =========================================================================================
+   Piezas nuevas de la capa: líneas bajo el dato, «Lo que ya funciona» y «Todo conectado».
+   Todas viven en componentes con la clase .solo-fluido: sin la capa no se muestran.
+   Sus animaciones van en bucle mientras se ven (fluido.js les pone .en-pantalla) y se detienen
+   fuera de pantalla. Con «menos movimiento» se ve el estado final, quieto.
+   ========================================================================================= */
+.solo-fluido { display:none; }
+.fluido .solo-fluido { display:block; }
+
+/* ---------- Líneas que se juntan (bajo el 76.5 %) ---------- */
+.hilos { margin-top:clamp(28px, 4vw, 56px); }
+.hilos svg { width:100%; height:auto; overflow:visible; }
+.hilos-g path { stroke-dasharray:1; stroke-dashoffset:0; }
+.hilos-puntos circle { fill:var(--azul-real); opacity:.55; }
+.hilos-et text { font:500 15px var(--sans); fill:var(--texto-2); }
+.hilos-fin rect { fill:var(--cobalto); }
+.hilos-fin text { font:600 15px var(--sans); fill:var(--fondo); }
+@media (max-width:620px) { .hilos-et { display:none; } }
+
+/* ---------- Bento: tarjetas grandes con una ilustración viva ---------- */
+.modulos, .conectado { padding:var(--pad-sec) 0 0; }
+.bento { list-style:none; margin:44px 0 0; padding:0; display:grid; gap:20px; }
+.bento--2 { grid-template-columns:repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+.bento--4 { grid-template-columns:repeat(4, minmax(0, 1fr)); }
+.bloque--2 { grid-column:span 2; }
+@media (max-width:1080px) { .bento--4 { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+@media (max-width:640px) { .bento--4 { grid-template-columns:minmax(0, 1fr); } .bloque--2 { grid-column:auto; } }
+.bloque {
+  position:relative; min-width:0; display:flex; flex-direction:column; gap:20px; overflow:hidden;
+  padding:28px; border-radius:28px; background:var(--tarjeta);
+  border:1px solid color-mix(in srgb, var(--borde) 80%, transparent); box-shadow:var(--sombra-suave);
+}
+.bloque-tx h3 { font-size:22px; line-height:1.2; letter-spacing:-.015em; font-weight:700; }
+.bloque-tx p { margin-top:8px; font-size:16px; line-height:1.5; color:var(--texto-2); }
+.bloque-tx--sep { padding-top:20px; border-top:1px dashed var(--borde-fuerte); }
+.bloque--des { background:transparent; border:1.5px dashed var(--borde-fuerte); box-shadow:none; justify-content:center; }
+.bloque--des h3 { color:var(--texto-2); font-size:19px; }
+.bloque--des .etq-des { display:block; margin-top:6px; color:var(--texto-3); }
+
+/* Mini pantallas: una tarjeta dentro de la tarjeta, con el mismo lenguaje de las maquetas. */
+.mini {
+  position:relative; margin-top:auto; padding:16px 18px; border-radius:18px;
+  background:var(--fondo); border:1px solid var(--borde); font-size:14px; font-variant-numeric:tabular-nums;
+}
+.mini-et { font:700 11px/1.4 var(--mono); letter-spacing:.08em; color:var(--texto-2); margin-bottom:6px; }
+.mini-fila { display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--linea-clara); }
+.mini-fila:last-child { border-bottom:0; }
+.mini-fila b { font-family:var(--mono); font-size:13px; white-space:nowrap; }
+.mini-total { font-weight:700; border-bottom:0; }
+.mini-medios { margin-top:6px; display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; font-size:12px; text-align:center; }
+.mini-medios span { padding:7px 0; border-radius:9px; border:1px solid var(--borde-fuerte); }
+.mini-medios .sel { background:var(--cobalto-2); border-color:var(--cobalto-2); color:var(--fondo); font-weight:600; }
+.mini-aviso, .mini-sello {
+  display:inline-flex; align-items:center; gap:8px; padding:6px 12px 6px 6px; border-radius:999px;
+  background:var(--tarjeta); border:1px solid var(--borde); box-shadow:var(--sombra-alta); font-size:13px; font-weight:600; white-space:nowrap;
+}
+.mini-aviso { position:absolute; right:14px; bottom:-2px; translate:0 50%; }
+.mini-venta { margin-bottom:16px; }
+.mini-aviso i, .mini-sello i, .mini-estado i { width:22px; height:22px; border-radius:50%; display:inline-grid; place-items:center; background:var(--correcto-fondo); color:var(--correcto); }
+.mini-sello { margin-top:12px; }
+.mini-tallas { display:grid; grid-template-columns:1.4fr repeat(4, minmax(0, 1fr)); text-align:center; }
+.mini-tallas > span { padding:7px 0; border-top:1px solid var(--borde); position:relative; }
+.mini-tallas .t { border-top:0; font:400 11px var(--mono); color:var(--texto-2); padding:2px 0; }
+.mini-tallas > span:first-child { border-top:0; }
+.mini-tallas .r { text-align:left; color:var(--texto-2); }
+.cambia { display:grid; }
+.cambia em { grid-area:1 / 1; font-style:normal; font-weight:700; }
+.cambia em:first-child { opacity:0; }
+.cambia--sube { background:var(--correcto-fondo); color:var(--correcto); border-radius:6px; }
+.mini-paso { display:inline-block; margin-top:10px; padding:5px 10px; border-radius:8px; background:var(--cobalto-2); color:var(--fondo); font-size:12px; font-weight:600; }
+.mini-codigo { background:var(--cobalto-2); border-color:var(--cobalto-2); color:var(--fondo); text-align:center; }
+.mini-codigo .mini-et { color:var(--celeste-claro); }
+.mini-codigo-n { font:700 40px/1.1 var(--mono); letter-spacing:.12em; color:var(--ambar); }
+.mini-reloj { display:block; margin:12px auto 2px; width:70%; height:4px; border-radius:4px; background:rgba(255,255,255,.14); overflow:hidden; }
+.mini-reloj span { display:block; height:100%; width:100%; background:var(--celeste); transform-origin:0 50%; }
+.mini-estado { display:grid; font-family:var(--sans) !important; }
+.mini-estado em { grid-area:1 / 1; font-style:normal; display:inline-flex; align-items:center; gap:6px; justify-content:flex-end; }
+.mini-estado em:first-child { opacity:0; color:var(--texto-2); }
+.mini-estado em:last-child { color:var(--correcto); }
+.mini-barra { height:8px; margin:4px 0 12px; border-radius:8px; background:var(--superficie); overflow:hidden; }
+.mini-barra span { display:block; height:100%; border-radius:8px; background:var(--franja); transform-origin:0 50%; }
+.mini-gente { display:flex; flex-wrap:wrap; gap:8px; }
+.mini-gente span { display:inline-flex; align-items:center; gap:6px; padding:4px 10px 4px 4px; border-radius:999px; background:var(--tarjeta); border:1px solid var(--borde); font-size:12px; color:var(--texto-2); }
+.mini-gente i { width:22px; height:22px; border-radius:50%; display:inline-grid; place-items:center; background:var(--hielo); color:var(--azul-real); font:700 9px var(--mono); font-style:normal; }
+.mini-cta { display:grid; grid-template-columns:1fr auto; gap:4px 12px; padding:6px 0; }
+.mini-cta b { font:700 13px var(--mono); }
+.mini-cta i { grid-column:1 / -1; height:6px; border-radius:6px; background:linear-gradient(90deg, var(--azul-real), var(--celeste)); transform-origin:0 50%; transform:scaleX(var(--v)); }
+.mini-estados { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); grid-template-rows:140px auto; gap:12px 14px; align-items:end; }
+.mini-col { display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end; }
+.mini-col i { width:min(64px, 70%); height:calc(var(--v) * 110px); border-radius:10px 10px 4px 4px; background:linear-gradient(180deg, var(--celeste), var(--azul-real)); transform-origin:50% 100%; }
+.mini-col:first-child i { background:linear-gradient(180deg, var(--ambar), var(--ambar-tostado)); }
+.mini-col span { font-size:12px; color:var(--texto-2); }
+.mini-resul { grid-column:1 / -1; display:flex; justify-content:space-between; padding-top:8px; border-top:1px solid var(--borde); font-size:13px; }
+.mini-resul b { color:var(--correcto); }
+
+/* ---------- Núcleo ---------- */
+.nucleo, .mapa { position:relative; margin-block:auto 0; border-radius:20px; background-color:var(--fondo); background-image:radial-gradient(60% 50% at 50% 50%, color-mix(in srgb, var(--ambar) 12%, transparent), transparent 70%); }
+.nucleo { margin-block:auto; }
+.nucleo svg { display:block; width:100%; height:auto; }
+.nucleo-orbita { fill:none; stroke:var(--borde-fuerte); stroke-width:1; stroke-dasharray:3 6; opacity:.7; transform-origin:center; transform-box:fill-box; }
+.nucleo-l { fill:none; stroke:var(--borde-fuerte); stroke-width:1.4; }
+.nucleo-pulso { fill:none; stroke:var(--ambar); stroke-width:3; stroke-linecap:round; stroke-dasharray:.12 .88; stroke-dashoffset:.12; opacity:0; }
+.nucleo-halo { fill:color-mix(in srgb, var(--cobalto) 8%, transparent); transform-origin:center; transform-box:fill-box; }
+.nucleo-disco { fill:var(--cobalto); }
+.nucleo-logo { --logo-gato:var(--fondo); --logo-palabra:var(--fondo); }
+.nucleo-nodo rect { fill:var(--tarjeta); stroke:var(--borde); }
+.nucleo-nodo circle { fill:var(--azul-real); }
+.nucleo-nodo text { font:600 14px var(--sans); fill:var(--cobalto); }
+.nucleo-nodo { filter:drop-shadow(0 6px 10px rgba(11,24,65,.10)); }
+
+/* ---------- Mapa de sedes ---------- */
+.mapa { aspect-ratio:368 / 395; max-width:100%; }
+.mapa svg { position:absolute; inset:0; width:100%; height:100%; }
+.mapa-puntos { opacity:.55; }
+.mapa-arco { stroke:var(--borde-fuerte); stroke-width:1.4; stroke-dasharray:.012 .012; }
+.mapa-viaje { stroke:var(--ambar); stroke-width:3; stroke-linecap:round; stroke-dasharray:.16 .84; stroke-dashoffset:.16; opacity:0; }
+.mapa-punto { fill:var(--ambar); stroke:var(--tarjeta); stroke-width:2.5; }
+.mapa-onda { fill:var(--ambar); opacity:0; transform-origin:center; transform-box:fill-box; }
+.mapa-chip {
+  position:absolute; translate:-50% calc(-100% - 14px); display:flex; align-items:center; gap:8px;
+  padding:7px 12px 7px 7px; border-radius:14px; background:var(--tarjeta); border:1px solid var(--borde);
+  box-shadow:var(--sombra-alta); white-space:nowrap; font-size:13px; line-height:1.2;
+}
+.mapa-chip i { width:28px; height:28px; border-radius:50%; display:grid; place-items:center; background:var(--hielo); color:var(--azul-real); font:700 10px var(--mono); font-style:normal; }
+.mapa-chip b { display:block; font-family:var(--mono); font-size:13px; }
+.mapa-chip small { display:block; color:var(--texto-2); font-size:12px; }
+.mapa-chip--norte { translate:-12% calc(-100% - 14px); }
+.mapa-chip--centro { translate:-100% -50%; margin-left:-16px; }
+.mapa-chip--centro i { background:var(--ambar-claro); color:var(--ambar-tostado); }
+.mapa-chip--sur { translate:-78% calc(-100% - 14px); }
+.mapa-total {
+  position:absolute; left:14px; right:14px; bottom:14px; display:flex; justify-content:space-between; align-items:center; gap:12px;
+  padding:12px 16px; border-radius:14px; background:var(--cobalto); color:var(--fondo); font-size:14px; box-shadow:var(--sombra-alta);
+}
+.mapa-total span { color:var(--celeste-claro); }
+.mapa-total b { font:700 18px var(--mono); color:var(--ambar); }
+
+/* Pausa fuera de pantalla: los bucles solo corren cuando se ven. */
+.fluido [data-bucle]:not(.en-pantalla), .fluido [data-bucle]:not(.en-pantalla) * { animation-play-state:paused !important; }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Líneas: se dibujan, se quedan, se borran y vuelven (10 s). */
+  .fluido .hilos-g path { animation:hilo 10s var(--suave) infinite; animation-delay:calc(var(--i) * 40ms); }
+  .fluido .hilos-fin { animation:hiloFin 10s var(--suave) infinite; transform-origin:500px 296px; }
+  .fluido .hilos-brillo { animation:hiloBrillo 10s ease-in-out infinite; transform-origin:500px 296px; }
+
+  /* Venta: el aviso de la boleta aparece y se va (7 s). Yape late. */
+  .fluido .mini-aviso { animation:avisoBucle 7s var(--resorte) infinite; }
+  /* Caja: el sello «Cuadra» llega con rebote (6 s). */
+  .fluido .mini-sello { animation:avisoBucle 6s var(--resorte) infinite 1s; }
+  .fluido .mini-cuenta { animation:parpadeo 6s steps(1) infinite 1s; }
+  /* Inventario: XL pasa del almacén al piso (6 s). */
+  .fluido .cambia em:first-child { opacity:1; animation:primero 6s var(--suave) infinite; }
+  .fluido .cambia em:last-child { opacity:0; animation:segundo 6s var(--suave) infinite; }
+  .fluido .cambia--sube { animation:resalta 6s var(--suave) infinite; }
+  .fluido .mini-paso { animation:avisoBucle 6s var(--resorte) infinite; }
+  /* Asistencia: la barra se vacía en 4 s, y fluido.js cambia el código al terminar. */
+  .fluido .mini-reloj span { animation:vacia 4s linear infinite; }
+  .fluido .mini-codigo-n.cambio { animation:pop .5s var(--resorte); }
+  /* Planilla: la barra se llena y pasa de «Calculando» a «Lista» (7 s). */
+  .fluido .mini-barra span { animation:llena 7s var(--suave) infinite; }
+  .fluido .mini-estado em:first-child { animation:primero 7s var(--suave) infinite; }
+  .fluido .mini-estado em:last-child { animation:segundo 7s var(--suave) infinite; }
+  /* Gastos: entran uno tras otro (7 s). */
+  .fluido .mini-gastos .mini-fila { animation:entraFila 7s var(--suave) infinite; animation-delay:calc(var(--i) * .35s); }
+  /* Cuentas y estados: las barras crecen (7 s). */
+  .fluido .mini-cta i { animation:creceX 7s var(--suave) infinite; animation-delay:calc(var(--i) * .2s); }
+  .fluido .mini-col i { animation:creceY 7s var(--suave) infinite; animation-delay:calc(var(--i) * .2s); }
+
+  /* Núcleo: órbitas que giran lento; pulsos que salen del centro a cada parte. */
+  .fluido .nucleo-orbita { animation:gira 60s linear infinite; }
+  .fluido .nucleo-orbita--2 { animation-duration:90s; animation-direction:reverse; }
+  .fluido .nucleo-pulso { animation:pulso 3.2s var(--suave) infinite; animation-delay:calc(var(--i) * .4s); }
+  .fluido .nucleo-halo { animation:halo 3.2s ease-in-out infinite; }
+  .fluido .nucleo-nodo { animation:nodo 3.2s ease-in-out infinite; animation-delay:calc(var(--i) * .4s + 1.2s); }
+
+  /* Mapa: cada sede late; la venta viaja al centro; los montos entran y salen (8 s). */
+  .fluido .mapa-onda { animation:onda 2.4s ease-out infinite; animation-delay:calc(var(--i) * .5s); }
+  .fluido .mapa-viaje { animation:pulso 2.6s var(--suave) infinite; animation-delay:calc(var(--i) * .9s); }
+  .fluido .mapa-chip { animation:chip 8s var(--suave) infinite; }
+  .fluido .mapa-chip--sur { animation-delay:.5s; }
+  .fluido .mapa-chip--centro { animation-delay:1s; }
+  .fluido .mapa-total { animation:chip 8s var(--suave) infinite 1.8s; }
+}
+@keyframes hilo { 0% { stroke-dashoffset:1; } 35%, 80% { stroke-dashoffset:0; opacity:1; } 94% { stroke-dashoffset:0; opacity:0; } 100% { stroke-dashoffset:1; opacity:0; } }
+@keyframes hiloFin { 0%, 28% { opacity:0; transform:scale(.8); } 38%, 82% { opacity:1; transform:none; } 94%, 100% { opacity:0; transform:scale(.9); } }
+@keyframes hiloBrillo { 0%, 25% { opacity:0; } 45%, 80% { opacity:1; } 100% { opacity:0; } }
+@keyframes avisoBucle { 0%, 18% { opacity:0; transform:translateY(10px) scale(.92); } 26%, 84% { opacity:1; transform:none; } 94%, 100% { opacity:0; transform:translateY(-4px); } }
+@keyframes parpadeo { 0%, 15% { color:var(--texto-3); } 16%, 100% { color:inherit; } }
+@keyframes primero { 0%, 40% { opacity:1; } 50%, 90% { opacity:0; } 100% { opacity:1; } }
+@keyframes segundo { 0%, 40% { opacity:0; } 50%, 90% { opacity:1; } 100% { opacity:0; } }
+@keyframes resalta { 0%, 40% { background:var(--error-fondo); color:var(--error); } 50%, 90% { background:var(--correcto-fondo); color:var(--correcto); } 100% { background:var(--error-fondo); color:var(--error); } }
+@keyframes vacia { from { transform:scaleX(1); } to { transform:scaleX(0); } }
+@keyframes llena { 0% { transform:scaleX(0); } 45%, 88% { transform:scaleX(1); } 100% { transform:scaleX(1); opacity:0; } }
+@keyframes entraFila { 0% { opacity:0; transform:translateX(-14px); } 10%, 85% { opacity:1; transform:none; } 95%, 100% { opacity:0; } }
+@keyframes creceX { 0% { transform:scaleX(0); } 30%, 88% { transform:scaleX(var(--v)); } 100% { transform:scaleX(0); } }
+@keyframes creceY { 0% { transform:scaleY(0); } 30%, 88% { transform:scaleY(1); } 100% { transform:scaleY(0); } }
+@keyframes gira { to { transform:rotate(360deg); } }
+@keyframes pulso { 0% { stroke-dashoffset:.12; opacity:0; } 8% { opacity:1; } 70% { opacity:1; } 85%, 100% { stroke-dashoffset:-.88; opacity:0; } }
+@keyframes halo { 0%, 100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.1); opacity:.5; } }
+@keyframes nodo { 0%, 100% { translate:0 0; } 20% { translate:0 -3px; } 40% { translate:0 0; } }
+@keyframes onda { from { opacity:.5; transform:scale(1); } to { opacity:0; transform:scale(3.4); } }
+@keyframes chip { 0%, 6% { opacity:0; transform:translateY(8px) scale(.94); } 14%, 82% { opacity:1; transform:none; } 92%, 100% { opacity:0; transform:translateY(-4px); } }
+
+/* Panel «¿Cómo le va hoy?» en bucle (sitio.js): se desvanece antes de volver al inicio del día. */
+.panel-cuerpo { transition:opacity .9s var(--suave), filter .9s var(--suave); }
+.panel.reinicia .panel-cuerpo { opacity:0; filter:blur(6px); }
+@media (prefers-reduced-motion: no-preference) {
+  .fluido .panel-cuerpo { animation:pantalla .9s var(--suave) both; }
+}
+
+/* Celular: las líneas se ven más grandes (se recortan los costados, que no llevan texto); las
+   tarjetas grandes usan menos margen para que las ilustraciones ganen ancho. */
+@media (max-width:620px) {
+  .hilos { overflow:hidden; margin-inline:calc(-1 * var(--gutter)); }
+  .hilos svg { width:170%; margin-left:-35%; }
+  .bloque { padding:20px 16px; border-radius:24px; }
+  .mapa-total { left:8px; right:8px; bottom:8px; padding:10px 12px; font-size:13px; }
+  .mapa-total b { font-size:15px; white-space:nowrap; }
+  .mapa-chip { font-size:12px; padding:5px 9px 5px 5px; }
+  .mapa-chip i { width:22px; height:22px; }
+}

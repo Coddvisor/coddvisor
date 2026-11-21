@@ -11,6 +11,8 @@
    8. Cabecera clara: sobre las franjas claras, la cabecera se vuelve blanca translúcida.
    9. Barra flotante (solo en la portada): «Quiero probarlo» siempre a mano, salvo en la portada
       y en Contacto, donde ya está a la vista.
+   10. Ilustraciones en bucle ([data-bucle]): solo se mueven mientras se ven; el código de
+       asistencia cambia cada vez que su barra se vacía.
    Si la persona pidió menos movimiento, solo queda el acabado: nada se mueve. */
 (function () {
   'use strict';
@@ -126,6 +128,29 @@
       return !el.closest('.osc, .aviso');
     }
     return false;
+  }
+
+  /* ---------- 10. Ilustraciones en bucle: corren solo mientras están en pantalla ---------- */
+  var bucles = $$('[data-bucle]');
+  if (hayObservador) {
+    var ioB = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { e.target.classList.toggle('en-pantalla', e.isIntersecting); });
+    }, { threshold: .15 });
+    bucles.forEach(function (el) { ioB.observe(el); });
+  } else {
+    bucles.forEach(function (el) { el.classList.add('en-pantalla'); });
+  }
+  var codigo = $('[data-codigo]');
+  var reloj = $('.mini-reloj span');
+  if (codigo && reloj && !menos) {
+    var CODIGOS = ['48 21', '73 06', '19 84', '52 37', '06 95'], k = 0;
+    reloj.addEventListener('animationiteration', function () {
+      k = (k + 1) % CODIGOS.length;
+      codigo.textContent = CODIGOS[k];
+      codigo.classList.toggle('cambio', false);
+      void codigo.offsetWidth;
+      codigo.classList.toggle('cambio', true);
+    });
   }
 
   /* ---------- Bucle de desplazamiento: un solo cálculo por cuadro ---------- */

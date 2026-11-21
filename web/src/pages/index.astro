@@ -1,6 +1,10 @@
 ---
 // Portada. El molde (Base) pone el <head>, el menú y el pie; aquí va solo el contenido.
 import Base from '../layouts/Base.astro';
+// Piezas de la capa fluida: solo se ven con la clase fluido en <html> (ver LEEME, «La capa fluida»).
+import Hilos from '../components/Hilos.astro';
+import Modulos from '../components/Modulos.astro';
+import Conectado from '../components/Conectado.astro';
 ---
 <Base
   titulo="Coddvisor: software de gestión para micro y pequeñas empresas del Perú"
@@ -104,6 +108,7 @@ import Base from '../layouts/Base.astro';
     <p class="dato-num">76.5<span>%</span></p>
     <p class="dato-tx">de las micro y pequeñas empresas del Perú no lleva ningún registro de sus cuentas. Tres de cada cuatro no saben cómo les va.<sup class="ref"><a href="#fuente-1" aria-label="Fuente 1">1</a></sup></p>
   </div>
+  <div class="col"><Hilos /></div>
 </section>
 
 <!-- 4.5 Tres beneficios -->
@@ -279,6 +284,10 @@ import Base from '../layouts/Base.astro';
     <p class="maqueta-rot maqueta-rot--claro">Ejemplo con datos inventados.</p>
   </div>
 </section>
+
+<!-- Capa fluida: todo lo que ya funciona, y cómo se conecta. -->
+<Modulos />
+<Conectado />
 
 <!-- 4.8 Para quién es -->
 <section class="para" id="para" aria-labelledby="para-t">

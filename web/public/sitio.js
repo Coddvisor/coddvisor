@@ -1,7 +1,8 @@
 /* Coddvisor, sitio público. Un solo archivo, sin librerías.
    1. Contacto: WhatsApp y correo salen de data-whatsapp y data-correo del <body>.
    2. Formularios: arman el mensaje y abren WhatsApp (si hay número) o el correo.
-   3. Panel «¿Cómo le va hoy?»: la maqueta cuenta el día y se queda en el estado final.
+   3. Panel «¿Cómo le va hoy?»: la maqueta cuenta el día, se queda un momento en el estado final
+      y vuelve a empezar (solo mientras se ve).
    4. Pestañas de «Qué hace»: avanzan solas cada 6.6 s hasta que la persona las toca.
    5. Aparición suave de las secciones al bajar.
    6. Menú: un grupo abierto a la vez, Escape lo cierra, y en celular se abre a pantalla completa.
@@ -129,12 +130,24 @@
       campo('hechas').textContent = (3 - pendientes) + ' de 3 hecho';
     };
 
+    // Bucle: cuenta el día (10 pasos de 2.2 s), se queda unos segundos en el estado final, se
+    // desvanece, vuelve al estado inicial (la copia guardada del HTML) y empieza otra vez.
+    // Mientras el panel no se ve, el reloj no avanza.
+    var inicial = panel.innerHTML;
+    var tick = 0, espera = 0, visible = !hayObservador;
+    if (hayObservador) {
+      new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }, { threshold: 0.3 }).observe(panel);
+    }
     alVerse(panel, function () {
-      var tick = 0;
-      var reloj = setInterval(function () {
-        tick++;
-        pintar(tick);
-        if (tick >= 10) clearInterval(reloj); // estado final: no hace bucle
+      setInterval(function () {
+        if (!visible) return;
+        if (tick < 10) { tick++; pintar(tick); return; }
+        espera++;
+        if (espera === 2) panel.classList.toggle('reinicia', true);  // empieza a desvanecerse
+        if (espera < 3) return;
+        panel.innerHTML = inicial;                                   // vuelve al inicio del día
+        panel.classList.toggle('reinicia', false);
+        tick = 0; espera = 0;
       }, 2200);
     }, 0.3);
   }
