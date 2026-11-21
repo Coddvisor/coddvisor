@@ -26,7 +26,9 @@
   --mono:"Space Mono", ui-monospace, Menlo, monospace;
   --gutter:clamp(20px, 4vw, 40px);
   --pad-sec:clamp(64px, 8vw, 112px);
-  --w-marco:1240px; --w-col:1200px; --cab-h:72px;
+  /* Un solo marco para todo el sitio: 1240 px de ancho y el mismo margen (--gutter) a los lados.
+     Así cada sección arranca en la misma línea izquierda que el logotipo. */
+  --w-marco:1240px; --cab-h:72px;
   --curva:cubic-bezier(.32,.72,.24,1);
   --sombra-tarjeta:0 24px 50px -24px color-mix(in srgb, var(--cobalto) 35%, transparent);
   --sombra-honda:0 40px 80px -30px color-mix(in srgb, var(--cobalto-profundo) 85%, transparent);
@@ -53,13 +55,11 @@ a { color:var(--azul-real); }
 .saltar { position:absolute; left:var(--gutter); top:-60px; z-index:40; background:var(--ambar); color:var(--cobalto); padding:10px 14px; border-radius:8px; font-weight:600; }
 .saltar:focus { top:10px; }
 
-.col { width:100%; max-width:var(--w-col); margin:0 auto; padding-inline:var(--gutter); }
-.col--ancho { max-width:var(--w-marco); }
+.col { width:100%; max-width:var(--w-marco); margin:0 auto; padding-inline:var(--gutter); }
 /* Contenedor ancho de las franjas oscuras y de «Qué hace». Sin líneas de marco ni tramas de puntos:
    no deben parecerse a otros sitios de software. */
 .enmarcado { position:relative; max-width:var(--w-marco); margin:0 auto; }
 .sec-in { padding:var(--pad-sec) var(--gutter); }
-.sec-in--56 { padding-inline:clamp(20px, 4vw, 56px); }
 
 /* ---------- Piezas comunes ---------- */
 .rotulo { font:700 12px/1.4 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--texto-2); }
@@ -262,7 +262,7 @@ html:not(.js) form[data-form] { display:none; }
 
 /* ---------- 4.6 Qué hace ---------- */
 .producto { background:var(--tarjeta); border-block:1px solid var(--borde); }
-.producto-in { padding:var(--pad-sec) clamp(20px, 4vw, 56px); }
+.producto-in { padding:var(--pad-sec) var(--gutter); }
 .producto-cab { text-align:center; }
 .producto-cab .titular { margin-inline:auto; max-width:16ch; }
 .producto-cuerpo { margin-top:56px; display:flex; flex-wrap:wrap; gap:40px 56px; align-items:center; }
@@ -377,7 +377,7 @@ html:not(.js) form[data-form] { display:none; }
 /* ---------- 4.11 Contacto ---------- */
 .contacto { position:relative; overflow:hidden; background:var(--cobalto); color:var(--fondo); }
 .brillo--contacto { right:-300px; bottom:-400px; width:1000px; height:900px; background:radial-gradient(closest-side, rgba(255,143,31,.32), transparent); }
-.contacto-in { padding:var(--pad-sec) clamp(20px, 4vw, 56px); display:flex; flex-wrap:wrap; gap:48px 64px; }
+.contacto-in { padding:var(--pad-sec) var(--gutter); display:flex; flex-wrap:wrap; gap:48px 64px; }
 .contacto-tx { flex:1 1 400px; min-width:0; }
 .franja-sello { display:block; width:168px; height:6px; border-radius:999px; background:var(--franja); }
 .titular--contacto { margin-top:24px; font-size:clamp(40px, 4vw + 14px, 72px); line-height:.98; letter-spacing:-.04em; font-weight:700; }
