@@ -6,7 +6,8 @@ lectura: 4
 publicada: "2026-11-23"
 verificada: "2026-11-22"
 cierre: "Coddvisor arma la planilla con la asistencia de cada integrante, sede por sede. Cuando cambia el mínimo, lo ve en cada persona del equipo."
-enlace: { texto: "Calcule la gratificación de diciembre", href: "/herramientas/gratificacion/" }
+enlaces:
+  - { texto: "Calcule la gratificación de diciembre", href: "/herramientas/gratificacion/" }
 fuentes:
   - norma: "D.S. 015-2026-TR, art. 1 (El Peruano, 28 de septiembre de 2026): la remuneración mínima sube de S/ 1,130 a S/ 1,230 desde el 1 de octubre de 2026; un segundo tramo de S/ 70, hasta S/ 1,300, se fijará por decreto supremo en el primer semestre de 2027"
     enlace: "https://busquedas.elperuano.pe/dispositivo/EX/2559163-1"
