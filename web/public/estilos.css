@@ -104,8 +104,10 @@ a { color:var(--azul-real); }
 .maqueta-rot { font:400 12px/1.5 var(--mono); color:var(--celeste-claro); text-align:center; }
 .maqueta-rot--claro { color:var(--texto-2); margin:14px 0 0; }
 
-sup.ref { font-size:.5em; line-height:1; margin-left:2px; }
+sup.ref { font-size:max(.5em, 12px); line-height:1; margin-left:2px; }
 sup.ref a { color:var(--azul-real); text-underline-offset:2px; display:inline-block; padding:6px 4px; margin:-6px -2px; }
+/* Sobre fondo oscuro el azul real no se lee (2.8 a 1): la nota va en celeste (7.5 a 1). */
+.osc sup.ref a { color:var(--celeste); }
 
 
 /* ---------- 4.0 Barra superior ---------- */
