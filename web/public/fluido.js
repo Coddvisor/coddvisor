@@ -248,7 +248,10 @@
   }
   function ir(id, suave) {
     var el = id && document.getElementById(id);
-    if (!el || el.closest('.pestanas')) return false; // las pestañas de «Qué hace» se abren con su propio enlace
+    if (!el) return false;
+    // Una pestaña de «Qué hace» (#vender, #inventario, #planilla): sitio.js la abre, y aquí se
+    // ubica la sección entera, con su título, las tres pestañas y la pantalla de ejemplo.
+    if (el.closest('.pestanas')) el = el.closest('section') || el;
     window.scrollTo({ top: destino(el), behavior: suave && !menos ? 'smooth' : 'auto' });
     return true;
   }
@@ -258,11 +261,15 @@
     var url = new URL(a.href, location.href);
     if (url.pathname !== location.pathname || !url.hash) return;
     var id = decodeURIComponent(url.hash.slice(1)), el = document.getElementById(id);
-    if (!el || el.closest('.pestanas')) return;
+    if (!el) return;
     e.preventDefault();
     if (location.hash !== url.hash) history.pushState(null, '', url.hash);
-    // La sección puede crecer al abrirse (el menú del celular se cierra): se mide en el cuadro siguiente.
-    requestAnimationFrame(function () { ir(id, true); });
+    // Se avisa del cambio como si fuera un salto normal: sitio.js abre la pestaña que corresponda
+    // y el aviso de abajo ubica la sección. Se mide en el cuadro siguiente, cuando la pestaña ya
+    // se abrió y el menú del celular ya se cerró.
+    var aviso;
+    try { aviso = new HashChangeEvent('hashchange'); } catch (err) { aviso = document.createEvent('Event'); aviso.initEvent('hashchange', false, false); }
+    window.dispatchEvent(aviso);
   });
   if (location.hash) {
     // El navegador salta solo a la sección al cargar; se corrige después de ese salto
@@ -271,7 +278,10 @@
     if (document.readyState === 'complete') alCargar(); else window.addEventListener('load', alCargar);
   }
   // Saltos dentro de la misma página que no pasan por un clic (atrás y adelante del navegador).
-  window.addEventListener('hashchange', function () { ir(decodeURIComponent(location.hash.slice(1)), true); });
+  window.addEventListener('hashchange', function () {
+    var id = decodeURIComponent(location.hash.slice(1));
+    requestAnimationFrame(function () { ir(id, true); });
+  });
 
   /* ---------- Bucle de desplazamiento: un solo cálculo por cuadro ---------- */
   var pendiente = false;
