@@ -16,11 +16,17 @@ con *advisor*: un sistema que ordena los datos del negocio y aconseja con ellos.
 | Carpeta         | Qué guarda                                      | Quién la usa                 |
 |-----------------|-------------------------------------------------|------------------------------|
 | `web/`          | El sitio público de coddvisor.com               | Cloudflare Pages lo publica desde aquí |
-| `arquitectura/` | Estrategia y arquitectura del producto          | Fundador y equipo técnico    |
+| `sistema/`      | El sistema de gestión: base de datos y código   | Equipo técnico               |
+| `arquitectura/` | Las bases del sistema, y la investigación detrás | Fundador y equipo técnico    |
 | `docs/`         | Documentos de trabajo                           | Todo el equipo               |
 | `marca/`        | Logos, colores y guía de identidad              | Todo el equipo e imprentas   |
 
 `LEEME.md` tiene las notas internas de contexto (de dónde sale cada decisión).
+
+**Antes de escribir una línea del sistema** se leen las siete páginas de
+`arquitectura/bases/`: los principios, las reglas de la base de datos y la
+regla de que nada que pueda variar se escribe fijo en el código. `CLAUDE.md`
+las resume para los asistentes que trabajan en el repositorio.
 
 ## Cómo se trabaja
 
@@ -29,6 +35,8 @@ con *advisor*: un sistema que ordena los datos del negocio y aconseja con ellos.
 - **Cada cambio va en su propia rama** (un borrador con nombre, por ejemplo
   `web/pagina-precios` o `arquitectura/modulo-inventario`). Cloudflare publica cada
   rama en una dirección de prueba para revisarla antes.
+- **Todo cambio del sistema pasa una revisión automática** (`npm run verificar`
+  dentro de `sistema/`): si incumple una regla de las bases, no se puede unir.
 - **Se une a `main` solo cuando el fundador lo aprueba**, mediante una
   solicitud de revisión (*pull request*) en GitHub.
 
