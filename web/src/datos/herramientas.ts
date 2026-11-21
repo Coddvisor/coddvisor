@@ -51,6 +51,17 @@ export const herramientas: Herramienta[] = [
     lectura: 5,
     verificada: '2026-11-19',
   },
+  {
+    nombre: 'Gratificación',
+    frase: 'Cuánto pagar en diciembre según su régimen, con el 9 %',
+    href: '/herramientas/gratificacion/',
+    guia: 'Gratificación de diciembre: cuánto pagar según su régimen',
+    resumen: 'Cuánto pagar de gratificación según su régimen, cómo contar los meses y qué pasa si alguien entró en agosto o renuncia antes del 15.',
+    categoria: 'Planilla y beneficios',
+    publicada: '2026-11-21',
+    lectura: 6,
+    verificada: '2026-11-19',
+  },
 ];
 
 /** "2026-11-19" → "19 de noviembre de 2026" (sin depender del reloj del visitante). */
