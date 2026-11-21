@@ -1,0 +1,88 @@
+---
+// Nosotros. Regla 2 del LEEME: Coddvisor es una empresa independiente; aquí no se nombra a ningún
+// otro negocio ni se usan sus cifras. La confianza se gana con compromisos que cualquiera puede
+// comprobar en el propio sitio, no con tamaño ni con logos de clientes.
+import Base from '../layouts/Base.astro';
+import { llamado } from '../datos/navegacion';
+---
+<Base
+  titulo="Nosotros: quiénes somos y cómo trabajamos | Coddvisor"
+  descripcion="Coddvisor es una empresa peruana que hace software de gestión para micro y pequeñas empresas. Esto es lo que prometemos y lo que todavía no.">
+
+<section class="portada portada--interior osc" aria-labelledby="nos-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot">Nosotros</p>
+    <h1 class="portada-t interior-t" id="nos-t">Hacemos software para que un negocio pequeño <span class="cel">sepa cada día cómo le va.</span></h1>
+    <p class="portada-baj">Somos una empresa peruana. Tres de cada cuatro micro y pequeñas empresas del país no llevan ningún registro de sus cuentas.<sup class="ref"><a href="#fuente-1" aria-label="Fuente 1">1</a></sup> No es descuido: el cuaderno es lo único que les ha resultado fácil. Queremos que exista algo igual de fácil que además haga las cuentas.</p>
+  </div>
+</section>
+
+<section class="nos-nombre" aria-labelledby="nombre-t">
+  <div class="col nos-nombre-in" data-aparece>
+    <p class="rotulo">El nombre</p>
+    <h2 class="titular titular--ancho" id="nombre-t">Codd <span class="az">+ advisor.</span></h2>
+    <p class="nos-tx">En 1970, Edgar F. Codd propuso guardar la información en tablas que se relacionan entre sí. Así ordenan sus datos casi todos los sistemas de gestión de hoy. <i lang="en">Advisor</i>, en inglés, quiere decir consejero.</p>
+    <p class="nos-tx">Y dentro de <i lang="en">advisor</i> hay otra palabra: <b>visor</b>, lo que le deja ver. El doble sentido es a propósito. Coddvisor le deja ver cómo va su negocio, con los datos en orden, y le ayuda a decidir qué hacer.</p>
+  </div>
+</section>
+
+<!-- El gato: la historia viene de la guía de marca (sección «El logo»). -->
+<section class="nos-gato" aria-labelledby="gato-t">
+  <div class="col nos-gato-in" data-aparece>
+    <div class="nos-gato-vis" aria-hidden="true">
+      <svg viewBox="0 0 64 64"><path fill="var(--ambar)" fill-rule="evenodd" stroke="var(--ambar)" stroke-width="4.2" stroke-linejoin="round" d="M11.5 14.0L26.0 26.17H38.0L52.5 14.0V40.0A13.5 13.5 0 0 1 39.0 53.5H25.0A13.5 13.5 0 0 1 11.5 40.0ZM14.6 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0ZM33.4 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0Z"/></svg>
+    </div>
+    <div>
+      <p class="rotulo">El gato</p>
+      <h2 class="titular titular--ancho" id="gato-t">Dos ojos <span class="az">que no se cierran.</span></h2>
+      <p class="nos-tx">El gato del logo tiene nombre: Aventurero, la mascota de nuestra oficina. Se quedaba hasta tarde acompañando al equipo y le gustaba subirse a los teclados.</p>
+      <p class="nos-tx">En muchas tiendas y talleres del Perú hay un gato que cuida la mercadería cuando todos se van. Eso hace Coddvisor con sus cuentas: se queda mirando su negocio cuando usted ya cerró.</p>
+    </div>
+  </div>
+</section>
+
+<section class="nos-promesas" aria-labelledby="promesas-t">
+  <div class="col">
+    <div data-aparece>
+      <p class="rotulo">Cómo trabajamos</p>
+      <h2 class="titular titular--ancho" id="promesas-t">Cuatro reglas <span class="az">que puede comprobar en este sitio.</span></h2>
+    </div>
+    <ul class="promesas">
+      <li data-aparece>
+        <h3>Lo que no existe, no lo anunciamos.</h3>
+        <p>Lo que todavía estamos construyendo lleva la etiqueta <span class="etq-des">EN DESARROLLO</span>. En el menú solo aparecen páginas que ya existen.</p>
+      </li>
+      <li data-aparece style="--d:.08s">
+        <h3>Una maqueta dice que es una maqueta.</h3>
+        <p>Las pantallas de ejemplo usan datos inventados y lo dicen debajo. No mostramos capturas de clientes, porque todavía no tenemos clientes.</p>
+      </li>
+      <li data-aparece style="--d:.16s">
+        <h3>Sus datos serán solo suyos.</h3>
+        <p>Antes de abrir la prueba, cada negocio tendrá su propio espacio, con sus datos separados y protegidos. En eso trabajamos ahora.</p>
+      </li>
+      <li data-aparece style="--d:.24s">
+        <h3>Le responde una persona.</h3>
+        <p>Cuando nos escribe, le contesta alguien del equipo, no un robot.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="contacto osc" aria-labelledby="nos-contacto-t">
+  <div class="brillo brillo--contacto" aria-hidden="true"></div>
+  <div class="enmarcado contacto-in contacto-in--simple">
+    <div class="contacto-tx">
+      <span class="franja-sello" aria-hidden="true"></span>
+      <h2 class="titular titular--contacto" id="nos-contacto-t">Estamos empezando. <span class="cel">Buscamos los primeros negocios.</span></h2>
+      <p class="contacto-baj">Si lleva una tienda, con una o varias sedes, y quiere probar Coddvisor antes que nadie, cuéntenos de su negocio.</p>
+      <div class="portada-acc">
+        <a class="btn" href={llamado.href}>{llamado.texto}</a>
+        <a class="btn-2" href="/#etapa">Ver en qué etapa estamos</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</Base>

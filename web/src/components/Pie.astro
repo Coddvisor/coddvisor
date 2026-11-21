@@ -1,0 +1,30 @@
+---
+// Pie de página. Los grupos de enlaces salen de src/datos/navegacion.ts, igual que el menú.
+// Las fuentes de las cifras van aquí porque las citan varias páginas.
+import { pie, llamado } from '../datos/navegacion';
+---
+<footer class="pie">
+  <div class="col pie-in">
+    <div class="pie-a">
+      <p class="pie-marca"><svg role="img" aria-label="Coddvisor" viewBox="0 0 444.95 67"><use href="#logotipo"/></svg></p>
+      <p>Software de gestión para micro y pequeñas empresas del Perú. El nombre viene de Edgar F. Codd, el creador de las bases de datos relacionales, y de <i lang="en">advisor</i>, consejero.</p>
+      <p class="pie-llamado"><a class="pie-enlace-fuerte" href={llamado.href}>{llamado.texto}</a> o escríbanos a <a href="mailto:equipo@coddvisor.com" data-correo-enlace>equipo@coddvisor.com</a></p>
+    </div>
+    <nav class="pie-nav" aria-label="Pie de página">
+      {pie.map((g) => (
+        <div class="pie-g">
+          <p class="pie-g-t">{g.titulo}</p>
+          <ul>
+            {g.enlaces.map((e) => <li><a href={e.href}>{e.texto}</a></li>)}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  </div>
+  <div class="col pie-fin">
+    <ol class="fuentes">
+      <li id="fuente-1">ComexPerú, <i>Las micro y pequeñas empresas en el Perú: resultados en 2024</i> (ENAHO). <a href="https://www.comexperu.org.pe/upload/articles/reportes/reporte-mypes-2024.pdf" rel="noopener" target="_blank">comexperu.org.pe</a></li>
+    </ol>
+    <p class="pie-pie">© 2026 Coddvisor, Perú</p>
+  </div>
+</footer>

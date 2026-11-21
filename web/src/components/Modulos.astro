@@ -1,0 +1,136 @@
+---
+// Sección «Lo que ya funciona» (capa fluida): cada parte que el sistema ya tiene, con una mini
+// pantalla animada en bucle. Solo entra lo que la portada ya dice que existe; Compras y
+// Producción en taller van marcadas «EN DESARROLLO», como en «También lleva».
+// Todas las mini pantallas son maquetas con datos inventados (lo dice el rótulo de abajo).
+const ok = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+---
+<section class="modulos solo-fluido" aria-labelledby="modulos-t">
+  <div class="col">
+    <div data-aparece>
+      <p class="rotulo">Lo que ya funciona</p>
+      <h2 class="titular titular--ancho" id="modulos-t">Todo esto, <span class="az">en el mismo sistema.</span></h2>
+    </div>
+
+    <ul class="bento bento--4">
+      <li class="bloque bloque--2" data-aparece>
+        <div class="bloque-tx">
+          <h3>Venda con boleta o factura electrónica</h3>
+          <p>Efectivo, Yape, Plin y tarjeta, con cambios y devoluciones.</p>
+        </div>
+        <div class="mini mini-venta" aria-hidden="true" data-bucle>
+          <div class="mini-fila"><span>Blusa Emma, talla M</span><b>S/ 89.90</b></div>
+          <div class="mini-fila"><span>Casaca denim, talla L</span><b>S/ 159.90</b></div>
+          <div class="mini-fila mini-total"><span>Total</span><b>S/ 249.80</b></div>
+          <div class="mini-medios"><span class="sel">Yape</span><span>Plin</span><span>Efectivo</span><span>Tarjeta</span></div>
+          <span class="mini-aviso"><i set:html={ok}></i>Boleta electrónica emitida</span>
+        </div>
+      </li>
+
+      <li class="bloque" data-aparece style="--d:.06s">
+        <div class="bloque-tx">
+          <h3>Cuadre la caja</h3>
+          <p>Apertura y cierre en cada sede.</p>
+        </div>
+        <div class="mini mini-caja" aria-hidden="true" data-bucle>
+          <p class="mini-et">CIERRE, SEDE NORTE</p>
+          <div class="mini-fila"><span>Debe haber</span><b>S/ 1,284.60</b></div>
+          <div class="mini-fila"><span>Contado</span><b class="mini-cuenta">S/ 1,284.60</b></div>
+          <span class="mini-sello"><i set:html={ok}></i>Cuadra</span>
+        </div>
+      </li>
+
+      <li class="bloque" data-aparece style="--d:.12s">
+        <div class="bloque-tx">
+          <h3>Inventario por talla y color</h3>
+          <p>En el piso y en el almacén de cada sede.</p>
+        </div>
+        <div class="mini mini-inv" aria-hidden="true" data-bucle>
+          <div class="mini-tallas">
+            <span></span><span class="t">S</span><span class="t">M</span><span class="t">L</span><span class="t">XL</span>
+            <span class="r">Piso</span><span>3</span><span>5</span><span>4</span><span class="cambia cambia--sube"><em>0</em><em>1</em></span>
+            <span class="r">Almacén</span><span>6</span><span>8</span><span>2</span><span class="cambia"><em>1</em><em>0</em></span>
+          </div>
+          <span class="mini-paso">Traslado: 1 XL al piso</span>
+        </div>
+      </li>
+
+      <li class="bloque" data-aparece>
+        <div class="bloque-tx">
+          <h3>Marque asistencia con código</h3>
+          <p>Sin huellas ni fotos del rostro.</p>
+        </div>
+        <div class="mini mini-codigo" aria-hidden="true" data-bucle>
+          <p class="mini-et">CÓDIGO DE LA SEDE</p>
+          <p class="mini-codigo-n" data-codigo>48 21</p>
+          <span class="mini-reloj"><span></span></span>
+        </div>
+      </li>
+
+      <li class="bloque bloque--2" data-aparece style="--d:.06s">
+        <div class="bloque-tx">
+          <h3>Pague la planilla</h3>
+          <p>Régimen de la pequeña empresa, con las tardanzas según su reglamento interno.</p>
+        </div>
+        <div class="mini mini-planilla" aria-hidden="true" data-bucle>
+          <div class="mini-fila"><span>Planilla de noviembre</span><b class="mini-estado"><em>Calculando</em><em><i set:html={ok}></i>Lista</em></b></div>
+          <div class="mini-barra"><span></span></div>
+          <div class="mini-gente">
+            <span><i>AR</i>Asistencia completa</span>
+            <span><i>LM</i>1 tardanza</span>
+            <span><i>JP</i>Asistencia completa</span>
+          </div>
+        </div>
+      </li>
+
+      <li class="bloque" data-aparece style="--d:.12s">
+        <div class="bloque-tx">
+          <h3>Gastos</h3>
+          <p>Lo que sale, sede por sede.</p>
+        </div>
+        <div class="mini mini-gastos" aria-hidden="true" data-bucle>
+          <div class="mini-fila" style="--i:0"><span>Bolsas y etiquetas</span><b>S/ 64.00</b></div>
+          <div class="mini-fila" style="--i:1"><span>Luz, Sede Centro</span><b>S/ 212.40</b></div>
+          <div class="mini-fila" style="--i:2"><span>Movilidad</span><b>S/ 18.50</b></div>
+        </div>
+      </li>
+
+      <li class="bloque" data-aparece>
+        <div class="bloque-tx">
+          <h3>Cuentas de dinero</h3>
+          <p>Cuánto hay en efectivo, en Yape y en el banco.</p>
+        </div>
+        <div class="mini mini-cuentas" aria-hidden="true" data-bucle>
+          <div class="mini-cta" style="--v:.38;--i:0"><span>Efectivo</span><b>S/ 1,640.20</b><i></i></div>
+          <div class="mini-cta" style="--v:.62;--i:1"><span>Yape</span><b>S/ 2,680.30</b><i></i></div>
+          <div class="mini-cta" style="--v:.9;--i:2"><span>Banco</span><b>S/ 3,905.00</b><i></i></div>
+        </div>
+      </li>
+
+      <li class="bloque bloque--2" data-aparece style="--d:.06s">
+        <div class="bloque-tx">
+          <h3>Estados financieros por sede</h3>
+          <p>Se arman con lo que ya pasó, sin pasar cifras a mano.</p>
+        </div>
+        <div class="mini mini-estados" aria-hidden="true" data-bucle>
+          <div class="mini-col" style="--v:1;--i:0"><i></i><span>Centro</span></div>
+          <div class="mini-col" style="--v:.61;--i:1"><i></i><span>Norte</span></div>
+          <div class="mini-col" style="--v:.44;--i:2"><i></i><span>Sur</span></div>
+          <p class="mini-resul"><span>Resultado del mes</span><b>Al día</b></p>
+        </div>
+      </li>
+
+      <li class="bloque bloque--des" data-aparece style="--d:.12s">
+        <div class="bloque-tx">
+          <h3>Compras <span class="etq-des">EN DESARROLLO</span></h3>
+          <p>Todavía no está lista.</p>
+        </div>
+        <div class="bloque-tx bloque-tx--sep">
+          <h3>Producción en taller <span class="etq-des">EN DESARROLLO</span></h3>
+          <p>Todavía no está lista.</p>
+        </div>
+      </li>
+    </ul>
+    <p class="maqueta-rot maqueta-rot--claro">Maquetas con datos inventados; no son capturas.</p>
+  </div>
+</section>

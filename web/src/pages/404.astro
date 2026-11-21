@@ -1,0 +1,75 @@
+---
+// Página de error. Cloudflare la muestra sola cuando alguien entra a una dirección que no existe.
+// No culpa a la persona: le ofrece los caminos más probables, ordenados en tres grupos
+// (Producto, Herramientas gratis y Coddvisor), los mismos del pie de página.
+// Arriba, el gato del logo persigue un ovillo, se duerme y se va detrás de una luciérnaga
+// (GatoError.astro). Es solo decoración: los lectores de pantalla no lo anuncian.
+import Base from '../layouts/Base.astro';
+import GatoError from '../components/GatoError.astro';
+import { productos, llamado } from '../datos/navegacion';
+import { herramientas } from '../datos/herramientas';
+
+const grupos = [
+  { titulo: 'Producto', enlaces: productos.map((e) => ({ texto: e.texto, frase: e.frase, href: e.href })) },
+  {
+    titulo: 'Herramientas gratis',
+    enlaces: [
+      ...herramientas.map((h) => ({ texto: h.nombre, frase: h.frase, href: h.href })),
+      { texto: 'Blog', frase: 'Guías prácticas de caja, ventas, planilla y SUNAT', href: '/blog/' },
+    ],
+  },
+  {
+    titulo: 'Coddvisor',
+    enlaces: [
+      { texto: 'La portada', frase: 'Qué hace Coddvisor y para quién es', href: '/' },
+      { texto: 'Nosotros', frase: 'Quiénes somos y cómo trabajamos', href: '/nosotros/' },
+      { texto: 'Preguntas frecuentes', frase: 'Lo que nos suelen preguntar', href: '/#preguntas' },
+    ],
+  },
+];
+---
+<Base
+  titulo="Esta página no existe | Coddvisor"
+  descripcion="La dirección que abrió no existe en el sitio de Coddvisor.">
+
+<section class="portada portada--interior portada--error osc" aria-labelledby="error-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in error-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot">Error 404</p>
+    <h1 class="portada-t interior-t" id="error-t">Esta página no existe. <span class="cel">Puede que la hayamos movido.</span></h1>
+    <p class="portada-baj">Aquí abajo están los caminos más buscados del sitio.</p>
+    <div class="portada-acc">
+      <a class="btn-2" href="#caminos">Ver los caminos</a>
+      <a class="btn-2" href="/">Ir a la portada</a>
+    </div>
+  </div>
+  <GatoError />
+</section>
+
+<section class="caminos" id="caminos" aria-labelledby="caminos-t">
+  <div class="col">
+    <p class="rotulo">Quizás buscaba</p>
+    <h2 class="titular titular--ancho" id="caminos-t">Alguna de estas páginas.</h2>
+    <div class="caminos-grupos">
+      {grupos.map((g) => (
+        <div class="caminos-g">
+          <h3 class="caminos-g-t">{g.titulo}</h3>
+          <ul>
+            {g.enlaces.map((e) => (
+              <li>
+                <a class="camino" href={e.href}>
+                  <span class="camino-tx"><b>{e.texto}</b>{e.frase && <small>{e.frase}</small>}</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+    <p class="caminos-pie">¿No era ninguna? Escríbanos y le ayudamos a encontrarla. <a class="btn" href={llamado.href}>{llamado.texto}</a></p>
+  </div>
+</section>
+
+</Base>

@@ -1,0 +1,150 @@
+---
+// Escena de la página de error: el gato del logo persigue un ovillo que se desenrolla, da vueltas,
+// se echa a dormir, lo despierta una luciérnaga y se va detrás de ella; reaparece por la izquierda
+// y todo vuelve a empezar. Un bucle de unos 36 segundos, sin prisa. El movimiento lo maneja
+// public/gato-error.js; aquí solo están el dibujo y su estilo.
+// La cabeza es el isotipo de la marca (misma figura y mismos ojos huecos), en ámbar como sobre
+// fondo oscuro. Cuerpo, patas y cola siguen la misma geometría: trazos gruesos y redondeados.
+// Con «menos movimiento», el gato se queda dormido junto al ovillo y no se mueve nada.
+---
+<div class="escena-gato" aria-hidden="true" data-escena-gato>
+  <svg class="hilo" data-hilo preserveAspectRatio="none"><path d="" /></svg>
+
+  <div class="ovillo" data-ovillo>
+    <svg viewBox="-20 -20 40 40" width="48" height="48">
+      <circle r="16" class="ovillo-bola" />
+      <g class="ovillo-vueltas" fill="none" stroke-linecap="round">
+        <path d="M-13 -6 C -4 -12, 6 -12, 13 -4" />
+        <path d="M-15 2 C -5 -5, 7 -5, 15 4" />
+        <path d="M-12 9 C -3 4, 6 4, 12 11" />
+        <path d="M-4 -15 C 2 -6, 2 6, -3 15" />
+      </g>
+    </svg>
+  </div>
+
+  <div class="gato" data-gato>
+    <div class="gato-giro" data-giro>
+      <svg viewBox="0 0 140 110" class="gato-svg">
+        <ellipse class="gato-sombra" cx="70" cy="106" rx="48" ry="4" />
+        <g class="gato-arriba">
+          <path class="gato-cola" d="M30 66 C 12 64, 4 48, 12 32" />
+          <path class="gato-cola-echada" d="M30 64 C 8 66, 6 80, 26 81 L 64 81" />
+        </g>
+        <rect class="pata pata--lejos pata--a" x="36" y="70" width="11" height="32" rx="5.5" />
+        <rect class="pata pata--lejos pata--b" x="88" y="70" width="11" height="32" rx="5.5" />
+        <rect class="pata pata--cerca pata--b" x="46" y="70" width="11" height="32" rx="5.5" />
+        <rect class="pata pata--cerca pata--a" x="98" y="70" width="11" height="32" rx="5.5" />
+        <g class="gato-arriba">
+          <rect class="gato-cuerpo" x="24" y="48" width="88" height="34" rx="17" />
+          <g class="gato-cabeza" transform="translate(58 -14) scale(1.25)">
+            <path class="gato-cara" fill-rule="evenodd" stroke-width="4.2" stroke-linejoin="round" d="M11.5 14.0L26.0 26.17H38.0L52.5 14.0V40.0A13.5 13.5 0 0 1 39.0 53.5H25.0A13.5 13.5 0 0 1 11.5 40.0ZM14.6 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0ZM33.4 39.2a8 8 0 1 0 16 0a8 8 0 1 0 -16 0Z" />
+            <g class="gato-parpados">
+              <circle cx="22.6" cy="39.2" r="8.6" />
+              <circle cx="41.4" cy="39.2" r="8.6" />
+              <path d="M16.6 39.6 q6 5 12 0" />
+              <path d="M35.4 39.6 q6 5 12 0" />
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="zzz"><span>z</span><span>z</span><span>Z</span></div>
+  </div>
+
+  <div class="bicho" data-bicho>
+    <svg viewBox="-12 -10 24 20" width="40" height="34">
+      <ellipse class="bicho-ala bicho-ala--1" cx="-3" cy="-5" rx="5" ry="3.4" />
+      <ellipse class="bicho-ala bicho-ala--2" cx="3" cy="-5" rx="5" ry="3.4" />
+      <ellipse class="bicho-cuerpo" cx="0" cy="1" rx="5.5" ry="4.2" />
+      <circle class="bicho-luz" cx="-4" cy="2" r="3" />
+    </svg>
+  </div>
+  <div class="escena-piso"></div>
+</div>
+
+<style is:inline>
+/* ---------- Escena del gato (página de error) ---------- */
+.escena-gato { position:relative; height:clamp(170px, 20vw, 230px); margin-top:clamp(8px, 2vw, 24px); overflow:hidden; --gato-w:clamp(104px, 11vw, 150px); }
+.escena-piso { position:absolute; left:0; right:0; bottom:10px; height:1px; background:linear-gradient(90deg, transparent, var(--linea-oscura) 12%, var(--linea-oscura) 88%, transparent); }
+.hilo { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.hilo path { fill:none; stroke:var(--celeste); stroke-width:2.2; stroke-linecap:round; opacity:.9; }
+.ovillo, .gato, .bicho { position:absolute; left:0; top:0; will-change:transform; }
+.ovillo-bola { fill:var(--celeste); }
+.ovillo-vueltas path { stroke:var(--celeste-claro); stroke-width:1.8; }
+.gato { width:var(--gato-w); }
+.gato-giro { transform:scaleX(var(--dir, 1)); transition:transform .38s cubic-bezier(.34, 1.36, .64, 1); }
+.gato-svg { display:block; width:100%; height:auto; overflow:visible; }
+.gato-sombra { fill:rgba(0, 0, 0, .28); transition:rx .8s; }
+.gato-cuerpo, .gato-cara, .pata--cerca { fill:var(--ambar); }
+.gato-cara { stroke:var(--ambar); }
+.pata--lejos { fill:var(--ambar-tostado); }
+.gato-cola, .gato-cola-echada { fill:none; stroke:var(--ambar); stroke-width:9; stroke-linecap:round; transition:opacity .6s; }
+.gato-cola { transform-box:fill-box; transform-origin:100% 100%; }
+.gato-cola-echada { opacity:0; }
+.gato-arriba { transition:transform 1.1s cubic-bezier(.16, 1, .3, 1); }
+.gato-cabeza { transform:translate(58px, -14px) scale(1.25); transition:transform 1.1s cubic-bezier(.16, 1, .3, 1); }
+.pata { transform-box:fill-box; transform-origin:50% 0; transition:transform .9s cubic-bezier(.16, 1, .3, 1); }
+.gato-parpados circle { fill:var(--ambar); }
+.gato-parpados path { fill:none; stroke:var(--cobalto); stroke-width:2.6; stroke-linecap:round; }
+.gato-parpados { opacity:0; transition:opacity .35s; }
+.zzz { position:absolute; right:-10%; top:-38%; display:flex; align-items:flex-end; gap:3px; font:700 22px/1 var(--mono); color:var(--celeste-claro); opacity:0; transition:opacity .6s; }
+.zzz span { display:inline-block; }
+.zzz span:nth-child(1) { font-size:15px; }
+.zzz span:nth-child(2) { font-size:18px; }
+.bicho { opacity:0; transition:opacity .8s; }
+.bicho-cuerpo { fill:var(--celeste-claro); stroke:var(--fondo); stroke-width:.8; }
+.bicho-ala { fill:rgba(255, 255, 255, .75); transform-box:fill-box; transform-origin:50% 100%; }
+.bicho svg { overflow:visible; }
+.bicho-luz { fill:#FFE9C7; }
+.bicho.ve { filter:drop-shadow(0 0 4px rgba(255, 143, 31, .9)) drop-shadow(0 0 12px rgba(255, 143, 31, .55)); }
+
+/* Echado: patas recogidas, cuerpo al piso, cola enroscada adelante. */
+.gato.echado .pata { transform:scaleY(.18); }
+.gato.echado .gato-arriba { transform:translateY(19px); }
+.gato.echado .gato-cabeza { transform:translate(58px, -10px) scale(1.25) rotate(-5deg); }
+.gato.echado .gato-cola { opacity:0; }
+.gato.echado .gato-cola-echada { opacity:1; }
+.gato.duerme .gato-parpados, .gato.parpadea .gato-parpados { opacity:1; }
+.gato.duerme .zzz { opacity:1; }
+.bicho.ve { opacity:1; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .gato.anda .pata--a { animation:paso .56s ease-in-out infinite; }
+  .gato.anda .pata--b { animation:paso .56s ease-in-out infinite -.28s; }
+  .gato.corre .pata--a { animation:paso .3s ease-in-out infinite; }
+  .gato.corre .pata--b { animation:paso .3s ease-in-out infinite -.15s; }
+  .gato.anda .gato-arriba, .gato.corre .gato-arriba { animation:trote .28s ease-in-out infinite alternate; }
+  .gato.corre .gato-arriba { animation-duration:.15s; }
+  .gato .gato-cola { animation:cola 2.4s ease-in-out infinite; }
+  .gato.duerme .gato-cuerpo { animation:respira 3.6s ease-in-out infinite; transform-box:fill-box; transform-origin:50% 100%; }
+  .gato.duerme .zzz span { animation:zeta 3.6s ease-in-out infinite; }
+  .gato.duerme .zzz span:nth-child(2) { animation-delay:.6s; }
+  .gato.duerme .zzz span:nth-child(3) { animation-delay:1.2s; }
+  .bicho-ala { animation:aleteo .09s linear infinite alternate; }
+  .bicho-luz { animation:brilla 1.4s ease-in-out infinite; }
+}
+@keyframes paso { 0%, 100% { transform:rotate(24deg); } 50% { transform:rotate(-24deg); } }
+@keyframes trote { from { transform:translateY(0); } to { transform:translateY(-2.5px); } }
+@keyframes cola { 0%, 100% { transform:rotate(-6deg); } 50% { transform:rotate(10deg); } }
+@keyframes respira { 0%, 100% { transform:scaleY(1); } 50% { transform:scaleY(1.06); } }
+@keyframes zeta { 0% { opacity:0; transform:translate(0, 8px) scale(.7); } 30% { opacity:1; } 100% { opacity:0; transform:translate(10px, -26px) scale(1.15); } }
+@keyframes aleteo { from { transform:scaleY(1); } to { transform:scaleY(.25); } }
+@keyframes brilla { 0%, 100% { opacity:.7; } 50% { opacity:1; } }
+
+/* ---------- Caminos (debajo de la portada de error) ---------- */
+.caminos { padding:var(--pad-sec) 0; }
+.caminos-grupos { margin-top:40px; display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:28px; }
+.caminos-g-t { padding-bottom:10px; border-bottom:2px solid var(--cobalto); font:700 12px/1.4 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--texto-2); }
+.caminos-g ul { list-style:none; margin:12px 0 0; padding:0; display:grid; gap:10px; }
+.camino { display:flex; align-items:center; justify-content:space-between; gap:14px; min-height:72px; padding:14px 18px; border-radius:18px; background:var(--tarjeta); border:1px solid color-mix(in srgb, var(--borde) 80%, transparent); box-shadow:0 1px 2px rgba(11,24,65,.04), 0 14px 30px -22px rgba(11,24,65,.35); color:var(--cobalto); text-decoration:none; transition:translate .5s cubic-bezier(.16, 1, .3, 1), box-shadow .5s, border-color .3s; }
+.camino:hover { translate:0 -3px; border-color:var(--azul-real); box-shadow:0 2px 4px rgba(11,24,65,.05), 0 24px 40px -24px rgba(11,24,65,.45); }
+.camino-tx { display:grid; gap:3px; min-width:0; }
+.camino-tx b { font-size:17px; font-weight:600; }
+.camino-tx small { font-size:14px; line-height:1.4; color:var(--texto-2); }
+.camino svg { flex:none; color:var(--azul-real); transition:transform .4s cubic-bezier(.34, 1.36, .64, 1); }
+.camino:hover svg { transform:translateX(4px); }
+.caminos-pie { margin-top:40px; display:flex; flex-wrap:wrap; align-items:center; gap:14px 20px; font-size:17px; color:var(--texto-2); }
+.portada--error .interior-in { padding-bottom:0; }
+</style>
+
+<script is:inline src="/gato-error.js" defer></script>

@@ -3,7 +3,8 @@
 Carpeta del proyecto: el software de gestión para micro y pequeñas empresas del Perú. Coddvisor es una empresa independiente: ni el sitio ni este repositorio mencionan a otros negocios. "Coddvisor" es el nombre elegido por el fundador (por Edgar F. Codd y "advisor"); el dominio `coddvisor.com` ya está comprado. La marca todavía no está registrada.
 
 - `web/`: el sitio web público (se desplegará en Vercel).
-- `arquitectura/`: estrategia y arquitectura del producto.
+- `sistema/`: el sistema de gestión. Hoy tiene sus cimientos: la base de datos inicial y las revisiones automáticas.
+- `arquitectura/`: las bases obligatorias del sistema (`bases/`), los informes (`reports/`) y las notas de investigación (`research_notes/`).
 - `docs/`: documentos de trabajo.
 
 Material de origen:

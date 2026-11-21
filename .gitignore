@@ -30,6 +30,7 @@ node_modules/
 .next/
 out/
 dist/
+.astro/
 build/
 .vercel/
 .turbo/
@@ -48,3 +49,8 @@ npm-debug.log*
 
 # --- Índices locales de herramientas ---
 .codegraph/
+
+# --- Apuntes de trabajo de una investigación ---
+# El informe y las bases que salieron de esa investigación sí se suben. Sus
+# apuntes de trabajo se quedan en la computadora del fundador, por decisión suya.
+arquitectura/research_notes/Referencia de dise*o y primer alcance/

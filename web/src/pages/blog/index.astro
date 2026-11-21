@@ -1,0 +1,37 @@
+---
+// Blog. Cada guía vive en la página de su herramienta (la herramienta arriba, la guía debajo);
+// aquí se listan todas, de la más nueva a la más antigua. Sale de src/datos/herramientas.ts.
+import Base from '../../layouts/Base.astro';
+import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
+const guias = [...herramientas].sort((a, b) => b.publicada.localeCompare(a.publicada));
+---
+<Base
+  titulo="Blog: guías prácticas para llevar su negocio | Coddvisor"
+  descripcion="Guías cortas y prácticas sobre caja, ventas, planilla y SUNAT para micro y pequeñas empresas del Perú. Cada una con una herramienta gratis.">
+
+<section class="portada portada--interior osc" aria-labelledby="blog-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot">Blog</p>
+    <h1 class="portada-t interior-t" id="blog-t">Guías prácticas <span class="cel">para llevar su negocio.</span></h1>
+    <p class="portada-baj">Caja, ventas, planilla y SUNAT, explicados con ejemplos. Cada guía viene con una herramienta gratis para hacerlo ahí mismo.</p>
+  </div>
+</section>
+
+<section class="lista-sec" aria-label="Guías">
+  <div class="col">
+    <ul class="tarjetas tarjetas--blog">
+      {guias.map((h) => (
+        <li class="tarjeta">
+          <p class="tarjeta-cat">{h.categoria}</p>
+          <h2 class="tarjeta-t"><a href={h.href + '#guia-t'}>{h.guia}</a></h2>
+          <p class="tarjeta-tx">{h.resumen}</p>
+          <p class="tarjeta-meta">{autor} · <time datetime={h.publicada}>{fechaLarga(h.publicada)}</time> · {h.lectura} min</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+</Base>
