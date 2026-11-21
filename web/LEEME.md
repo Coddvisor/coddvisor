@@ -18,6 +18,7 @@ cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar
 | `public/colores.css`     | Los colores de marca. Copia fiel del archivo de marca: no se edita aquí |
 | `public/estilos.css`     | Tonos de apoyo, qué color usa cada pieza, letras, espacios, celular |
 | `public/sitio.js`        | El movimiento: panel de la portada, pestañas, formularios y aparición al bajar |
+| `public/fluido.css`, `public/fluido.js` | La capa «fluida»: acabado (vidrio, sombras suaves, degradados) y movimiento al estilo de las páginas de Apple. Solo agrega; ver «La capa fluida» |
 | `public/favicon*`, `public/apple-touch-icon.png` | Los íconos de la pestaña y del iPhone |
 | `public/vista-previa.png`| La imagen que sale al compartir el enlace (WhatsApp, redes). Copia de `marca/logo/redes/coddvisor-vista-previa-enlace.png` |
 | `public/robots.txt`      | Les dice a los buscadores que pueden leer todo el sitio      |
@@ -147,6 +148,25 @@ su teléfono o computadora:
 - **Menú:** un grupo abierto a la vez; Escape lo cierra; en celular se cierra
   solo al tocar un enlace. Si `sitio.js` no carga, los grupos igual se abren
   (son `<details>`), y en celular el menú no aparece, como antes.
+
+## La capa fluida
+
+`fluido.css` y `fluido.js` se cargan después de `estilos.css` (y `fluido.js` antes de `sitio.js`).
+No borran ni reemplazan nada: todo cuelga de la clase `fluido` en `<html>` (en `Base.astro`).
+**Para volver al diseño anterior basta con quitar esa clase.** Qué agrega:
+
+- **Cabecera de vidrio:** sólida arriba; al bajar se vuelve algo transparente y desenfoca lo de atrás.
+- **Barra de lectura:** la franja de marca crece arriba de todo mientras se baja.
+- **Portada:** el texto entra línea por línea; el panel llega inclinado y se endereza al bajar; con
+  mouse, el panel y los brillos siguen un poco al puntero.
+- **Dato que abre:** el 76.5 % cuenta desde cero y las palabras del párrafo se encienden al bajar.
+- **Tarjetas:** borde fino, sombra en capas, y se elevan al pasar el mouse.
+- **Recorrido:** en pantallas anchas, una línea une los cuatro pasos y se dibuja al bajar.
+- **Etapa:** la barra se llena hasta «hoy» cuando aparece.
+- **Preguntas:** se abren deslizando (en navegadores que ya lo permiten; en los demás, como antes).
+- **Aparición al bajar:** más recorrido, con desenfoque; también para pestañas, preguntas y contacto.
+
+Con «menos movimiento» activado en el teléfono o la computadora, queda el acabado y nada se mueve.
 
 ## El logotipo
 

@@ -1,0 +1,224 @@
+/* Coddvisor, capa «fluida»: el acabado visual y el movimiento al estilo de las páginas de producto
+   de Apple (vidrio, profundidad, sombras suaves, apariciones con desenfoque, cifras que cuentan).
+
+   Reglas de esta capa:
+   1. No borra ni reemplaza nada: se carga DESPUÉS de estilos.css y solo afina lo que ya existe.
+      Si se quita este archivo (y fluido.js), el sitio vuelve a verse exactamente como antes.
+   2. Todo cuelga de la clase .fluido en <html> (la pone Base.astro). Sin esa clase, no aplica nada.
+   3. Los colores siguen saliendo de colores.css. Aquí no se inventa ningún color de marca.
+   4. Todo el movimiento vive dentro de prefers-reduced-motion: no-preference. Quien pidió menos
+      movimiento ve el acabado (vidrio, sombras), pero nada se mueve.
+   5. Sin tramas de puntos ni líneas de marco (regla de marca). */
+
+:root {
+  --suave:cubic-bezier(.16, 1, .3, 1);          /* salida larga y suave, como en las páginas de Apple */
+  --resorte:cubic-bezier(.34, 1.36, .64, 1);    /* pequeño rebote para íconos y chips */
+  --sombra-suave:0 1px 2px rgba(11,24,65,.04), 0 2px 6px -2px rgba(11,24,65,.06), 0 18px 40px -22px rgba(11,24,65,.28);
+  --sombra-alta:0 2px 4px rgba(11,24,65,.04), 0 10px 20px -8px rgba(11,24,65,.10), 0 40px 70px -30px rgba(11,24,65,.40);
+}
+
+/* ---------- Barra de lectura: la franja de marca crece mientras se baja ---------- */
+.progreso { display:none; }
+.fluido .progreso {
+  display:block; position:fixed; top:0; left:0; right:0; z-index:50; height:3px;
+  background:var(--franja); transform-origin:0 50%; transform:scaleX(var(--leido, 0)); pointer-events:none;
+}
+
+/* ---------- Cabecera de vidrio ----------
+   Arriba de todo es sólida, como antes. Al bajar se vuelve un poco transparente (lo que pasa por
+   detrás se ve desenfocado) y gana una sombra. Con el menú del celular abierto vuelve a ser sólida: el desenfoque
+   haría que el menú a pantalla completa se mida contra la cabecera y no contra la pantalla. */
+.fluido .cab {
+  background:var(--cobalto);
+  -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px);
+  border-bottom-color:color-mix(in srgb, var(--linea-oscura) 70%, transparent);
+  transition:background-color .5s var(--suave), box-shadow .5s var(--suave);
+}
+.fluido .cab.cab--bajo { background:color-mix(in srgb, var(--cobalto) 86%, transparent); box-shadow:0 12px 32px -18px rgba(8,18,51,.7); }
+.fluido .cab.abierta { background:var(--cobalto); -webkit-backdrop-filter:none; backdrop-filter:none; }
+.fluido .menu-a, .fluido .menu-b { transition:color .3s var(--suave); }
+.fluido .menu-panel { border-radius:22px; border-color:color-mix(in srgb, var(--borde) 70%, transparent); }
+.fluido .menu-item { transition:background-color .25s var(--suave); }
+
+/* ---------- Tipografía: un poco más apretada y con degradado en las palabras resaltadas ---------- */
+.fluido .titular { letter-spacing:-.032em; }
+.fluido .portada-t { letter-spacing:-.045em; }
+.fluido .az {
+  background:linear-gradient(100deg, var(--azul-real) 10%, var(--celeste-oscuro) 90%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.fluido .cel {
+  background:linear-gradient(100deg, var(--celeste) 0%, var(--celeste-claro) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+/* Más aire entre secciones. */
+.fluido { --pad-sec:clamp(80px, 10vw, 152px); }
+
+/* ---------- Botones ---------- */
+.fluido .btn { transition:transform .45s var(--suave), box-shadow .45s var(--suave), filter .3s; }
+.fluido .btn:hover { transform:translateY(-2px); box-shadow:inset 0 -4px 0 var(--ambar-tostado), 0 14px 30px -12px rgba(255,143,31,.75); filter:saturate(1.08); }
+.fluido .btn:active { transform:translateY(1px) scale(.985); box-shadow:inset 0 -2px 0 var(--ambar-tostado); }
+.fluido .btn-2 { transition:border-color .3s var(--suave), background-color .3s var(--suave), transform .45s var(--suave); }
+.fluido .btn-2:hover { background:color-mix(in srgb, var(--cobalto-2) 80%, var(--azul-real)); transform:translateY(-2px); }
+.fluido .pill { transition:box-shadow .3s var(--suave), transform .45s var(--suave); }
+.fluido .pill:hover { transform:translateY(-1px); }
+
+/* ---------- Portada ---------- */
+.fluido .portada-panel { perspective:1800px; }
+.fluido .panel {
+  transform-origin:50% 0;
+  transform:rotateX(calc(var(--giro, 0) * 12deg + var(--my, 0) * -2.5deg)) rotateY(calc(var(--mx, 0) * 3.5deg)) scale(calc(1 - var(--giro, 0) * .05));
+  box-shadow:0 -10px 90px -20px rgba(255,143,31,.34), 0 50px 100px -40px rgba(8,18,51,.95), 0 0 0 1px rgba(255,255,255,.06);
+}
+.fluido .panel-barra { background:color-mix(in srgb, var(--superficie) 88%, var(--tarjeta)); }
+.fluido .brillo--ambar { translate:calc(var(--mx, 0) * 50px) calc(var(--my, 0) * 36px); }
+.fluido .brillo--azul { translate:calc(var(--mx, 0) * -36px) calc(var(--my, 0) * -28px); }
+
+/* ---------- Dato que abre: cifra grande con degradado; las palabras se encienden al bajar ---------- */
+.fluido .dato-num {
+  background:linear-gradient(180deg, var(--cobalto-2) 30%, var(--azul-real) 120%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  font-variant-numeric:tabular-nums;
+}
+.fluido .dato-tx .pal { color:color-mix(in srgb, var(--cobalto) 24%, var(--fondo)); transition:color .5s var(--suave); }
+.fluido .dato-tx .pal.on { color:var(--cobalto); }
+
+/* ---------- Tarjetas: borde fino, sombra en capas y se elevan al pasar ---------- */
+.fluido .beneficio, .fluido .rpaso, .fluido .promesas li, .fluido .tarjeta, .fluido .res-tarjeta {
+  border-width:1px; border-bottom-width:1px; border-color:color-mix(in srgb, var(--borde) 80%, transparent);
+  box-shadow:var(--sombra-suave);
+}
+.fluido .beneficio, .fluido .rpaso, .fluido .promesas li, .fluido .tarjeta {
+  transition:translate .6s var(--suave), box-shadow .6s var(--suave), border-color .3s;
+}
+.fluido .beneficio:hover, .fluido .rpaso:hover, .fluido .promesas li:hover, .fluido .tarjeta:hover {
+  translate:0 -6px; box-shadow:var(--sombra-alta);
+}
+.fluido .beneficio { border-radius:28px; padding:32px; }
+.fluido .icono { transition:scale .6s var(--resorte), rotate .6s var(--resorte); }
+.fluido .beneficio:hover .icono { scale:1.1; rotate:-4deg; }
+.fluido .caja-bloque { border-width:1px; box-shadow:var(--sombra-suave); }
+
+/* ---------- Qué hace ---------- */
+.fluido .pestana-b { transition:color .4s var(--suave); }
+.fluido .pestana-n { transition:color .4s var(--suave); }
+.fluido .pantallas {
+  border-radius:32px; border-color:color-mix(in srgb, var(--borde) 70%, transparent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8), var(--sombra-suave);
+  transform:perspective(1400px) rotateX(calc(var(--ty, 0) * -3deg)) rotateY(calc(var(--tx, 0) * 4deg));
+  transition:transform .9s var(--suave);
+}
+.fluido .pt, .fluido .pt-lista, .fluido .pt-codigo { box-shadow:var(--sombra-alta); }
+.fluido .ico40 { transition:transform .5s var(--resorte), background-color .3s; }
+.fluido .tambien-lista li:hover .ico40 { transform:translateY(-3px) scale(1.06); }
+
+/* ---------- Recorrido: una línea une los cuatro pasos y se dibuja al bajar ---------- */
+@media (min-width:1120px) {
+  .fluido .recorrido-pasos { position:relative; padding-top:34px; }
+  .fluido .recorrido-pasos::before, .fluido .recorrido-pasos::after {
+    content:""; position:absolute; top:0; left:28px; right:28px; height:2px; border-radius:2px;
+  }
+  .fluido .recorrido-pasos::before { background:var(--borde); }
+  .fluido .recorrido-pasos::after { background:var(--franja); transform-origin:0 50%; transform:scaleX(var(--avance, 0)); }
+  .fluido .rpaso::before {
+    content:""; position:absolute; top:-40px; left:24px; width:14px; height:14px; border-radius:50%;
+    background:var(--tarjeta); border:2px solid var(--borde-fuerte);
+    transition:background-color .5s var(--suave), border-color .5s var(--suave), box-shadow .5s var(--suave), scale .5s var(--resorte);
+  }
+  .fluido .rpaso.activo::before { background:var(--ambar); border-color:var(--ambar); box-shadow:0 0 0 6px color-mix(in srgb, var(--ambar) 22%, transparent); scale:1.1; }
+}
+.fluido .rpaso-dato { transition:background-color .6s var(--suave); }
+.fluido .rpaso.activo .rpaso-n { color:var(--ambar-tostado); }
+
+/* ---------- Para quién es ---------- */
+.fluido .para-vis { border-radius:24px; border-color:color-mix(in srgb, var(--borde) 70%, transparent); box-shadow:var(--sombra-suave); overflow:hidden; transition:box-shadow .6s var(--suave); }
+.fluido .vis-tile { transition:transform .8s var(--suave); }
+.fluido .vis-badge { transition:transform .7s var(--resorte); }
+.fluido .para-lista li:hover .para-vis { box-shadow:var(--sombra-alta); }
+.fluido .para-lista li:hover .vis-tile { transform:translateY(-6px) scale(1.04); }
+.fluido .para-lista li:hover .vis-badge { transform:rotate(-8deg) scale(1.08); }
+
+/* ---------- Etapa ---------- */
+.fluido .paso-ico { transition:transform .6s var(--resorte), border-color .3s; }
+.fluido .pasos li:hover .paso-ico { transform:translateY(-3px); border-color:var(--celeste); }
+
+/* ---------- Preguntas: se abren deslizando (en navegadores que ya lo permiten) ---------- */
+.fluido .faq { interpolate-size:allow-keywords; }
+.fluido .faq summary { transition:color .3s var(--suave); }
+.fluido .faq summary:hover { color:var(--azul-real); }
+
+/* ---------- Contacto: formulario como una hoja de vidrio ---------- */
+.fluido .form {
+  border-radius:30px; border:1px solid rgba(255,255,255,.5);
+  background:color-mix(in srgb, var(--fondo) 98%, transparent);
+  -webkit-backdrop-filter:blur(24px) saturate(160%); backdrop-filter:blur(24px) saturate(160%);
+  box-shadow:0 1px 0 rgba(255,255,255,.6) inset, 0 50px 100px -40px rgba(8,18,51,.95);
+}
+.fluido .campo input, .fluido .campo select, .fluido .conteo-fila input {
+  transition:border-color .25s var(--suave), box-shadow .35s var(--suave);
+}
+.fluido .campo input:focus, .fluido .campo select:focus, .fluido .conteo-fila input:focus {
+  border-color:var(--azul-real); box-shadow:0 0 0 4px color-mix(in srgb, var(--azul-real) 18%, transparent);
+}
+.fluido .contacto-vias a { transition:transform .4s var(--suave); }
+.fluido .contacto-vias a:hover { transform:translateX(4px); }
+
+/* =========================================================================================
+   Movimiento: solo si la persona no pidió menos.
+   ========================================================================================= */
+@media (prefers-reduced-motion: no-preference) {
+  /* Entrada de la portada: cada línea sube y se enfoca, una tras otra. */
+  .fluido .portada-texto > *, .fluido .interior-in > * { animation:entra 1.1s var(--suave) both; }
+  .fluido .portada-texto > :nth-child(2), .fluido .interior-in > :nth-child(2) { animation-delay:.08s; }
+  .fluido .portada-texto > :nth-child(3), .fluido .interior-in > :nth-child(3) { animation-delay:.16s; }
+  .fluido .portada-texto > :nth-child(4), .fluido .interior-in > :nth-child(4) { animation-delay:.26s; }
+  .fluido .portada-texto > :nth-child(5) { animation-delay:.36s; }
+  .fluido .portada-texto > :nth-child(6) { animation-delay:.46s; }
+  /* El panel llega desde abajo, inclinado hacia atrás, y se endereza. */
+  .fluido .portada-panel { animation:entraPanel 1.6s var(--suave) .3s both; }
+  .fluido .panel { transition:transform .9s var(--suave); }
+  .fluido .brillo { transition:translate 1.4s var(--suave); }
+  .fluido .franja-sello { transform-origin:0 50%; }
+  .fluido .portada-texto > .franja-sello, .fluido .interior-in > .franja-sello, .fluido .contacto-tx .franja-sello { animation:sello 1.4s var(--suave) .1s both; }
+
+  /* Aparición al bajar: más recorrido, con desenfoque y una pizca de escala. */
+  .fluido.js [data-aparece] {
+    opacity:0; transform:translateY(44px) scale(.985); filter:blur(8px);
+    transition:opacity 1s var(--suave) var(--d, 0s), transform 1.2s var(--suave) var(--d, 0s), filter 1s var(--suave) var(--d, 0s),
+               translate .6s var(--suave), box-shadow .6s var(--suave), border-color .3s;
+  }
+  .fluido.js [data-aparece].visto { opacity:1; transform:none; filter:none; }
+
+  /* Pestañas: la pantalla nueva entra con escala y desenfoque. */
+  .fluido .pantalla:not([hidden]) { animation:pantalla .8s var(--suave) both; }
+  .fluido .es-activa .pestana-det { animation:entra .7s var(--suave) both; }
+
+  /* Etapa: la barra se llena hasta «hoy» cuando aparece. */
+  .fluido.js .etapa-barra span { width:0; transition:width 2s var(--suave) .4s; }
+  .fluido.js .etapa-barra.visto span { width:34%; }
+  .fluido .paso-ico--hoy { animation:latido 2.4s ease-in-out infinite; }
+
+  /* Preguntas: abrir y cerrar con deslizamiento. */
+  .fluido .faq details::details-content {
+    block-size:0; overflow:clip; opacity:0;
+    transition:block-size .55s var(--suave), opacity .4s var(--suave), content-visibility .55s allow-discrete;
+  }
+  .fluido .faq details[open]::details-content { block-size:auto; opacity:1; }
+
+  /* Panel del menú: aparece con un pequeño descenso. */
+  .fluido .menu-d[open] .menu-panel { animation:panelMenu .45s var(--suave) both; }
+
+  /* Chips del panel «¿Cómo le va hoy?» al cambiar a «Va bien»: con rebote. */
+  .fluido .ver.cambio, .fluido .es-hecha .tarea-acc { animation:pop .7s var(--resorte) both; }
+}
+
+@keyframes entra { from { opacity:0; transform:translateY(28px); filter:blur(10px); } to { opacity:1; transform:none; filter:none; } }
+@keyframes entraPanel { from { opacity:0; transform:translateY(90px) scale(.92) rotateX(16deg); filter:blur(6px); } to { opacity:1; transform:none; filter:none; } }
+@keyframes pantalla { from { opacity:0; transform:scale(.95); filter:blur(10px); } to { opacity:1; transform:none; filter:none; } }
+@keyframes sello { from { transform:scaleX(0); opacity:0; } to { transform:none; opacity:1; } }
+@keyframes panelMenu { from { opacity:0; transform:translateY(-8px) scale(.98); } to { opacity:1; transform:none; } }
+
+@media print {
+  .progreso { display:none !important; }
+  .fluido .panel, .fluido .pantallas { transform:none !important; }
+}

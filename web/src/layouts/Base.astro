@@ -18,8 +18,10 @@ const url = new URL(Astro.url.pathname, Astro.site).href;
 ---
 <!doctype html>
 <!-- data-tema="claro": la página alterna sola franjas claras y oscuras, así que no sigue el modo
-     oscuro del teléfono (colores.css solo cambia la paleta cuando NO dice "claro"). -->
-<html lang="es-PE" data-tema="claro">
+     oscuro del teléfono (colores.css solo cambia la paleta cuando NO dice "claro").
+     class="fluido": enciende la capa de acabado y movimiento (fluido.css y fluido.js). Sin esa
+     clase, el sitio se ve exactamente como antes. -->
+<html lang="es-PE" data-tema="claro" class="fluido">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -57,6 +59,9 @@ const url = new URL(Astro.url.pathname, Astro.site).href;
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
 <link rel="stylesheet" href="/colores.css">
 <link rel="stylesheet" href="/estilos.css">
+<link rel="stylesheet" href="/fluido.css">
+<!-- fluido.js va antes que sitio.js: suma piezas a la aparición al bajar, que anima sitio.js. -->
+<script is:inline src="/fluido.js" defer></script>
 <script is:inline src="/sitio.js" defer></script>
 </head>
 <!-- Contacto en UN solo lugar:
