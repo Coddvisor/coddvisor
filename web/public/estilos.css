@@ -445,6 +445,9 @@ html:not(.js) form[data-form] { display:none; }
 .rpaso:first-child .rpaso-dato { background:var(--ambar-claro); }
 .rpaso p { margin-top:14px; font-size:16px; line-height:1.55; color:var(--texto-2); }
 .recorrido .maqueta-rot { text-align:left; }
+/* Enlace a /como-funciona/: botón secundario (hielo y azul), no compite con «Quiero probarlo». */
+.recorrido-mas { margin-top:28px; display:inline-flex; align-items:center; gap:8px; min-height:48px; padding:0 20px; border-radius:14px; background:var(--hielo); color:var(--azul-real); font-weight:600; text-decoration:none; }
+.recorrido-mas:hover { box-shadow:inset 0 0 0 1px currentColor; }
 
 /* ---------- Páginas interiores (Nosotros, error) ----------
    La misma franja oscura de la portada, en una sola columna y más baja. */
