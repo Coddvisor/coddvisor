@@ -1,7 +1,9 @@
 ---
 // Herramienta gratis: vacaciones. La calculadora arriba y la guía debajo.
-// Reglas en public/herramientas/vacaciones.js. Guía del borrador aprobado (web/borradores/vacaciones.md).
+// Cuentas en public/herramientas/laboral.js (compartidas con gratificación, CTS y liquidación);
+// esta página las usa desde public/herramientas/vacaciones.js.
 // Truncas e indemnización en la MYPE: pendientes de confirmar; la herramienta remite al contador.
+// Diseño: el mismo de las herramientas nuevas (herramienta.css). La guía conserva TODO su texto.
 import Base from '../../layouts/Base.astro';
 import { llamado } from '../../datos/navegacion';
 import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
@@ -12,6 +14,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
 <Base
   titulo="Calculadora de vacaciones gratis: días y pago por régimen | Coddvisor"
   descripcion="Calcule cuántos días de vacaciones da y cuánto pagar según su régimen, las vacaciones truncas y las no tomadas a tiempo. Gratis y sin registrarse.">
+<link slot="cabeza" rel="stylesheet" href="/herramientas/herramienta.css">
 
 <section class="portada portada--interior osc" aria-labelledby="hv-t">
   <div class="brillo brillo--ambar" aria-hidden="true"></div>
@@ -28,124 +31,193 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
   </div>
 </section>
 
-<section class="caja-sec" aria-label="Calculadora de vacaciones">
+<section class="her-sec" aria-label="Calculadora de vacaciones">
   <div class="col">
-    <form class="caja" id="vaca" autocomplete="off" novalidate>
-      <div class="caja-hoja">
-        <fieldset class="caja-bloque">
-          <legend><span class="caja-n">1</span>¿Qué quiere calcular?</legend>
-          <div class="opciones" role="radiogroup" aria-label="Qué calcular">
-            <label class="opcion"><input type="radio" name="modo" value="anio" checked><span><b>Las vacaciones del año</b><small>La persona cumplió su año y va a descansar</small></span></label>
-            <label class="opcion"><input type="radio" name="modo" value="truncas"><span><b>Se va antes de cumplir el año</b><small>Vacaciones truncas, para su liquidación</small></span></label>
-            <label class="opcion"><input type="radio" name="modo" value="vencidas"><span><b>No las tomó a tiempo</b><small>Pasó el año siguiente sin descansar</small></span></label>
-          </div>
-        </fieldset>
+    <div class="lienzo">
+      <form class="igv" id="vaca" autocomplete="off" novalidate>
+        <div>
+          <label class="igv-et" for="va-sueldo">Sueldo mensual</label>
+          <div class="igv-monto"><span>S/</span><input id="va-sueldo" name="sueldo" type="text" inputmode="decimal" value="1500.00"></div>
 
-        <fieldset class="caja-bloque">
-          <legend><span class="caja-n">2</span>El régimen de su negocio</legend>
-          <div class="opciones opciones--2" role="radiogroup" aria-label="Régimen">
-            <label class="opcion"><input type="radio" name="regimen" value="general" checked><span><b>Régimen general</b><small>O no está inscrito en el REMYPE: 30 días</small></span></label>
-            <label class="opcion"><input type="radio" name="regimen" value="pequena"><span><b>Pequeña empresa</b><small>Inscrita en el REMYPE: 15 días</small></span></label>
-            <label class="opcion"><input type="radio" name="regimen" value="micro"><span><b>Microempresa</b><small>Inscrita en el REMYPE: 15 días</small></span></label>
-            <label class="opcion"><input type="radio" name="regimen" value="nose"><span><b>No lo sé</b><small>Le mostramos los tres resultados</small></span></label>
+          <div class="igv-grupo">
+            <p class="igv-et" id="va-g-modo">¿Qué quiere calcular?</p>
+            <div class="seg" role="radiogroup" aria-labelledby="va-g-modo">
+              <span class="seg-ficha" aria-hidden="true"></span>
+              <input type="radio" name="modo" id="va-anio" value="anio" checked><label for="va-anio">Del año</label>
+              <input type="radio" name="modo" id="va-truncas" value="truncas"><label for="va-truncas">Se va</label>
+              <input type="radio" name="modo" id="va-vencidas" value="vencidas"><label for="va-vencidas">No las tomó</label>
+            </div>
+            <p class="igv-ayuda">«Se va»: vacaciones truncas, para su liquidación. «No las tomó»: pasó el año siguiente sin descansar.</p>
           </div>
-        </fieldset>
 
-        <fieldset class="caja-bloque">
-          <legend><span class="caja-n">3</span>La persona</legend>
-          <div class="caja-campos">
-            <div class="campo campo--monto"><label for="va-sueldo">Sueldo mensual</label><div class="monto"><span>S/</span><input id="va-sueldo" name="sueldo" type="number" inputmode="decimal" min="0" step="0.01" value="1500"></div></div>
-            <div class="campo"><label for="va-ingreso">Fecha de ingreso <small>(opcional)</small></label><input id="va-ingreso" name="ingreso" type="date"></div>
+          <div class="igv-grupo">
+            <p class="igv-et" id="va-g-reg">El régimen de su negocio</p>
+            <div class="seg" role="radiogroup" aria-labelledby="va-g-reg">
+              <span class="seg-ficha" aria-hidden="true"></span>
+              <input type="radio" name="regimen" id="va-general" value="general" checked><label for="va-general">General</label>
+              <input type="radio" name="regimen" id="va-pequena" value="pequena"><label for="va-pequena">Pequeña</label>
+              <input type="radio" name="regimen" id="va-micro" value="micro"><label for="va-micro">Micro</label>
+              <input type="radio" name="regimen" id="va-nose" value="nose"><label for="va-nose">No lo sé</label>
+            </div>
+            <p class="igv-ayuda">General: 30 días. Pequeña y micro inscritas en el REMYPE: 15 días. Si no está inscrito, elija General.</p>
           </div>
-          <div class="caja-campos" data-modo="truncas" hidden>
-            <div class="campo"><label for="va-meses">Meses completos trabajados</label><input id="va-meses" name="meses" type="number" inputmode="numeric" min="0" max="11" step="1" value="7"></div>
-            <div class="campo"><label for="va-dias">Días sueltos además</label><input id="va-dias" name="dias" type="number" inputmode="numeric" min="0" max="29" step="1" value="10"></div>
-          </div>
-          <label class="casilla"><input type="checkbox" name="horas4" checked> Trabaja 4 horas al día o más <small>(si no, no le corresponden vacaciones)</small></label>
-          <label class="casilla" data-vende><input type="checkbox" name="vende"> Quiere vender 15 de sus 30 días <small>(por acuerdo escrito)</small></label>
-        </fieldset>
-      </div>
 
-      <aside class="caja-res" aria-labelledby="va-res-t">
-        <div class="res-tarjeta">
-          <p class="rotulo" id="va-res-t">Resultado</p>
-          <div class="res-estado" data-estado="info" role="status" aria-live="polite">
-            <p class="res-v" data-r="veredicto">30 días: pague S/ 1,500.00</p>
-            <p class="res-linea" data-r="linea">Páguelo antes de que la persona salga de vacaciones. Lleva EsSalud y ONP, como el sueldo.</p>
+          <div class="igv-grupo">
+            <p class="igv-et">La persona</p>
+            <div class="caja-campos" data-modo="anio">
+              <div class="campo"><label for="va-ingreso">Fecha de ingreso <small>(opcional)</small></label><input id="va-ingreso" name="ingreso" type="date"></div>
+            </div>
+            <div class="caja-campos" data-modo="truncas" hidden>
+              <div class="campo"><label for="va-meses">Meses completos trabajados</label><input id="va-meses" name="meses" type="number" inputmode="numeric" min="0" max="11" step="1" value="7"></div>
+              <div class="campo"><label for="va-dias">Días sueltos además</label><input id="va-dias" name="dias" type="number" inputmode="numeric" min="0" max="29" step="1" value="10"></div>
+            </div>
+            <label class="casilla"><input type="checkbox" name="horas4" checked> Trabaja 4 horas al día o más <small>(si no, no le corresponden vacaciones)</small></label>
+            <label class="casilla" data-vende><input type="checkbox" name="vende"> Quiere vender 15 de sus 30 días <small>(por acuerdo escrito)</small></label>
           </div>
-          <dl class="res-lista res-lista--partir" data-uno>
-            <div><dt>Días</dt><dd data-r="dias">30 días</dd></div>
-            <div><dt>Pago</dt><dd data-r="pago">S/ 1,500.00</dd></div>
-            <div data-fila="venta" hidden><dt>Venta de 15 días</dt><dd data-r="venta">S/ 0.00</dd></div>
-            <div class="res-total"><dt>Total</dt><dd data-r="total">S/ 1,500.00</dd></div>
-          </dl>
+        </div>
+
+        <div class="igv-res vaca-res" role="status" aria-live="polite">
+          <p class="igv-et" data-r="et">Páguelo antes de que la persona salga de vacaciones</p>
+          <p class="igv-grande" data-r="total">S/ 1,500.00</p>
+          <p class="igv-frase" data-r="frase">30 días de descanso. Lleva EsSalud y ONP, como el sueldo.</p>
+          <div data-uno>
+            <div class="leyenda-rep">
+              <div><span data-r="l-dias">Días</span><b data-r="dias">30 días</b></div>
+              <div><span>Pago</span><b data-r="pago">S/ 1,500.00</b></div>
+              <div data-fila="venta" hidden><span>Venta de 15 días</span><b></b></div>
+              <div data-fila="gana" hidden><span>Cumple su año</span><b></b></div>
+              <div data-fila="limite" hidden><span>Debe tomarlas antes del</span><b></b></div>
+            </div>
+            <div class="igv-cuenta" data-cuenta>
+              <p class="igv-et">La cuenta, con sus números</p>
+              <p class="igv-cuenta-l" data-r="cuenta">1,500.00 ÷ 30 × 30 = <span class="ce">1,500.00</span><br>Total: <span class="am">1,500.00</span></p>
+              <a href="#g-calculo">Por qué se divide entre 30</a>
+            </div>
+          </div>
           <div class="tres" data-tres hidden>
             <div><p class="tres-t">Régimen general</p><p class="tres-v" data-r="t-general">S/ 0.00</p><p class="tres-d" data-r="t-general-det"></p></div>
             <div><p class="tres-t">Pequeña empresa</p><p class="tres-v" data-r="t-pequena">S/ 0.00</p><p class="tres-d" data-r="t-pequena-det"></p></div>
             <div><p class="tres-t">Microempresa</p><p class="tres-v" data-r="t-micro">S/ 0.00</p><p class="tres-d" data-r="t-micro-det"></p></div>
           </div>
-          <dl class="res-lista" data-fechas hidden>
-            <div><dt>Cumple su año</dt><dd data-r="f-gana"></dd></div>
-            <div><dt>Debe tomarlas antes del</dt><dd data-r="f-limite"></dd></div>
-          </dl>
+          <div class="igv-acc">
+            <button type="button" class="boton-claro" data-copiar>Copiar resultado</button>
+            <span class="igv-aviso" data-copiado role="status"></span>
+          </div>
         </div>
-      </aside>
-    </form>
+      </form>
+    </div>
   </div>
+  <a class="barra-movil" href="#vaca" data-barra>Vacaciones a pagar <b data-barra-n>S/ 1,500.00</b></a>
 </section>
 
-<article class="guia" aria-labelledby="guia-t">
-  <div class="col guia-in">
-    <header class="guia-cab">
+<!-- Guía: el artículo del blog vive aquí, debajo de la herramienta. -->
+<article class="guia guia-nueva" aria-labelledby="guia-t">
+  <div class="col">
+    <header class="guia-cab guia-in">
       <p class="rotulo">Guía · {h.categoria}</p>
       <h2 class="titular guia-t" id="guia-t">{h.guia}</h2>
       <p class="guia-meta">{autor} · <time datetime={h.publicada}>{fechaLarga(h.publicada)}</time> · {h.lectura} min de lectura</p>
     </header>
 
-    <div class="guia-cuerpo">
+    <nav class="guia-indice" aria-label="En esta guía">
+      <a href="#g-resumen" data-ind="g-resumen">En 30 segundos</a>
+      <a href="#g-que" data-ind="g-que">Qué son</a>
+      <a href="#g-pasos" data-ind="g-pasos">Paso a paso</a>
+      <a href="#g-calculo" data-ind="g-calculo">Cómo se calcula</a>
+      <a href="#g-dudas" data-ind="g-dudas">Dudas</a>
+      <a href="#g-revisar" data-ind="g-revisar">Si no cuadra</a>
+      <a href="#g-preguntas" data-ind="g-preguntas">Preguntas</a>
+      <span class="leido" data-leido></span>
+    </nav>
+
+    <div class="resumen30 guia-sec" id="g-resumen">
+      <b class="r">EN 30 SEGUNDOS</b>
       <p>En el régimen general, cada persona tiene 30 días de vacaciones pagadas por cada año completo de trabajo. En una micro o pequeña empresa inscrita en el REMYPE, son 15 días. El pago es el sueldo de esos días y se entrega antes de que la persona salga.</p>
+    </div>
 
-      <h3>Qué son las vacaciones</h3>
-      <p>Son días de descanso pagados que la persona gana después de un año completo de trabajo. Se cuentan en días calendario, así que los domingos y feriados que caen en medio también cuentan. Deben tomarse dentro del año siguiente a aquel en que se ganaron.</p>
-      <p>Para ganarlas, no basta con cumplir el año: hay que haber trabajado un mínimo de días. Son 260 días si la persona trabaja 6 días a la semana, o 210 si trabaja 5. El descanso médico, hasta 60 días al año, y las vacaciones del año anterior cuentan como días trabajados.</p>
-
-      <h3>Paso a paso</h3>
-      <ol class="guia-pasos">
-        <li><b>Confirme su régimen.</b> Busque su RUC en la consulta del REMYPE. Si su negocio no está inscrito, da 30 días, aunque sea pequeño.</li>
-        <li><b>Revise la fecha de ingreso de cada persona.</b> El derecho nace cuando cumple un año, no en enero. Anote en qué mes le toca a cada una.</li>
-        <li><b>Arme el rol de vacaciones del año.</b> Acuerde las fechas con cada persona y póngalas por escrito. Cuide que no salgan a la vez todas las personas de una misma sede.</li>
-        <li><b>Pague antes de que salga.</b> El pago es lo que la persona gana normalmente, incluidas las comisiones o los pagos que recibe con regularidad. Lleva los mismos aportes que el sueldo: EsSalud y ONP.</li>
-        <li><b>Que las tome a tiempo.</b> Si pasa el año siguiente sin descansar, usted debe pagar más, como se explica abajo.</li>
-      </ol>
-
-      <h3>Cómo se calcula</h3>
-      <div class="formula" aria-label="Fórmula">
-        <p><b>Pago de vacaciones</b> = sueldo mensual ÷ 30 × días de vacaciones</p>
-        <p><b>Vacaciones truncas</b> = sueldo ÷ 12 × meses trabajados + sueldo ÷ 360 × días sueltos</p>
+    <section class="guia-sec" id="g-que" aria-labelledby="g-que-t">
+      <h3 class="guia-sec-t" id="g-que-t">Qué son las vacaciones</h3>
+      <div class="guia-texto">
+        <p>Son días de descanso pagados que la persona gana después de un año completo de trabajo. Se cuentan en días calendario, así que los domingos y feriados que caen en medio también cuentan. Deben tomarse dentro del año siguiente a aquel en que se ganaron.</p>
+        <p>Para ganarlas, no basta con cumplir el año: hay que haber trabajado un mínimo de días. Son 260 días si la persona trabaja 6 días a la semana, o 210 si trabaja 5. El descanso médico, hasta 60 días al año, y las vacaciones del año anterior cuentan como días trabajados.</p>
       </div>
-      <p><b>Un ejemplo.</b> Una persona gana S/ 1,500 y cumplió su año.</p>
-      <ul class="guia-lista">
-        <li><b>Régimen general:</b> 30 días, <b>S/ 1,500</b>.</li>
-        <li><b>Pequeña o microempresa inscrita:</b> 15 días, S/ 1,500 ÷ 30 × 15 = <b>S/ 750</b>.</li>
-      </ul>
-      <p>Ponga el sueldo de cada persona en la calculadora de arriba y verá sus días y su pago.</p>
+    </section>
 
-      <h3>Casos que generan dudas</h3>
-      <p><b>Quiere vender sus vacaciones.</b> En el régimen general, la persona puede vender hasta 15 de sus 30 días, por acuerdo escrito. Con un sueldo de S/ 1,500, descansa 15 días pagados con S/ 750, trabaja los otros 15 y recibe S/ 750 más por esos días vendidos.</p>
-      <p><b>Quiere partirlas en pedazos.</b> En el régimen general, la persona puede pedir por escrito tomarlas por partes. Debe tomar 15 días seguidos, o un bloque de 7 y otro de 8, y el resto puede repartirlo en días sueltos.</p>
-      <p>En una micro o pequeña empresa, la venta y el reparto en días sueltos no funcionan igual. Antes de firmar un acuerdo, consúltelo con su contador.</p>
-      <p><b>No las tomó a tiempo.</b> Si pasa el año siguiente y la persona no descansó, usted debe un sueldo por el descanso no tomado y otro de indemnización. Con S/ 1,500, son <b>S/ 3,000</b> además del sueldo que ya le pagó por trabajar. Se calcula con el sueldo vigente el día del pago, y la indemnización no lleva aportes ni impuestos.</p>
-      <p><b>Se va antes de cumplir el año.</b> Se le pagan las vacaciones <i>truncas</i> si trabajó al menos un mes. Si gana S/ 1,500 y se va con 7 meses y 10 días, recibe S/ 1,500 ÷ 12 × 7 = S/ 875 más S/ 1,500 ÷ 360 × 10 = S/ 41.67. Total: <b>S/ 916.67</b>, junto con su liquidación.</p>
+    <section class="guia-sec" id="g-pasos" aria-labelledby="g-pasos-t">
+      <h3 class="guia-sec-t" id="g-pasos-t">Paso a paso</h3>
+      <div class="guia-pro">
+        <ol class="pasos-pro" data-pasos>
+          <li data-paso="0"><span class="n">PASO 1</span><h4>Confirme su régimen.</h4><p>Busque su RUC en la consulta del REMYPE. Si su negocio no está inscrito, da 30 días, aunque sea pequeño.</p></li>
+          <li data-paso="1"><span class="n">PASO 2</span><h4>Revise la fecha de ingreso de cada persona.</h4><p>El derecho nace cuando cumple un año, no en enero. Anote en qué mes le toca a cada una.</p></li>
+          <li data-paso="2"><span class="n">PASO 3</span><h4>Arme el rol de vacaciones del año.</h4><p>Acuerde las fechas con cada persona y póngalas por escrito. Cuide que no salgan a la vez todas las personas de una misma sede.</p></li>
+          <li data-paso="3"><span class="n">PASO 4</span><h4>Pague antes de que salga.</h4><p>El pago es lo que la persona gana normalmente, incluidas las comisiones o los pagos que recibe con regularidad. Lleva los mismos aportes que el sueldo: EsSalud y ONP.</p></li>
+          <li data-paso="4"><span class="n">PASO 5</span><h4>Que las tome a tiempo.</h4><p>Si pasa el año siguiente sin descansar, usted debe pagar más, como se explica abajo.</p></li>
+        </ol>
+        <div class="escena">
+          <p class="igv-et">La cuenta, paso a paso</p>
+          <div class="ecu" aria-live="polite">
+            <p class="ecu-l" data-l="0"><span>Régimen general</span> <small>30 días</small></p>
+            <p class="ecu-l" data-l="1"><span>Entró el 10 de marzo de 2025</span> <small>cumple su año el 10 de marzo de 2026</small></p>
+            <p class="ecu-l" data-l="2"><span>Rol: del 1 al 30 de julio</span> <small>por escrito</small></p>
+            <p class="ecu-l" data-l="3">1,500.00 ÷ 30 × 30 = <span class="am">1,500.00</span> <small>antes de salir</small></p>
+            <p class="ecu-l" data-l="4"><span class="ok">Tomadas antes del 10 de marzo de 2027 ✓</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-      <h3>Si no cuadra, revise esto primero</h3>
-      <ol class="revisar">
-        <li><b>Dio 15 días sin estar inscrito en el REMYPE.</b> Sin inscripción, corresponden 30. Haga la consulta por RUC antes de armar el rol.</li>
-        <li><b>Pagó al regreso.</b> Las vacaciones se pagan antes de que la persona salga. Inclúyalas en la planilla del mes en que descansa.</li>
-        <li><b>Dejó pasar el plazo.</b> Es lo que más caro sale. Anote en el rol la fecha límite de cada persona y revíselo cada mes.</li>
-        <li><b>Acordó todo de palabra.</b> La venta, el reparto y las fechas deben quedar por escrito y firmados. Sin papel, no hay cómo probar el acuerdo.</li>
+    <section class="guia-sec" id="g-calculo" aria-labelledby="g-calculo-t">
+      <h3 class="guia-sec-t" id="g-calculo-t">Cómo se calcula</h3>
+      <div class="guia-texto">
+        <div class="formula" aria-label="Fórmula">
+          <p><b>Pago de vacaciones</b> = sueldo mensual ÷ 30 × días de vacaciones</p>
+          <p><b>Vacaciones truncas</b> = sueldo ÷ 12 × meses trabajados + sueldo ÷ 360 × días sueltos</p>
+        </div>
+        <p style="margin-top:18px"><b>Un ejemplo.</b> Una persona gana S/ 1,500 y cumplió su año.</p>
+        <ul class="guia-lista">
+          <li><b>Régimen general:</b> 30 días, <b>S/ 1,500</b>.</li>
+          <li><b>Pequeña o microempresa inscrita:</b> 15 días, S/ 1,500 ÷ 30 × 15 = <b>S/ 750</b>.</li>
+        </ul>
+        <p>Ponga el sueldo de cada persona en la calculadora de arriba y verá sus días y su pago.</p>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-dudas" aria-labelledby="g-dudas-t">
+      <h3 class="guia-sec-t" id="g-dudas-t">Casos que generan dudas</h3>
+      <div class="guia-texto">
+        <p><b>Quiere vender sus vacaciones.</b> En el régimen general, la persona puede vender hasta 15 de sus 30 días, por acuerdo escrito. Con un sueldo de S/ 1,500, descansa 15 días pagados con S/ 750, trabaja los otros 15 y recibe S/ 750 más por esos días vendidos.</p>
+        <p><b>Quiere partirlas en pedazos.</b> En el régimen general, la persona puede pedir por escrito tomarlas por partes. Debe tomar 15 días seguidos, o un bloque de 7 y otro de 8, y el resto puede repartirlo en días sueltos.</p>
+        <p>En una micro o pequeña empresa, la venta y el reparto en días sueltos no funcionan igual. Antes de firmar un acuerdo, consúltelo con su contador.</p>
+        <p><b>No las tomó a tiempo.</b> Si pasa el año siguiente y la persona no descansó, usted debe un sueldo por el descanso no tomado y otro de indemnización. Con S/ 1,500, son <b>S/ 3,000</b> además del sueldo que ya le pagó por trabajar. Se calcula con el sueldo vigente el día del pago, y la indemnización no lleva aportes ni impuestos.</p>
+        <p><b>Se va antes de cumplir el año.</b> Se le pagan las vacaciones <i>truncas</i> si trabajó al menos un mes. Si gana S/ 1,500 y se va con 7 meses y 10 días, recibe S/ 1,500 ÷ 12 × 7 = S/ 875 más S/ 1,500 ÷ 360 × 10 = S/ 41.67. Total: <b>S/ 916.67</b>, junto con su liquidación.</p>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-revisar" aria-labelledby="g-revisar-t">
+      <h3 class="guia-sec-t" id="g-revisar-t">Si no cuadra, revise esto primero</h3>
+      <ol class="errores" style="list-style:none;padding:0">
+        <li class="error-c">
+          <span class="n">1</span><h4>Dio 15 días sin estar inscrito en el REMYPE.</h4>
+          <div class="error-par" aria-hidden="true"><p class="no">15 días sin inscripción</p><p class="si"><i>✓</i> 30 días</p></div>
+          <p>Sin inscripción, corresponden 30. Haga la consulta por RUC antes de armar el rol.</p>
+        </li>
+        <li class="error-c">
+          <span class="n">2</span><h4>Pagó al regreso.</h4>
+          <p>Las vacaciones se pagan antes de que la persona salga. Inclúyalas en la planilla del mes en que descansa.</p>
+        </li>
+        <li class="error-c">
+          <span class="n">3</span><h4>Dejó pasar el plazo.</h4>
+          <p>Es lo que más caro sale. Anote en el rol la fecha límite de cada persona y revíselo cada mes.</p>
+        </li>
+        <li class="error-c">
+          <span class="n">4</span><h4>Acordó todo de palabra.</h4>
+          <p>La venta, el reparto y las fechas deben quedar por escrito y firmados. Sin papel, no hay cómo probar el acuerdo.</p>
+        </li>
       </ol>
+    </section>
 
-      <h3>Preguntas frecuentes</h3>
+    <section class="guia-sec" id="g-preguntas" aria-labelledby="g-preguntas-t">
+      <h3 class="guia-sec-t" id="g-preguntas-t">Preguntas frecuentes</h3>
       <div class="faq guia-faq">
         <details><summary>¿Le tocan vacaciones a quien trabaja medio tiempo?<span class="mas" aria-hidden="true">+</span></summary><p>Depende de las horas. Si trabaja 4 horas diarias o más, sí. Si trabaja menos de 4 horas al día, la ley no le da vacaciones.</p></details>
         <details><summary>¿Puedo adelantarle días antes de que cumpla el año?<span class="mas" aria-hidden="true">+</span></summary><p>Sí, por acuerdo escrito. Si luego se va, esos días se descuentan de sus vacaciones truncas, y lo que no alcance a cubrirse no se le cobra.</p></details>
@@ -162,7 +234,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
           <li>Aportes: <a href="https://orientacion.sunat.gob.pe/3094-principales-conceptos-afectos-al-aporte-al-snp-onp-personas" rel="noopener" target="_blank">SUNAT, conceptos afectos a ONP</a>. Infracciones: <a href="https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=47" rel="noopener" target="_blank">D.S. 019-2006-TR</a>.</li>
         </ul>
       </div>
-    </div>
+    </section>
   </div>
 </article>
 
@@ -181,5 +253,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
   </div>
 </section>
 
+<script is:inline src="/herramientas/laboral.js" defer></script>
 <script is:inline src="/herramientas/vacaciones.js" defer></script>
+<script is:inline src="/herramientas/guia.js" defer></script>
 </Base>

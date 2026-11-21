@@ -1,154 +1,132 @@
 /* Herramienta gratis: vacaciones.
    Todo ocurre en el navegador: no se envía nada a ningún servidor.
+   Las cuentas están en laboral.js (CoddvisorLaboral): aquí solo se leen los campos y se pinta.
 
-   Reglas (verificadas contra la norma el 20-nov-2026; fuentes en la guía de la página):
-   - Régimen general: 30 días por año completo (D. Leg. 713, art. 10). Micro y pequeña empresa
-     inscrita en el REMYPE: 15 días (TUO Ley MYPE, art. 55).
-   - Pago = sueldo ÷ 30 × días, antes de que la persona salga (D. Leg. 713, arts. 15 y 16).
-   - Venta de hasta 15 días, solo en el régimen general (D. Leg. 713, art. 19; D.S. 002-2019-TR, art. 3.2).
-   - Truncas (régimen general): sueldo ÷ 12 × meses + sueldo ÷ 360 × días (D. Leg. 713, art. 22).
-   - No tomadas a tiempo (régimen general): un sueldo por el descanso + uno de indemnización (art. 23).
+   Reglas propias de esta página (verificadas contra la norma el 20-nov-2026):
+   - Tres situaciones: las vacaciones del año, las truncas de quien se va antes del año y las no
+     tomadas a tiempo. Venta de 15 días solo en el régimen general.
    - Menos de 4 horas al día: sin derecho (D.S. 012-92-TR, art. 11).
-   NO SE CALCULA (pendiente de confirmar): truncas e indemnización en la micro y pequeña empresa.
-   La herramienta lo dice y remite al contador, en vez de adivinar.
-   Cuentas en céntimos; cada término se redondea por separado. */
+   - NO SE CALCULA (pendiente de confirmar): truncas e indemnización en la micro y pequeña empresa.
+     La página lo dice y remite al contador, en vez de adivinar. */
 (function () {
   'use strict';
+  var L = window.CoddvisorLaboral;
   var form = document.getElementById('vaca');
-  if (!form) return;
+  if (!form || !L) return;
 
+  var $ = function (s) { return form.querySelector(s); };
   var r = function (k) { return form.querySelector('[data-r="' + k + '"]'); };
-  var q = function (s) { return form.querySelector(s); };
   var el = function (n) { return form.elements[n]; };
-  var DIAS = { general: 30, pequena: 15, micro: 15 };
-  var NOMBRE = { general: 'Régimen general', pequena: 'Pequeña empresa', micro: 'Microempresa' };
-
-  function centimos(t) {
-    var n = parseFloat(String(t || '').trim().replace(',', '.'));
-    return isFinite(n) && n > 0 ? Math.round(n * 100) : 0;
-  }
-  function entero(t, max) {
-    var n = parseInt(String(t || '').trim(), 10);
-    if (!isFinite(n) || n < 0) return 0;
-    return max != null ? Math.min(n, max) : n;
-  }
-  function soles(c) {
-    return 'S/ ' + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
   function elegido(n) { var x = form.querySelector('input[name="' + n + '"]:checked'); return x ? x.value : ''; }
-  var MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-  function fecha(d) { return d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear(); }
+  function pintarBarra(v) { var b = document.querySelector('[data-barra-n]'); if (b) b.textContent = v; }
+  function fila(k, v) { var f = $('[data-fila="' + k + '"]'); f.hidden = v == null; if (v != null) f.querySelector('b').textContent = v; }
 
-  function vacacionesAnio(regimen, sueldo, vende) {
-    var dias = DIAS[regimen];
-    var pago = Math.round(sueldo / 30 * dias);
-    if (vende && regimen === 'general') {
-      var descanso = Math.round(sueldo / 30 * 15);
-      var venta = Math.round(sueldo / 30 * 15);
-      return { dias: 15, pago: descanso, venta: venta, total: descanso + venta };
-    }
-    return { dias: dias, pago: pago, venta: 0, total: pago };
+  var ET = {
+    anio: 'Páguelo antes de que la persona salga de vacaciones',
+    truncas: 'Pague junto con su liquidación',
+    vencidas: 'Debe pagar, además del sueldo por trabajar'
+  };
+
+  function aviso(total, frase) {
+    if (total == null) r('total').textContent = 'S/ 0.00'; else L.contar(r('total'), total);
+    r('frase').textContent = frase;
+    pintarBarra(total == null ? 'S/ 0.00' : L.soles(total));
   }
 
-  function pintar() {
+  function calcular() {
     var modo = elegido('modo') || 'anio';
     var regSel = elegido('regimen') || 'general';
-    var sueldo = centimos(el('sueldo').value);
-    var horas = el('horas4').checked;
     var noSabe = regSel === 'nose';
     var regimen = noSabe ? 'general' : regSel;
+    var sueldo = L.centimos(el('sueldo').value);
 
-    // Lo que se ve según el modo y el régimen
-    q('[data-modo="truncas"]').hidden = modo !== 'truncas';
-    q('[data-vende]').hidden = !(modo === 'anio' && regimen === 'general' && !noSabe);
-    q('[data-tres]').hidden = true;
-    q('[data-uno]').hidden = false;
-    q('[data-fila="venta"]').hidden = true;
+    $('[data-modo="truncas"]').hidden = modo !== 'truncas';
+    $('[data-modo="anio"]').hidden = modo !== 'anio';
+    $('[data-vende]').hidden = !(modo === 'anio' && regimen === 'general' && !noSabe);
+    r('et').textContent = ET[modo];
+    $('[data-tres]').hidden = true;
+    $('[data-uno]').hidden = false;
+    ['venta', 'gana', 'limite'].forEach(function (k) { fila(k, null); });
 
-    var estado = q('.res-estado');
-    var aviso = function (v, linea, e) {
-      estado.setAttribute('data-estado', e || 'info');
-      r('veredicto').textContent = v; r('linea').textContent = linea;
-    };
-
-    // Fechas a partir del ingreso (solo para el modo «del año»)
-    var ingreso = el('ingreso').value ? new Date(el('ingreso').value + 'T12:00:00') : null;
-    var fechas = q('[data-fechas]');
-    fechas.hidden = !(ingreso && modo === 'anio' && !isNaN(ingreso));
-    if (!fechas.hidden) {
-      var hoy = new Date();
-      var anio = new Date(ingreso); anio.setFullYear(ingreso.getFullYear() + 1);
-      while (anio < hoy && new Date(anio.getFullYear() + 1, anio.getMonth(), anio.getDate()) <= hoy) anio.setFullYear(anio.getFullYear() + 1);
-      var limite = new Date(anio); limite.setFullYear(anio.getFullYear() + 1);
-      r('f-gana').textContent = fecha(anio);
-      r('f-limite').textContent = fecha(limite);
-    }
-
-    if (!horas) {
-      q('[data-uno]').hidden = true;
-      return aviso('No le corresponden vacaciones', 'Quien trabaja menos de 4 horas al día no tiene derecho a vacaciones por ley.');
-    }
-    if (sueldo === 0) {
-      q('[data-uno]').hidden = true;
-      return aviso('Escriba el sueldo', 'Ponga el sueldo mensual de la persona y verá sus días y su pago.', 'vacio');
-    }
+    if (!el('horas4').checked) { $('[data-uno]').hidden = true; aviso(null, 'Quien trabaja menos de 4 horas al día no tiene derecho a vacaciones por ley.'); return L.fichas(form); }
+    if (sueldo === 0) { $('[data-uno]').hidden = true; aviso(null, 'Escriba el sueldo mensual de la persona para ver sus días y su pago.'); return L.fichas(form); }
 
     if (modo === 'anio') {
       if (noSabe) {
-        q('[data-uno]').hidden = true;
-        q('[data-tres]').hidden = false;
+        $('[data-uno]').hidden = true;
+        $('[data-tres]').hidden = false;
         ['general', 'pequena', 'micro'].forEach(function (g) {
-          var x = vacacionesAnio(g, sueldo, false);
-          r('t-' + g).textContent = soles(x.total);
+          var x = L.vacacionesAnio({ regimen: g, sueldo: sueldo });
+          r('t-' + g).textContent = L.soles(x.total);
           r('t-' + g + '-det').textContent = x.dias + ' días';
         });
-        return aviso('Prepare ' + soles(vacacionesAnio('general', sueldo, false).total),
-          'Es lo del régimen general, 30 días: el más alto. Confirme su régimen en la consulta del REMYPE.');
+        aviso(L.vacacionesAnio({ regimen: 'general', sueldo: sueldo }).total, 'Es lo del régimen general, 30 días: el más alto. Confirme su régimen en la consulta del REMYPE.');
+        return L.fichas(form);
       }
-      var x = vacacionesAnio(regimen, sueldo, el('vende').checked && regimen === 'general');
+      var x = L.vacacionesAnio({ regimen: regimen, sueldo: sueldo, vende: el('vende').checked });
+      r('l-dias').textContent = 'Días';
       r('dias').textContent = x.venta ? '15 + 15 vendidos' : x.dias + ' días';
-      r('pago').textContent = soles(x.pago);
-      r('total').textContent = soles(x.total);
-      q('[data-fila="venta"]').hidden = !x.venta;
-      r('venta').textContent = soles(x.venta);
-      return aviso(x.venta ? 'Pague ' + soles(x.total) : x.dias + ' días: pague ' + soles(x.total),
-        x.venta ? soles(x.pago) + ' por los 15 días de descanso y ' + soles(x.venta) + ' por los 15 vendidos, aparte de su sueldo. Todo por escrito.'
-                : 'Páguelo antes de que la persona salga de vacaciones. Lleva EsSalud y ONP, como el sueldo.');
+      r('pago').textContent = L.soles(x.pago);
+      if (x.venta) fila('venta', L.soles(x.venta));
+      r('cuenta').innerHTML = L.numero(sueldo) + ' ÷ 30 × ' + (x.venta ? 15 : x.dias) + ' = <span class="ce">' + L.numero(x.pago) + '</span>' +
+        (x.venta ? '<br>Venta: ' + L.numero(sueldo) + ' ÷ 30 × 15 = <span class="ce">' + L.numero(x.venta) + '</span>' : '') +
+        '<br>Total: <span class="am">' + L.numero(x.total) + '</span>';
+      // Fechas a partir del ingreso: cuándo cumple su año y hasta cuándo debe tomarlas
+      if (el('ingreso').value) {
+        var ingreso = L.fecha(el('ingreso').value), hoy = new Date();
+        var anio = new Date(ingreso); anio.setFullYear(ingreso.getFullYear() + 1);
+        while (new Date(anio.getFullYear() + 1, anio.getMonth(), anio.getDate()) <= hoy) anio.setFullYear(anio.getFullYear() + 1);
+        var limite = new Date(anio); limite.setFullYear(anio.getFullYear() + 1);
+        fila('gana', L.corta(anio)); fila('limite', L.corta(limite));
+      }
+      aviso(x.total, x.venta ? L.soles(x.pago) + ' por los 15 días de descanso y ' + L.soles(x.venta) + ' por los 15 vendidos, aparte de su sueldo. Todo por escrito.'
+                              : x.dias + ' días de descanso. Lleva EsSalud y ONP, como el sueldo.');
+      return L.fichas(form);
     }
 
     if (modo === 'truncas') {
-      if (regimen !== 'general' || noSabe) {
-        q('[data-uno]').hidden = true;
-        return aviso('Consulte con su contador',
-          noSabe ? 'Las vacaciones truncas dependen del régimen. Confírmelo primero en la consulta del REMYPE.'
-                 : 'La ley no dice con claridad cómo se calculan las vacaciones truncas en la micro y pequeña empresa. Preferimos no darle un número que podría estar mal.');
+      var t = { meses: L.entero(el('meses').value, 11), dias: L.entero(el('dias').value, 29) };
+      var tr = L.vacacionesTruncas({ regimen: regimen, sueldo: sueldo, meses: t.meses, dias: t.dias });
+      if (!tr || noSabe) {
+        $('[data-uno]').hidden = true;
+        aviso(null, noSabe ? 'Las vacaciones truncas dependen del régimen. Confírmelo primero en la consulta del REMYPE.'
+                           : 'Consulte con su contador. La ley no dice con claridad cómo se calculan las vacaciones truncas en la micro y pequeña empresa, y preferimos no darle un número que podría estar mal.');
+        return L.fichas(form);
       }
-      var meses = entero(el('meses').value, 11), dias = entero(el('dias').value, 29);
-      if (meses === 0) {
-        q('[data-uno]').hidden = true;
-        return aviso('No le corresponden', 'Las vacaciones truncas se pagan si la persona trabajó al menos un mes completo.');
-      }
-      var porMeses = Math.round(sueldo / 12 * meses), porDias = Math.round(sueldo / 360 * dias);
-      r('dias').textContent = meses + (meses === 1 ? ' mes' : ' meses') + (dias ? ' y ' + dias + (dias === 1 ? ' día' : ' días') : '');
-      r('pago').textContent = soles(porMeses) + ' + ' + soles(porDias);
-      r('total').textContent = soles(porMeses + porDias);
-      return aviso('Pague ' + soles(porMeses + porDias), 'Junto con su liquidación, cuando se vaya.');
+      if (t.meses === 0) { $('[data-uno]').hidden = true; aviso(null, 'Las vacaciones truncas se pagan si la persona trabajó al menos un mes completo.'); return L.fichas(form); }
+      r('l-dias').textContent = 'Tiempo';
+      r('dias').textContent = L.textoTiempo(t);
+      r('pago').textContent = L.soles(tr.porMeses) + ' + ' + L.soles(tr.porDias);
+      r('cuenta').innerHTML = L.numero(sueldo) + ' ÷ 12 × ' + t.meses + ' = <span class="ce">' + L.numero(tr.porMeses) + '</span>' +
+        (t.dias ? '<br>' + L.numero(sueldo) + ' ÷ 360 × ' + t.dias + ' = <span class="ce">' + L.numero(tr.porDias) + '</span>' : '') +
+        '<br>Total: <span class="am">' + L.numero(tr.total) + '</span>';
+      aviso(tr.total, 'Junto con su liquidación, cuando se vaya.');
+      return L.fichas(form);
     }
 
-    // modo === 'vencidas'
-    if (regimen !== 'general' || noSabe) {
-      q('[data-uno]').hidden = true;
-      return aviso('Consulte con su contador', 'Cómo se calcula la indemnización en la micro y pequeña empresa no está claro en la ley. Preferimos no darle un número que podría estar mal.');
+    // No tomadas a tiempo
+    var v = L.vacacionesVencidas({ regimen: regimen, sueldo: sueldo });
+    if (!v || noSabe) {
+      $('[data-uno]').hidden = true;
+      aviso(null, 'Consulte con su contador. Cómo se calcula la indemnización en la micro y pequeña empresa no está claro en la ley, y preferimos no darle un número que podría estar mal.');
+      return L.fichas(form);
     }
+    r('l-dias').textContent = 'Qué se debe';
     r('dias').textContent = 'Descanso + indemnización';
-    r('pago').textContent = soles(sueldo) + ' + ' + soles(sueldo);
-    r('total').textContent = soles(sueldo * 2);
-    return aviso('Debe ' + soles(sueldo * 2) + ' más',
-      'Además del sueldo que ya le pagó por trabajar. La indemnización, ' + soles(sueldo) + ', no lleva aportes ni impuestos.', 'aviso');
+    r('pago').textContent = L.soles(v.descanso) + ' + ' + L.soles(v.indemnizacion);
+    r('cuenta').innerHTML = 'Descanso: <span class="ce">' + L.numero(v.descanso) + '</span><br>Indemnización: <span class="ce">' + L.numero(v.indemnizacion) + '</span><br>Total: <span class="am">' + L.numero(v.total) + '</span>';
+    aviso(v.total, 'Además del sueldo que ya le pagó por trabajar. La indemnización, ' + L.soles(v.indemnizacion) + ', no lleva aportes ni impuestos.');
+    L.fichas(form);
   }
 
-  form.addEventListener('input', pintar);
-  form.addEventListener('change', pintar);
+  form.addEventListener('input', calcular);
+  form.addEventListener('change', calcular);
   form.addEventListener('submit', function (e) { e.preventDefault(); });
-  pintar();
+  L.copiar($('[data-copiar]'), $('[data-copiado]'), function () {
+    return 'Vacaciones: ' + r('total').textContent + '. ' + r('frase').textContent + ' (coddvisor.com/herramientas/vacaciones/)';
+  });
+  window.addEventListener('resize', function () { L.fichas(form); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { L.fichas(form); });
+  L.barraMovil(form, $('.vaca-res'));
+  calcular();
 })();
