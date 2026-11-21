@@ -11,6 +11,7 @@ cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar
 | Carpeta o archivo        | Qué es                                                       |
 |--------------------------|--------------------------------------------------------------|
 | `src/pages/`             | Las páginas. Cada archivo es una dirección: `index.astro` es la portada, `nosotros.astro` es `/nosotros/`, `404.astro` es la página de error |
+| `src/pages/manifiesto.astro`, `src/pages/constitucion.astro` | El Manifiesto y la Constitución. Se **generan** de los textos aprobados: no se editan a mano |
 | `src/datos/navegacion.ts`| **El menú y el pie**: la única lista de enlaces del sitio      |
 | `src/layouts/Base.astro` | El molde de todas las páginas: `<head>`, íconos, correo y WhatsApp, cabecera y pie |
 | `src/components/`        | Piezas del molde: `Cabecera` (con el menú), `Pie` y `Logotipo` |
@@ -27,6 +28,15 @@ cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar
 | `package.json`           | Qué versión de Astro usa el sitio. Va **fija** (sin `^`)      |
 | `astro.config.mjs`       | La configuración de Astro                                     |
 | `dist/`                  | Lo que Astro genera. No se sube a GitHub: Cloudflare lo arma solo |
+
+## Manifiesto y Constitución
+
+Las dos páginas salen de textos que viven fuera de `web/` (los borradores de la Constitución) y se
+**generan**: si el texto cambia, se regeneran y se revisan de nuevo; no se editan a ratos.
+
+Publicadas el 21-nov-2026 por decisión del fundador. **Pendiente:** la revisión de un abogado
+peruano, que el fundador hará más adelante. Lo que una empresa ofrece en público se le puede
+exigir: si el abogado cambia una frase, se cambia el texto y se regenera la página.
 
 ## El menú (un solo lugar)
 

@@ -714,3 +714,15 @@ html:not(.js) form[data-form] { display:none; }
   .conteo-fila input, .campo input { min-height:0; border:0; padding:0; background:none; }
   .osc { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 }
+
+/* ---------- Textos largos (Manifiesto y Constitución) ----------
+   Se apoyan en .guia. Aquí solo lo que .guia no trae: subtítulos, citas grandes con barra ámbar y
+   el enlace al otro texto. */
+.guia-cuerpo--texto h4 { margin-top:28px; font:700 13px/1.3 var(--mono); text-transform:uppercase; letter-spacing:.06em; color:var(--texto-2); }
+.guia-cuerpo--texto blockquote { margin:26px 0 0; padding:4px 0 4px 22px; border-left:4px solid var(--ambar); font-size:clamp(20px, 1.2vw + 14px, 26px); line-height:1.35; font-weight:500; letter-spacing:-.01em; color:var(--cobalto); }
+.guia-cuerpo--texto blockquote p { margin:0; color:inherit; }
+.guia-cuerpo--texto blockquote p + p { margin-top:1em; }
+.guia-cuerpo--texto li + li { margin-top:10px; }
+.guia-cuerpo--texto ul, .guia-cuerpo--texto ol { margin-top:14px; }
+.guia-nota { font:400 14px/1.5 var(--mono); color:var(--texto-2); }
+.guia-sig { margin-top:48px !important; padding-top:22px; border-top:1px solid var(--borde); font-weight:600; }
