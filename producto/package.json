@@ -1,0 +1,26 @@
+{
+  "name": "coddvisor-producto",
+  "private": true,
+  "type": "module",
+  "description": "Sistema de gestión Coddvisor: la Caja, Mi negocio y el servidor.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "tipos": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.paquetes.json",
+    "estilo": "eslint .",
+    "fronteras": "depcruise --config .dependency-cruiser.cjs .",
+    "pruebas": "vitest run",
+    "probar-reglas": "node herramientas/reglas-ci/probar-reglas.mjs",
+    "verificar": "pnpm tipos && pnpm estilo && pnpm fronteras && pnpm pruebas && pnpm probar-reglas"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.2",
+    "dependency-cruiser": "18.8.0",
+    "eslint": "10.15.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.73.0",
+    "vitest": "5.1.1"
+  }
+}

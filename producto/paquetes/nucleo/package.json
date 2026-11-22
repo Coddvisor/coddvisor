@@ -1,0 +1,9 @@
+{
+  "name": "@coddvisor/nucleo",
+  "private": true,
+  "type": "module",
+  "description": "Tipos base que usan la caja y el servidor por igual. Código puro: sin reloj, sin azar, sin red.",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

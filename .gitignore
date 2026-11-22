@@ -17,9 +17,43 @@ secrets*
 
 # --- Documentos privados del negocio ---
 # Este repositorio es público. Las notas privadas van en archivos *.local.md
-# y los documentos privados viven fuera de este proyecto. Estas reglas son un
-# cinturón de seguridad por si alguien copia una parte aquí.
+# (o *.local.txt, .csv, .py, .html, .json, .xlsx, .pdf, .sql) y los documentos
+# privados viven fuera de este proyecto. Estas reglas son un cinturón de
+# seguridad por si alguien copia una parte aquí. El código del producto nunca
+# usa ".local." en su nombre, para no quedar oculto por error.
 *.local.md
+*.local.txt
+*.local.csv
+*.local.py
+*.local.html
+*.local.json
+*.local.xlsx
+*.local.pdf
+*.local.sql
+
+# --- Datos de negocios ---
+# Solo datos inventados entran al repositorio. Una base local, su diario (-wal,
+# -shm, -journal) o un respaldo pueden guardar ventas reales de una bodega.
+**/datos-reales/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.dump
+respaldo*.sql
+backup*.sql
+
+# --- Llaves de la app de Android y de servicios ---
+# Con estas se firma la caja o se entra a servicios: publicarlas es perderlas.
+*.jks
+*.keystore
+keystore.properties
+google-services.json
+local.properties
+.npmrc
+*.p8
+.dev.vars
 memoria-inversionistas*/
 *memoria*inversionista*
 

@@ -1,0 +1,17 @@
+{
+  // paquetes/ corre igual en la caja sin red y en el servidor. Por eso aquí
+  // TypeScript no conoce Node (fs, Buffer, process) ni el navegador (fetch,
+  // localStorage, setTimeout): si alguien los usa, el tipo no existe y la
+  // revisión falla. Este es el muro principal de la pureza; ESLint es una cerca
+  // adicional para lo que sí existe en JavaScript puro (Date, Math.random, Intl).
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": [],
+    "paths": {
+      "@coddvisor/*": ["./paquetes/*/src/index.ts"]
+    }
+  },
+  "include": ["paquetes/*/src/**/*.ts", "paquetes/*/src/**/*.mts", "paquetes/*/src/**/*.cts"],
+  "exclude": ["paquetes/*/src/**/*.test.ts"]
+}

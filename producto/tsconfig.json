@@ -1,0 +1,25 @@
+{
+  // Revisión de todo lo que no es paquetes/ (apps, módulos, plataforma,
+  // herramientas) y de las pruebas, que sí corren en Node. paquetes/ además se
+  // revisa sin Node con tsconfig.paquetes.json.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "paths": {
+      "@coddvisor/*": ["./paquetes/*/src/index.ts"]
+    }
+  },
+  "include": [
+    "apps/*/src/**/*.ts",
+    "apps/*/src/**/*.tsx",
+    "apps/*/src/**/*.mts",
+    "paquetes/*/src/**/*.ts",
+    "paquetes/*/src/**/*.mts",
+    "modulos/*/src/**/*.ts",
+    "modulos/*/src/**/*.mts",
+    "plataforma/*/src/**/*.ts",
+    "plataforma/*/src/**/*.mts",
+    "herramientas/*/src/**/*.ts",
+    "*.ts"
+  ]
+}

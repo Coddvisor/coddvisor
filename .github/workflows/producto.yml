@@ -1,0 +1,46 @@
+# Revisión automática del producto en cada cambio.
+#
+# Seguridad en un repositorio público:
+# - Solo tiene permiso de lectura y no usa ningún secreto.
+# - Usa `pull_request` y nunca `pull_request_target`: así el código de un cambio
+#   ajeno corre sin acceso a nada privado.
+# - El checkout no guarda credenciales.
+#
+# Corre en todo pull request, aunque no toque producto/: si se filtrara por
+# carpetas, el día que esta revisión sea obligatoria un cambio solo del sitio web
+# quedaría bloqueado esperando una revisión que nunca corre. Tarda poco.
+name: Producto · verificar
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: producto-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: producto
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: producto/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verificar
