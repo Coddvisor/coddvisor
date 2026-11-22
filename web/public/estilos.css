@@ -628,7 +628,9 @@ html:not(.js) form[data-form] { display:none; }
 .art-cuerpo td:not(:first-child), .art-cuerpo th:not(:first-child) { text-align:right; font-family:var(--mono); }
 .art-cierre { margin-top:48px; padding:24px; border-radius:20px; background:var(--superficie); border:1px solid var(--borde); }
 .art-cierre p { color:var(--cobalto); font-size:18px; line-height:1.55; }
-.art-cierre .portada-acc { margin-top:18px; }
+.art-cierre .portada-acc { margin-top:18px; display:grid; gap:10px; }
+/* En el cierre, todos los botones tienen el mismo ancho: se leen como una lista de opciones, con el ámbar primero. */
+.art-cierre .portada-acc .btn { width:100%; }
 .art-vencido { margin:0 0 24px; padding:14px 16px; border-radius:14px; background:var(--error-fondo); color:var(--error); font-weight:600; }
 .art-vencido::before { content:"✕ "; }
 .tarjeta-fin { color:var(--error); }
