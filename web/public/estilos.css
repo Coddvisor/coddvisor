@@ -654,6 +654,21 @@ html:not(.js) form[data-form] { display:none; }
 .tarjeta-meta { margin-top:16px; font:400 13px/1.5 var(--mono); color:var(--texto-2); }
 .lista-pie { margin-top:28px; font-size:15px; color:var(--texto-2); }
 
+/* Blog por temas: la barra de temas arriba; cada tema con su duda y sus subtemas (src/datos/temas.ts). */
+.temas-nav { margin-bottom:clamp(40px, 5vw, 64px); }
+.temas-nav ul { list-style:none; margin:12px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:10px; }
+.temas-nav a { display:inline-flex; align-items:center; gap:10px; min-height:44px; padding:8px 18px; border:2px solid var(--borde); border-radius:999px; background:var(--tarjeta); color:var(--cobalto); font-weight:600; text-decoration:none; }
+.temas-nav a:hover { border-color:var(--borde-fuerte); }
+.temas-n { font:700 12px/1 var(--mono); color:var(--azul-real); }
+.tema-sec + .tema-sec { margin-top:clamp(64px, 8vw, 104px); }
+.tema-t { font-size:clamp(30px, 2vw + 20px, 44px); line-height:1.05; letter-spacing:-.03em; font-weight:700; }
+.tema-duda { margin-top:10px; max-width:60ch; font-size:18px; color:var(--texto-2); }
+.tema-duda + .tarjetas { margin-top:28px; }
+.subtema { margin-top:36px; }
+.subtema-t { margin-bottom:16px; padding-top:16px; border-top:1px solid var(--borde); font:700 13px/1.4 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--cobalto); }
+.subtema .tarjeta-t { margin:0; }
+.subtema .tarjeta-cat + .tarjeta-t { margin-top:10px; }
+
 /* ---------- Movimiento (solo si la persona no pidió menos) ---------- */
 @media (prefers-reduced-motion: no-preference) {
   .brillo--ambar { animation:brillo 9s ease-in-out infinite alternate; }
