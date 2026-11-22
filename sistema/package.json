@@ -12,7 +12,8 @@
     "pruebas": "node --test",
     "candado": "node base-de-datos/verificador/candado.mjs",
     "revisor-ia": "node herramientas/revisor-ia.mjs",
-    "pueblo": "node herramientas/pueblo-de-prueba.mjs"
+    "pueblo": "node herramientas/pueblo-de-prueba.mjs",
+    "diccionario": "node herramientas/diccionario-rubros.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.15"

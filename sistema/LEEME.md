@@ -38,6 +38,7 @@ dentro de Node (con PGlite) y desaparece al terminar.
 | `herramientas/valores-fijos*.mjs`         | La guardia que busca valores fijos en el código, y sus pruebas |
 | `herramientas/api-claude.mjs`             | Llamadas a la API de Claude (pregunta suelta y lotes a mitad de precio), con avisos de respuesta cortada o negada |
 | `herramientas/pueblo-de-prueba*`          | Dueños de negocio simulados que reaccionan a las ideas del producto, para preparar entrevistas reales. Paso a paso: `npm run pueblo -- preparar`, `estimar`, `enviar`, `recoger`, `sintetizar`. Escribe solo archivos `.local` |
+| `herramientas/diccionario-rubros*`       | Propone cómo llama cada tipo de negocio a cada acción, lo prueba con dueños simulados y da un semáforo por palabra (`npm run diccionario -- todo "<informe>"`). Escribe solo archivos `.local` |
 | `herramientas/revisor-ia*`                | Revisor con IA de las preguntas de juicio de `06-antes-de-unir.md` (solo sugiere; se corre a mano con `npm run revisor-ia`, necesita `.env.local`) |
 | `package.json`                            | La única dependencia va con versión **fija** (sin `^`)       |
 
