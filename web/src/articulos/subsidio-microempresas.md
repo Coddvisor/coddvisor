@@ -2,6 +2,7 @@
 titulo: "Subsidio de S/ 100 para microempresas: quién lo recibe"
 resumen: "El Gobierno da S/ 100 por persona a microempresas de 2 a 10 personas. Quién califica, por qué cuenta el sueldo de agosto y el único paso que debe hacer."
 categoria: "Planilla y beneficios"
+subtema: "Su régimen laboral"
 lectura: 4
 publicada: "2026-11-23"
 verificada: "2026-11-22"

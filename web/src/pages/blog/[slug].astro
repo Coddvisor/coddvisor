@@ -3,19 +3,24 @@
 // Cada uno es un archivo de texto en src/articulos/<nombre>.md y se publica en /blog/<nombre>/.
 // Las guías de las herramientas NO van aquí: viven debajo de su herramienta.
 //
-// Encabezado de cada archivo: titulo, resumen, categoria, lectura (min), publicada, verificada,
+// Encabezado de cada archivo: titulo, resumen, categoria y subtema (los de src/datos/temas.ts), lectura (min), publicada, verificada,
 // cierre (la única mención de Coddvisor), enlaces [{ texto, href }] a herramientas, fuentes
 // [{ norma, enlace }] y, si el tema tiene fecha de fin, vence (AAAA-MM-DD) y vencido (el aviso).
 import Base from '../../layouts/Base.astro';
 import { llamado } from '../../datos/navegacion';
 import { autor, fechaLarga } from '../../datos/herramientas';
+import { ubicar } from '../../datos/temas';
 
 export function getStaticPaths() {
   const archivos = import.meta.glob('../../articulos/*.md', { eager: true }) as Record<string, any>;
-  return Object.entries(archivos).map(([ruta, md]) => ({
-    params: { slug: ruta.split('/').pop()!.replace(/\.md$/, '') },
-    props: { md },
-  }));
+  return Object.entries(archivos).map(([ruta, md]) => {
+    // Un artículo sin tema o subtema válido no se publica (ver src/datos/temas.ts).
+    ubicar(md.frontmatter.categoria, md.frontmatter.subtema, ruta);
+    return {
+      params: { slug: ruta.split('/').pop()!.replace(/\.md$/, '') },
+      props: { md },
+    };
+  });
 }
 
 const { md } = Astro.props;

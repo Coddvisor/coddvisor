@@ -7,6 +7,8 @@
 // Las fórmulas laborales (gratificación, vacaciones, CTS) llevan además `verificada`: la fecha en
 // que se comparó contra la norma, que se muestra en la página.
 
+import type { NombreTema } from './temas';
+
 export type Herramienta = {
   /** Nombre corto para el menú. */
   nombre: string;
@@ -17,8 +19,10 @@ export type Herramienta = {
   guia: string;
   /** Resumen de la guía para el blog (2 líneas). */
   resumen: string;
-  /** Categoría del blog. */
-  categoria: 'Caja y ventas' | 'Planilla y beneficios' | 'SUNAT y comprobantes' | 'Inventario';
+  /** Tema del blog (src/datos/temas.ts). */
+  categoria: NombreTema;
+  /** Subtema dentro de su tema (src/datos/temas.ts). */
+  subtema: string;
   /** Fecha de publicación, AAAA-MM-DD. */
   publicada: string;
   /** Minutos de lectura de la guía. */
@@ -37,6 +41,7 @@ export const herramientas: Herramienta[] = [
     guia: 'Cómo hacer el cierre de caja de su tienda, paso a paso',
     resumen: 'Qué contar, en qué orden y qué revisar primero cuando la caja no cuadra. Con una hoja gratis que hace la cuenta por usted.',
     categoria: 'Caja y ventas',
+    subtema: 'Cierre de caja',
     publicada: '2026-11-19',
     lectura: 5,
   },
@@ -47,6 +52,7 @@ export const herramientas: Herramienta[] = [
     guia: 'Cómo calcular el IGV de una venta, con boleta o con factura',
     resumen: 'Cómo sacar el IGV de un precio que ya lo incluye y qué cambia en restaurantes, hoteles y el Nuevo RUS. Con una calculadora gratis.',
     categoria: 'SUNAT y comprobantes',
+    subtema: 'IGV y compras',
     publicada: '2026-11-19',
     lectura: 5,
     verificada: '2026-11-19',
@@ -58,6 +64,7 @@ export const herramientas: Herramienta[] = [
     guia: 'Gratificación de diciembre: cuánto pagar según su régimen',
     resumen: 'Cuánto pagar de gratificación según su régimen, cómo contar los meses y qué pasa si alguien entró en agosto o renuncia antes del 15.',
     categoria: 'Planilla y beneficios',
+    subtema: 'Beneficios del año',
     publicada: '2026-11-21',
     lectura: 6,
     verificada: '2026-11-19',
@@ -69,6 +76,7 @@ export const herramientas: Herramienta[] = [
     guia: 'Vacaciones de su equipo: cuántos días y cuánto pagar',
     resumen: 'Cuántos días de vacaciones da según su régimen, cuánto pagar, y qué hacer si alguien quiere venderlas, partirlas o se va antes del año.',
     categoria: 'Planilla y beneficios',
+    subtema: 'Beneficios del año',
     publicada: '2026-11-21',
     lectura: 6,
     verificada: '2026-11-20',
@@ -80,6 +88,7 @@ export const herramientas: Herramienta[] = [
     guia: 'CTS de mayo: cuánto depositar y cómo calcularla',
     resumen: 'Cuánto depositar de CTS según su régimen, qué entra en la base, qué hacer si alguien se va entre depósitos y cuánto puede retirar la persona.',
     categoria: 'Planilla y beneficios',
+    subtema: 'Beneficios del año',
     publicada: '2026-11-22',
     lectura: 6,
     verificada: '2026-11-21',
@@ -91,6 +100,7 @@ export const herramientas: Herramienta[] = [
     guia: '¿Cuánto cuesta un integrante en planilla? Costo real por mes',
     resumen: 'Cuánto le cuesta al mes una persona en planilla en cada régimen, cuánto apartar cada mes y cuánto le llega a ella. Con una calculadora para simular.',
     categoria: 'Planilla y beneficios',
+    subtema: 'Su régimen laboral',
     publicada: '2026-11-23',
     lectura: 6,
     verificada: '2026-11-21',

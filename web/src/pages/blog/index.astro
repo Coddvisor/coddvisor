@@ -1,28 +1,55 @@
 ---
-// Blog. Junta dos clases de texto, de la más nueva a la más antigua:
+// Blog. Junta dos clases de texto:
 // - las guías de las herramientas (viven debajo de su herramienta; salen de src/datos/herramientas.ts);
 // - los artículos sueltos, sin calculadora propia (src/articulos/*.md, en /blog/<nombre>/).
+//
+// Orden: por tema y, dentro de cada tema, por subtema (src/datos/temas.ts). Dentro de un subtema,
+// lo más nuevo primero. Un tema se muestra solo cuando tiene `minimoPublicados` artículos; antes,
+// sus artículos salen en «Más guías», con el nombre de su tema en la tarjeta.
 // Un artículo con fecha de vencimiento ya pasada se marca «Terminó» (en el servidor al publicar, y
 // en el navegador de quien lee, por si nadie volvió a publicar el sitio).
 import Base from '../../layouts/Base.astro';
 import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
+import { temas, minimoPublicados, ubicar } from '../../datos/temas';
+
+type Item = {
+  titulo: string; resumen: string; categoria: string; subtema: string;
+  publicada: string; lectura: number; vence?: string; href: string;
+};
 
 const archivos = import.meta.glob('../../articulos/*.md', { eager: true }) as Record<string, any>;
-const articulos = Object.entries(archivos).map(([ruta, md]) => ({
-  titulo: md.frontmatter.titulo as string,
-  resumen: md.frontmatter.resumen as string,
-  categoria: md.frontmatter.categoria as string,
-  publicada: md.frontmatter.publicada as string,
-  lectura: md.frontmatter.lectura as number,
-  vence: md.frontmatter.vence as string | undefined,
+const articulos: Item[] = Object.entries(archivos).map(([ruta, md]) => ({
+  titulo: md.frontmatter.titulo,
+  resumen: md.frontmatter.resumen,
+  categoria: md.frontmatter.categoria,
+  subtema: md.frontmatter.subtema,
+  publicada: md.frontmatter.publicada,
+  lectura: md.frontmatter.lectura,
+  vence: md.frontmatter.vence,
   href: '/blog/' + ruta.split('/').pop()!.replace(/\.md$/, '') + '/',
 }));
-const guias = herramientas.map((h) => ({
-  titulo: h.guia, resumen: h.resumen, categoria: h.categoria, publicada: h.publicada, lectura: h.lectura,
-  vence: undefined as string | undefined, href: h.href + '#guia-t',
+const guias: Item[] = herramientas.map((h) => ({
+  titulo: h.guia, resumen: h.resumen, categoria: h.categoria, subtema: h.subtema,
+  publicada: h.publicada, lectura: h.lectura, href: h.href + '#guia-t',
 }));
+const todos = [...articulos, ...guias];
+todos.forEach((x) => ubicar(x.categoria, x.subtema, x.href));
+const masNuevo = (a: Item, b: Item) => b.publicada.localeCompare(a.publicada);
+
+// Temas con suficientes artículos, en el orden aprobado, con sus subtemas no vacíos.
+const visibles = temas
+  .map((t) => {
+    const suyos = todos.filter((x) => x.categoria === t.nombre);
+    const subtemas = t.subtemas
+      .map((s) => ({ nombre: s, items: suyos.filter((x) => x.subtema === s).sort(masNuevo) }))
+      .filter((s) => s.items.length > 0);
+    return { ...t, total: suyos.length, subtemas };
+  })
+  .filter((t) => t.total >= minimoPublicados);
+const nombresVisibles = new Set<string>(visibles.map((t) => t.nombre));
+const sueltos = todos.filter((x) => !nombresVisibles.has(x.categoria)).sort(masNuevo);
+
 const hoy = new Date().toISOString().slice(0, 10);
-const todos = [...articulos, ...guias].sort((a, b) => b.publicada.localeCompare(a.publicada));
 ---
 <Base
   titulo="Blog: guías prácticas para llevar su negocio | Coddvisor"
@@ -38,27 +65,64 @@ const todos = [...articulos, ...guias].sort((a, b) => b.publicada.localeCompare(
   </div>
 </section>
 
-<section class="lista-sec" aria-label="Guías y artículos">
+<div class="lista-sec">
   <div class="col">
-    <ul class="tarjetas tarjetas--blog">
-      {todos.map((x) => (
-        <li class="tarjeta" data-vence={x.vence}>
-          <p class="tarjeta-cat">{x.categoria}<span class="tarjeta-fin" hidden={!(x.vence && hoy > x.vence)}> · Terminó</span></p>
-          <h2 class="tarjeta-t"><a href={x.href}>{x.titulo}</a></h2>
-          <p class="tarjeta-tx">{x.resumen}</p>
-          <p class="tarjeta-meta">{autor} · <time datetime={x.publicada}>{fechaLarga(x.publicada)}</time> · {x.lectura} min</p>
-        </li>
-      ))}
-    </ul>
+    <nav class="temas-nav" aria-label="Temas del blog">
+      <p class="rotulo">Temas</p>
+      <ul>
+        {visibles.map((t) => <li><a href={'#' + t.id}>{t.nombre} <span class="temas-n">{t.total}</span></a></li>)}
+        {sueltos.length > 0 && <li><a href="#mas-guias">Más guías <span class="temas-n">{sueltos.length}</span></a></li>}
+      </ul>
+    </nav>
+
+    {visibles.map((t) => (
+      <section class="tema-sec" id={t.id} aria-labelledby={t.id + '-t'}>
+        <h2 class="tema-t" id={t.id + '-t'}>{t.nombre}</h2>
+        <p class="tema-duda">{t.duda}</p>
+        {t.subtemas.map((s) => (
+          <div class="subtema">
+            <h3 class="subtema-t">{s.nombre}</h3>
+            <ul class="tarjetas tarjetas--blog">
+              {s.items.map((x) => (
+                <li class="tarjeta" data-vence={x.vence}>
+                  {x.vence && <p class="tarjeta-cat"><span class="tarjeta-fin" hidden={!(hoy > x.vence)}>Terminó</span></p>}
+                  <h4 class="tarjeta-t"><a href={x.href}>{x.titulo}</a></h4>
+                  <p class="tarjeta-tx">{x.resumen}</p>
+                  <p class="tarjeta-meta">{autor} · <time datetime={x.publicada}>{fechaLarga(x.publicada)}</time> · {x.lectura} min</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+    ))}
+
+    {sueltos.length > 0 && (
+      <section class="tema-sec" id="mas-guias" aria-labelledby="mas-guias-t">
+        <h2 class="tema-t" id="mas-guias-t">Más guías</h2>
+        <p class="tema-duda">De los temas que recién empiezan. Cada tarjeta dice a cuál pertenece.</p>
+        <ul class="tarjetas tarjetas--blog">
+          {sueltos.map((x) => (
+            <li class="tarjeta" data-vence={x.vence}>
+              <p class="tarjeta-cat">{x.categoria}<span class="tarjeta-fin" hidden={!(x.vence && hoy > x.vence)}> · Terminó</span></p>
+              <h3 class="tarjeta-t"><a href={x.href}>{x.titulo}</a></h3>
+              <p class="tarjeta-tx">{x.resumen}</p>
+              <p class="tarjeta-meta">{autor} · <time datetime={x.publicada}>{fechaLarga(x.publicada)}</time> · {x.lectura} min</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
   </div>
-</section>
+</div>
 
 <script is:inline>
   (function () {
     var d = new Date(), dos = function (n) { return (n < 10 ? '0' : '') + n; };
     var hoy = d.getFullYear() + '-' + dos(d.getMonth() + 1) + '-' + dos(d.getDate());
     document.querySelectorAll('[data-vence]').forEach(function (li) {
-      if (hoy > li.getAttribute('data-vence')) li.querySelector('.tarjeta-fin').hidden = false;
+      var fin = li.querySelector('.tarjeta-fin');
+      if (fin && hoy > li.getAttribute('data-vence')) fin.hidden = false;
     });
   })();
 </script>
