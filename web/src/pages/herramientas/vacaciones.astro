@@ -2,7 +2,8 @@
 // Herramienta gratis: vacaciones. La calculadora arriba y la guía debajo.
 // Cuentas en public/herramientas/laboral.js (compartidas con gratificación, CTS y liquidación);
 // esta página las usa desde public/herramientas/vacaciones.js.
-// Truncas e indemnización en la MYPE: pendientes de confirmar; la herramienta remite al contador.
+// Truncas en la MYPE: sobre 15 días, con el criterio del MTPE (Boletín N.° 85) y su nota.
+// Indemnización por vacaciones no tomadas en la MYPE: pendiente; la herramienta remite al contador.
 // Diseño: el mismo de las herramientas nuevas (herramienta.css). La guía conserva TODO su texto.
 import Base from '../../layouts/Base.astro';
 import { llamado } from '../../datos/navegacion';
@@ -79,7 +80,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
         <div class="igv-res vaca-res" role="status" aria-live="polite">
           <p class="igv-et" data-r="et">Páguelo antes de que la persona salga de vacaciones</p>
           <p class="igv-grande" data-r="total">S/ 1,500.00</p>
-          <p class="igv-frase" data-r="frase">30 días de descanso. Lleva EsSalud y ONP, como el sueldo.</p>
+          <p class="igv-frase" data-r="frase">30 días de descanso. Lleva los mismos descuentos que el sueldo (ONP o AFP, y renta).</p>
           <div data-uno>
             <div class="leyenda-rep">
               <div><span data-r="l-dias">Días</span><b data-r="dias">30 días</b></div>
@@ -93,6 +94,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
               <p class="igv-cuenta-l" data-r="cuenta">1,500.00 ÷ 30 × 30 = <span class="ce">1,500.00</span><br>Total: <span class="am">1,500.00</span></p>
               <a href="#g-calculo">Por qué se divide entre 30</a>
             </div>
+            <p class="igv-ayuda" data-r="nota" hidden>Calculado con el criterio del Ministerio de Trabajo (Boletín Informativo Laboral N.° 85): dozavos de los 15 días. Si hay un reclamo, confírmelo con su contador.</p>
           </div>
           <div class="tres" data-tres hidden>
             <div><p class="tres-t">Régimen general</p><p class="tres-v" data-r="t-general">S/ 0.00</p><p class="tres-d" data-r="t-general-det"></p></div>
@@ -150,7 +152,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
           <li data-paso="0"><span class="n">PASO 1</span><h4>Confirme su régimen.</h4><p>Busque su RUC en la consulta del REMYPE. Si su negocio no está inscrito, da 30 días, aunque sea pequeño.</p></li>
           <li data-paso="1"><span class="n">PASO 2</span><h4>Revise la fecha de ingreso de cada persona.</h4><p>El derecho nace cuando cumple un año, no en enero. Anote en qué mes le toca a cada una.</p></li>
           <li data-paso="2"><span class="n">PASO 3</span><h4>Arme el rol de vacaciones del año.</h4><p>Acuerde las fechas con cada persona y póngalas por escrito. Cuide que no salgan a la vez todas las personas de una misma sede.</p></li>
-          <li data-paso="3"><span class="n">PASO 4</span><h4>Pague antes de que salga.</h4><p>El pago es lo que la persona gana normalmente, incluidas las comisiones o los pagos que recibe con regularidad. Lleva los mismos aportes que el sueldo: EsSalud y ONP.</p></li>
+          <li data-paso="3"><span class="n">PASO 4</span><h4>Pague antes de que salga.</h4><p>El pago es lo que la persona gana normalmente, incluidas las comisiones o los pagos que recibe con regularidad. Lleva los mismos descuentos y aportes que el sueldo: el seguro de salud (EsSalud en el régimen general y en la pequeña empresa; SIS en la microempresa, salvo que tenga EsSalud), ONP o AFP según el sistema de la persona, y la retención de renta de quinta.</p></li>
           <li data-paso="4"><span class="n">PASO 5</span><h4>Que las tome a tiempo.</h4><p>Si pasa el año siguiente sin descansar, usted debe pagar más, como se explica abajo.</p></li>
         </ol>
         <div class="escena">
@@ -185,11 +187,12 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
     <section class="guia-sec" id="g-dudas" aria-labelledby="g-dudas-t">
       <h3 class="guia-sec-t" id="g-dudas-t">Casos que generan dudas</h3>
       <div class="guia-texto">
-        <p><b>Quiere vender sus vacaciones.</b> En el régimen general, la persona puede vender hasta 15 de sus 30 días, por acuerdo escrito. Con un sueldo de S/ 1,500, descansa 15 días pagados con S/ 750, trabaja los otros 15 y recibe S/ 750 más por esos días vendidos.</p>
+        <p><b>Quiere vender sus vacaciones.</b> En el régimen general, la persona puede vender hasta 15 de sus 30 días, por acuerdo escrito. Con un sueldo de S/ 1,500, descansa 15 días pagados con S/ 750, trabaja los otros 15 y recibe S/ 750 más por esos días vendidos. Ese pago lleva los mismos descuentos y aportes que el sueldo.</p>
         <p><b>Quiere partirlas en pedazos.</b> En el régimen general, la persona puede pedir por escrito tomarlas por partes. Debe tomar 15 días seguidos, o un bloque de 7 y otro de 8, y el resto puede repartirlo en días sueltos.</p>
-        <p>En una micro o pequeña empresa, la venta y el reparto en días sueltos no funcionan igual. Antes de firmar un acuerdo, consúltelo con su contador.</p>
+        <p>En una micro o pequeña empresa inscrita, se puede acordar por escrito reducir el descanso de 15 a 7 días. Por los 8 días que no descansa, la persona recibe una compensación de 8 días de sueldo: con S/ 1,500, son S/ 750 de vacaciones más S/ 400 de compensación. La venta de días y el reparto en partes no funcionan igual que en el régimen general, así que consúltelo con su contador antes de firmar.</p>
         <p><b>No las tomó a tiempo.</b> Si pasa el año siguiente y la persona no descansó, usted debe un sueldo por el descanso no tomado y otro de indemnización. Con S/ 1,500, son <b>S/ 3,000</b> además del sueldo que ya le pagó por trabajar. Se calcula con el sueldo vigente el día del pago, y la indemnización no lleva aportes ni impuestos.</p>
         <p><b>Se va antes de cumplir el año.</b> Se le pagan las vacaciones <i>truncas</i> si trabajó al menos un mes. Si gana S/ 1,500 y se va con 7 meses y 10 días, recibe S/ 1,500 ÷ 12 × 7 = S/ 875 más S/ 1,500 ÷ 360 × 10 = S/ 41.67. Total: <b>S/ 916.67</b>, junto con su liquidación.</p>
+        <p>En una micro o pequeña empresa se calcula sobre sus 15 días: con el mismo sueldo y el mismo tiempo, son <b>S/ 458.33</b>. Así lo indica el Ministerio de Trabajo; si hay un reclamo, confírmelo con su contador.</p>
       </div>
     </section>
 
@@ -230,7 +233,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
         <ul>
           <li>Días, pago, venta, truncas y no tomadas: <a href="https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=110007" rel="noopener" target="_blank">D. Leg. 713</a>, arts. 10 a 23, y su reglamento, D.S. 012-92-TR.</li>
           <li>Reparto por partes y venta: <a href="https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=42" rel="noopener" target="_blank">D. Leg. 1405 y D.S. 002-2019-TR</a>.</li>
-          <li>15 días en la micro y pequeña empresa: <a href="https://elperuano.pe/NormasElperuano/2013/12/28/1033071-5.html" rel="noopener" target="_blank">TUO de la Ley MYPE</a>, art. 55.</li>
+          <li>15 días en la micro y pequeña empresa: <a href="https://elperuano.pe/NormasElperuano/2013/12/28/1033071-5.html" rel="noopener" target="_blank">TUO de la Ley MYPE</a>, art. 55. Reducción a 7 días: D.S. 008-2008-TR, art. 37. Truncas sobre 15 días: <a href="https://cdn.www.gob.pe/uploads/document/file/289278/Art%C3%ADculo_REMYPE_-_Enero_2019.pdf" rel="noopener" target="_blank">Ministerio de Trabajo, Boletín Informativo Laboral N.° 85</a>.</li>
           <li>Aportes: <a href="https://orientacion.sunat.gob.pe/3094-principales-conceptos-afectos-al-aporte-al-snp-onp-personas" rel="noopener" target="_blank">SUNAT, conceptos afectos a ONP</a>. Infracciones: <a href="https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=47" rel="noopener" target="_blank">D.S. 019-2006-TR</a>.</li>
         </ul>
       </div>

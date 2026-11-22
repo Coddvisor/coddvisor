@@ -3,7 +3,8 @@
 
    Las tasas salen de una tabla por año (orientacion.sunat.gob.pe, revisada el 19-nov-2026):
    - General: 18 % en total. Desde 2026 se reparte entre IGV e IPM (Ley 32387).
-   - Tasa especial de restaurantes, hoteles y alojamientos turísticos mype: 2026 y 2027.
+   - Tasa especial de restaurantes, hoteles y alojamientos turísticos mype: 2026 y 2027. Termina el
+     31-dic-2027 (Ley 31556, art. 4, según la Ley 32219): desde 2028 rige la general y la página lo dice.
    Si el año del visitante no está en la tabla, la herramienta lo dice en vez de adivinar.
 
    Las cuentas se hacen en céntimos y las tasas en centésimas de punto (18 % = 1800),
@@ -120,7 +121,8 @@
     r('ayuda-incl').textContent = incluye ? 'Es el precio que paga el cliente, como el de la etiqueta.' : 'Es su valor de venta, y quiere saber cuánto cobrar.';
     r('ayuda-tasa').textContent = !t ? 'En el Nuevo RUS no cobra IGV aparte: paga una cuota fija al mes.'
       : (tipo === 'especial' ? 'Solo restaurantes, hoteles y alojamientos mype que cumplen los requisitos de SUNAT (ver la guía).'
-        : (conocido ? 'La mayoría de negocios paga 18 %. En ' + anio + ': ' + pct(t.igv) + ' de IGV + ' + pct(t.ipm) + ' municipal.' : 'La mayoría de negocios paga 18 %. Revise el reparto vigente en SUNAT.'));
+        : (conocido ? 'La mayoría de negocios paga 18 %. En ' + anio + ': ' + pct(t.igv) + ' de IGV + ' + pct(t.ipm) + ' municipal.' : 'La mayoría de negocios paga 18 %. Revise el reparto vigente en SUNAT.') +
+          (anio >= 2028 ? ' La tasa especial de restaurantes y hoteles terminó el 31 de diciembre de 2027.' : ''));
 
     // Resultado.
     r('et').textContent = !t ? 'Nuevo RUS' : 'De esta venta, es de la SUNAT';
