@@ -59,6 +59,9 @@ const url = new URL(Astro.url.pathname, Astro.site).href;
 <link rel="preload" href="/fuentes/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/colores.css">
 <link rel="stylesheet" href="/estilos.css">
+<!-- Entrada del logotipo: solo la primera página de cada visita (la sesión del navegador). Si el
+     navegador no deja guardar, no hay entrada y el logo queda quieto: falla hacia lo callado. -->
+<script is:inline>try{if(!sessionStorage.getItem('logo-visto')){sessionStorage.setItem('logo-visto','1');document.documentElement.classList.add('logo-intro');}}catch(e){}</script>
 <link rel="stylesheet" href="/fluido.css">
 <!-- fluido.js va antes que sitio.js: suma piezas a la aparición al bajar, que anima sitio.js. -->
 <script is:inline src="/fluido.js" defer></script>
