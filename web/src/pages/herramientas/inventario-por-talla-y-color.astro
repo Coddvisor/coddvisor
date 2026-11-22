@@ -1,0 +1,155 @@
+---
+// Herramienta gratis: conteo de inventario por talla y color, por sede.
+// Promesa: la persona arma cada modelo (colores y tallas), cuenta prenda por prenda y ve qué falta y
+// qué sobra en cada talla y color, en unidades y en soles si anotó el costo. Se usa sin registrarse
+// y nada sale de su computadora: todo el cálculo está en public/herramientas/inventario.js.
+// No es una fórmula legal: es una resta. No necesita revisor colegiado.
+//
+// Diseño aprobado por la fundadora el 22-nov-2026 (notas: herramienta-inventario-talla-color.md):
+// conteo a ciegas por defecto, archivo para Excel (CSV), costo opcional por modelo y tres listas de
+// tallas listas además de las propias. Usa las mismas palabras que el cierre de caja.
+//
+// PENDIENTE: todavía no está en src/datos/herramientas.ts ni en el menú. Entra cuando la fundadora la
+// revise y su guía esté escrita («Inventario de una tienda de ropa, por talla y color»). Mientras
+// tanto la página pide a los buscadores que no la muestren (noindex).
+import Base from '../../layouts/Base.astro';
+import { llamado } from '../../datos/navegacion';
+
+// Listas de tallas listas para tocar. Se pueden escribir tallas propias además de estas.
+const listas = [
+  { id: 'ropa', nombre: 'Ropa', tallas: 'XS, S, M, L, XL, XXL' },
+  { id: 'calzado', nombre: 'Calzado', tallas: '34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44' },
+  { id: 'ninos', nombre: 'Niños', tallas: '2, 4, 6, 8, 10, 12, 14, 16' },
+];
+---
+<Base
+  titulo="Inventario de ropa por talla y color: plantilla gratis | Coddvisor"
+  descripcion="Cuente el inventario de su tienda por talla y color y vea al instante qué falta y qué sobra, en unidades y en soles. Gratis, sin registrarse y con descarga para Excel.">
+<link slot="cabeza" rel="stylesheet" href="/herramientas/herramienta.css">
+<meta slot="cabeza" name="robots" content="noindex">
+
+<section class="portada portada--interior osc" aria-labelledby="inv-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot">Herramienta gratis</p>
+    <h1 class="portada-t interior-t" id="inv-t">Cuente su inventario <span class="cel">por talla y color.</span></h1>
+    <p class="portada-baj">Arme cada modelo con sus colores y tallas, cuente prenda por prenda y vea qué falta y qué sobra en cada talla. Una hoja por sede, para imprimir o abrir en Excel.</p>
+    <ul class="confianza">
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Gratis y sin registrarse</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>No le pedimos su correo</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Lo que escribe no sale de su computadora</li>
+    </ul>
+  </div>
+</section>
+
+<section class="her-sec" aria-label="Hoja de conteo de inventario">
+  <div class="col col--ancho">
+    <div class="lienzo">
+      <form class="cierre inv" id="inventario" autocomplete="off" novalidate>
+        <div class="riel-caja">
+          <ol class="riel riel--3" aria-label="Avance de la hoja">
+            <li data-riel="1"><i>1</i>El conteo</li>
+            <li data-riel="2"><i>2</i>Sus modelos</li>
+            <li data-riel="3"><i>3</i>Cuente</li>
+          </ol>
+          <p class="riel-tx" data-avance-tx>0 de 3 pasos</p>
+        </div>
+
+        <div class="hoja">
+          <fieldset class="paso">
+            <legend><i>1</i>El conteo</legend>
+            <div class="paso-campos">
+              <div class="campo"><label for="iv-sede">Sede o almacén</label><input id="iv-sede" name="sede" type="text" placeholder="Ej. Sede Centro"></div>
+              <div class="campo"><label for="iv-fecha">Fecha</label><input id="iv-fecha" name="fecha" type="date"></div>
+              <div class="campo"><label for="iv-quien">Quién cuenta</label><input id="iv-quien" name="quien" type="text" placeholder="Nombre"></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="paso" data-nuevo>
+            <legend><i>2</i>Agregue un modelo</legend>
+            <p class="paso-ayuda">Un modelo es una prenda o un calzado con sus colores y tallas. Agregue uno por uno.</p>
+            <div class="paso-campos">
+              <div class="campo"><label for="iv-modelo">Nombre del modelo</label><input id="iv-modelo" data-n="nombre" type="text" placeholder="Ej. Polo básico"></div>
+              <div class="campo"><label for="iv-costo">Costo por unidad <small>(opcional)</small></label><div class="monto"><span>S/</span><input id="iv-costo" data-n="costo" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+            </div>
+            <div class="campo inv-campo">
+              <span class="inv-et" id="iv-tallas-t">Tallas</span>
+              <div class="inv-listas" role="group" aria-labelledby="iv-tallas-t">
+                {listas.map((l) => <button type="button" class="inv-chip" data-lista={l.tallas}>{l.nombre}</button>)}
+              </div>
+              <input id="iv-tallas" data-n="tallas" type="text" aria-labelledby="iv-tallas-t" placeholder="Toque una lista o escriba: S, M, L">
+            </div>
+            <div class="campo inv-campo">
+              <label for="iv-colores">Colores</label>
+              <input id="iv-colores" data-n="colores" type="text" placeholder="Ej. Blanco, Negro, Azul">
+              <p class="inv-ayuda">Separe con comas. Si el modelo tiene un solo color, escriba ese color.</p>
+            </div>
+            <p class="inv-error" data-error role="alert" hidden></p>
+            <button type="button" class="btn inv-agregar" data-accion="agregar">Agregar modelo</button>
+          </fieldset>
+
+          <fieldset class="paso" data-conteo>
+            <legend><i>3</i>Cuente prenda por prenda</legend>
+            <div class="inv-modo">
+              <label class="inv-switch"><input type="checkbox" name="ver" data-ver> <span>Mostrar «debería haber» y las diferencias</span></label>
+              <p class="inv-ayuda" data-modo-tx>Conteo a ciegas: quien cuenta no ve cuánto debería haber, así no lo copia. Al terminar, marque la casilla de arriba.</p>
+            </div>
+            <div class="inv-modelos" data-modelos>
+              <p class="inv-vacio" data-vacio>Todavía no hay modelos. Agregue el primero en el paso 2, o pruebe con un ejemplo.</p>
+            </div>
+            <p class="paso-pie"><span>Total contado</span><b data-r="contado-pie">0 unidades</b></p>
+          </fieldset>
+        </div>
+
+        <aside class="veredicto" aria-labelledby="res-t">
+          <p class="igv-et" id="res-t">Resultado</p>
+          <div class="ver-estado" data-e="vacio" role="status" aria-live="polite">
+            <p class="ver-v" data-r="veredicto">Agregue un modelo</p>
+            <p class="ver-l" data-r="linea">Cuando cuente, aquí verá qué falta y qué sobra.</p>
+          </div>
+          <div class="sugiere" data-sugiere hidden>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2Z"/></svg>
+            <div><b>DÓNDE BUSCAR</b><ul class="inv-pistas" data-sugiere-tx></ul></div>
+          </div>
+          <div class="ver-desglose">
+            <p><span>Contó</span><b data-r="contado">0 unidades</b></p>
+            <p data-solo-ver><span>Debería haber</span><b data-r="deberia">0 unidades</b></p>
+            <p data-solo-ver><span>Faltan</span><b data-r="faltan">0</b></p>
+            <p data-solo-ver><span>Sobran</span><b data-r="sobran">0</b></p>
+          </div>
+          <p class="ver-dif" data-solo-ver><span>Valor de lo que falta</span><b data-r="valor">S/ 0.00</b></p>
+          <p class="inv-nota-costo" data-r="nota-costo" hidden></p>
+          <ul class="inv-difs" data-difs></ul>
+          <div class="ver-acc">
+            <button type="button" class="boton-claro" data-accion="ejemplo">Probar con un ejemplo</button>
+            <button type="button" class="boton-claro" data-accion="excel">Descargar para Excel</button>
+            <button type="button" class="boton-claro" data-accion="vacia">Imprimir hoja para contar</button>
+            <button type="button" class="boton-claro" data-accion="imprimir">Imprimir o guardar en PDF</button>
+            <button type="button" class="enlace-boton" data-accion="borrar">Empezar de nuevo</button>
+          </div>
+          <p class="ver-nota">Lo que escribe se guarda solo en este navegador, para que no lo pierda si cierra la página. No llega a nosotros.</p>
+        </aside>
+      </form>
+    </div>
+  </div>
+  <a class="barra-movil" href="#res-t" data-barra data-e="vacio"><span data-barra-tx>Agregue un modelo</span><b data-barra-n></b></a>
+</section>
+
+<section class="lista-sec" aria-labelledby="inv-como-t">
+  <div class="col">
+    <h2 class="tema-t" id="inv-como-t">Cómo contar sin equivocarse</h2>
+    <ol class="inv-como">
+      <li><b>Cuente con la tienda cerrada o en la hora más tranquila.</b> Si se vende mientras cuenta, la diferencia no se puede explicar.</li>
+      <li><b>Cuente a ciegas.</b> Quien cuenta no mira cuánto debería haber. Después, otra persona anota lo que dice su cuaderno o su sistema y compara.</li>
+      <li><b>Revise antes de cerrar.</b> Probador, prendas separadas para un cliente, cambios del día y el almacén. Ahí aparece casi todo lo que «falta».</li>
+    </ol>
+    <div class="art-cierre">
+      <p>Coddvisor lleva el inventario por talla y color, en el piso y el almacén de cada sede.</p>
+      <div class="portada-acc"><a class="btn" href={llamado.href}>{llamado.texto}</a></div>
+    </div>
+  </div>
+</section>
+
+<script is:inline src="/herramientas/inventario.js" defer></script>
+</Base>

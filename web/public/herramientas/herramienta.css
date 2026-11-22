@@ -354,3 +354,74 @@
 .costo-cal { margin:10px 0 0; padding:0; list-style:none; display:grid; gap:8px; font-size:14px; color:var(--texto-claro-2); }
 .costo-cal li { padding:10px 12px; border-radius:10px; background:rgba(255,255,255,.06); }
 .costo-cal b { display:block; font-family:var(--mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--celeste-claro); margin-bottom:2px; }
+
+/* ---------- Inventario por talla y color ----------
+   Reusa el cierre de caja (.cierre, .riel, .paso, .veredicto, .sugiere, .barra-movil).
+   Lo propio: las listas de tallas, un bloque plegable por modelo y su cuadrícula colores × tallas.
+   Sin .inv--ver se oculta «debería haber» y las diferencias (conteo a ciegas). */
+.riel--3 { grid-template-columns:repeat(3, minmax(0, 1fr)); }
+.inv-campo { margin-top:14px; }
+.inv-et { font-size:14px; font-weight:600; }
+.inv-campo small, .campo label small { font-weight:400; color:var(--texto-2); }
+.inv-listas { display:flex; flex-wrap:wrap; gap:8px; }
+.inv-chip { min-height:40px; padding:0 16px; border-radius:999px; border:1px solid var(--borde-fuerte); background:var(--tarjeta); color:var(--cobalto); font:600 14px var(--sans); cursor:pointer; }
+.inv-chip:hover { border-color:var(--azul-real); color:var(--azul-real); }
+.inv-ayuda { font-size:14px; line-height:1.5; color:var(--texto-2); }
+.inv-error { margin-top:12px; padding:10px 14px; border-radius:12px; background:var(--error-fondo); color:var(--error); font-size:14px; font-weight:600; }
+.inv-error[hidden] { display:none; }
+.inv-agregar { margin-top:16px; }
+.inv-modo { margin-top:12px; display:grid; gap:6px; }
+.inv-switch { display:flex; align-items:center; gap:10px; min-height:44px; font-weight:600; cursor:pointer; }
+.inv-switch input { width:22px; height:22px; accent-color:var(--azul-real); flex:none; }
+.inv-modelos { margin-top:16px; display:grid; gap:14px; }
+.inv-vacio { padding:18px; border:2px dashed var(--borde); border-radius:16px; color:var(--texto-2); text-align:center; }
+.inv-modelo { border:1px solid var(--borde); border-radius:18px; background:var(--tarjeta); overflow:hidden; }
+.inv-modelo summary { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:2px 12px; padding:14px 16px; cursor:pointer; list-style:none; }
+.inv-modelo summary::-webkit-details-marker { display:none; }
+.inv-m-nom { font-weight:700; font-size:17px; }
+.inv-m-sub { grid-column:1; font-size:13px; color:var(--texto-2); }
+.inv-m-tot { grid-column:2; grid-row:1 / span 2; align-self:center; font:700 14px var(--mono); color:var(--cobalto); white-space:nowrap; }
+.inv-grilla-caja { overflow-x:auto; border-top:1px solid var(--borde); }
+.inv-grilla { border-collapse:collapse; min-width:100%; font-size:14px; }
+.inv-grilla th { padding:8px 6px; font:700 12px/1.3 var(--mono); color:var(--texto-2); text-align:center; white-space:nowrap; }
+.inv-grilla th[scope="row"] { position:sticky; left:0; z-index:1; background:var(--tarjeta); text-align:left; padding-left:16px; font:600 14px var(--sans); color:var(--cobalto); }
+.inv-grilla td { padding:4px; border-top:1px solid var(--borde); }
+.inv-celda { display:grid; grid-template-columns:44px 30px; gap:2px 4px; justify-content:center; padding:4px; border-radius:10px; }
+.inv-n, .inv-d { width:100%; min-height:36px; border:1px solid var(--borde-fuerte); border-radius:9px; background:var(--fondo); text-align:center; font:700 16px var(--mono); color:var(--cobalto); }
+.inv-d { grid-column:1; min-height:30px; font-size:13px; font-weight:400; background:var(--superficie); }
+.inv-n:focus, .inv-d:focus { outline:2px solid var(--azul-real); outline-offset:1px; }
+.inv-mas { height:36px; border-radius:9px; border:1px solid var(--borde-fuerte); background:var(--tarjeta); color:var(--cobalto); font:700 17px/1 var(--sans); cursor:pointer; }
+.inv-mas:hover { border-color:var(--azul-real); color:var(--azul-real); }
+.inv-dif { grid-column:2; align-self:center; text-align:center; font:700 13px var(--mono); }
+.inv-celda[data-e="falta"] { background:var(--error-fondo); } .inv-celda[data-e="falta"] .inv-dif { color:var(--error); }
+.inv-celda[data-e="sobra"] { background:var(--ambar-claro); } .inv-celda[data-e="sobra"] .inv-dif { color:var(--ambar-tostado); }
+.inv-celda[data-e="ok"] .inv-dif { color:var(--correcto); }
+.inv:not(.inv--ver) [data-solo-ver] { display:none !important; }
+.inv:not(.inv--ver) .inv-celda { grid-template-columns:52px 36px; }
+.inv-pie { display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; padding:12px 16px; border-top:1px solid var(--borde); background:var(--superficie); }
+.inv-pie .inv-error { flex-basis:100%; margin:0; }
+.inv-agrega { display:flex; gap:6px; }
+.inv-agrega input { width:130px; min-height:44px; border:1px solid var(--borde-fuerte); border-radius:12px; padding:0 12px; font:inherit; font-size:15px; background:var(--tarjeta); color:var(--cobalto); }
+.inv-pistas { margin:6px 0 0; padding-left:18px; display:grid; gap:6px; font-size:14px; line-height:1.5; color:var(--cobalto); }
+.inv-difs { margin:12px 0 0; padding:0; list-style:none; display:grid; gap:4px; font:400 13px/1.5 var(--mono); color:var(--texto-2); }
+.inv-difs:empty { display:none; }
+.inv-nota-costo { margin-top:8px; font-size:13px; color:var(--texto-2); }
+.inv-nota-costo[hidden] { display:none; }
+.inv-como { margin:20px 0 0; padding-left:1.3em; display:grid; gap:12px; max-width:70ch; color:var(--texto-2); }
+.inv-como b { color:var(--cobalto); }
+@media (max-width:520px) { .inv-agrega input { width:110px; } .inv-modelo summary { padding:12px; } }
+
+/* Imprimir: solo la hoja (el turno y la cuadrícula). «Hoja para contar» sale con las celdas en blanco. */
+@media print {
+  body:has(#inventario) .aviso, body:has(#inventario) .cab, body:has(#inventario) .pie, body:has(#inventario) main > :not(.her-sec) { display:none !important; }
+  body:has(#inventario) .her-sec { padding:0; background:none; }
+  body:has(#inventario) .lienzo { border:0; box-shadow:none; padding:0; }
+  #inventario .riel-caja, #inventario [data-nuevo], #inventario .inv-modo, #inventario .inv-pie, #inventario .inv-mas, #inventario .ver-acc, #inventario .ver-nota { display:none !important; }
+  #inventario { display:block; }
+  #inventario .veredicto { position:static; box-shadow:none; margin-top:16px; page-break-inside:avoid; }
+  #inventario .inv-modelo { page-break-inside:avoid; }
+  #inventario .inv-celda { grid-template-columns:52px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  #inventario.inv--vacia .veredicto, #inventario.inv--vacia [data-solo-ver] { display:none !important; }
+  #inventario.inv--vacia .inv-n, #inventario.inv--vacia .inv-m-tot { color:transparent !important; }
+  #inventario.inv--vacia .inv-celda { background:none !important; }
+}
