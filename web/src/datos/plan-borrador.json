@@ -1,0 +1,668 @@
+[
+ {
+  "titulo": "Pasar de microempresa a pequeña empresa: qué cambia en lo que paga",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Su régimen laboral",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Medio tiempo",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Contratar a alguien",
+  "estado": "aprobado"
+ },
+ {
+  "titulo": "T-Registro (alta y baja en planilla)",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Contratar a alguien",
+  "estado": "aprobado"
+ },
+ {
+  "titulo": "Seguro Vida Ley",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Contratar a alguien",
+  "estado": "aprobado"
+ },
+ {
+  "titulo": "Feriado trabajado",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Sueldo y horario",
+  "estado": "aprobado"
+ },
+ {
+  "titulo": "Horas extra",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Sueldo y horario",
+  "estado": "aprobado"
+ },
+ {
+  "titulo": "Renuncia: el plazo de 30 días y la carta",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Cuando alguien se va",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Despido arbitrario: cuándo y cuánto se paga",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Cuando alguien se va",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Boleta de pago: qué debe llevar",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Pagos y control del mes",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "PLAME: cómo declarar la planilla en SUNAT",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Pagos y control del mes",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Inspección de SUNAFIL: qué revisan y cómo prepararse",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Pagos y control del mes",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cuadre de caja diario: formato en Excel",
+  "categoria": "Caja y ventas",
+  "subtema": "Cierre de caja",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Faltante de caja: ¿se lo puede descontar a quien cerró?",
+  "categoria": "Caja y ventas",
+  "subtema": "Cierre de caja",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Yape y Plin en el negocio",
+  "categoria": "Caja y ventas",
+  "subtema": "Cobros",
+  "estado": "en borrador"
+ },
+ {
+  "titulo": "Cobrar con POS: qué comisión revisar antes de firmar",
+  "categoria": "Caja y ventas",
+  "subtema": "Cobros",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cobrar a quien le debe, sin perder al cliente",
+  "categoria": "Caja y ventas",
+  "subtema": "Cobros",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Cambios y devoluciones",
+  "categoria": "Caja y ventas",
+  "subtema": "Cambios y reclamos",
+  "estado": "en borrador"
+ },
+ {
+  "titulo": "Libro de reclamaciones",
+  "categoria": "Caja y ventas",
+  "subtema": "Cambios y reclamos",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Garantía: qué debe responder su tienda",
+  "categoria": "Caja y ventas",
+  "subtema": "Cambios y reclamos",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Régimen tributario: Nuevo RUS, RER, RMT y General",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "Su régimen tributario",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Nuevo RUS: categorías y cuánto paga",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "Su régimen tributario",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo cambiar de régimen y en qué mes",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "Su régimen tributario",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Anular boleta o factura (nota de crédito, baja)",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "Boletas y facturas",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Boleta y factura gratis con SUNAT (SEE-SOL)",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "Boletas y facturas",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "¿Boleta o factura? Y desde qué monto se pide el DNI",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "Boletas y facturas",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Bancarización",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "IGV y compras",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Cómo validar la factura de su proveedor",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "IGV y compras",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Multas de SUNAT y gradualidad",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "Declarar y pagar",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Cómo declarar en cero",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "Declarar y pagar",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Declaración anual de renta",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "Declarar y pagar",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Detracciones",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "Obligaciones que se olvidan",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Libros contables según su régimen",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "Obligaciones que se olvidan",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Buzón SOL: las notificaciones que no puede ignorar",
+  "categoria": "SUNAT y comprobantes",
+  "subtema": "Obligaciones que se olvidan",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Inventario de fin de año, paso a paso",
+  "categoria": "Inventario y compras",
+  "subtema": "Contar el inventario",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Cómo hacer el inventario de una tienda de ropa",
+  "categoria": "Inventario y compras",
+  "subtema": "Contar el inventario",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Inventario por talla y color",
+  "categoria": "Inventario y compras",
+  "subtema": "Contar el inventario",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Kardex: qué es y cómo llevarlo",
+  "categoria": "Inventario y compras",
+  "subtema": "Control del día a día",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "¿SUNAT le exige el registro de inventario permanente?",
+  "categoria": "Inventario y compras",
+  "subtema": "Control del día a día",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Mermas y robo hormiga: cómo detectarlos",
+  "categoria": "Inventario y compras",
+  "subtema": "Control del día a día",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Guía de remisión para llevar mercadería entre sedes",
+  "categoria": "Inventario y compras",
+  "subtema": "Control del día a día",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Stock mínimo: cuánto comprar",
+  "categoria": "Inventario y compras",
+  "subtema": "Comprar y reponer",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Qué hacer con la mercadería que no se vende",
+  "categoria": "Inventario y compras",
+  "subtema": "Comprar y reponer",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Rotación: cada cuánto se vende lo que compra",
+  "categoria": "Inventario y compras",
+  "subtema": "Comprar y reponer",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Proveedores al por mayor: cómo elegirlos",
+  "categoria": "Inventario y compras",
+  "subtema": "Proveedores",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo importar de China, paso a paso",
+  "categoria": "Inventario y compras",
+  "subtema": "Proveedores",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo negociar precios con sus proveedores",
+  "categoria": "Inventario y compras",
+  "subtema": "Proveedores",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Sacar el RUC por internet",
+  "categoria": "Abrir su negocio",
+  "subtema": "Formalizarse",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "RUC 10 o RUC 20; EIRL o SAC",
+  "categoria": "Abrir su negocio",
+  "subtema": "Formalizarse",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Cómo crear una empresa, paso a paso",
+  "categoria": "Abrir su negocio",
+  "subtema": "Formalizarse",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Licencia de funcionamiento e ITSE",
+  "categoria": "Abrir su negocio",
+  "subtema": "El local",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Cuánto cuesta la licencia de funcionamiento",
+  "categoria": "Abrir su negocio",
+  "subtema": "El local",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Contrato de alquiler de local comercial: qué revisar",
+  "categoria": "Abrir su negocio",
+  "subtema": "El local",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Abrir otra sede: el establecimiento anexo en SUNAT",
+  "categoria": "Abrir su negocio",
+  "subtema": "El local",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cuánto cuesta abrir una tienda",
+  "categoria": "Abrir su negocio",
+  "subtema": "Antes de invertir",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo elegir la ubicación de su negocio",
+  "categoria": "Abrir su negocio",
+  "subtema": "Antes de invertir",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Negocios rentables con poco capital: cómo evaluarlos",
+  "categoria": "Abrir su negocio",
+  "subtema": "Antes de invertir",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo registrar su marca en Indecopi",
+  "categoria": "Abrir su negocio",
+  "subtema": "Proteger su negocio",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Nombre comercial y razón social",
+  "categoria": "Abrir su negocio",
+  "subtema": "Proteger su negocio",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "¿Cuándo contratar a un contador?",
+  "categoria": "Abrir su negocio",
+  "subtema": "Proteger su negocio",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "¿Su negocio es rentable? Del cuaderno a una hoja",
+  "categoria": "Finanzas del negocio",
+  "subtema": "¿Su negocio gana?",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Cómo llevar las cuentas en un cuaderno o en Excel",
+  "categoria": "Finanzas del negocio",
+  "subtema": "¿Su negocio gana?",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Estado de resultados con el ejemplo de una tienda",
+  "categoria": "Finanzas del negocio",
+  "subtema": "¿Su negocio gana?",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Precio de venta con margen e IGV",
+  "categoria": "Finanzas del negocio",
+  "subtema": "Precios",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Cómo ponerle precio a la ropa",
+  "categoria": "Finanzas del negocio",
+  "subtema": "Precios",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Punto de equilibrio: cuánto vender para no perder",
+  "categoria": "Finanzas del negocio",
+  "subtema": "Precios",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo hacer un flujo de caja",
+  "categoria": "Finanzas del negocio",
+  "subtema": "Flujo de caja",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Capital de trabajo: cuánta plata necesita para operar",
+  "categoria": "Finanzas del negocio",
+  "subtema": "Flujo de caja",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Su sueldo como dueño: separar su plata de la del negocio",
+  "categoria": "Finanzas del negocio",
+  "subtema": "Flujo de caja",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Préstamo para su negocio: cómo leer la TCEA",
+  "categoria": "Finanzas del negocio",
+  "subtema": "Préstamos y crédito",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Centrales de riesgo: cómo ver su reporte gratis",
+  "categoria": "Finanzas del negocio",
+  "subtema": "Préstamos y crédito",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Factoring: cobrar hoy una factura a 60 días",
+  "categoria": "Finanzas del negocio",
+  "subtema": "Préstamos y crédito",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo aumentar las ventas de un negocio pequeño",
+  "categoria": "Marketing y clientes",
+  "subtema": "Vender más en la tienda",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Ideas de promociones para una tienda de ropa",
+  "categoria": "Marketing y clientes",
+  "subtema": "Vender más en la tienda",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Las campañas del año: Día de la Madre, Fiestas Patrias y Navidad",
+  "categoria": "Marketing y clientes",
+  "subtema": "Vender más en la tienda",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Ticket promedio y unidades por ticket",
+  "categoria": "Marketing y clientes",
+  "subtema": "Vender más en la tienda",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "WhatsApp Business para vender",
+  "categoria": "Marketing y clientes",
+  "subtema": "Redes y mensajes",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo vender por Instagram, paso a paso",
+  "categoria": "Marketing y clientes",
+  "subtema": "Redes y mensajes",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "TikTok para su negocio",
+  "categoria": "Marketing y clientes",
+  "subtema": "Redes y mensajes",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo aparecer en Google Maps",
+  "categoria": "Marketing y clientes",
+  "subtema": "Que lo encuentren",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Reseñas en Google: cómo pedirlas y responderlas",
+  "categoria": "Marketing y clientes",
+  "subtema": "Que lo encuentren",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Tienda online: cuándo le conviene",
+  "categoria": "Marketing y clientes",
+  "subtema": "Que lo encuentren",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo fidelizar a sus clientes",
+  "categoria": "Marketing y clientes",
+  "subtema": "Clientes que vuelven",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Su lista de clientes: qué permiso pedir para mandarles promociones",
+  "categoria": "Marketing y clientes",
+  "subtema": "Clientes que vuelven",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Ofertas y precios: lo que exige Indecopi",
+  "categoria": "Marketing y clientes",
+  "subtema": "Clientes que vuelven",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo escribir el aviso y el perfil del puesto",
+  "categoria": "Su equipo",
+  "subtema": "Elegir bien",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Preguntas para entrevistar a quien va a vender",
+  "categoria": "Su equipo",
+  "subtema": "Elegir bien",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Periodo de prueba: cuánto dura y qué permite",
+  "categoria": "Su equipo",
+  "subtema": "Elegir bien",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Control de asistencia sin huellero",
+  "categoria": "Su equipo",
+  "subtema": "Horarios y asistencia",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Descuento por tardanza: cuándo se puede",
+  "categoria": "Su equipo",
+  "subtema": "Horarios y asistencia",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Turnos y horario de tienda dentro de las 48 horas",
+  "categoria": "Su equipo",
+  "subtema": "Horarios y asistencia",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Comisiones por ventas: cómo diseñarlas",
+  "categoria": "Su equipo",
+  "subtema": "Metas y comisiones",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Metas de venta por persona y por sede",
+  "categoria": "Su equipo",
+  "subtema": "Metas y comisiones",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Manual de funciones para su tienda",
+  "categoria": "Su equipo",
+  "subtema": "Reglas claras",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Reglamento interno: ¿es obligatorio para usted?",
+  "categoria": "Su equipo",
+  "subtema": "Reglas claras",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo llamar la atención por escrito",
+  "categoria": "Su equipo",
+  "subtema": "Reglas claras",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo controlar sus sedes sin estar ahí",
+  "categoria": "Su equipo",
+  "subtema": "Reglas claras",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cultura organizacional: ejemplos en una tienda",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Cultura de su negocio",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Misión, visión y valores de su negocio",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Cultura de su negocio",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "La inducción del primer día",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Cultura de su negocio",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Encuesta de clima laboral gratis",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Clima y permanencia",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Rotación del equipo: cómo medirla y bajarla",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Clima y permanencia",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo motivar y reconocer a su equipo sin gastar de más",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Clima y permanencia",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Línea de carrera en una tienda",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Crecer dentro del negocio",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Evaluación de desempeño sencilla",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Crecer dentro del negocio",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo ascender a alguien a encargado de sede",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Crecer dentro del negocio",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Plan de capacitación: el obligatorio y el que hace vender más",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Crecer dentro del negocio",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Intraemprendimiento: qué es y cómo empezar en una tienda",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Intraemprendimiento",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo recoger y premiar las ideas de su equipo",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Intraemprendimiento",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo ser un buen líder de equipo",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Liderar",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo dar retroalimentación a un colaborador",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Liderar",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Cómo delegar sin perder el control",
+  "categoria": "Desarrollo Organizacional",
+  "subtema": "Liderar",
+  "estado": "propuesto"
+ }
+]

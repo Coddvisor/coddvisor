@@ -11,10 +11,15 @@
 import Base from '../../layouts/Base.astro';
 import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
 import { temas, minimoPublicados, ubicar } from '../../datos/temas';
+// VISTA BORRADOR (rama web/blog-temas-borrador, nunca se une a main): muestra los 9 temas completos,
+// con los artículos que todavía no se publican, para que la fundadora revise la estructura entera.
+// plan-borrador.json es una foto del índice del blog (blog-indice.md) del 22-nov-2026.
+import plan from '../../datos/plan-borrador.json';
+const borrador = true;
 
 type Item = {
   titulo: string; resumen: string; categoria: string; subtema: string;
-  publicada: string; lectura: number; vence?: string; href: string;
+  publicada: string; lectura: number; vence?: string; href: string; estado?: string;
 };
 
 const archivos = import.meta.glob('../../articulos/*.md', { eager: true }) as Record<string, any>;
@@ -32,8 +37,14 @@ const guias: Item[] = herramientas.map((h) => ({
   titulo: h.guia, resumen: h.resumen, categoria: h.categoria, subtema: h.subtema,
   publicada: h.publicada, lectura: h.lectura, href: h.href + '#guia-t',
 }));
-const todos = [...articulos, ...guias];
-todos.forEach((x) => ubicar(x.categoria, x.subtema, x.href));
+const publicados = [...articulos, ...guias];
+const pendientes: Item[] = borrador
+  ? (plan as { titulo: string; categoria: string; subtema: string; estado: string }[]).map((p) => ({
+      ...p, resumen: '', publicada: '0000-00-00', lectura: 0, href: '',
+    }))
+  : [];
+const todos = [...publicados, ...pendientes];
+todos.forEach((x) => ubicar(x.categoria, x.subtema, x.href || x.titulo));
 const masNuevo = (a: Item, b: Item) => b.publicada.localeCompare(a.publicada);
 
 // Temas con suficientes artículos, en el orden aprobado, con sus subtemas no vacíos.
@@ -42,10 +53,11 @@ const visibles = temas
     const suyos = todos.filter((x) => x.categoria === t.nombre);
     const subtemas = t.subtemas
       .map((s) => ({ nombre: s, items: suyos.filter((x) => x.subtema === s).sort(masNuevo) }))
-      .filter((s) => s.items.length > 0);
-    return { ...t, total: suyos.length, subtemas };
+      .filter((s) => borrador || s.items.length > 0);
+    const listos = suyos.filter((x) => !x.estado).length;
+    return { ...t, total: suyos.length, listos, subtemas };
   })
-  .filter((t) => t.total >= minimoPublicados);
+  .filter((t) => borrador || t.total >= minimoPublicados);
 const nombresVisibles = new Set<string>(visibles.map((t) => t.nombre));
 const sueltos = todos.filter((x) => !nombresVisibles.has(x.categoria)).sort(masNuevo);
 
@@ -67,10 +79,16 @@ const hoy = new Date().toISOString().slice(0, 10);
 
 <div class="lista-sec">
   <div class="col">
+    {borrador && (
+      <div class="borrador-aviso" role="note">
+        <p class="rotulo">Vista borrador: no se publica</p>
+        <p>Aquí están los 9 temas completos, con todos sus subtemas y artículos, también los que todavía no existen. En el sitio público solo aparecen los temas con {minimoPublicados} artículos publicados. Las tarjetas sin enlace muestran su estado.</p>
+      </div>
+    )}
     <nav class="temas-nav" aria-label="Temas del blog">
       <p class="rotulo">Temas</p>
       <ul>
-        {visibles.map((t) => <li><a href={'#' + t.id}>{t.nombre} <span class="temas-n">{t.total}</span></a></li>)}
+        {visibles.map((t) => <li><a href={'#' + t.id}>{t.nombre} <span class="temas-n">{borrador ? `${t.listos} de ${t.total}` : t.total}</span></a></li>)}
         {sueltos.length > 0 && <li><a href="#mas-guias">Más guías <span class="temas-n">{sueltos.length}</span></a></li>}
       </ul>
     </nav>
@@ -83,7 +101,13 @@ const hoy = new Date().toISOString().slice(0, 10);
           <div class="subtema">
             <h3 class="subtema-t">{s.nombre}</h3>
             <ul class="tarjetas tarjetas--blog">
-              {s.items.map((x) => (
+              {s.items.length === 0 && <li class="tarjeta tarjeta--vacia"><p class="tarjeta-tx">Sin artículos todavía.</p></li>}
+              {s.items.map((x) => x.estado ? (
+                <li class={'tarjeta tarjeta--pendiente estado--' + x.estado.replace(' ', '-')}>
+                  <p class="tarjeta-cat">{x.estado}</p>
+                  <h4 class="tarjeta-t">{x.titulo}</h4>
+                </li>
+              ) : (
                 <li class="tarjeta" data-vence={x.vence}>
                   {x.vence && <p class="tarjeta-cat"><span class="tarjeta-fin" hidden={!(hoy > x.vence)}>Terminó</span></p>}
                   <h4 class="tarjeta-t"><a href={x.href}>{x.titulo}</a></h4>
