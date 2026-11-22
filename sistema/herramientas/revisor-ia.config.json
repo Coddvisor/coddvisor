@@ -1,0 +1,14 @@
+{
+  "modelo": "claude-sonnet-5-5",
+  "direccion": "https://api.anthropic.com/v1/messages",
+  "version_api": "2023-06-01",
+  "rama_base": "main",
+  "carpeta_bases": "../arquitectura/bases",
+  "lista_de_revision": "06-antes-de-unir.md",
+  "encabezado_preguntas": "## Lo que responde una persona",
+  "maximo_caracteres_diff": 120000,
+  "maximo_tokens_respuesta": 4000,
+  "segundos_espera": 120,
+  "reintentos": 1,
+  "ignorar_en_diff": ["package-lock.json", "*.candado.json"]
+}
