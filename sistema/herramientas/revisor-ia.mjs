@@ -151,7 +151,13 @@ export async function consultarModelo({ sistema, usuario }, config, llave, busca
       });
       if (r.ok) {
         const json = await r.json();
-        return { texto: (json.content ?? []).map((b) => b.text ?? '').join(''), uso: json.usage ?? null };
+        // `cortada` avisa que el modelo se quedó sin espacio de respuesta: el
+        // texto está incompleto y quien llama no debe tratarlo como completo.
+        return {
+          texto: (json.content ?? []).map((b) => b.text ?? '').join(''),
+          uso: json.usage ?? null,
+          cortada: json.stop_reason === 'max_tokens',
+        };
       }
       ultimoError = `la API respondió ${r.status}`;
       if (r.status < 500 && r.status !== 429) break;

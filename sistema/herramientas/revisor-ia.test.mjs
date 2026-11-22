@@ -74,7 +74,12 @@ describe('llamada a la API', () => {
 
   test('devuelve el texto y el consumo', async () => {
     const buscar = async () => respuesta(200, { content: [{ text: 'hola' }], usage: { input_tokens: 5, output_tokens: 1 } });
-    assert.deepEqual(await consultarModelo(mensajes, config, 'k', buscar), { texto: 'hola', uso: { input_tokens: 5, output_tokens: 1 } });
+    assert.deepEqual(await consultarModelo(mensajes, config, 'k', buscar), { texto: 'hola', uso: { input_tokens: 5, output_tokens: 1 }, cortada: false });
+  });
+
+  test('avisa cuando la respuesta se cortó por largo', async () => {
+    const buscar = async () => respuesta(200, { content: [{ text: '[{"id"' }], stop_reason: 'max_tokens' });
+    assert.equal((await consultarModelo(mensajes, config, 'k', buscar)).cortada, true);
   });
 
   test('reintenta una vez ante un error del servidor', async () => {
