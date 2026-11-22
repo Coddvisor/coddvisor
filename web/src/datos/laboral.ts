@@ -36,3 +36,38 @@ export function solesCortos(c: number): string {
   const s = (c / 100).toLocaleString('en-US', { minimumFractionDigits: c % 100 ? 2 : 0, maximumFractionDigits: 2 });
   return 'S/ ' + s;
 }
+
+// ---------- Pensiones (solo cambian lo que recibe la persona, no el costo del negocio) ----------
+// ONP: 13 % (Ley 32123, art. 8.1). AFP: 10 % de aporte + prima de seguro + comisión sobre flujo
+// (SBS, devengue 2026-11: https://www.sbs.gob.pe/app/spp/empleadores/comisiones_spp/paginas/comision_prima.aspx).
+// La prima se calcula solo hasta la remuneración máxima asegurable. En comisión mixta, la planilla no
+// descuenta la comisión sobre flujo (la AFP cobra la de saldo del fondo). Tasas en centésimas de punto.
+export const pensiones = {
+  devengue: '2026-11',
+  onp: 1300,
+  afpAporte: 1000,
+  /** Prima de seguro por fecha (baja a 1.12 % del 1-ene-2027 al 31-dic-2028). */
+  primas: [
+    { desde: '2026-01-01', tasa: 137 },
+    { desde: '2027-01-01', tasa: 112 },
+  ],
+  /** Remuneración máxima asegurable, en céntimos (solo para la prima). */
+  maximaAsegurable: 1273270,
+  /** Comisión sobre flujo por AFP (la de saldo la cobra la AFP del fondo, no la planilla). */
+  afps: [
+    { nombre: 'Habitat', flujo: 147 },
+    { nombre: 'Integra', flujo: 155 },
+    { nombre: 'Prima', flujo: 160 },
+    { nombre: 'Profuturo', flujo: 169 },
+  ],
+};
+
+// ---------- Otros datos del costo de un integrante ----------
+export const costo = {
+  /** SIS de la microempresa: S/ 15 al mes por persona (gob.pe/185). */
+  sis: 1500,
+  /** Seguro Vida Ley: tasa por defecto 0.53 % (D. Leg. 688, art. 10); cada póliza tiene la suya. */
+  vidaLey: 53,
+  /** UIT 2026 (D.S. 301-2025-EF): S/ 5,500. 7 UIT = límite de la retención de quinta. */
+  uit: 550000,
+};

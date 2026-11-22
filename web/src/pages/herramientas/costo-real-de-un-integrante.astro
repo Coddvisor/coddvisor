@@ -1,0 +1,334 @@
+---
+// Herramienta gratis: costo real de un integrante. La calculadora arriba y la guía debajo.
+// Cuentas en public/herramientas/laboral.js (costoReal, pension, minimaJornada); datos que cambian
+// por norma en src/datos/laboral.ts. Guía del borrador aprobado (web/borradores/costo-real-integrante.md).
+// Diseño: el mismo de las herramientas nuevas (herramienta.css).
+import Base from '../../layouts/Base.astro';
+import { llamado } from '../../datos/navegacion';
+import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
+import { minimas, pensiones, costo, minimaVigente, asignacionFamiliar, solesCortos } from '../../datos/laboral';
+
+const h = herramientas.find((x) => x.href === '/herramientas/costo-real-de-un-integrante/')!;
+const asignacion = solesCortos(asignacionFamiliar(minimaVigente().rmv));
+const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+const datosCosto = { pensiones, costo };
+---
+<Base
+  titulo="¿Cuánto cuesta un integrante en planilla? Calculadora gratis | Coddvisor"
+  descripcion="Calcule cuánto le cuesta al mes una persona en planilla según su régimen: sueldo, gratificaciones, CTS, EsSalud o SIS y Vida Ley. Y cuánto le llega a ella. Gratis.">
+<link slot="cabeza" rel="stylesheet" href="/herramientas/herramienta.css">
+
+<section class="portada portada--interior osc" aria-labelledby="hcr-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot">Herramienta gratis</p>
+    <h1 class="portada-t interior-t" id="hcr-t">¿Cuánto le cuesta <span class="cel">una persona en planilla?</span></h1>
+    <p class="portada-baj">El costo real por mes, lo que conviene apartar cada mes para julio, diciembre, mayo y noviembre, y cuánto le llega a la persona. Cambie el sueldo y simule antes de contratar.</p>
+    <ul class="confianza">
+      <li set:html={ico + 'Gratis y sin registrarse'} />
+      <li set:html={ico + 'Verificada contra la norma el ' + fechaLarga(h.verificada!)} />
+      <li set:html={ico + 'Lo que escribe no sale de su computadora'} />
+    </ul>
+  </div>
+</section>
+
+<section class="her-sec" aria-label="Calculadora del costo real de un integrante">
+  <div class="col">
+    <div class="lienzo">
+      <form class="igv" id="costo" autocomplete="off" novalidate>
+        <div>
+          <div class="igv-grupo" style="margin-top:0">
+            <p class="igv-et" id="cr-g-pago">Cómo le paga</p>
+            <div class="seg" role="radiogroup" aria-labelledby="cr-g-pago">
+              <span class="seg-ficha" aria-hidden="true"></span>
+              <input type="radio" name="pago" id="cr-fijo" value="fijo" checked><label for="cr-fijo">Sueldo fijo</label>
+              <input type="radio" name="pago" id="cr-horas" value="horas"><label for="cr-horas">Por horas</label>
+            </div>
+          </div>
+
+          <div data-f="fijo">
+            <label class="igv-et" for="cr-sueldo" style="display:block;margin-top:20px">Sueldo mensual</label>
+            <div class="igv-monto"><span>S/</span><input id="cr-sueldo" name="sueldo" type="text" inputmode="decimal" value="1500.00"></div>
+            <label class="casilla"><input type="checkbox" name="horas4" checked> Trabaja 4 horas diarias o más en promedio <small>(si no, no le corresponde CTS)</small></label>
+          </div>
+          <div data-f="horas" hidden>
+            <div class="caja-campos caja-campos--3">
+              <div class="campo campo--monto"><label for="cr-tarifa">Tarifa por hora</label><div class="monto"><span>S/</span><input id="cr-tarifa" name="tarifa" type="text" inputmode="decimal" value="8.00"></div></div>
+              <div class="campo"><label for="cr-horas-d">Horas al día</label><input id="cr-horas-d" name="horas" type="text" inputmode="decimal" value="4"></div>
+              <div class="campo"><label for="cr-dias">Días a la semana</label><input id="cr-dias" name="dias" type="number" inputmode="numeric" min="1" max="7" step="1" value="6"></div>
+            </div>
+            <p class="igv-ayuda">Sueldo del mes: <b data-r="sueldo-horas">S/ 0.00 al mes</b> (tarifa × horas × días × 52 semanas ÷ 12).</p>
+          </div>
+          <p class="caja-aviso" data-r="aviso-minima" hidden></p>
+
+          <div class="igv-grupo">
+            <p class="igv-et" id="cr-g-reg">El régimen de su negocio</p>
+            <div class="seg" role="radiogroup" aria-labelledby="cr-g-reg">
+              <span class="seg-ficha" aria-hidden="true"></span>
+              <input type="radio" name="regimen" id="cr-general" value="general"><label for="cr-general">General</label>
+              <input type="radio" name="regimen" id="cr-pequena" value="pequena"><label for="cr-pequena">Pequeña</label>
+              <input type="radio" name="regimen" id="cr-micro" value="micro"><label for="cr-micro">Micro</label>
+              <input type="radio" name="regimen" id="cr-nose" value="nose" checked><label for="cr-nose">No lo sé</label>
+            </div>
+            <p class="igv-ayuda">Pequeña y micro: solo si su negocio está inscrito en el REMYPE. Si no lo está, elija General.</p>
+            <label class="casilla" data-antes hidden><input type="checkbox" name="antes"> Esta persona ya trabajaba aquí antes de la inscripción en el REMYPE <small>(conserva el régimen general)</small></label>
+          </div>
+
+          <div class="igv-grupo">
+            <p class="igv-et" id="cr-g-salud">Seguro de salud</p>
+            <div class="seg" role="radiogroup" aria-labelledby="cr-g-salud">
+              <span class="seg-ficha" aria-hidden="true"></span>
+              <input type="radio" name="salud" id="cr-salud-a" value="a" checked><label for="cr-salud-a" data-r="salud-a">EsSalud</label>
+              <input type="radio" name="salud" id="cr-salud-b" value="b"><label for="cr-salud-b" data-r="salud-b">Con EPS</label>
+            </div>
+            <p class="igv-ayuda" data-r="salud-ayuda">EsSalud: 9 % del sueldo.</p>
+          </div>
+
+          <div class="igv-grupo">
+            <p class="igv-et">Lo que entra además del sueldo</p>
+            <label class="casilla"><input type="checkbox" name="asignacion"> Recibe asignación familiar <small>({asignacion} al mes)</small></label>
+            <div class="caja-campos">
+              <div class="campo campo--monto"><label for="cr-extras">Horas extra al mes</label><div class="monto"><span>S/</span><input id="cr-extras" name="extras" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+              <div class="campo"><label for="cr-personas">Personas con este sueldo</label><input id="cr-personas" name="personas" type="number" inputmode="numeric" min="1" step="1" value="1"></div>
+            </div>
+            <label class="casilla"><input type="checkbox" name="extras3"> Las horas extra se pagan en 3 meses o más del semestre <small>(entonces suben la gratificación y la CTS)</small></label>
+          </div>
+
+          <div class="igv-grupo">
+            <p class="igv-et" id="cr-g-pen">Pensión de la persona <small style="text-transform:none;letter-spacing:0">(no cambia su costo, solo lo que le llega)</small></p>
+            <div class="seg" role="radiogroup" aria-labelledby="cr-g-pen">
+              <span class="seg-ficha" aria-hidden="true"></span>
+              <input type="radio" name="pension" id="cr-onp" value="onp" checked><label for="cr-onp">ONP</label>
+              <input type="radio" name="pension" id="cr-afp" value="afp"><label for="cr-afp">AFP</label>
+            </div>
+            <div class="caja-campos" data-f="afp" hidden>
+              <div class="campo"><label for="cr-afp-n">Su AFP</label>
+                <select id="cr-afp-n" name="afp">
+                  {pensiones.afps.map((a) => <option value={a.nombre}>{a.nombre}</option>)}
+                </select></div>
+              <label class="casilla" style="align-self:end"><input type="checkbox" name="mixta"> Comisión mixta <small>(sobre saldo)</small></label>
+            </div>
+          </div>
+
+          <div class="igv-grupo">
+            <p class="igv-et">Seguros obligatorios</p>
+            <div class="caja-campos">
+              <div class="campo"><label for="cr-vida">Tasa del Seguro Vida Ley <small>(%)</small></label><input id="cr-vida" name="vida" type="text" inputmode="decimal" value="0.53"></div>
+              <div class="campo campo--monto" data-f="prima" hidden><label for="cr-prima">Prima mensual del SCTR</label><div class="monto"><span>S/</span><input id="cr-prima" name="prima" type="text" inputmode="decimal" placeholder="0.00"></div></div>
+            </div>
+            <p class="igv-ayuda">El Vida Ley es obligatorio desde el primer día, en todos los regímenes. 0.53 % es la tasa original de la ley: cámbiela por la de su póliza.</p>
+            <label class="casilla"><input type="checkbox" name="sctr"> Su negocio es de alto riesgo y paga SCTR</label>
+          </div>
+        </div>
+
+        <div class="igv-res costo-res" role="status" aria-live="polite">
+          <p class="igv-et">Le cuesta de verdad, al mes</p>
+          <p class="igv-grande" data-r="costo">S/ 2,061.28</p>
+          <p class="igv-frase" data-r="frase">37.4 % más que lo que gana en el mes.</p>
+
+          <div class="tres" data-tres>
+            <div><p class="tres-t">Régimen general</p><p class="tres-v" data-r="t-general">S/ 0.00</p><p class="tres-d" data-r="t-general-det"></p></div>
+            <div><p class="tres-t">Pequeña empresa</p><p class="tres-v" data-r="t-pequena">S/ 0.00</p><p class="tres-d" data-r="t-pequena-det"></p></div>
+            <div><p class="tres-t">Microempresa</p><p class="tres-v" data-r="t-micro">S/ 0.00</p><p class="tres-d" data-r="t-micro-det"></p></div>
+          </div>
+
+          <p class="igv-et" style="margin-top:22px">Aparte cada mes, además del sueldo</p>
+          <div class="leyenda-rep">
+            <div data-fila="grati"><span>Gratificaciones</span><b></b></div>
+            <div data-fila="bonif"><span>Bonificación</span><b></b></div>
+            <div data-fila="cts"><span>CTS</span><b></b></div>
+            <div data-fila="salud"><span data-r="salud-et">EsSalud</span><b></b></div>
+            <div data-fila="vida"><span>Vida Ley</span><b></b></div>
+            <div data-fila="sctr" hidden><span>SCTR</span><b></b></div>
+          </div>
+
+          <p class="igv-et" style="margin-top:22px">Al año</p>
+          <div class="leyenda-rep">
+            <div><span>Paga su negocio</span><b data-r="anual">S/ 0.00</b></div>
+            <div><span>Recibe la persona</span><b data-r="persona">S/ 0.00</b></div>
+            <div><span>Diferencia: pensión y salud</span><b data-r="diferencia">S/ 0.00</b></div>
+          </div>
+          <p class="igv-ayuda">Le llegan <b data-r="neto">S/ 0.00</b> al mes, más sus gratificaciones y su CTS. La diferencia no se pierde: es su pensión y su seguro de salud.</p>
+          <p class="igv-ayuda" data-r="quinta" hidden>Con este ingreso hay retención de renta de quinta: usted la descuenta y la entrega, pero no es un costo de su negocio.</p>
+
+          <p class="igv-et" style="margin-top:22px">Su calendario del año</p>
+          <ul class="costo-cal" data-r="calendario"></ul>
+          <p class="igv-ayuda">Las vacaciones no se suman: el mes de descanso se paga con uno de los 12 sueldos.</p>
+
+          <div class="igv-acc">
+            <button type="button" class="boton-claro" data-copiar>Copiar resultado</button>
+            <span class="igv-aviso" data-copiado role="status"></span>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <a class="barra-movil" href="#costo" data-barra>Costo real al mes <b data-barra-n>S/ 0.00</b></a>
+</section>
+
+<!-- Guía: el artículo del blog vive aquí, debajo de la herramienta. -->
+<article class="guia guia-nueva" aria-labelledby="guia-t">
+  <div class="col">
+    <header class="guia-cab guia-in">
+      <p class="rotulo">Guía · {h.categoria}</p>
+      <h2 class="titular guia-t" id="guia-t">{h.guia}</h2>
+      <p class="guia-meta">{autor} · <time datetime={h.publicada}>{fechaLarga(h.publicada)}</time> · {h.lectura} min de lectura</p>
+    </header>
+
+    <nav class="guia-indice" aria-label="En esta guía">
+      <a href="#g-resumen" data-ind="g-resumen">En 30 segundos</a>
+      <a href="#g-que" data-ind="g-que">Qué es</a>
+      <a href="#g-pasos" data-ind="g-pasos">Paso a paso</a>
+      <a href="#g-regimen" data-ind="g-regimen">Por régimen</a>
+      <a href="#g-cambia" data-ind="g-cambia">Qué lo cambia</a>
+      <a href="#g-quien" data-ind="g-quien">Quién paga qué</a>
+      <a href="#g-revisar" data-ind="g-revisar">Si no cuadra</a>
+      <a href="#g-preguntas" data-ind="g-preguntas">Preguntas</a>
+      <span class="leido" data-leido></span>
+    </nav>
+
+    <div class="resumen30 guia-sec" id="g-resumen">
+      <b class="r">EN 30 SEGUNDOS</b>
+      <p>Con un sueldo de S/ 1,500, una persona le cuesta a su negocio <b>S/ 2,053.33 al mes</b> en el régimen general, cerca de 37 % más que su sueldo. En una pequeña empresa inscrita en el REMYPE cuesta S/ 1,838.96, y en una microempresa inscrita, S/ 1,515. A la persona le llegan S/ 1,305 al mes si aporta a la ONP, más sus gratificaciones y su CTS.</p>
+    </div>
+
+    <section class="guia-sec" id="g-que" aria-labelledby="g-que-t">
+      <h3 class="guia-sec-t" id="g-que-t">Qué es el costo real</h3>
+      <div class="guia-texto">
+        <p>Es todo lo que su negocio paga en el año por una persona, dividido entre 12. Incluye el sueldo, las gratificaciones con su bonificación, la CTS y el seguro de salud. Sirve para decidir si puede contratar y a qué precio debe vender para cubrirlo.</p>
+        <p>Las vacaciones no se suman aparte: el mes de descanso se paga con uno de los 12 sueldos. Solo cuestan más si la persona no las toma a tiempo.</p>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-pasos" aria-labelledby="g-pasos-t">
+      <h3 class="guia-sec-t" id="g-pasos-t">Paso a paso</h3>
+      <div class="guia-pro">
+        <ol class="pasos-pro" data-pasos>
+          <li data-paso="0"><span class="n">PASO 1</span><h4>Confirme su régimen.</h4><p>Busque su RUC en la consulta del REMYPE. Sin inscripción, el costo es el del régimen general.</p></li>
+          <li data-paso="1"><span class="n">PASO 2</span><h4>Multiplique el sueldo por 12.</h4><p>Sume la asignación familiar si la persona la recibe.</p></li>
+          <li data-paso="2"><span class="n">PASO 3</span><h4>Sume las gratificaciones con su bonificación del 9 %.</h4><p>Son dos sueldos en el régimen general y dos medios sueldos en la pequeña empresa. La microempresa no da gratificación.</p></li>
+          <li data-paso="3"><span class="n">PASO 4</span><h4>Sume la CTS.</h4><p>Es casi un sueldo al año en el régimen general y la mitad en la pequeña empresa. La microempresa no da CTS.</p></li>
+          <li data-paso="4"><span class="n">PASO 5</span><h4>Sume el seguro de salud.</h4><p>EsSalud es el 9 % del sueldo. En la microempresa con SIS, son S/ 15 al mes por persona; si prefiere, la microempresa puede pagar EsSalud (9 %) sin salir del régimen especial.</p></li>
+          <li data-paso="5"><span class="n">PASO 6</span><h4>Divida entre 12 y aparte ese monto cada mes.</h4><p>Así julio, mayo, noviembre y diciembre no lo toman por sorpresa.</p></li>
+        </ol>
+        <div class="escena">
+          <p class="igv-et">La cuenta, paso a paso</p>
+          <div class="ecu" aria-live="polite">
+            <p class="ecu-l" data-l="0"><span>Régimen general</span> <small>sueldo de S/ 1,500</small></p>
+            <p class="ecu-l" data-l="1">1,500 × 12 = <span class="ce">18,000.00</span></p>
+            <p class="ecu-l" data-l="2">+ 3,000.00 + 270.00 <small>gratificaciones y bonificación</small></p>
+            <p class="ecu-l" data-l="3">+ 1,750.00 <small>CTS</small></p>
+            <p class="ecu-l" data-l="4">+ 1,620.00 <small>EsSalud</small></p>
+            <p class="ecu-l" data-l="5">24,640.00 ÷ 12 = <span class="am">2,053.33</span> <small>al mes</small></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-regimen" aria-labelledby="g-regimen-t">
+      <h3 class="guia-sec-t" id="g-regimen-t">Cuánto cuesta en cada régimen</h3>
+      <div class="guia-texto">
+        <div class="formula" aria-label="Fórmula">
+          <p><b>Costo real por mes</b> = (sueldo × 12 + gratificaciones + bonificación + CTS + seguro de salud) ÷ 12</p>
+          <p><b>Sobre el sueldo</b> = (costo real por mes ÷ sueldo − 1) × 100</p>
+        </div>
+        <p style="margin-top:18px">Mismo sueldo de S/ 1,500, año completo. Arriba puede cambiar el sueldo y simular el que le convenga.</p>
+        <p><b>Régimen general (o no inscrito en el REMYPE).</b> Le cuesta <b>S/ 2,053.33 al mes</b>, 36.9 % más que el sueldo: S/ 24,640 al año. Cada mes, aparte además del sueldo S/ 250 de gratificaciones, S/ 22.50 de bonificación, S/ 145.83 de CTS y S/ 135 de EsSalud. La persona recibe S/ 1,305 al mes con ONP; en julio y diciembre, S/ 1,635 más, y en mayo y noviembre se depositan S/ 875 de CTS.</p>
+        <p><b>Pequeña empresa inscrita en el REMYPE.</b> Le cuesta <b>S/ 1,838.96 al mes</b>, 22.6 % más: S/ 22,067.50 al año. Cada mes, aparte S/ 125 de gratificaciones, S/ 11.25 de bonificación, S/ 67.71 de CTS y S/ 135 de EsSalud. La persona recibe S/ 1,305 al mes; en julio y diciembre, S/ 817.50 más, y en mayo y noviembre se depositan S/ 406.25 de CTS.</p>
+        <p><b>Microempresa inscrita en el REMYPE.</b> Le cuesta <b>S/ 1,515 al mes</b>, 1 % más: S/ 18,180 al año. Cada mes, aparte S/ 15 de SIS. La persona recibe S/ 1,305 al mes y no tiene gratificación ni CTS.</p>
+        <p><b>¿No sabe cuál es el suyo?</b> Haga la consulta del REMYPE antes de contratar. Mientras tanto, calcule con el régimen general: es el más alto y nunca se queda corto. Lo explicamos en la <a href="/blog/remype/">guía del REMYPE</a>.</p>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-cambia" aria-labelledby="g-cambia-t">
+      <h3 class="guia-sec-t" id="g-cambia-t">Lo que cambia el costo en cualquier régimen</h3>
+      <div class="guia-texto">
+        <ul class="guia-lista">
+          <li><b>Quien ya trabajaba antes de la inscripción.</b> Conserva sus beneficios: calcúlelo con el régimen general, aunque su negocio sea micro o pequeña empresa.</li>
+          <li><b>Sueldo fijo o pago por horas.</b> Si paga por horas, el sueldo del mes es la tarifa por hora por las horas trabajadas. Los beneficios se calculan igual, con el promedio de lo que ganó, salvo por la jornada: con menos de 4 horas diarias, la persona tiene gratificación, pero no CTS ni vacaciones. EsSalud nunca baja de S/ 110.70 al mes, el 9 % de la remuneración mínima, aunque la persona gane menos por trabajar pocas horas.</li>
+          <li><b>Asignación familiar.</b> Si la persona tiene hijos menores de 18 años, sume S/ 123 al mes. También sube la gratificación, la CTS y EsSalud.</li>
+          <li><b>Horas extra.</b> Cada hora se paga con al menos 25 % más las dos primeras del día, y 35 % más las siguientes. Si son regulares, también suben la gratificación y la CTS.</li>
+          <li><b>EPS.</b> El negocio paga 6.75 % a EsSalud y el resto a la EPS, y la bonificación baja a 6.75 %.</li>
+          <li><b>Actividad de alto riesgo.</b> Si su negocio está en la lista de actividades de riesgo, sume el SCTR. Pida la cotización a su aseguradora.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-quien" aria-labelledby="g-quien-t">
+      <h3 class="guia-sec-t" id="g-quien-t">Qué paga usted y qué paga la persona</h3>
+      <div class="guia-texto">
+        <p><b>Se le descuenta a la persona:</b> la ONP (13 %) o la AFP (10 % más la comisión y el seguro de su AFP). También el impuesto a la renta, si lo que gana en el año pasa de 7 UIT, S/ 38,500 en 2026. Usted lo retiene y lo entrega, pero no es un costo de su negocio.</p>
+        <p><b>El Seguro Vida Ley</b> es obligatorio desde el primer día de trabajo en todos los regímenes, incluida la microempresa. Su costo depende de la aseguradora: la calculadora lo suma con 0.53 % del sueldo, S/ 7.95 al mes con S/ 1,500, y usted puede cambiar esa tasa por la de su póliza. Las cifras de esta guía no lo incluyen.</p>
+        <p><b>La diferencia no se pierde.</b> En el régimen general, el negocio paga S/ 24,640 al año y la persona recibe S/ 20,680, contando su CTS. Los S/ 3,960 que faltan son S/ 2,340 de la ONP para su pensión y S/ 1,620 de EsSalud para su seguro de salud.</p>
+        <p><b>Bonos y movilidad.</b> Un bono de cumpleaños, la movilidad o una ayuda para estudios no suben la gratificación ni la CTS, si cumplen su condición. Si se pagan cada mes sin importar la asistencia o el hecho que los justifica, la ley los trata como sueldo y suben todo el costo. Lo explicamos en la <a href="/blog/bonos-movilidad/">guía de bonos y movilidad</a>.</p>
+        <p><b>Planilla o recibo por honorarios.</b> Si una persona trabaja para usted con horario, recibe órdenes y cobra cada mes, la ley la considera parte de su planilla. No importa que emita recibos por honorarios: valen los hechos, no el papel. No registrarla en planilla es una infracción muy grave ante la SUNAFIL, una por cada persona. Además, se le deben todos los beneficios desde que empezó.</p>
+      </div>
+    </section>
+
+    <section class="guia-sec" id="g-revisar" aria-labelledby="g-revisar-t">
+      <h3 class="guia-sec-t" id="g-revisar-t">Si no cuadra, revise esto primero</h3>
+      <ol class="errores" style="list-style:none;padding:0">
+        <li class="error-c">
+          <span class="n">1</span><h4>Comparó solo el sueldo.</h4>
+          <div class="error-par" aria-hidden="true"><p class="no">Cuesta 1,500.00</p><p class="si"><i>✓</i> Cuesta 2,053.33</p></div>
+          <p>Una persona del régimen general cuesta cerca de 37 % más que su sueldo. Use el costo real para fijar precios y decidir contrataciones.</p>
+        </li>
+        <li class="error-c">
+          <span class="n">2</span><h4>Olvidó la bonificación del 9 %.</h4>
+          <p>La gratificación no paga EsSalud, pero ese 9 % se le entrega a la persona. Súmelo siempre al costo.</p>
+        </li>
+        <li class="error-c">
+          <span class="n">3</span><h4>Sumó la ONP o la AFP como costo suyo.</h4>
+          <p>Se descuentan del sueldo de la persona. No las sume dos veces.</p>
+        </li>
+        <li class="error-c">
+          <span class="n">4</span><h4>No apartó el dinero cada mes.</h4>
+          <p>Julio y diciembre traen un sueldo extra cada uno, y mayo y noviembre, la CTS. Aparte cada mes lo que indica la calculadora en «Aparte cada mes».</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="guia-sec" id="g-preguntas" aria-labelledby="g-preguntas-t">
+      <h3 class="guia-sec-t" id="g-preguntas-t">Preguntas frecuentes</h3>
+      <div class="faq guia-faq">
+        <details><summary>¿Puedo bajar el costo inscribiéndome en el REMYPE?<span class="mas" aria-hidden="true">+</span></summary><p>Solo para quienes entren después de la inscripción. Quien ya estaba en planilla conserva sus beneficios, y despedirlo para recontratarlo en el régimen especial trae una indemnización especial.</p></details>
+        <details><summary>¿Una persona a sueldo mínimo cuánto cuesta?<span class="mas" aria-hidden="true">+</span></summary><p>Con S/ 1,230 más S/ 123 de asignación familiar, en el régimen general cuesta S/ 1,852.11 al mes. A la persona le llegan S/ 1,177.11 si aporta a la ONP. En 2027 el mínimo subirá a S/ 1,300, en la fecha que fije un decreto del primer semestre.</p></details>
+      </div>
+
+      <div class="verificada">
+        <p><b>Verificada contra la norma el {fechaLarga(h.verificada!)}.</b> Revísela con su contador.</p>
+        <ul>
+          <li>EsSalud del 9 % y su base mínima: <a href="https://cdn.www.gob.pe/uploads/document/file/7393548/4936482-ley-n-26790-ley-de-modernizacion-de-la-seguridad-social-en-salud-1.pdf" rel="noopener" target="_blank">Ley 26790</a>, art. 6, e <a href="https://www.sunat.gob.pe/legislacion/oficios/2007/oficios/i0032007.htm" rel="noopener" target="_blank">Informe 003-2007-SUNAT</a>.</li>
+          <li>Pequeña y microempresa, SIS y EsSalud: <a href="https://busquedas.elperuano.pe/api/visor_html/1033071-5" rel="noopener" target="_blank">TUO de la Ley MYPE</a>, arts. 50, 63 y 64; <a href="https://www.sunat.gob.pe/orientacion/mypes/normas/ds008-2008.pdf" rel="noopener" target="_blank">D.S. 008-2008-TR</a>, art. 39; <a href="https://www.gob.pe/185-afiliarte-al-sis-microempresas-inscripcion-de-trabajadores" rel="noopener" target="_blank">SIS microempresas</a>.</li>
+          <li>ONP y AFP: <a href="https://leyes.congreso.gob.pe/Documentos/2021_2026/ADLP/Texto_Consolidado/32123-TXM.pdf" rel="noopener" target="_blank">Ley 32123</a>, art. 8, y <a href="https://www.sbs.gob.pe/app/spp/empleadores/comisiones_spp/paginas/comision_prima.aspx" rel="noopener" target="_blank">SBS, comisiones y prima (devengue 2026-11)</a>.</li>
+          <li>Seguro Vida Ley: <a href="https://leyes.congreso.gob.pe/Documentos/2016_2021/Decretos/Urgencias/2019/DU044-2019.pdf" rel="noopener" target="_blank">D.U. 044-2019</a> y <a href="https://busquedas.elperuano.pe/dispositivo/NL/1853904-2" rel="noopener" target="_blank">D.S. 009-2020-TR</a>, art. 2.</li>
+          <li>Planilla y recibos por honorarios: <a href="https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=35" rel="noopener" target="_blank">TUO del D. Leg. 728</a>, arts. 4, 6 y 7, y <a href="https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=47" rel="noopener" target="_blank">D.S. 019-2006-TR</a>, art. 25.20.</li>
+          <li>Remuneración mínima: <a href="https://busquedas.elperuano.pe/dispositivo/EX/2559163-1" rel="noopener" target="_blank">D.S. 015-2026-TR</a>. Renta de quinta: <a href="https://www.sunat.gob.pe/legislacion/renta/ley/capx.pdf" rel="noopener" target="_blank">Ley del Impuesto a la Renta, art. 75</a>.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</article>
+
+<section class="contacto osc" aria-labelledby="hcr-cta-t">
+  <div class="brillo brillo--contacto" aria-hidden="true"></div>
+  <div class="enmarcado contacto-in contacto-in--simple">
+    <div class="contacto-tx">
+      <span class="franja-sello" aria-hidden="true"></span>
+      <h2 class="titular titular--contacto" id="hcr-cta-t">Lo que vende cada sede, <span class="cel">junto a lo que cuesta su equipo.</span></h2>
+      <p class="contacto-baj">Coddvisor reúne en un solo lugar la venta, la caja y la planilla de cada sede. Así ve, mes a mes, lo que vende cada sede junto a lo que cuesta su equipo.</p>
+      <div class="portada-acc">
+        <a class="btn" href={llamado.href}>{llamado.texto}</a>
+        <a class="btn-2" href="/herramientas/">Ver más herramientas gratis</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Datos que cambian por norma: src/datos/laboral.ts (un solo lugar para todas las calculadoras). -->
+<script is:inline define:vars={{ minimas, datosCosto }}>window.CODDVISOR_MINIMAS = minimas; window.CODDVISOR_COSTO = datosCosto;</script>
+<script is:inline src="/herramientas/laboral.js" defer></script>
+<script is:inline src="/herramientas/costo-real.js" defer></script>
+<script is:inline src="/herramientas/guia.js" defer></script>
+</Base>

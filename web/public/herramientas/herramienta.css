@@ -350,3 +350,7 @@
 .igv-res .tres-d { color:var(--texto-claro-2); }
 /* La caja clara de «La cuenta» dentro del resultado oscuro: su rótulo vuelve al color para fondo claro. */
 .igv-res .igv-cuenta .igv-et { color:var(--texto-2); }
+/* Calendario del año en el resultado del costo real. */
+.costo-cal { margin:10px 0 0; padding:0; list-style:none; display:grid; gap:8px; font-size:14px; color:var(--texto-claro-2); }
+.costo-cal li { padding:10px 12px; border-radius:10px; background:rgba(255,255,255,.06); }
+.costo-cal b { display:block; font-family:var(--mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--celeste-claro); margin-bottom:2px; }
