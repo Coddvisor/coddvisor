@@ -10,7 +10,8 @@
     "verificar:base": "node base-de-datos/verificador/correr.mjs",
     "verificar:valores-fijos": "node herramientas/valores-fijos.mjs",
     "pruebas": "node --test",
-    "candado": "node base-de-datos/verificador/candado.mjs"
+    "candado": "node base-de-datos/verificador/candado.mjs",
+    "revisor-ia": "node herramientas/revisor-ia.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.15"
