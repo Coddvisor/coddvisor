@@ -2,7 +2,7 @@
 titulo: "Sueldo mínimo S/ 1,230: qué ajustar en su planilla"
 resumen: "Desde octubre el mínimo es S/ 1,230. A quién subirle el sueldo, cómo cambian la asignación, la gratificación y la CTS, y qué pasará con S/ 1,300."
 categoria: "Planilla y beneficios"
-subtema: "Sueldo y horario"
+subtema: "Sueldo, horas extra y feriados"
 lectura: 4
 publicada: "2026-11-23"
 verificada: "2026-11-22"
