@@ -1,0 +1,20 @@
+{
+  "modelo": "claude-opus-5-5",
+  "direccion": "https://api.anthropic.com/v1/messages",
+  "version_api": "2023-06-01",
+  "maximo_tokens_respuesta": 32000,
+  "segundos_espera": 900,
+  "reintentos": 1,
+  "carpeta_bases": "../arquitectura/bases",
+  "documentos_por_defecto": [
+    "../arquitectura/reports/Escalera de valor de Coddvisor.local.md",
+    "../arquitectura/reports/El arte de lo simple en Coddvisor.local.md"
+  ],
+  "salida_por_defecto": "../arquitectura/reports/Mapa de decisiones.local.md",
+  "cuantas_esquinas": 5,
+  "urgencias": [
+    "esta_semana",
+    "antes_del_piloto",
+    "puede_esperar"
+  ]
+}

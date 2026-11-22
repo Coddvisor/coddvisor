@@ -36,6 +36,7 @@ dentro de Node (con PGlite) y desaparece al terminar.
 | `base-de-datos/pruebas/violaciones/`      | Un ejemplo de cada falta. Cada archivo dice qué regla debe atraparlo |
 | `base-de-datos/pruebas/*.test.mjs`        | Pruebas de las reglas y del comportamiento (aislamiento, sellos, libros) |
 | `herramientas/valores-fijos*.mjs`         | La guardia que busca valores fijos en el código, y sus pruebas |
+| `herramientas/mapa-decisiones*`           | Lee informes privados y las bases, saca las decisiones pendientes y calcula cuáles destraban más (escribe solo `*.local.md`; `npm run mapa-decisiones`) |
 | `herramientas/revisor-ia*`                | Revisor con IA de las preguntas de juicio de `06-antes-de-unir.md` (solo sugiere; se corre a mano con `npm run revisor-ia`, necesita `.env.local`) |
 | `package.json`                            | La única dependencia va con versión **fija** (sin `^`)       |
 
