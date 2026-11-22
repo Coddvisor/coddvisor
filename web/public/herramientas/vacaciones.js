@@ -6,7 +6,9 @@
    - Tres situaciones: las vacaciones del año, las truncas de quien se va antes del año y las no
      tomadas a tiempo. Venta de 15 días solo en el régimen general.
    - Menos de 4 horas al día: sin derecho (D.S. 012-92-TR, art. 11).
-   - NO SE CALCULA (pendiente de confirmar): truncas e indemnización en la micro y pequeña empresa.
+   - Truncas en la micro y pequeña empresa: sobre sus 15 días, con el criterio del Ministerio de
+     Trabajo (Boletín N.° 85), y una nota con la fuente debajo de la cifra.
+   - NO SE CALCULA (pendiente de confirmar): la indemnización por vacaciones no tomadas en la MYPE.
      La página lo dice y remite al contador, en vez de adivinar. */
 (function () {
   'use strict';
@@ -47,6 +49,7 @@
     $('[data-tres]').hidden = true;
     $('[data-uno]').hidden = false;
     ['venta', 'gana', 'limite'].forEach(function (k) { fila(k, null); });
+    r('nota').hidden = true;
 
     if (!el('horas4').checked) { $('[data-uno]').hidden = true; aviso(null, 'Quien trabaja menos de 4 horas al día no tiene derecho a vacaciones por ley.'); return L.fichas(form); }
     if (sueldo === 0) { $('[data-uno]').hidden = true; aviso(null, 'Escriba el sueldo mensual de la persona para ver sus días y su pago.'); return L.fichas(form); }
@@ -80,26 +83,35 @@
         fila('gana', L.corta(anio)); fila('limite', L.corta(limite));
       }
       aviso(x.total, x.venta ? L.soles(x.pago) + ' por los 15 días de descanso y ' + L.soles(x.venta) + ' por los 15 vendidos, aparte de su sueldo. Todo por escrito.'
-                              : x.dias + ' días de descanso. Lleva EsSalud y ONP, como el sueldo.');
+                              : x.dias + ' días de descanso. Lleva los mismos descuentos que el sueldo (ONP o AFP, y renta).');
       return L.fichas(form);
     }
 
     if (modo === 'truncas') {
       var t = { meses: L.entero(el('meses').value, 11), dias: L.entero(el('dias').value, 29) };
-      var tr = L.vacacionesTruncas({ regimen: regimen, sueldo: sueldo, meses: t.meses, dias: t.dias });
-      if (!tr || noSabe) {
+      if (t.meses === 0) { $('[data-uno]').hidden = true; aviso(null, 'Las vacaciones truncas se pagan si la persona trabajó al menos un mes completo.'); return L.fichas(form); }
+      if (noSabe) {
+        // Sin saber el régimen, el monto grande es el del régimen general: el más alto, nunca se queda corto.
         $('[data-uno]').hidden = true;
-        aviso(null, noSabe ? 'Las vacaciones truncas dependen del régimen. Confírmelo primero en la consulta del REMYPE.'
-                           : 'Consulte con su contador. La ley no dice con claridad cómo se calculan las vacaciones truncas en la micro y pequeña empresa, y preferimos no darle un número que podría estar mal.');
+        $('[data-tres]').hidden = false;
+        ['general', 'pequena', 'micro'].forEach(function (g) {
+          var y = L.vacacionesTruncas({ regimen: g, sueldo: sueldo, meses: t.meses, dias: t.dias });
+          r('t-' + g).textContent = L.soles(y.total);
+          r('t-' + g + '-det').textContent = 'Sobre ' + L.DIAS_VACACIONES[g] + ' días';
+        });
+        aviso(L.vacacionesTruncas({ regimen: 'general', sueldo: sueldo, meses: t.meses, dias: t.dias }).total,
+          'Prepare el monto del régimen general: es el más alto. Confirme su régimen en la consulta del REMYPE.');
         return L.fichas(form);
       }
-      if (t.meses === 0) { $('[data-uno]').hidden = true; aviso(null, 'Las vacaciones truncas se pagan si la persona trabajó al menos un mes completo.'); return L.fichas(form); }
+      var tr = L.vacacionesTruncas({ regimen: regimen, sueldo: sueldo, meses: t.meses, dias: t.dias });
       r('l-dias').textContent = 'Tiempo';
       r('dias').textContent = L.textoTiempo(t);
       r('pago').textContent = L.soles(tr.porMeses) + ' + ' + L.soles(tr.porDias);
-      r('cuenta').innerHTML = L.numero(sueldo) + ' ÷ 12 × ' + t.meses + ' = <span class="ce">' + L.numero(tr.porMeses) + '</span>' +
-        (t.dias ? '<br>' + L.numero(sueldo) + ' ÷ 360 × ' + t.dias + ' = <span class="ce">' + L.numero(tr.porDias) + '</span>' : '') +
+      r('cuenta').innerHTML = (tr.criterioMtpe ? 'Sobre 15 días: ' + L.numero(sueldo) + ' ÷ 2 = ' + L.numero(tr.remuneracion) + '<br>' : '') +
+        L.numero(tr.remuneracion) + ' ÷ 12 × ' + t.meses + ' = <span class="ce">' + L.numero(tr.porMeses) + '</span>' +
+        (t.dias ? '<br>' + L.numero(tr.remuneracion) + ' ÷ 360 × ' + t.dias + ' = <span class="ce">' + L.numero(tr.porDias) + '</span>' : '') +
         '<br>Total: <span class="am">' + L.numero(tr.total) + '</span>';
+      r('nota').hidden = !tr.criterioMtpe;
       aviso(tr.total, 'Junto con su liquidación, cuando se vaya.');
       return L.fichas(form);
     }

@@ -103,12 +103,14 @@
     var pago = Math.round(o.sueldo / 30 * dias);
     return { dias: dias, pago: pago, venta: 0, total: pago };
   };
-  /** Truncas, solo régimen general (en la MYPE la norma no es clara: la página remite al contador).
-      { sueldo, meses, dias } → { porMeses, porDias, total } o null si no aplica */
+  /** Truncas: dozavos y treintavos de la remuneración vacacional (D. Leg. 713, art. 22).
+      En la micro y pequeña empresa, sobre sus 15 días: la mitad del sueldo, con el criterio del
+      Ministerio de Trabajo (Boletín Informativo Laboral N.° 85, enero de 2019).
+      { regimen, sueldo, meses, dias } → { remuneracion, porMeses, porDias, total, criterioMtpe } */
   L.vacacionesTruncas = function (o) {
-    if (o.regimen !== 'general') return null;
-    var porMeses = Math.round(o.sueldo / 12 * o.meses), porDias = Math.round(o.sueldo / 360 * o.dias);
-    return { porMeses: porMeses, porDias: porDias, total: porMeses + porDias };
+    var rem = Math.round(o.sueldo / 30 * L.DIAS_VACACIONES[o.regimen]);
+    var porMeses = Math.round(rem / 12 * o.meses), porDias = Math.round(rem / 360 * o.dias);
+    return { remuneracion: rem, porMeses: porMeses, porDias: porDias, total: porMeses + porDias, criterioMtpe: o.regimen !== 'general' };
   };
   /** No tomadas a tiempo, solo régimen general: un sueldo por el descanso + uno de indemnización. */
   L.vacacionesVencidas = function (o) {
