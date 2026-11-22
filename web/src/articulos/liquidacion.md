@@ -2,6 +2,7 @@
 titulo: "Liquidación de beneficios: qué pagar a quien se va"
 resumen: "Qué incluye la liquidación de una persona que renuncia o es despedida, cómo se calcula cada parte, en qué plazo se paga y qué documentos se entregan."
 categoria: "Planilla y beneficios"
+subtema: "Cuando alguien se va"
 lectura: 5
 publicada: "2026-11-23"
 verificada: "2026-11-22"

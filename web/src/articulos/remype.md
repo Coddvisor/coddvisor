@@ -2,6 +2,7 @@
 titulo: "REMYPE: cómo saber si su negocio está inscrito y qué cambia"
 resumen: "Cómo consultar gratis si su negocio está en el REMYPE y qué paga a su equipo según sea microempresa, pequeña empresa o régimen general."
 categoria: "Planilla y beneficios"
+subtema: "Su régimen laboral"
 lectura: 6
 publicada: "2026-11-23"
 verificada: "2026-11-19"

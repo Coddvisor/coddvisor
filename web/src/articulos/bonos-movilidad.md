@@ -2,6 +2,7 @@
 titulo: "Bonos y movilidad: cómo darlos sin que se vuelvan sueldo"
 resumen: "Qué pagos entran en la gratificación y la CTS y cuáles no, y cómo dar bonos, movilidad o ayuda para estudios sin que se vuelvan sueldo."
 categoria: "Planilla y beneficios"
+subtema: "Sueldo y horario"
 lectura: 5
 publicada: "2026-11-23"
 verificada: "2026-11-21"
