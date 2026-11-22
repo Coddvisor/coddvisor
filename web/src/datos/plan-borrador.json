@@ -30,6 +30,18 @@
   "estado": "propuesto"
  },
  {
+  "titulo": "¿Planilla o recibo por honorarios? Cuándo debe estar en planilla",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Contratar a alguien",
+  "estado": "planeado"
+ },
+ {
+  "titulo": "Contrato de temporada para la campaña de Navidad: cómo firmarlo y cuándo se vuelve indefinido",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Contratar a alguien",
+  "estado": "planeado"
+ },
+ {
   "titulo": "Feriado trabajado",
   "categoria": "Planilla y beneficios",
   "subtema": "Sueldo, horas extra y feriados",
@@ -526,6 +538,12 @@
   "categoria": "Su equipo",
   "subtema": "Reglas claras",
   "estado": "propuesto"
+ },
+ {
+  "titulo": "Seguridad y salud en el trabajo en una tienda: lo mínimo",
+  "categoria": "Su equipo",
+  "subtema": "Reglas claras",
+  "estado": "planeado"
  },
  {
   "titulo": "Cultura de su negocio: misión, visión y valores, con ejemplos de tienda",
