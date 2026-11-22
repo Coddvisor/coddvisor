@@ -1,0 +1,36 @@
+{
+  "direccion_mensajes": "https://api.anthropic.com/v1/messages",
+  "direccion_lotes": "https://api.anthropic.com/v1/messages/batches",
+  "version_api": "2026-10-21",
+  "reintentos": 2,
+  "segundos_espera": 900,
+  "carpeta_bases": "../arquitectura/bases",
+  "bases_que_se_leen": ["04-experiencia.md", "07-primer-alcance.md"],
+  "carpeta_salida": "../arquitectura/reports/pueblo-de-prueba",
+  "modelo": "claude-opus-5-5",
+  "esfuerzo_preparar": "high",
+  "esfuerzo_entrevista": "medium",
+  "esfuerzo_sintesis": "high",
+  "max_tokens_preparar": 32000,
+  "max_tokens_entrevista": 16000,
+  "max_tokens_sintesis": 32000,
+  "rondas_por_personaje": 2,
+  "personajes_por_grupo": 10,
+  "grupos": [
+    { "id": "bodega", "nombre": "Bodega o minimarket", "papel": "Rubro del piloto: volumen y uso diario." },
+    { "id": "ferreteria", "nombre": "Ferretería de barrio", "papel": "Rubro del piloto: donde se prueba si alguien paga." },
+    { "id": "boutique", "nombre": "Boutique de ropa y calzado (solo venta)", "papel": "Ola 2; incluye Gamarra." },
+    { "id": "mostrador", "nombre": "Comida al mostrador: cafetería, juguería, panadería", "papel": "Ola 2; se paga al pedir." },
+    { "id": "restaurante", "nombre": "Restaurante con mesas", "papel": "Ola 3; se paga al final." },
+    { "id": "hospedaje", "nombre": "Hospedaje pequeño", "papel": "Fuera del producto; solo para medir si vale la lista de espera." }
+  ],
+  "tope_usd": 50,
+  "precios_usd_por_millon": {
+    "fuente": "Tabla de modelos del skill claude-api, en caché al 2026-11-03. Confirme en la página oficial de precios antes de cambiar el tope.",
+    "claude-opus-5-5": { "entrada": 4, "salida": 20 },
+    "claude-sonnet-5-5": { "entrada": 2, "salida": 10 }
+  },
+  "descuento_lotes": 0.5,
+  "caracteres_por_token": 3.2,
+  "salida_esperada_por_entrevista": 9000
+}

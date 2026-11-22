@@ -17,6 +17,7 @@ secrets*
 
 # --- Documentos privados del negocio ---
 # Este repositorio es público. Las notas privadas van en archivos *.local.md
+*.local.json
 # y los documentos privados viven fuera de este proyecto. Estas reglas son un
 # cinturón de seguridad por si alguien copia una parte aquí.
 *.local.md
