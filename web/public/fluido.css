@@ -592,3 +592,29 @@
   .fluido.js .flujo-svg--v { clip-path:inset(0 0 100% 0); }
   .fluido.js .flujo-caja.dibuja .flujo-svg { clip-path:inset(0 0 0 0); }
 }
+
+/* ---------- Logotipo vivo (solo en la cabecera) ----------
+   Un solo gesto de fondo: el gato parpadea despacio, cada ~18 s (entre gatos, parpadear lento es
+   confianza). Solo en la primera página de cada visita (la clase logo-intro la pone Base.astro) el
+   gato abre los ojos y el punto ámbar de la «i» asienta. En reposo el logo es idéntico al de la
+   guía de marca: los párpados miden cero y el punto está en su lugar. El logo se dibuja una sola
+   vez (Logotipo.astro) y se reutiliza con <use>; los estilos llegan a cada copia por las variables
+   --logo-mov-*, que solo la cabecera define. Así el pie y el resto de la página no se mueven. */
+@media (prefers-reduced-motion: no-preference) {
+  .fluido .cab .marca { --logo-mov-ojos:logoParpadea 18s ease-in-out 5s infinite; --logo-mov-punto:none; }
+  .fluido.logo-intro .cab .marca {
+    --logo-mov-ojos:logoDespierta .7s var(--suave) .15s both, logoParpadea 18s ease-in-out 5s infinite;
+    --logo-mov-punto:logoAsienta .6s var(--suave) .35s backwards;
+  }
+  .logo-parpado { animation:var(--logo-mov-ojos, none); }
+  .logo-punto { animation:var(--logo-mov-punto, none); }
+}
+/* Ojos cerrados al llegar y se abren. */
+@keyframes logoDespierta { from { scale:1 1; } to { scale:1 0; } }
+/* Parpadeo lento: cierra en ~0.5 s, queda un instante y abre en ~0.7 s. */
+@keyframes logoParpadea {
+  0%, 50%, 58%, 100% { scale:1 0; }
+  52.8%, 54.2% { scale:1 1; }
+}
+/* El punto baja un poco y se asienta sobre la «i», sin rebote. */
+@keyframes logoAsienta { from { translate:0 -10px; } to { translate:0 0; } }
