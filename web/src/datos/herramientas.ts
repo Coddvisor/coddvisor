@@ -40,7 +40,7 @@ export const herramientas: Herramienta[] = [
     href: '/herramientas/cierre-de-caja/',
     guia: 'Cómo hacer el cierre de caja de su tienda, paso a paso',
     resumen: 'Qué contar, en qué orden y qué revisar primero cuando la caja no cuadra. Con una hoja gratis que hace la cuenta por usted.',
-    categoria: 'Caja y ventas',
+    categoria: 'Caja, cobros y reclamos',
     subtema: 'Cierre de caja',
     publicada: '2026-11-19',
     lectura: 5,
