@@ -24,15 +24,21 @@
   "estado": "aprobado"
  },
  {
+  "titulo": "Periodo de prueba: cuánto dura y qué permite",
+  "categoria": "Planilla y beneficios",
+  "subtema": "Contratar a alguien",
+  "estado": "propuesto"
+ },
+ {
   "titulo": "Feriado trabajado",
   "categoria": "Planilla y beneficios",
-  "subtema": "Sueldo y horario",
+  "subtema": "Sueldo, horas extra y feriados",
   "estado": "aprobado"
  },
  {
   "titulo": "Horas extra",
   "categoria": "Planilla y beneficios",
-  "subtema": "Sueldo y horario",
+  "subtema": "Sueldo, horas extra y feriados",
   "estado": "aprobado"
  },
  {
@@ -66,50 +72,50 @@
   "estado": "propuesto"
  },
  {
-  "titulo": "Cuadre de caja diario: formato en Excel",
-  "categoria": "Caja y ventas",
+  "titulo": "Faltante de caja: ¿se lo puede descontar a quien cerró?",
+  "categoria": "Caja, cobros y reclamos",
   "subtema": "Cierre de caja",
   "estado": "propuesto"
  },
  {
-  "titulo": "Faltante de caja: ¿se lo puede descontar a quien cerró?",
-  "categoria": "Caja y ventas",
+  "titulo": "Cómo controlar sus sedes sin estar ahí",
+  "categoria": "Caja, cobros y reclamos",
   "subtema": "Cierre de caja",
   "estado": "propuesto"
  },
  {
   "titulo": "Yape y Plin en el negocio",
-  "categoria": "Caja y ventas",
+  "categoria": "Caja, cobros y reclamos",
   "subtema": "Cobros",
   "estado": "en borrador"
  },
  {
   "titulo": "Cobrar con POS: qué comisión revisar antes de firmar",
-  "categoria": "Caja y ventas",
+  "categoria": "Caja, cobros y reclamos",
   "subtema": "Cobros",
   "estado": "propuesto"
  },
  {
   "titulo": "Cobrar a quien le debe, sin perder al cliente",
-  "categoria": "Caja y ventas",
+  "categoria": "Caja, cobros y reclamos",
   "subtema": "Cobros",
   "estado": "planeado"
  },
  {
   "titulo": "Cambios y devoluciones",
-  "categoria": "Caja y ventas",
+  "categoria": "Caja, cobros y reclamos",
   "subtema": "Cambios y reclamos",
   "estado": "en borrador"
  },
  {
   "titulo": "Libro de reclamaciones",
-  "categoria": "Caja y ventas",
+  "categoria": "Caja, cobros y reclamos",
   "subtema": "Cambios y reclamos",
   "estado": "planeado"
  },
  {
   "titulo": "Garantía: qué debe responder su tienda",
-  "categoria": "Caja y ventas",
+  "categoria": "Caja, cobros y reclamos",
   "subtema": "Cambios y reclamos",
   "estado": "propuesto"
  },
@@ -204,39 +210,27 @@
   "estado": "planeado"
  },
  {
-  "titulo": "Cómo hacer el inventario de una tienda de ropa",
-  "categoria": "Inventario y compras",
-  "subtema": "Contar el inventario",
-  "estado": "propuesto"
- },
- {
-  "titulo": "Inventario por talla y color",
+  "titulo": "Inventario de una tienda de ropa, por talla y color",
   "categoria": "Inventario y compras",
   "subtema": "Contar el inventario",
   "estado": "planeado"
  },
  {
-  "titulo": "Kardex: qué es y cómo llevarlo",
+  "titulo": "Kardex: cómo llevarlo y cuándo SUNAT se lo exige",
   "categoria": "Inventario y compras",
-  "subtema": "Control del día a día",
-  "estado": "propuesto"
- },
- {
-  "titulo": "¿SUNAT le exige el registro de inventario permanente?",
-  "categoria": "Inventario y compras",
-  "subtema": "Control del día a día",
+  "subtema": "Controlar el stock",
   "estado": "propuesto"
  },
  {
   "titulo": "Mermas y robo hormiga: cómo detectarlos",
   "categoria": "Inventario y compras",
-  "subtema": "Control del día a día",
+  "subtema": "Controlar el stock",
   "estado": "propuesto"
  },
  {
   "titulo": "Guía de remisión para llevar mercadería entre sedes",
   "categoria": "Inventario y compras",
-  "subtema": "Control del día a día",
+  "subtema": "Controlar el stock",
   "estado": "planeado"
  },
  {
@@ -252,7 +246,7 @@
   "estado": "propuesto"
  },
  {
-  "titulo": "Rotación: cada cuánto se vende lo que compra",
+  "titulo": "Rotación de inventario: cada cuánto se vende lo que compra",
   "categoria": "Inventario y compras",
   "subtema": "Comprar y reponer",
   "estado": "propuesto"
@@ -294,16 +288,16 @@
   "estado": "propuesto"
  },
  {
-  "titulo": "Licencia de funcionamiento e ITSE",
+  "titulo": "¿Cuándo contratar a un contador?",
+  "categoria": "Abrir su negocio",
+  "subtema": "Formalizarse",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Licencia de funcionamiento e ITSE: trámite y cuánto cuesta",
   "categoria": "Abrir su negocio",
   "subtema": "El local",
   "estado": "planeado"
- },
- {
-  "titulo": "Cuánto cuesta la licencia de funcionamiento",
-  "categoria": "Abrir su negocio",
-  "subtema": "El local",
-  "estado": "propuesto"
  },
  {
   "titulo": "Contrato de alquiler de local comercial: qué revisar",
@@ -338,23 +332,17 @@
  {
   "titulo": "Cómo registrar su marca en Indecopi",
   "categoria": "Abrir su negocio",
-  "subtema": "Proteger su negocio",
+  "subtema": "Su nombre y su marca",
   "estado": "propuesto"
  },
  {
   "titulo": "Nombre comercial y razón social",
   "categoria": "Abrir su negocio",
-  "subtema": "Proteger su negocio",
+  "subtema": "Su nombre y su marca",
   "estado": "propuesto"
  },
  {
-  "titulo": "¿Cuándo contratar a un contador?",
-  "categoria": "Abrir su negocio",
-  "subtema": "Proteger su negocio",
-  "estado": "propuesto"
- },
- {
-  "titulo": "¿Su negocio es rentable? Del cuaderno a una hoja",
+  "titulo": "¿Su negocio es rentable? El estado de resultados de una tienda",
   "categoria": "Finanzas del negocio",
   "subtema": "¿Su negocio gana?",
   "estado": "planeado"
@@ -366,22 +354,10 @@
   "estado": "propuesto"
  },
  {
-  "titulo": "Estado de resultados con el ejemplo de una tienda",
-  "categoria": "Finanzas del negocio",
-  "subtema": "¿Su negocio gana?",
-  "estado": "propuesto"
- },
- {
-  "titulo": "Precio de venta con margen e IGV",
+  "titulo": "Cómo ponerle precio a la ropa: margen e IGV",
   "categoria": "Finanzas del negocio",
   "subtema": "Precios",
   "estado": "planeado"
- },
- {
-  "titulo": "Cómo ponerle precio a la ropa",
-  "categoria": "Finanzas del negocio",
-  "subtema": "Precios",
-  "estado": "propuesto"
  },
  {
   "titulo": "Punto de equilibrio: cuánto vender para no perder",
@@ -426,13 +402,13 @@
   "estado": "propuesto"
  },
  {
-  "titulo": "Cómo aumentar las ventas de un negocio pequeño",
+  "titulo": "Cómo aumentar las ventas de un negocio pequeño (guía principal del subtema)",
   "categoria": "Marketing y clientes",
   "subtema": "Vender más en la tienda",
   "estado": "propuesto"
  },
  {
-  "titulo": "Ideas de promociones para una tienda de ropa",
+  "titulo": "Ideas de promociones para una tienda de ropa, y lo que exige Indecopi",
   "categoria": "Marketing y clientes",
   "subtema": "Vender más en la tienda",
   "estado": "propuesto"
@@ -452,19 +428,25 @@
  {
   "titulo": "WhatsApp Business para vender",
   "categoria": "Marketing y clientes",
-  "subtema": "Redes y mensajes",
+  "subtema": "Vender por internet",
   "estado": "propuesto"
  },
  {
   "titulo": "Cómo vender por Instagram, paso a paso",
   "categoria": "Marketing y clientes",
-  "subtema": "Redes y mensajes",
+  "subtema": "Vender por internet",
   "estado": "propuesto"
  },
  {
   "titulo": "TikTok para su negocio",
   "categoria": "Marketing y clientes",
-  "subtema": "Redes y mensajes",
+  "subtema": "Vender por internet",
+  "estado": "propuesto"
+ },
+ {
+  "titulo": "Tienda online: cuándo le conviene",
+  "categoria": "Marketing y clientes",
+  "subtema": "Vender por internet",
   "estado": "propuesto"
  },
  {
@@ -475,12 +457,6 @@
  },
  {
   "titulo": "Reseñas en Google: cómo pedirlas y responderlas",
-  "categoria": "Marketing y clientes",
-  "subtema": "Que lo encuentren",
-  "estado": "propuesto"
- },
- {
-  "titulo": "Tienda online: cuándo le conviene",
   "categoria": "Marketing y clientes",
   "subtema": "Que lo encuentren",
   "estado": "propuesto"
@@ -498,27 +474,15 @@
   "estado": "propuesto"
  },
  {
-  "titulo": "Ofertas y precios: lo que exige Indecopi",
-  "categoria": "Marketing y clientes",
-  "subtema": "Clientes que vuelven",
-  "estado": "propuesto"
- },
- {
   "titulo": "Cómo escribir el aviso y el perfil del puesto",
   "categoria": "Su equipo",
-  "subtema": "Elegir bien",
+  "subtema": "Elegir a quién contratar",
   "estado": "propuesto"
  },
  {
-  "titulo": "Preguntas para entrevistar a quien va a vender",
+  "titulo": "Cómo entrevistar a quien va a vender en su tienda: las preguntas que sirven",
   "categoria": "Su equipo",
-  "subtema": "Elegir bien",
-  "estado": "propuesto"
- },
- {
-  "titulo": "Periodo de prueba: cuánto dura y qué permite",
-  "categoria": "Su equipo",
-  "subtema": "Elegir bien",
+  "subtema": "Elegir a quién contratar",
   "estado": "propuesto"
  },
  {
@@ -540,13 +504,7 @@
   "estado": "propuesto"
  },
  {
-  "titulo": "Comisiones por ventas: cómo diseñarlas",
-  "categoria": "Su equipo",
-  "subtema": "Metas y comisiones",
-  "estado": "propuesto"
- },
- {
-  "titulo": "Metas de venta por persona y por sede",
+  "titulo": "Comisiones por ventas: cómo fijar la meta y la comisión",
   "categoria": "Su equipo",
   "subtema": "Metas y comisiones",
   "estado": "propuesto"
@@ -570,19 +528,7 @@
   "estado": "propuesto"
  },
  {
-  "titulo": "Cómo controlar sus sedes sin estar ahí",
-  "categoria": "Su equipo",
-  "subtema": "Reglas claras",
-  "estado": "propuesto"
- },
- {
-  "titulo": "Cultura organizacional: ejemplos en una tienda",
-  "categoria": "Desarrollo Organizacional",
-  "subtema": "Cultura de su negocio",
-  "estado": "propuesto"
- },
- {
-  "titulo": "Misión, visión y valores de su negocio",
+  "titulo": "Cultura de su negocio: misión, visión y valores, con ejemplos de tienda",
   "categoria": "Desarrollo Organizacional",
   "subtema": "Cultura de su negocio",
   "estado": "propuesto"
