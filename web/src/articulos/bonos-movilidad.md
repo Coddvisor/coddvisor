@@ -7,6 +7,7 @@ publicada: "2026-11-23"
 verificada: "2026-11-21"
 cierre: "Coddvisor arma la planilla con la asistencia de cada integrante, sede por sede. Así la movilidad por día asistido sale de los días que de verdad vino cada persona."
 enlaces:
+  - { texto: "Calcule el costo real de un integrante", href: "/herramientas/costo-real-de-un-integrante/" }
   - { texto: "Calcule la gratificación", href: "/herramientas/gratificacion/" }
   - { texto: "Calcule la CTS", href: "/herramientas/cts/" }
 fuentes:

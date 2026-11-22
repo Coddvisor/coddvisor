@@ -129,6 +129,49 @@
     return { base: base, porMeses: porMeses, porDias: porDias, total: porMeses + porDias };
   };
 
+  /* ---------- Costo real de un integrante (Ley 26790; Ley 30334; TUO Ley MYPE arts. 50, 63-64) ---------- */
+  /** Factor de gratificación y CTS por régimen. */
+  L.FACTOR = { general: 1, pequena: 0.5, micro: 0 };
+  /** Costo anual para el negocio y lo que recibe la persona.
+      o = { regimen, mensual (lo que gana en el mes), baseBeneficios (sueldo + asignación + pagos
+            regulares), salud: 'essalud'|'eps'|'sis', menos4h, vidaLey (centésimas de punto),
+            sctr (prima mensual), pension (descuento mensual a la persona), rmv, sis }
+      Las vacaciones no se suman: el mes de descanso se paga con uno de los 12 sueldos. */
+  L.costoReal = function (o) {
+    var f = L.FACTOR[o.regimen];
+    var gratiCada = Math.round(o.baseBeneficios * f);
+    var bonifCada = Math.round(gratiCada * (o.salud === 'eps' ? 675 : 900) / 10000);
+    var cts = (o.menos4h || !f) ? 0 : Math.round((o.baseBeneficios + Math.round(gratiCada / 6)) * f);
+    var saludMes = o.salud === 'sis' ? o.sis : Math.round(Math.max(o.mensual, o.rmv) * (o.salud === 'eps' ? 675 : 900) / 10000);
+    var vidaMes = Math.round(o.mensual * (o.vidaLey || 0) / 10000);
+    var sctrMes = o.sctr || 0;
+    var anual = o.mensual * 12 + gratiCada * 2 + bonifCada * 2 + cts + (saludMes + vidaMes + sctrMes) * 12;
+    var netoMes = o.mensual - (o.pension || 0);
+    var persona = netoMes * 12 + (gratiCada + bonifCada) * 2 + cts;
+    return {
+      anual: anual, mes: Math.round(anual / 12),
+      sobreSueldo: o.mensual ? Math.round((anual / 12 / o.mensual - 1) * 10000) / 100 : 0,
+      aparte: { grati: Math.round(gratiCada * 2 / 12), bonif: Math.round(bonifCada * 2 / 12), cts: Math.round(cts / 12), salud: saludMes, vida: vidaMes, sctr: sctrMes },
+      gratiCada: gratiCada, bonifCada: bonifCada, cts: cts, ctsCada: Math.round(cts / 2), saludMes: saludMes,
+      netoMes: netoMes, persona: persona, diferencia: anual - persona
+    };
+  };
+  /** Descuento mensual de pensión a la persona. p = datos de src/datos/laboral.ts (pensiones).
+      { sistema: 'onp'|'afp', afp (nombre), mixta, mensual, fecha } */
+  L.pension = function (o, p) {
+    if (o.sistema === 'onp') return Math.round(o.mensual * p.onp / 10000);
+    var prima = p.primas[0].tasa, f = o.fecha || L.hoy();
+    p.primas.forEach(function (x) { if (x.desde <= f) prima = x.tasa; });
+    var afp = p.afps.filter(function (x) { return x.nombre === o.afp; })[0] || p.afps[0];
+    return Math.round(o.mensual * p.afpAporte / 10000) + Math.round(Math.min(o.mensual, p.maximaAsegurable) * prima / 10000) +
+      (o.mixta ? 0 : Math.round(o.mensual * afp.flujo / 10000));
+  };
+  /** Remuneración mínima según la jornada (R.M. 091-92-TR, art. 3): con menos de 4 horas diarias en
+      promedio, proporcional a una jornada de 8 horas; con 4 o más, la mínima completa. */
+  L.minimaJornada = function (rmv, horasDia) {
+    return horasDia < 4 ? Math.round(rmv * horasDia / 8) : rmv;
+  };
+
   /* ---------- Piezas de la página (iguales en todas las calculadoras) ---------- */
   var menos = false;
   try { menos = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}

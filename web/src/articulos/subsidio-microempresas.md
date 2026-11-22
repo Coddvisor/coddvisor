@@ -9,6 +9,7 @@ vence: "2026-12-31"
 vencido: "Este apoyo ya terminó: el subsidio rigió hasta el 31 de diciembre de 2026. Dejamos el artículo como referencia."
 cierre: "Coddvisor arma la planilla con la asistencia de cada integrante, sede por sede. Así sabe en todo momento quién está en planilla y cuánto gana."
 enlaces:
+  - { texto: "Calcule el costo real de un integrante", href: "/herramientas/costo-real-de-un-integrante/" }
   - { texto: "Calcule la gratificación de diciembre", href: "/herramientas/gratificacion/" }
 fuentes:
   - norma: "D.U. 017-2026, que establece una medida para la preservación del empleo formal en las microempresas que tengan de dos a diez trabajadores (El Peruano, 18 de noviembre de 2026): art. 1 (objetivo), art. 3 (S/ 100 por persona, por única vez; sueldo básico de agosto de 2026 igual a S/ 1,130; vínculo vigente al 18 de noviembre; no es remuneración ni puede usarse para pagar sueldos), art. 4 (ventas hasta 150 UIT, de 2 a 10 personas en la planilla de agosto, cualquier régimen tributario, RUC activo y habido, PLAME de agosto declarada), art. 5 (lista automática y registro del CCI en 5 días hábiles), art. 6 (pago por el Banco de la Nación), art. 7 (hasta S/ 29 millones)"

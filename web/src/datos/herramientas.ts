@@ -84,6 +84,17 @@ export const herramientas: Herramienta[] = [
     lectura: 6,
     verificada: '2026-11-21',
   },
+  {
+    nombre: 'Costo real de un integrante',
+    frase: 'Cuánto le cuesta al mes una persona en planilla, y cuánto apartar',
+    href: '/herramientas/costo-real-de-un-integrante/',
+    guia: '¿Cuánto cuesta un integrante en planilla? Costo real por mes',
+    resumen: 'Cuánto le cuesta al mes una persona en planilla en cada régimen, cuánto apartar cada mes y cuánto le llega a ella. Con una calculadora para simular.',
+    categoria: 'Planilla y beneficios',
+    publicada: '2026-11-23',
+    lectura: 6,
+    verificada: '2026-11-21',
+  },
 ];
 
 /** "2026-11-19" → "19 de noviembre de 2026" (sin depender del reloj del visitante). */
