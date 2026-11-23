@@ -23,24 +23,36 @@ producto/
 └── docs/decisiones/  por qué está hecho así
 ```
 
-Hoy solo existen `paquetes/nucleo` y `herramientas/reglas-ci`. Las demás carpetas se crean cuando un paso las necesita, no antes.
+Hoy existen:
+
+- `paquetes/nucleo`: tipos base;
+- `plataforma/bd`: la conexión, el candado entre negocios y las migraciones;
+- `modulos/identidad`: cuentas, empresas, locales y cajas;
+- `herramientas/reglas-ci`: la prueba de las reglas.
+
+Las demás carpetas se crean cuando un paso las necesita, no antes.
 
 ## Cómo se prueba
 
-Hace falta Node 24 o más nuevo y pnpm.
+Hace falta Node 24 o más nuevo, pnpm y Docker (para la base de datos local).
 
 ```bash
 pnpm install
+pnpm bd:arrancar   # PostgreSQL 17 en tu computadora, solo en 127.0.0.1
+pnpm bd:migrar     # aplica las migraciones pendientes
 pnpm verificar
 ```
 
-`verificar` corre cinco revisiones y se detiene en la primera que falla:
+Para que la base acepte pedidos firmados fuera de las pruebas, genera una llave con `pnpm bd:llave-nueva`, guárdala como secreto en `CODDVISOR_LLAVE_CONTEXTO` (nunca en el repositorio) y vuelve a correr `pnpm bd:migrar`. Las pruebas no la necesitan: generan su propia llave en cada corrida.
+
+`verificar` corre seis revisiones y se detiene en la primera que falla:
 
 1. **tipos:** TypeScript estricto. `paquetes/` se revisa además sin tipos de Node ni del navegador.
 2. **estilo:** reglas de pureza de `paquetes/`.
 3. **fronteras:** quién puede importar a quién, incluidas las librerías de npm.
 4. **pruebas:** las pruebas de cada paquete.
 5. **prueba de las reglas:** escribe código prohibido en una copia temporal y exige que cada regla lo atrape.
+6. **pruebas con base:** contra PostgreSQL real, en una base nueva que se borra al final. Prueban que un negocio nunca ve ni toca a otro, y los ataques conocidos contra el candado. Usan `CODDVISOR_BD_PRUEBAS` (por defecto, la base local) y solo aceptan un servidor local.
 
 La misma revisión corre en GitHub en cada cambio. Que un cambio con la revisión en rojo no se pueda unir a `main` depende de activar la protección de la rama principal, que está pendiente (ver `docs/decisiones/0001-esqueleto.md`).
 

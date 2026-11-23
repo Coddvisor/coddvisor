@@ -1,0 +1,9 @@
+{
+  "name": "@coddvisor-modulo/identidad",
+  "private": true,
+  "type": "module",
+  "description": "Cuentas, usuarios, membresías, empresas, locales y dispositivos de caja.",
+  "exports": {
+    ".": "./src/api.ts"
+  }
+}

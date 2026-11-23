@@ -5,8 +5,12 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "types": ["node"],
+    // Cada capa tiene su prefijo. El de los módulos apunta solo a su puerta
+    // (src/api.ts): por nombre no se puede llegar a lo interno de un módulo.
     "paths": {
-      "@coddvisor/*": ["./paquetes/*/src/index.ts"]
+      "@coddvisor/*": ["./paquetes/*/src/index.ts"],
+      "@coddvisor-plataforma/*": ["./plataforma/*/src/index.ts"],
+      "@coddvisor-modulo/*": ["./modulos/*/src/api.ts"]
     }
   },
   "include": [

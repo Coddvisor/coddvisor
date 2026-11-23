@@ -1,0 +1,29 @@
+# Base de datos para desarrollar en la propia computadora. Nunca para producción.
+#
+# - Misma versión mayor que Supabase (PostgreSQL 17), fijada exacta.
+# - Imagen oficial de PostgreSQL, servida desde el espejo público de AWS: no
+#   necesita cuenta de Docker Hub.
+# - Solo escucha en 127.0.0.1, así que nadie de la red la ve. Por eso entra sin
+#   contraseña (trust) y no hay ninguna clave en este repositorio público.
+# Un solo nombre para todas las copias de trabajo: comparten la misma base local
+# en vez de pelear por el puerto con varias.
+name: coddvisor
+
+services:
+  bd:
+    image: public.ecr.aws/docker/library/postgres:17.12
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: coddvisor
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - bd-datos:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "coddvisor"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  bd-datos:

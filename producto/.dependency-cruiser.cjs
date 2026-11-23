@@ -61,6 +61,22 @@ module.exports = {
       to: { dependencyTypes: ["npm-no-pkg", "npm-unknown"] },
     },
     {
+      name: "solo-la-plataforma-habla-con-la-base",
+      severity: "error",
+      comment:
+        "Solo plataforma/bd usa el conector de PostgreSQL. Si un módulo abre su propia conexión, se salta conTenant y el todo o nada.",
+      from: { pathNot: "^plataforma/bd/" },
+      to: { path: "(^|/)node_modules/(pg|pg-pool|pg-protocol|postgres)/" },
+    },
+    {
+      name: "modulos-solo-usan-tipos-de-la-base",
+      severity: "error",
+      comment:
+        "Un módulo recibe un Tx ya abierto por conTenant; nunca crea un pool ni abre una transacción. Por eso solo importa tipos de plataforma/bd (las pruebas sí pueden usarla).",
+      from: { path: "^modulos/", pathNot: PRUEBAS },
+      to: { path: "^plataforma/bd/", dependencyTypesNot: ["type-only"] },
+    },
+    {
       name: "caja-solo-paquetes",
       severity: "error",
       comment:

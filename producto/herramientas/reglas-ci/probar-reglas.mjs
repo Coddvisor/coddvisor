@@ -89,6 +89,18 @@ caso("fronteras", "no hay ciclos", "fallar", "sin-ciclos", {
 caso("fronteras", "no hay importaciones rotas", "fallar", "sin-importaciones-rotas", {
   "paquetes/p15/src/a.ts": 'import { nada } from "./no-existe.ts";\nexport const a = nada;\n',
 });
+caso("fronteras", "un módulo no usa el conector de PostgreSQL", "fallar", "solo-la-plataforma-habla-con-la-base", {
+  "modulos/m19/package.json": '{ "name": "m19", "private": true, "dependencies": { "pg": "8.23.1" } }\n',
+  // Un enlace al conector real, como si el módulo lo hubiera instalado.
+  "modulos/m19/node_modules/pg": { enlace: "plataforma/bd/node_modules/pg" },
+  "modulos/m19/src/api.ts": 'import pg from "pg";\nexport const p = pg;\n',
+});
+caso("fronteras", "un módulo no abre conexiones con la plataforma", "fallar", "modulos-solo-usan-tipos-de-la-base", {
+  "modulos/m20/src/api.ts": 'import { crearPool } from "@coddvisor-plataforma/bd";\nexport const p = crearPool;\n',
+});
+caso("fronteras", "permitido: un módulo importa solo los tipos de la base", "pasar", null, {
+  "modulos/m21/src/api.ts": 'import type { Tx } from "@coddvisor-plataforma/bd";\nexport const usar = (tx: Tx) => tx;\n',
+});
 caso("fronteras", "permitido: un módulo usa la puerta de otro", "pasar", null, {
   "modulos/m16a/src/api.ts": "export const p = 1;\n",
   "modulos/m16b/src/api.ts": 'import { p } from "../../m16a/src/api.ts";\nexport const q = p;\n',
@@ -136,6 +148,9 @@ caso("estilo", "en paquetes/ un comentario no apaga una regla", "fallar", "no-re
 });
 caso("estilo", "la regla también cubre archivos .mts", "fallar", "no-restricted-globals", {
   "paquetes/s7/src/reloj.mts": "export const x = Date;\n",
+});
+caso("estilo", "no se lanza una consulta sin esperarla", "fallar", "@typescript-eslint/no-floating-promises", {
+  "modulos/m22/src/api.ts": 'import type { Tx } from "@coddvisor-plataforma/bd";\nexport async function f(tx: Tx) {\n  tx.query("select 1");\n}\n',
 });
 caso("estilo", "permitido: aritmética exacta con enteros grandes", "pasar", null, {
   "paquetes/s8/src/a.ts": "export const suma = (a: bigint, b: bigint): bigint => a + b;\n",
@@ -234,7 +249,8 @@ for (const herramienta of ["fronteras", "estilo", "tipos", "pruebas"]) {
     for (const [ruta, contenido] of Object.entries(c.archivos)) {
       const absoluta = join(dir, ruta);
       mkdirSync(dirname(absoluta), { recursive: true });
-      writeFileSync(absoluta, contenido);
+      if (typeof contenido === "string") writeFileSync(absoluta, contenido);
+      else symlinkSync(realpathSync(join(RAIZ, contenido.enlace)), absoluta, "dir");
     }
   }
   const resultados = hallazgos(herramienta, dir, grupo.map((c) => c.foco));

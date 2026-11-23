@@ -7,12 +7,17 @@
     "node": ">=24"
   },
   "scripts": {
+    "bd:arrancar": "docker compose up -d --wait bd",
+    "bd:parar": "docker compose stop bd",
+    "bd:migrar": "node plataforma/bd/src/migrar.ts",
+    "bd:llave-nueva": "node plataforma/bd/src/llave-nueva.ts",
     "tipos": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.paquetes.json",
     "estilo": "eslint .",
     "fronteras": "depcruise --config .dependency-cruiser.cjs .",
-    "pruebas": "vitest run",
+    "pruebas": "vitest run --project unidad",
+    "pruebas:bd": "vitest run --project bd",
     "probar-reglas": "node herramientas/reglas-ci/probar-reglas.mjs",
-    "verificar": "pnpm tipos && pnpm estilo && pnpm fronteras && pnpm pruebas && pnpm probar-reglas"
+    "verificar": "pnpm tipos && pnpm estilo && pnpm fronteras && pnpm pruebas && pnpm probar-reglas && pnpm pruebas:bd"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

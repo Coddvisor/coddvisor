@@ -54,6 +54,18 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.strict,
   {
+    // Reglas que necesitan entender los tipos. La más importante: una promesa
+    // lanzada sin await. Una consulta sin esperar puede terminar después de que
+    // la transacción confirmó, o dentro de la transacción de otra cuenta.
+    files: ["**/*.ts"],
+    languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname } },
+    rules: {
+      "@typescript-eslint/no-floating-promises": "error",
+      "@typescript-eslint/no-misused-promises": "error",
+      "@typescript-eslint/await-thenable": "error",
+    },
+  },
+  {
     // Archivos de configuración y herramientas que corren en Node, fuera del producto.
     files: ["**/*.cjs", "**/*.mjs"],
     languageOptions: {

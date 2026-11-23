@@ -30,6 +30,23 @@ jobs:
     defaults:
       run:
         working-directory: producto
+    # La misma base que en desarrollo, solo para esta corrida. Sin contraseña porque
+    # vive y muere dentro de la máquina de CI.
+    services:
+      bd:
+        image: public.ecr.aws/docker/library/postgres:17.12
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: coddvisor
+        ports:
+          - 54329:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d coddvisor"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    env:
+      CODDVISOR_BD_PRUEBAS: postgres://postgres@127.0.0.1:54329/coddvisor
     steps:
       - uses: actions/checkout@v4
         with:

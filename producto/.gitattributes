@@ -1,0 +1,3 @@
+# Las migraciones se firman con su huella: un cambio de fin de línea (CRLF en
+# Windows) cambiaría la huella y el migrador se detendría.
+*.sql text eol=lf

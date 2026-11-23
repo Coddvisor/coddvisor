@@ -1,0 +1,15 @@
+{
+  "name": "@coddvisor-plataforma/bd",
+  "private": true,
+  "type": "module",
+  "description": "La única puerta a la base de datos: conexión, candado entre negocios (conTenant) y migraciones.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1"
+  }
+}
