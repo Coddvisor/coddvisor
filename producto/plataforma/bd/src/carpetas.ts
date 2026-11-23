@@ -7,6 +7,9 @@ export const RAIZ_PRODUCTO = join(dirname(fileURLToPath(import.meta.url)), "..",
 
 export const RUTA_ARRANQUE = join(RAIZ_PRODUCTO, "plataforma", "bd", "sql", "arranque.sql");
 
+/** Las correcciones del candado: fuera de sql/, para que el migrador nunca las tome como migraciones. */
+export const CARPETA_CORRECCIONES = join(RAIZ_PRODUCTO, "plataforma", "bd", "correcciones-candado");
+
 /** Todas las carpetas sql/ de la plataforma y de los módulos. */
 export function carpetasDeMigraciones(raiz = RAIZ_PRODUCTO): string[] {
   const carpetas: string[] = [];

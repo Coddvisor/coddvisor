@@ -11,6 +11,7 @@
     "bd:parar": "docker compose stop bd",
     "bd:migrar": "node plataforma/bd/src/migrar.ts",
     "bd:llave-nueva": "node plataforma/bd/src/llave-nueva.ts",
+    "bd:corregir-candado": "node plataforma/bd/src/corregir-candado.ts",
     "api": "node apps/api/src/principal.ts",
     "tipos": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.paquetes.json",
     "estilo": "eslint .",

@@ -91,4 +91,16 @@ create table if not exists registro.migracion (
   aplicada_en timestamptz not null default now()
 );
 alter table registro.migracion owner to coddvisor_duenio;
+
+-- Registro de correcciones del candado (ver plataforma/bd/correcciones-candado/):
+-- qué se corrigió, por qué, quiénes lo revisaron y quién lo aplicó. Solo crece.
+create table if not exists registro.correccion_candado (
+  nombre text primary key,
+  huella text not null,
+  motivo text not null,
+  revisado_por text not null,
+  aplicada_por text not null,
+  aplicada_en timestamptz not null default now()
+);
+alter table registro.correccion_candado owner to coddvisor_duenio;
 revoke all on schema registro from public;
