@@ -48,12 +48,12 @@ export const temas = [
     subtemas: ['¿Su negocio gana?', 'Precios', 'Flujo de caja', 'Préstamos y crédito'],
   },
   {
-    nombre: 'Marketing y clientes',
-    id: 'marketing',
-    duda: 'Cómo vender más y lograr que el cliente vuelva.',
-    // Ordenados por el camino del cliente, no por canal: los canales (Instagram, TikTok) cambian;
-    // que lo encuentren, que compre y que vuelva, no. El canal es el artículo.
-    subtemas: ['Que lo encuentren', 'Que entre y compre', 'WhatsApp y redes', 'Que vuelva', 'Medir lo que funciona'],
+    nombre: 'Sus clientes',
+    id: 'clientes',
+    duda: 'Entender a su cliente, venderle lo que de verdad necesita y cumplirle, para que vuelva.',
+    // Marketing centrado en el cliente y en aportar valor, no en empujar ventas (fundadora, 22-nov-2026).
+    // Ordenado por lo que el cliente vive, no por canal: los canales cambian; el canal es el artículo.
+    subtemas: ['Conocer a su cliente', 'Lo que usted vende', 'La experiencia en su tienda', 'Confianza', 'Que vuelva y lo recomiende', 'Que lo encuentren'],
   },
   {
     nombre: 'Su equipo',
