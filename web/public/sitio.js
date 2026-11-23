@@ -112,9 +112,13 @@
       });
     }
 
+    // El gato del logo acompaña lo que pasa con el formulario (gato-vivo.js).
+    function gato(gesto) { document.dispatchEvent(new CustomEvent('coddvisor:gato', { detail: gesto })); }
+
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
-      if (enviando || !form.reportValidity()) return;
+      if (enviando) return;
+      if (!form.reportValidity()) { gato('preocupado'); return; }
       var d = new FormData(form);
       var v = function (k) { return String(d.get(k) || '').trim(); };
       var texto = 'Hola. Quiero que mi negocio sea de los primeros en probar Coddvisor.\n' +
@@ -140,11 +144,13 @@
           form.reset();
           id = nuevoId();
           decir('Listo, ' + (v('nombre').split(' ')[0] || '') + '. Recibimos sus datos y le escribimos al WhatsApp que nos dejó.');
+          gato('alegria');
           return;
         }
         if (r.estado === 400 && r.cuerpo.error) {
           // Un dato que corregir: la persona lo arregla y vuelve a enviar, sin salir del sitio.
           decir(r.cuerpo.error);
+          gato('preocupado');
           return;
         }
         // No se pudo guardar: se usa el camino de antes, sin perder lo que escribió.

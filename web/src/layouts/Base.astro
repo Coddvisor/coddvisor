@@ -66,6 +66,8 @@ const url = new URL(Astro.url.pathname, Astro.site).href;
 <!-- fluido.js va antes que sitio.js: suma piezas a la aparición al bajar, que anima sitio.js. -->
 <script is:inline src="/fluido.js" defer></script>
 <script is:inline src="/sitio.js" defer></script>
+<!-- El gato del logo siente: parpadea, sonríe, se concentra, se duerme. Ver gato-vivo.js. -->
+<script is:inline src="/gato-vivo.js" defer></script>
 <!-- Lo que una página agrega a su <head> (por ejemplo, los estilos de las herramientas). -->
 <slot name="cabeza" />
 </head>

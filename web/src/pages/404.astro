@@ -4,6 +4,8 @@
 // (Producto, Herramientas gratis y Coddvisor), los mismos del pie de página.
 // Arriba, el gato del logo persigue un ovillo, se duerme y se va detrás de una luciérnaga
 // (GatoError.astro). Es solo decoración: los lectores de pantalla no lo anuncian.
+// El gato del logo, en la cabecera, también está dormido al llegar (data-gato-inicio): nadie esperaba
+// visita aquí. Despierta de un salto cuando la persona se mueve (gato-vivo.js).
 import Base from '../layouts/Base.astro';
 import GatoError from '../components/GatoError.astro';
 import { productos, llamado } from '../datos/navegacion';
@@ -32,7 +34,7 @@ const grupos = [
   titulo="Esta página no existe | Coddvisor"
   descripcion="La dirección que abrió no existe en el sitio de Coddvisor.">
 
-<section class="portada portada--interior portada--error osc" aria-labelledby="error-t">
+<section class="portada portada--interior portada--error osc" aria-labelledby="error-t" data-gato-inicio="duerme">
   <div class="brillo brillo--ambar" aria-hidden="true"></div>
   <div class="enmarcado interior-in error-in">
     <span class="franja-sello" aria-hidden="true"></span>
