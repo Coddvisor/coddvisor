@@ -1,0 +1,13 @@
+{
+  "name": "@coddvisor-modulo/sincronizacion",
+  "private": true,
+  "type": "module",
+  "description": "La cadena de comandos de cada caja: recibe cada comando una sola vez y dice si es nuevo, repetido o un conflicto.",
+  "exports": {
+    ".": "./src/api.ts"
+  },
+  "dependencies": {
+    "@coddvisor/nucleo": "workspace:*",
+    "@coddvisor-plataforma/bd": "workspace:*"
+  }
+}

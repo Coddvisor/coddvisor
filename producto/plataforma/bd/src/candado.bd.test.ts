@@ -62,6 +62,8 @@ const PROGRAMA = "coddvisor_app";
 const ESQUEMAS_PROPIOS = ["nucleo", "global", "candado", "registro"];
 
 async function sembrar(ctx: typeof A, marca: string, empresa: string, local: string) {
+  const caja = randomUUID();
+  const huellaCredencial = createHash("sha256").update(randomBytes(32)).digest();
   await operacionDeSistema(pool, async (tx) => {
     await tx.query(REGISTRAR_USUARIO, paraRegistrar(ctx.usuarioId, `${marca}-usuario`));
     await tx.query(REGISTRAR_CUENTA, paraCrear({ usuarioId: ctx.usuarioId, cuentaId: ctx.cuentaId }, `${marca}-cuenta`));
@@ -77,10 +79,23 @@ async function sembrar(ctx: typeof A, marca: string, empresa: string, local: str
       `${marca}-local`,
     ]);
     await tx.query("insert into nucleo.dispositivo (tenant_id, id, local_id, nombre) values (candado.cuenta_activa(), $1, $2, $3)", [
-      randomUUID(),
+      caja,
       local,
       `${marca}-caja`,
     ]);
+    await tx.query("select candado.emitir_credencial_dispositivo($1, $2)", [caja, huellaCredencial]);
+  });
+  // Y una venta subida por esa caja, para que la cadena y las ventas también
+  // tengan filas de cada cuenta en las pruebas de fuga.
+  const opId = randomUUID();
+  await conTenant(pool, firmarContextoDeCaja(llave, { dispositivoId: caja, cuentaId: ctx.cuentaId, huellaCredencial }), async (tx) => {
+    await tx.query(
+      `insert into nucleo.cadena_dispositivo (tenant_id, dispositivo_id, seq, op_id, verbo, version_verbo, hash, prev_hash,
+         ocurrido_en, hora_estimada, autor_id, autor_via)
+       values (candado.cuenta_activa(), $1, 1, $2, 'vender', 1, $3, $4, now(), false, $5, 'pin')`,
+      [caja, opId, randomBytes(32), randomBytes(32), ctx.usuarioId],
+    );
+    await tx.query("insert into nucleo.venta (tenant_id, op_id, total_centimos) values (candado.cuenta_activa(), $1, 750)", [opId]);
   });
 }
 
@@ -259,7 +274,7 @@ describe("el catálogo de la base cumple las reglas del candado", () => {
     const { rows: tablas } = await admin.query<{ tabla: string; permiso: string }>(`
       select table_name as tabla, privilege_type as permiso from information_schema.role_table_grants
       where grantee = '${PROGRAMA}' and table_schema = 'nucleo' order by 1, 2`);
-    const esperadoTablas = ["cuenta", "dispositivo", "empresa", "local", "membresia"].flatMap((t) => [
+    const esperadoTablas = ["cadena_dispositivo", "cuenta", "dispositivo", "empresa", "local", "membresia", "venta"].flatMap((t) => [
       { tabla: t, permiso: "INSERT" },
       { tabla: t, permiso: "SELECT" },
     ]);

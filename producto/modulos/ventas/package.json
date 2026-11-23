@@ -1,0 +1,16 @@
+{
+  "name": "@coddvisor-modulo/ventas",
+  "private": true,
+  "type": "module",
+  "description": "Las ventas: el hecho de vender, colgado de su comando en la cadena de la caja.",
+  "exports": {
+    ".": "./src/api.ts"
+  },
+  "dependencies": {
+    "@coddvisor/nucleo": "workspace:*",
+    "@coddvisor-plataforma/bd": "workspace:*"
+  },
+  "devDependencies": {
+    "@coddvisor-modulo/sincronizacion": "workspace:*"
+  }
+}

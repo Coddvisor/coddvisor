@@ -85,6 +85,14 @@ module.exports = {
       to: { path: "^plataforma/bd/src/firma\\.ts$", dependencyTypesNot: ["type-only"] },
     },
     {
+      name: "escenarios-solo-en-pruebas",
+      severity: "error",
+      comment:
+        "Los escenarios de prueba (plataforma/bd/src/pruebas/) crean negocios inventados y firman por dentro. Si un archivo que no es prueba los importara, tendría una puerta trasera para firmar.",
+      from: { pathNot: [PRUEBAS, "^plataforma/bd/src/pruebas/"] },
+      to: { path: "^plataforma/bd/src/pruebas/" },
+    },
+    {
       name: "caja-solo-paquetes",
       severity: "error",
       comment:

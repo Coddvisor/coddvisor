@@ -104,6 +104,12 @@ caso("fronteras", "una ruta de la API no firma", "fallar", "solo-la-autenticacio
 caso("fronteras", "un módulo no firma", "fallar", "solo-la-autenticacion-firma", {
   "modulos/m23/src/api.ts": 'import { firmarContexto } from "@coddvisor-plataforma/bd/firma";\nexport const f = firmarContexto;\n',
 });
+caso("fronteras", "un archivo que no es prueba no usa los escenarios de prueba", "fallar", "escenarios-solo-en-pruebas", {
+  "apps/api/src/comandos/r28.ts": 'import { crearNegocioConCaja } from "@coddvisor-plataforma/bd/pruebas";\nexport const e = crearNegocioConCaja;\n',
+});
+caso("fronteras", "permitido: una prueba de un módulo usa los escenarios", "pasar", null, {
+  "modulos/m29/src/m29.bd.test.ts": 'import { crearNegocioConCaja } from "@coddvisor-plataforma/bd/pruebas";\nexport const e = crearNegocioConCaja;\n',
+});
 caso("fronteras", "permitido: la autenticación de la API firma", "pasar", null, {
   "apps/api/src/autenticacion/a24.ts": 'import { firmarContexto } from "@coddvisor-plataforma/bd/firma";\nexport const f = firmarContexto;\n',
 });

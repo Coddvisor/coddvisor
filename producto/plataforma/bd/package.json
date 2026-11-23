@@ -5,7 +5,8 @@
   "description": "La única puerta a la base de datos: conexión, candado entre negocios (conTenant) y migraciones.",
   "exports": {
     ".": "./src/index.ts",
-    "./firma": "./src/firma.ts"
+    "./firma": "./src/firma.ts",
+    "./pruebas": "./src/pruebas/escenario.ts"
   },
   "dependencies": {
     "pg": "8.23.1"

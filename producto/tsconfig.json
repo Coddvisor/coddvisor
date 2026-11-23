@@ -12,6 +12,8 @@
       "@coddvisor-plataforma/*": ["./plataforma/*/src/index.ts"],
       // La firma tiene su propia entrada; ver plataforma/bd/src/index.ts.
       "@coddvisor-plataforma/bd/firma": ["./plataforma/bd/src/firma.ts"],
+      // Escenarios inventados para las pruebas de los módulos.
+      "@coddvisor-plataforma/bd/pruebas": ["./plataforma/bd/src/pruebas/escenario.ts"],
       "@coddvisor-modulo/*": ["./modulos/*/src/api.ts"]
     }
   },

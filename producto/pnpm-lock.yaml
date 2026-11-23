@@ -39,6 +39,28 @@ importers:
         specifier: workspace:*
         version: link:../../paquetes/nucleo
 
+  modulos/sincronizacion:
+    dependencies:
+      '@coddvisor-plataforma/bd':
+        specifier: workspace:*
+        version: link:../../plataforma/bd
+      '@coddvisor/nucleo':
+        specifier: workspace:*
+        version: link:../../paquetes/nucleo
+
+  modulos/ventas:
+    dependencies:
+      '@coddvisor-plataforma/bd':
+        specifier: workspace:*
+        version: link:../../plataforma/bd
+      '@coddvisor/nucleo':
+        specifier: workspace:*
+        version: link:../../paquetes/nucleo
+    devDependencies:
+      '@coddvisor-modulo/sincronizacion':
+        specifier: workspace:*
+        version: link:../sincronizacion
+
   paquetes/canonico:
     dependencies:
       '@coddvisor/nucleo':
