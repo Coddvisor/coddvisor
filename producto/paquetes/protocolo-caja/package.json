@@ -1,0 +1,14 @@
+{
+  "name": "@coddvisor/protocolo-caja",
+  "private": true,
+  "type": "module",
+  "description": "El contrato entre la caja y el servidor: el sobre de cada comando, sus verbos y las respuestas. Lo usan los dos lados.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@coddvisor/canonico": "workspace:*",
+    "@coddvisor/nucleo": "workspace:*",
+    "zod": "4.6.7"
+  }
+}

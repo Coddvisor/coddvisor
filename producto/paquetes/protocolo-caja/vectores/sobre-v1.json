@@ -1,0 +1,25 @@
+{
+  "_nota": "Vector dorado del sobre v1. La caja (WebCrypto) y el servidor (Node) deben llegar exactamente a este texto y a esta huella. Si alguno no llega, nadie firma el sobre. No se edita: un vector nuevo va en otro archivo.",
+  "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+  "inicio_de_cadena": "fe264f4b0841ebf4174f2d25062f4df6da15ea58bda7d954831cd97168a74ed8",
+  "sobre": {
+    "protocolo": 1,
+    "op_id": "019a8f2c-7b41-7c3e-9a10-5d2f8e4b6a71",
+    "seq": 1,
+    "prev_hash": "fe264f4b0841ebf4174f2d25062f4df6da15ea58bda7d954831cd97168a74ed8",
+    "verbo": "vender",
+    "v": 1,
+    "ocurrido_en_ms": 1768491125123,
+    "hora_estimada": false,
+    "autor": {
+      "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+      "via": "pin"
+    },
+    "datos": {
+      "total": "7.50"
+    },
+    "hash": "8d9b6142477a9a785242645632ebe2c28bf675178aaa0eb244f79e3ccad2d9e1"
+  },
+  "texto_canonico": "{\"autor\":{\"usuario_id\":\"019a8f20-0000-7000-8000-00000000c0de\",\"via\":\"pin\"},\"datos\":{\"total\":\"7.50\"},\"hora_estimada\":false,\"ocurrido_en_ms\":1768491125123,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-5d2f8e4b6a71\",\"prev_hash\":\"fe264f4b0841ebf4174f2d25062f4df6da15ea58bda7d954831cd97168a74ed8\",\"protocolo\":1,\"seq\":1,\"v\":1,\"verbo\":\"vender\"}",
+  "hash": "8d9b6142477a9a785242645632ebe2c28bf675178aaa0eb244f79e3ccad2d9e1"
+}

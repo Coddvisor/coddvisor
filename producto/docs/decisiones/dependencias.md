@@ -10,5 +10,6 @@ Cada dependencia entra con una línea que dice por qué. Las versiones están fi
 | dependency-cruiser | 18.8.0 | Fronteras entre apps, paquetes y módulos | eslint-plugin-boundaries, que no detecta ciclos ni importaciones rotas con la misma claridad |
 | pg y @types/pg (solo en `plataforma/bd`) | 8.23.1 | Conexión a PostgreSQL desde el servidor | postgres.js, que según la documentación de Supabase puede devolver filas cruzadas con su conexión compartida |
 | @types/node | 24.19.2 | Tipos de Node 24 para las herramientas | La versión 26, que describe un Node que el equipo no tiene instalado |
+| zod (solo en `paquetes/protocolo-caja`) | 4.6.7 | Un solo validador del protocolo, compartido por la caja y el servidor: el sobre, cada verbo y el lote. Se configura sin `eval` (`jitless`), porque viaja al celular | Validadores escritos a mano: con 18 verbos aparecen dos copias, una en la caja y otra en el servidor, que se desalinean. Valibot: más liviano, pero el equipo ya conoce zod y la diferencia de peso no importa en una app instalada |
 
-Salvo `pg`, que corre en el servidor, todas son herramientas de desarrollo. Ninguna llega al celular del negocio.
+Salvo `pg`, que corre en el servidor, y `zod`, que corre en los dos lados, todas son herramientas de desarrollo. Solo `zod` llega al celular del negocio.

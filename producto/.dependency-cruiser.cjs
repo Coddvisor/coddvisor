@@ -8,9 +8,9 @@
  * su caso en herramientas/reglas-ci/probar-reglas.mjs.
  */
 
-// Librerías de npm que paquetes/ puede usar. Hoy ninguna: cada una que entre
-// necesita su línea en docs/decisiones/dependencias.md y correr igual en la caja.
-const NPM_PERMITIDO_EN_PAQUETES = [];
+// Librerías de npm que paquetes/ puede usar. Cada una que entre necesita su línea
+// en docs/decisiones/dependencias.md y correr igual en la caja.
+const NPM_PERMITIDO_EN_PAQUETES = ["zod"];
 
 const PRUEBAS = "\\.test\\.(ts|tsx)$";
 

@@ -120,6 +120,17 @@ caso("fronteras", "permitido: un módulo usa la puerta de otro", "pasar", null, 
 caso("fronteras", "permitido: la caja usa el núcleo por su nombre", "pasar", null, {
   "apps/caja/src/c17.ts": 'import { ok } from "@coddvisor/nucleo";\nexport const v = ok(1);\n',
 });
+caso("fronteras", "permitido: paquetes/ usa zod, la librería aprobada", "pasar", null, {
+  "paquetes/p26/package.json": '{ "name": "p26", "private": true, "dependencies": { "zod": "4.6.7" } }\n',
+  // Un enlace a zod real, como si el paquete lo hubiera instalado.
+  "paquetes/p26/node_modules/zod": { enlace: "paquetes/protocolo-caja/node_modules/zod" },
+  "paquetes/p26/src/a.ts": 'import * as z from "zod";\nexport const e = z.string();\n',
+});
+caso("fronteras", "paquetes/ no usa otra librería de npm aunque la declare", "fallar", "paquetes-solo-npm-aprobado", {
+  "paquetes/p27/package.json": '{ "name": "p27", "private": true, "dependencies": { "pg": "8.23.1" } }\n',
+  "paquetes/p27/node_modules/pg": { enlace: "plataforma/bd/node_modules/pg" },
+  "paquetes/p27/src/a.ts": 'import pg from "pg";\nexport const p = pg;\n',
+});
 caso("fronteras", "permitido: una prueba de paquetes/ usa vitest", "pasar", null, {
   "paquetes/p18/src/a.test.ts": 'import { it } from "vitest";\nit("x", () => {});\n',
 });

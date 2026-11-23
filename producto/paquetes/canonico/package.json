@@ -1,0 +1,12 @@
+{
+  "name": "@coddvisor/canonico",
+  "private": true,
+  "type": "module",
+  "description": "Una sola forma de escribir un dato como texto (JSON canónico, RFC 8785), para que la caja y el servidor calculen la misma huella.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@coddvisor/nucleo": "workspace:*"
+  }
+}
