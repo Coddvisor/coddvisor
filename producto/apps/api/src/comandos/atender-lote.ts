@@ -4,7 +4,7 @@ import type { Llave } from "@coddvisor-plataforma/bd/firma";
 import { type ErrorDeLote, LOTE_MAXIMO, LoteV1, type ResultadoComando, SobreV1, textoParaHuella } from "@coddvisor/protocolo-caja";
 import { anotarEslabon } from "@coddvisor-modulo/sincronizacion";
 import { autenticarCaja, type CajaAutenticada } from "../autenticacion/caja.ts";
-import { VERBOS } from "./verbos.ts";
+import { VERBOS, type Verbo } from "./verbos.ts";
 
 /**
  * Atiende un lote de comandos de una caja. No sabe de HTTP: recibe la cabecera de
@@ -25,6 +25,16 @@ export interface Dependencias {
   readonly llave: Llave;
   /** Pedidos esperando conexión a partir de los cuales se responde 429. */
   readonly esperaMaxima?: number;
+  /**
+   * Lotes de cada caja que se están atendiendo ahora, por la huella de su
+   * credencial. Una caja (o quien robe su credencial) no puede acaparar las
+   * conexiones de todas las cuentas: pasado el tope, recibe 429 solo ella.
+   */
+  readonly lotesEnVuelo?: Map<string, number>;
+  /** Cuántos lotes a la vez puede tener una caja. Por omisión, 2. */
+  readonly lotesPorCaja?: number;
+  /** Los verbos que entiende la API (se inyecta en las pruebas). Por omisión, VERBOS. */
+  readonly verbos?: ReadonlyMap<string, Verbo>;
   /** La hora de la API (se inyecta en las pruebas para simular un reloj desfasado). */
   readonly reloj?: () => Date;
   /** Para avisar al equipo de lo que no debería pasar (firma vencida, error interno). */
@@ -62,14 +72,17 @@ const opIdDe = (crudo: unknown): string | null => {
 function errorDeEntrada(e: unknown, alarma: Dependencias["alarma"]): Respuesta {
   const mensaje = (e as { message?: unknown }).message;
   if (mensaje === "dispositivo_inactivo") return { estado: 403, cuerpo: { error: "dispositivo_inactivo" } };
-  if (mensaje === "credencial_invalida" || mensaje === "firma_invalida" || mensaje === "contexto_incompleto") {
-    // Siempre la misma respuesta: no se da pista de qué parte falló.
-    return { estado: 401, cuerpo: { error: "credencial_invalida" } };
-  }
+  // Lo único que es culpa de la caja: su credencial no es la vigente.
+  if (mensaje === "credencial_invalida") return { estado: 401, cuerpo: { error: "credencial_invalida" } };
+  // Lo demás es nuestro: la firma la acaba de hacer esta API. Si la base la
+  // rechaza o la ve vencida, la llave o el reloj de la API no coinciden con la
+  // base. La caja reintenta (no se le dice nada nuevo) y el equipo se entera ya.
   if (mensaje === "firma_vencida") {
-    // Acabamos de firmar: si ya venció, el reloj de la API está desfasado. Es
-    // problema nuestro, no de la caja.
     alarma?.("firma_vencida_al_entrar", e);
+    return reintentar("servidor_no_disponible", 503);
+  }
+  if (mensaje === "firma_invalida" || mensaje === "contexto_incompleto") {
+    alarma?.("firma_rechazada_por_la_base", e);
     return reintentar("servidor_no_disponible", 503);
   }
   if (esFallaDeLaBase(e)) return reintentar("servidor_no_disponible", 503);
@@ -78,6 +91,13 @@ function errorDeEntrada(e: unknown, alarma: Dependencias["alarma"]): Respuesta {
 }
 
 async function atenderSobre(deps: Dependencias, caja: CajaAutenticada, crudo: unknown): Promise<ResultadoComando> {
+  // Una caja más nueva que el servidor (protocolo 2 o más): el comando espera a que
+  // el servidor lo aprenda. Nunca es final, así no se pierde.
+  const protocolo = (crudo as { protocolo?: unknown } | null)?.protocolo;
+  const opId = opIdDe(crudo);
+  if (typeof protocolo === "number" && Number.isInteger(protocolo) && protocolo > 1 && opId !== null) {
+    return { op_id: opId, estado: "en_espera", motivo: "version_desconocida" };
+  }
   const sobre = SobreV1.safeParse(crudo);
   if (!sobre.success) return { op_id: opIdDe(crudo), estado: "no_aplicable", motivo: "sobre_ilegible" };
   const s = sobre.data;
@@ -85,7 +105,7 @@ async function atenderSobre(deps: Dependencias, caja: CajaAutenticada, crudo: un
   const texto = textoParaHuella(crudo as Record<string, unknown>);
   if (!texto.ok || sha256(texto.value) !== s.hash) return { op_id: s.op_id, estado: "no_aplicable", motivo: "huella_invalida" };
 
-  const verbo = VERBOS.get(`${s.verbo}@${s.v}`);
+  const verbo = (deps.verbos ?? VERBOS).get(`${s.verbo}@${s.v}`);
   // Una caja más nueva que el servidor: el comando espera a que el servidor aprenda ese verbo.
   if (!verbo) return { op_id: s.op_id, estado: "en_espera", motivo: "version_desconocida" };
   const datos = verbo.leer(s.datos);
@@ -132,19 +152,34 @@ export async function atenderLote(deps: Dependencias, autorizacion: string | und
 
   if (deps.pool.waitingCount >= (deps.esperaMaxima ?? 50)) return reintentar("ocupado", 429);
 
+  // El tope por caja se cuenta por la huella de su credencial: alguien que no
+  // tiene el secreto no puede ocuparle el cupo a la caja de verdad.
+  const clave = caja.credencial.huella.toString("hex");
+  const enVuelo = deps.lotesEnVuelo;
+  const actuales = enVuelo?.get(clave) ?? 0;
+  if (enVuelo && actuales >= (deps.lotesPorCaja ?? 2)) return reintentar("ocupado", 429);
+  enVuelo?.set(clave, actuales + 1);
   try {
-    await conTenant(deps.pool, caja.firmar(), async () => undefined);
-  } catch (e) {
-    return errorDeEntrada(e, deps.alarma);
-  }
+    try {
+      await conTenant(deps.pool, caja.firmar(), async () => undefined);
+    } catch (e) {
+      return errorDeEntrada(e, deps.alarma);
+    }
 
-  const resultados: ResultadoComando[] = [];
-  try {
-    for (const crudo of lote.data.comandos) resultados.push(await atenderSobre(deps, caja, crudo));
-  } catch (e) {
-    if (e instanceof LoteCortado) return e.respuesta;
-    deps.alarma?.("error_interno", e);
-    return { estado: 500, cuerpo: { error: "error_interno" } };
+    const resultados: ResultadoComando[] = [];
+    try {
+      for (const crudo of lote.data.comandos) resultados.push(await atenderSobre(deps, caja, crudo));
+    } catch (e) {
+      if (e instanceof LoteCortado) return e.respuesta;
+      deps.alarma?.("error_interno", e);
+      return { estado: 500, cuerpo: { error: "error_interno" } };
+    }
+    return { estado: 200, cuerpo: { resultados } };
+  } finally {
+    if (enVuelo) {
+      const quedan = (enVuelo.get(clave) ?? 1) - 1;
+      if (quedan > 0) enVuelo.set(clave, quedan);
+      else enVuelo.delete(clave);
+    }
   }
-  return { estado: 200, cuerpo: { resultados } };
 }

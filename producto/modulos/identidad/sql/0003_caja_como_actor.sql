@@ -11,6 +11,12 @@
 --
 -- Nada de esto cambia las funciones del portero que ya existen: después de pasar
 -- al portero, ninguna migración las puede reemplazar (ver la decisión 0003).
+--
+-- Si se sospecha que la credencial de una caja se filtró, no se le emite otra:
+-- se da de baja la caja y se registra una nueva, con su propia numeración. Una
+-- credencial nueva para la misma caja es para cuando se perdió (se reinstaló la
+-- app), no para cuando alguien más la tiene: lo que el intruso subió ya ocupó
+-- números de esa caja.
 
 -- ---------- "Ninguna persona" ----------
 -- Dentro de una transacción de caja, usuario_activo() devuelve el UUID nulo. Así
@@ -94,13 +100,14 @@ create function candado.fijar_contexto_dispositivo(
   as $$
 declare
   v_huella bytea;
+  v_version smallint;
   v_estado text;
 begin
   perform candado.exigir_firma_lineas(
     array['abrir_dispositivo', p_dispositivo::text, p_cuenta::text, encode(p_huella, 'hex')],
     p_vence, p_version, p_firma);
   perform candado.poner(p_cuenta, '00000000-0000-0000-0000-000000000000', to_timestamp(p_vence));
-  select c.huella into v_huella from nucleo.credencial_dispositivo c
+  select c.huella, c.version into v_huella, v_version from nucleo.credencial_dispositivo c
   where c.tenant_id = p_cuenta and c.dispositivo_id = p_dispositivo
   order by c.version desc limit 1;
   if v_huella is null or sha256(v_huella) <> sha256(p_huella) then
@@ -111,9 +118,9 @@ begin
     raise exception 'dispositivo_inactivo' using errcode = '28000';
   end if;
   if to_regclass('pg_temp.dispositivo_activo') is null then
-    create temporary table dispositivo_activo (dispositivo_id uuid not null) on commit delete rows;
+    create temporary table dispositivo_activo (dispositivo_id uuid not null, credencial_version smallint not null) on commit delete rows;
   end if;
-  insert into pg_temp.dispositivo_activo (dispositivo_id) values (p_dispositivo);
+  insert into pg_temp.dispositivo_activo (dispositivo_id, credencial_version) values (p_dispositivo, v_version);
 end
 $$;
 
@@ -128,6 +135,20 @@ begin
     return null;
   end if;
   return (select a.dispositivo_id from pg_temp.dispositivo_activo a limit 1);
+end
+$$;
+
+-- La versión de la credencial con la que entró la caja activa, o null. Cada
+-- eslabón la guarda: si una credencial se filtra, se sabe qué subió con ella.
+create function candado.credencial_activa() returns smallint
+  language plpgsql stable security definer
+  set search_path = pg_catalog, pg_temp
+  as $$
+begin
+  if candado.cuenta_activa() is null or to_regclass('pg_temp.dispositivo_activo') is null then
+    return null;
+  end if;
+  return (select a.credencial_version from pg_temp.dispositivo_activo a limit 1);
 end
 $$;
 
@@ -192,13 +213,16 @@ create trigger dispositivo_caja_no_toca_identidad before insert or update on nuc
 revoke all on function candado.exigir_firma_lineas(text[], bigint, integer, bytea) from public;
 revoke all on function candado.fijar_contexto_dispositivo(uuid, uuid, bytea, bigint, integer, bytea) from public;
 revoke all on function candado.dispositivo_activo() from public;
+revoke all on function candado.credencial_activa() from public;
 revoke all on function candado.emitir_credencial_dispositivo(uuid, bytea) from public;
 revoke all on function nucleo.caja_no_toca_identidad() from public;
 grant execute on function candado.fijar_contexto_dispositivo(uuid, uuid, bytea, bigint, integer, bytea) to coddvisor_app;
 grant execute on function candado.dispositivo_activo() to coddvisor_app, coddvisor_duenio;
+grant execute on function candado.credencial_activa() to coddvisor_app, coddvisor_duenio;
 grant execute on function candado.emitir_credencial_dispositivo(uuid, bytea) to coddvisor_app;
 -- Al final, y no antes: después de cambiar de dueño, el dueño ya no puede tocar sus permisos.
 alter function candado.exigir_firma_lineas(text[], bigint, integer, bytea) owner to coddvisor_portero;
 alter function candado.fijar_contexto_dispositivo(uuid, uuid, bytea, bigint, integer, bytea) owner to coddvisor_portero;
 alter function candado.dispositivo_activo() owner to coddvisor_portero;
+alter function candado.credencial_activa() owner to coddvisor_portero;
 alter function candado.emitir_credencial_dispositivo(uuid, bytea) owner to coddvisor_portero;

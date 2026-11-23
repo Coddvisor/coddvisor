@@ -28,7 +28,8 @@ Reglas para cualquier persona o agente de IA que escriba código en `producto/`.
    - Los datos de una cuenta se tocan solo dentro de `conTenant()`, de `@coddvisor-plataforma/bd`.
    - Un módulo nunca abre, confirma ni deshace una transacción, ni cambia la cuenta activa. Solo importa tipos de `plataforma/bd` y nunca usa `pg`: lo exige la revisión de fronteras.
    - La cuenta activa la fija solo el portero en la base, después de verificar la firma del servidor y la membresía (decisión 0002). `consultaPermitida()` atrapa errores honestos, no es la barrera.
-   - Solo la capa que verificó la sesión llama a `firmarContexto()`. Nunca firmes un identificador que vino del pedido sin verificarlo.
+   - Solo la capa que verificó la sesión o la credencial firma (`apps/api/src/autenticacion/`). Lo exige la regla `solo-la-autenticacion-firma`. Nunca firmes un identificador que vino del pedido sin verificarlo.
+   - Ningún archivo de producción importa un archivo de prueba ni los escenarios de prueba (`@coddvisor-plataforma/bd/pruebas`).
    - La llave de firma nunca va en el repositorio, ni en una migración, ni en una prueba: las pruebas generan una al azar.
    - Toda consulta se espera con `await`: ESLint rechaza una promesa suelta.
    - Las tablas nuevas van en el esquema `nucleo`, con `tenant_id`, seguridad por fila forzada y `tenant_id` dentro de cada relación. La prueba del catálogo lo exige.
@@ -41,7 +42,8 @@ Estas revisiones son una cerca, no un muro: siempre puede haber un atajo que no 
 ## Lo que revisan las personas
 
 5. **Nada secreto ni real.** No subas llaves, contraseñas, tokens ni `.env`. En las pruebas usa solo datos inventados, nunca de un negocio real. `.gitignore` bloquea los casos conocidos, pero no todos.
-6. **Los montos no usan `number`.** Se usará el tipo `Dinero`, que llega en el paso de Dinero e IGV. Hasta entonces, esto lo revisa quien aprueba el cambio.
+6. **Los montos no usan `number`.** Usan `Dinero` (céntimos exactos, de `@coddvisor/nucleo`); en la base, columnas `*_centimos bigint`; en JSON, texto con dos decimales ("7.50"). Lo revisa quien aprueba el cambio.
+   - **Una versión publicada del protocolo de la caja no se edita.** Un campo nuevo va en una versión nueva (`protocolo` 2, o la versión siguiente del verbo); el servidor sigue aceptando las anteriores, porque una caja puede tener comandos sin subir de hace meses.
 7. **Si una prueba falla, arregla el código.** Nunca edites una prueba para que pase, salvo que la regla del negocio haya cambiado de verdad y lo diga una decisión escrita.
 8. **Sin dependencias nuevas** sin una línea en `docs/decisiones/dependencias.md` que diga por qué entra y qué se descartó.
 9. **Idioma.**

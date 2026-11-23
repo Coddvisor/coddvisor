@@ -10,7 +10,9 @@ interface Vector {
   texto_canonico: string;
   hash: string;
 }
-const vector = JSON.parse(readFileSync(new URL("../vectores/sobre-v1.json", import.meta.url), "utf8")) as Vector;
+const leerVector = (archivo: string) => JSON.parse(readFileSync(new URL(`../vectores/${archivo}`, import.meta.url), "utf8")) as Vector;
+const vector = leerVector("sobre-v1.json");
+const vectorDeTextos = leerVector("sobre-v1-textos.json");
 const sha256 = (texto: string) => createHash("sha256").update(texto, "utf8").digest("hex");
 const conCambio = (cambio: Record<string, unknown>) => ({ ...vector.sobre, ...cambio });
 
@@ -35,6 +37,28 @@ describe("el vector dorado del sobre v1", () => {
 
   it("el validador acepta el sobre del vector", () => {
     expect(SobreV1.safeParse(vector.sobre).success).toBe(true);
+  });
+});
+
+describe("el vector dorado con ñ, emoji, controles y claves desordenadas", () => {
+  it("llega al mismo texto canónico y a la misma huella (en UTF-8)", () => {
+    expect(textoParaHuella(vectorDeTextos.sobre)).toEqual({ ok: true, value: vectorDeTextos.texto_canonico });
+    expect(sha256(vectorDeTextos.texto_canonico)).toBe(vectorDeTextos.hash);
+    expect(vectorDeTextos.texto_canonico).toContain("Ñuñez 😀");
+    expect(vectorDeTextos.texto_canonico).toContain('"\\r":"Retorno","1":"Uno"');
+  });
+});
+
+describe("lo que nadie puede sellar", () => {
+  it("un __proto__ colado en los datos no tiene huella (ni la caja ni el servidor lo sellan)", () => {
+    const colado = JSON.parse('{"datos":{"total":"7.50","__proto__":{"x":1}},"seq":1}') as Record<string, unknown>;
+    expect(textoParaHuella(colado)).toEqual({ ok: false, error: "valor_no_admitido" });
+  });
+
+  it("datos anidados más allá de 32 niveles no tienen huella, sin reventar la pila", () => {
+    let hondo: unknown = "fondo";
+    for (let i = 0; i < 5000; i++) hondo = { a: hondo };
+    expect(textoParaHuella({ datos: hondo })).toEqual({ ok: false, error: "demasiado_profundo" });
   });
 });
 

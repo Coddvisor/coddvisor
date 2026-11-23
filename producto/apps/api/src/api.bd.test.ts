@@ -4,6 +4,7 @@ import { firmarRegistroDeUsuario, leerLlave } from "@coddvisor-plataforma/bd/fir
 import { crearNegocioConCaja, type NegocioDePrueba } from "@coddvisor-plataforma/bd/pruebas";
 import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
 import { textoDeCredencial } from "./autenticacion/credencial.ts";
+import { VERBOS } from "./comandos/verbos.ts";
 import { crearApp } from "./http/app.ts";
 import { cabeceraDe, cajaQueSella } from "./pruebas/sobres.ts";
 
@@ -166,6 +167,37 @@ describe("la ventanilla única: lo que no entra y por qué", () => {
     const r = await estadoDe({ comandos: [sobre] }, cabeceraDe(n.caja));
     expect(r.cuerpo).toEqual({ resultados: [{ op_id: sobre["op_id"], estado: "en_espera", motivo: "version_desconocida" }] });
     expect(await contar(n, "cadena_dispositivo", sobre["op_id"] as string)).toBe(0);
+    // El servidor aprende "vender" 9 (aquí, igual que la 1) y el mismo sobre entra.
+    const vender1 = VERBOS.get("vender@1");
+    if (!vender1) throw new Error("falta vender@1");
+    const aprendio = crearApp({ pool, llave, listo: () => baseDisponible(pool), verbos: new Map([...VERBOS, ["vender@9", vender1]]) });
+    const r2 = await aprendio.request("/v1/comandos", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: cabeceraDe(n.caja) },
+      body: JSON.stringify({ comandos: [sobre] }),
+    });
+    expect(await r2.json()).toMatchObject({ resultados: [{ estado: "aplicado" }] });
+  });
+
+  it("una caja más nueva que el servidor (protocolo 2): en_espera, nunca un rechazo final", async () => {
+    const n = await negocioNuevo();
+    const sobre = cajaQueSella(n).sobre(undefined, { protocolo: 2, campo_nuevo: "algo" });
+    const r = await estadoDe({ comandos: [sobre] }, cabeceraDe(n.caja));
+    expect(r.cuerpo).toEqual({ resultados: [{ op_id: sobre["op_id"], estado: "en_espera", motivo: "version_desconocida" }] });
+  });
+
+  it("un __proto__ colado o datos demasiado anidados: no_aplicable para ese sobre, sin tumbar el lote", async () => {
+    const n = await negocioNuevo();
+    const caja = cajaQueSella(n);
+    const bueno = caja.sobre();
+    let hondo: unknown = "fondo";
+    for (let i = 0; i < 3000; i++) hondo = { a: hondo };
+    const anidado = { ...caja.sobre(), datos: { total: "1.00", hondo } };
+    const cuerpo = `{"comandos":[${JSON.stringify(bueno)},${JSON.stringify(anidado)},${JSON.stringify(caja.sobre()).replace('"datos":{', '"datos":{"__proto__":{"x":1},')}]}`;
+    const r = await enviar(cuerpo, cabeceraDe(n.caja));
+    const respuesta = (await r.json()) as { resultados: { estado: string; motivo?: string }[] };
+    expect(r.status).toBe(200);
+    expect(respuesta.resultados.map((x) => x.motivo ?? x.estado)).toEqual(["aplicado", "huella_invalida", "huella_invalida"]);
   });
 
   it("un autor que todavía no es miembro: en_espera; cuando lo sea, el reenvío entra", async () => {

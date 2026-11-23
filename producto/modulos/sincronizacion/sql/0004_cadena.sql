@@ -26,6 +26,9 @@ create table nucleo.cadena_dispositivo (
   hora_estimada boolean not null,
   autor_id uuid not null,
   autor_via text not null check (autor_via ~ '^[a-z][a-z_]{1,29}$'),
+  -- Con qué versión de su credencial lo subió la caja. La pone la base, no el
+  -- pedido: si una credencial se filtra, se sabe exactamente qué subió con ella.
+  credencial_version smallint not null check (credencial_version >= 1),
   recibido_en timestamptz not null default now(),
   primary key (tenant_id, dispositivo_id, seq),
   unique (tenant_id, op_id),
@@ -47,6 +50,7 @@ begin
   if new.dispositivo_id is distinct from candado.dispositivo_activo() then
     raise exception 'otra_caja' using errcode = '42501';
   end if;
+  new.credencial_version := candado.credencial_activa();
   return new;
 end
 $$;

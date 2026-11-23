@@ -112,11 +112,22 @@ async function enTransaccion<T>(
   const cliente = await pool.connect();
   const estado: Estado = { cerrada: false, fallo: undefined, pendientes: 0 };
   let descartar = false;
+  // Mientras la conexión está prestada, el pool deja de escucharle los errores. Si
+  // la base la corta en ese momento (un reinicio, un corte de red) y nadie escucha,
+  // Node tumba el proceso ENTERO de la API, con los pedidos de todas las cuentas.
+  // Aquí se escucha: la conexión se descarta y la consulta en curso falla sola.
+  const alCortarse = (e: Error) => {
+    descartar = true;
+    estado.fallo ??= e;
+  };
+  cliente.on("error", alCortarse);
   try {
     // La conexión pudo quedar con ajustes de una operación anterior (zona horaria,
     // tiempos límite, cursores abiertos). Se limpian dentro de la transacción, así
-    // ninguna cuenta hereda lo que dejó otra.
-    await cliente.query("begin");
+    // ninguna cuenta hereda lo que dejó otra. El aislamiento se fija aquí y no se
+    // hereda de la base: la idempotencia de la cadena necesita READ COMMITTED (una
+    // instrucción ve lo que otra transacción ya confirmó).
+    await cliente.query("begin isolation level read committed");
     await cliente.query("reset all");
     await cliente.query("close all");
     await preparar(cliente);
@@ -151,6 +162,7 @@ async function enTransaccion<T>(
     throw e;
   } finally {
     estado.cerrada = true;
+    cliente.removeListener("error", alCortarse);
     // Si quedó una consulta en vuelo, la conexión no vuelve al pool: podría
     // terminar dentro de la transacción de otra cuenta.
     cliente.release(descartar || estado.pendientes > 0);

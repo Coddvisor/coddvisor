@@ -8,7 +8,7 @@ Aquí vive el producto que usan los negocios. El sitio público coddvisor.com, l
 |---|---|---|---|
 | **Caja** | Vender, cobrar, fiar y cerrar caja, aunque no haya internet | Celular Android del negocio | `apps/caja/` (llega en el paso 4) |
 | **Mi negocio** | Ver números, cambiar precios, revisar el fiado, cerrar el mes | Navegador de una PC o un iPhone | `apps/mi-negocio/` (después) |
-| **Servidor** | Recibe las ventas, guarda los libros y emite a SUNAT | En la nube | `apps/api/` (llega en el paso 3) |
+| **Servidor** | Recibe las ventas, guarda los libros y emite a SUNAT | En la nube | `apps/api/` (hoy recibe las ventas de la caja; ver `docs/decisiones/0003-ventanilla-unica.md`) |
 | **Código compartido** | Lo que tiene una sola respuesta correcta (IGV, dinero) | En la caja y en el servidor por igual | `paquetes/` |
 
 ## Cómo está ordenado
@@ -25,9 +25,14 @@ producto/
 
 Hoy existen:
 
-- `paquetes/nucleo`: tipos base;
-- `plataforma/bd`: la conexión, el candado entre negocios y las migraciones;
+- `paquetes/nucleo`: tipos base, entre ellos `Dinero` (céntimos exactos);
+- `paquetes/canonico`: una sola forma de escribir un dato (JSON canónico), para calcular huellas;
+- `paquetes/protocolo-caja`: el contrato entre la caja y el servidor;
+- `plataforma/bd`: la conexión, el candado entre negocios, la firma del servidor y las migraciones;
 - `modulos/identidad`: cuentas, empresas, locales y cajas;
+- `modulos/sincronizacion`: la cadena de comandos de cada caja;
+- `modulos/ventas`: las ventas;
+- `apps/api`: la ventanilla única (`POST /v1/comandos`);
 - `herramientas/reglas-ci`: la prueba de las reglas.
 
 Las demás carpetas se crean cuando un paso las necesita, no antes.
@@ -44,6 +49,12 @@ pnpm verificar
 ```
 
 Para que la base acepte pedidos firmados fuera de las pruebas, genera una llave con `pnpm bd:llave-nueva`, guárdala como secreto en `CODDVISOR_LLAVE_CONTEXTO` (nunca en el repositorio) y vuelve a correr `pnpm bd:migrar`. Las pruebas no la necesitan: generan su propia llave en cada corrida.
+
+Para levantar la API en tu computadora, con esa misma llave en el entorno:
+
+```bash
+pnpm api           # escucha en el puerto 8080 (cámbialo con PUERTO)
+```
 
 `verificar` corre seis revisiones y se detiene en la primera que falla:
 

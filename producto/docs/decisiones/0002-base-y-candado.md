@@ -141,7 +141,7 @@ Lee la base entera y exige que:
 - ninguna tabla, vista o secuencia fuera de `nucleo` tenga permisos para el programa (incluida la de la llave);
 - no haya vistas que se salten la seguridad por fila;
 - todo sea del dueño, salvo las funciones del portero;
-- el programa solo pueda ejecutar 5 funciones, todas con `search_path` fijo;
+- el programa solo pueda ejecutar las funciones de una lista explícita (9 desde la decisión 0003), todas con `search_path` fijo;
 - el programa no sea miembro de ningún rol;
 - los permisos del programa sean exactamente los de la lista, columna por columna.
 

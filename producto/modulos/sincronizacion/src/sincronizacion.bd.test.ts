@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { conTenant, crearPool } from "@coddvisor-plataforma/bd";
 import { firmarContextoDeCaja, leerLlave } from "@coddvisor-plataforma/bd/firma";
 import { crearNegocioConCaja, type NegocioDePrueba } from "@coddvisor-plataforma/bd/pruebas";
@@ -180,3 +180,29 @@ describe("sincronizacion: dos envíos del mismo comando al mismo tiempo", () => 
   });
 });
 
+
+describe("sincronizacion: cada eslabón sabe con qué credencial entró", () => {
+  it("después de renovar la credencial, lo subido con la vieja se distingue de lo nuevo", async () => {
+    const viejo = eslabon();
+    await anotar(viejo);
+    const nueva = createHash("sha256").update(randomBytes(32)).digest();
+    await conTenant(pool, negocio.comoDuenia(), (tx) =>
+      tx.query("select candado.emitir_credencial_dispositivo($1, $2)", [negocio.caja.dispositivoId, nueva]),
+    );
+    const conNueva = firmarContextoDeCaja(llave, { ...negocio.caja, huellaCredencial: nueva });
+    const reciente = eslabon();
+    await conTenant(pool, conNueva, (tx) => anotarEslabon(tx, reciente));
+    const { rows } = await conTenant(pool, negocio.comoDuenia(), (tx) =>
+      tx.query<{ op_id: string; v: number }>(
+        "select op_id, credencial_version as v from nucleo.cadena_dispositivo where op_id = any($1) order by v",
+        [[viejo.opId, reciente.opId]],
+      ),
+    );
+    expect(rows).toEqual([
+      { op_id: viejo.opId, v: 1 },
+      { op_id: reciente.opId, v: 2 },
+    ]);
+    // La caja del negocio sigue con la credencial nueva en las pruebas siguientes.
+    negocio = { ...negocio, caja: { ...negocio.caja, huellaCredencial: nueva }, comoCaja: () => conNueva };
+  });
+});

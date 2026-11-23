@@ -1,0 +1,43 @@
+{
+  "_nota": "Segundo vector dorado del sobre v1: textos con ñ, emoji, caracteres de control, comillas y claves fuera del orden ASCII (el ejemplo de orden del RFC 8785). La caja (WebCrypto, UTF-8) y el servidor (Node) deben llegar exactamente a este texto y a esta huella. No se edita.",
+  "dispositivo_id": "019a8f20-2222-7000-8000-0000000ca1a2",
+  "inicio_de_cadena": "3615a3758061cdc667e662a2ddcd56b088fcf574c36bf4efed2ff7fed044f7fd",
+  "sobre": {
+    "protocolo": 1,
+    "op_id": "019a8f2c-7b41-7c3e-9a10-5d2f8e4b6a72",
+    "seq": 2,
+    "prev_hash": "3615a3758061cdc667e662a2ddcd56b088fcf574c36bf4efed2ff7fed044f7fd",
+    "verbo": "prueba_de_texto",
+    "v": 1,
+    "ocurrido_en_ms": 1768491125124,
+    "hora_estimada": true,
+    "autor": {
+      "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+      "via": "pin"
+    },
+    "datos": {
+      "1": "Uno",
+      "€": "Euro",
+      "\r": "Retorno",
+      "דּ": "Hebreo",
+      "😀": "Emoji",
+      "": "Control",
+      "ö": "Diéresis",
+      "cliente": "Señora Ñuñez 😀 — «doña»",
+      "nota": "comillas \" barra \\ salto\nde línea \u0001 tab\t",
+      "lista": [
+        true,
+        null,
+        0,
+        -1,
+        9007199254740991,
+        "ñ"
+      ],
+      "vacio": {},
+      "vacia": []
+    },
+    "hash": "43769463219d8772fcc00f1baef22a9ff2ca1ae20597f81a832642147ccd116b"
+  },
+  "texto_canonico": "{\"autor\":{\"usuario_id\":\"019a8f20-0000-7000-8000-00000000c0de\",\"via\":\"pin\"},\"datos\":{\"\\r\":\"Retorno\",\"1\":\"Uno\",\"cliente\":\"Señora Ñuñez 😀 — «doña»\",\"lista\":[true,null,0,-1,9007199254740991,\"ñ\"],\"nota\":\"comillas \\\" barra \\\\ salto\\nde línea \\u0001 tab\\t\",\"vacia\":[],\"vacio\":{},\"\":\"Control\",\"ö\":\"Diéresis\",\"€\":\"Euro\",\"😀\":\"Emoji\",\"דּ\":\"Hebreo\"},\"hora_estimada\":true,\"ocurrido_en_ms\":1768491125124,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-5d2f8e4b6a72\",\"prev_hash\":\"3615a3758061cdc667e662a2ddcd56b088fcf574c36bf4efed2ff7fed044f7fd\",\"protocolo\":1,\"seq\":2,\"v\":1,\"verbo\":\"prueba_de_texto\"}",
+  "hash": "43769463219d8772fcc00f1baef22a9ff2ca1ae20597f81a832642147ccd116b"
+}

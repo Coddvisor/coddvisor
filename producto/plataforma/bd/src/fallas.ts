@@ -12,7 +12,10 @@
 // 53300: demasiadas conexiones; 55P03: un bloqueo no llegó a tiempo (lock_timeout);
 // 57014: la consulta tardó más de lo permitido (statement_timeout);
 // 40001 y 40P01: choque entre transacciones (serialización o abrazo mortal).
-const CODIGOS_DE_LA_BASE = new Set(["57P01", "57P02", "57P03", "53300", "55P03", "57014", "40001", "40P01"]);
+// 53*: la base se quedó sin recursos (memoria, disco, conexiones); 25006: está en
+// solo lectura (por ejemplo, durante un cambio a la réplica); 57P05: se cortó una
+// sesión inactiva por tiempo.
+const CODIGOS_DE_LA_BASE = new Set(["57P01", "57P02", "57P03", "57P05", "55P03", "57014", "40001", "40P01", "25006"]);
 
 // Errores de red del lado de Node.
 const ERRORES_DE_RED = new Set(["ECONNREFUSED", "ECONNRESET", "ETIMEDOUT", "EPIPE", "ENOTFOUND", "EAI_AGAIN", "EHOSTUNREACH"]);
@@ -28,6 +31,8 @@ const MENSAJES_DE_CONEXION = [
 export function esFallaDeLaBase(e: unknown): boolean {
   if (typeof e !== "object" || e === null) return false;
   const { code, message } = e as { code?: unknown; message?: unknown };
-  if (typeof code === "string" && (code.startsWith("08") || CODIGOS_DE_LA_BASE.has(code) || ERRORES_DE_RED.has(code))) return true;
+  if (typeof code === "string" && (code.startsWith("08") || code.startsWith("53") || CODIGOS_DE_LA_BASE.has(code) || ERRORES_DE_RED.has(code))) {
+    return true;
+  }
   return typeof message === "string" && MENSAJES_DE_CONEXION.some((m) => message.includes(m));
 }

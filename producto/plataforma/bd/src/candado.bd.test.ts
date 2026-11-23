@@ -252,6 +252,7 @@ describe("el catálogo de la base cumple las reglas del candado", () => {
       select n.nspname || '.' || p.proname as funcion from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = any ($1) and has_function_privilege('${PROGRAMA}', p.oid, 'EXECUTE') order by 1`, [ESQUEMAS_PROPIOS]);
     expect(rows.map((r) => r.funcion)).toEqual([
+      "candado.credencial_activa",
       "candado.cuenta_activa",
       "candado.dispositivo_activo",
       "candado.emitir_credencial_dispositivo",

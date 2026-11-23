@@ -104,6 +104,10 @@ caso("fronteras", "una ruta de la API no firma", "fallar", "solo-la-autenticacio
 caso("fronteras", "un módulo no firma", "fallar", "solo-la-autenticacion-firma", {
   "modulos/m23/src/api.ts": 'import { firmarContexto } from "@coddvisor-plataforma/bd/firma";\nexport const f = firmarContexto;\n',
 });
+caso("fronteras", "el código de producción no importa un archivo de prueba", "fallar", "nadie-importa-pruebas", {
+  "apps/api/src/comandos/y32.test.ts": 'import { firmarContexto } from "@coddvisor-plataforma/bd/firma";\nexport const f = firmarContexto;\n',
+  "apps/api/src/comandos/x32.ts": 'import { f } from "./y32.test.ts";\nexport const g = f;\n',
+});
 caso("fronteras", "la lógica de la API no usa hono", "fallar", "hono-solo-en-http", {
   "apps/api30/package.json": '{ "name": "api30", "private": true, "dependencies": { "hono": "4.13.17" } }\n',
   "apps/api30/node_modules/hono": { enlace: "apps/api/node_modules/hono" },

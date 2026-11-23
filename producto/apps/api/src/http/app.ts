@@ -10,7 +10,7 @@ import { atenderLote, type Dependencias } from "../comandos/atender-lote.ts";
  * de la caja.
  */
 
-/** Un lote de 100 sobres pesa unos 35 KB: 256 KB deja margen sin abrir la puerta a cuerpos enormes. */
+/** Un lote de 100 sobres de "vender" v1 pesa unos 40 KB: 256 KB deja margen sin abrir la puerta a cuerpos enormes. */
 export const CUERPO_MAXIMO = 256 * 1024;
 
 export interface DependenciasHttp extends Dependencias {
@@ -20,6 +20,8 @@ export interface DependenciasHttp extends Dependencias {
 
 export function crearApp(deps: DependenciasHttp): Hono {
   const app = new Hono();
+  // Un solo contador de lotes en vuelo por proceso, compartido por todos los pedidos.
+  const lotesEnVuelo = deps.lotesEnVuelo ?? new Map<string, number>();
 
   app.post(
     "/v1/comandos",
@@ -33,7 +35,7 @@ export function crearApp(deps: DependenciasHttp): Hono {
       } catch {
         return c.json({ error: "lote_ilegible" }, 400);
       }
-      const r = await atenderLote(deps, c.req.header("authorization"), cuerpo);
+      const r = await atenderLote({ ...deps, lotesEnVuelo }, c.req.header("authorization"), cuerpo);
       if (r.estado !== 200 && r.reintentarEnSegundos !== undefined) c.header("Retry-After", String(r.reintentarEnSegundos));
       return c.json(r.cuerpo, r.estado);
     },

@@ -21,7 +21,10 @@ import { err, ok, type Result } from "@coddvisor/nucleo";
  *   servidor, WebCrypto en la caja).
  */
 
-export type ErrorCanonico = "decimal" | "numero_no_seguro" | "menos_cero" | "texto_mal_formado" | "valor_no_admitido";
+export type ErrorCanonico = "decimal" | "numero_no_seguro" | "menos_cero" | "texto_mal_formado" | "valor_no_admitido" | "demasiado_profundo";
+
+/** Ningún dato del protocolo necesita más niveles; más allá, alguien intenta reventar la pila. */
+export const PROFUNDIDAD_MAXIMA = 32;
 
 // Un carácter "medio" (una mitad de un emoji sin su pareja) no es texto válido:
 // cada lado lo escribiría distinto.
@@ -38,7 +41,8 @@ function esObjetoSimple(v: object): boolean {
   return prototipo === Object.prototype || prototipo === null;
 }
 
-export function canonizar(valor: unknown): Result<string, ErrorCanonico> {
+export function canonizar(valor: unknown, profundidad = 0): Result<string, ErrorCanonico> {
+  if (profundidad > PROFUNDIDAD_MAXIMA) return err("demasiado_profundo");
   if (valor === null) return ok("null");
   if (typeof valor === "boolean") return ok(valor ? "true" : "false");
   if (typeof valor === "string") return texto(valor);
@@ -51,7 +55,7 @@ export function canonizar(valor: unknown): Result<string, ErrorCanonico> {
   if (Array.isArray(valor)) {
     const partes: string[] = [];
     for (const elemento of valor as unknown[]) {
-      const r = canonizar(elemento);
+      const r = canonizar(elemento, profundidad + 1);
       if (!r.ok) return r;
       partes.push(r.value);
     }
@@ -63,9 +67,13 @@ export function canonizar(valor: unknown): Result<string, ErrorCanonico> {
     const claves = Object.keys(valor).sort();
     const partes: string[] = [];
     for (const clave of claves) {
+      // "__proto__" se lee distinto en cada lado (JSON.parse lo deja como clave
+      // propia; un objeto armado en código lo toma como su prototipo), así que la
+      // caja y el servidor podrían sellar cosas distintas. No se admite.
+      if (clave === "__proto__") return err("valor_no_admitido");
       const c = texto(clave);
       if (!c.ok) return c;
-      const v = canonizar((valor as Record<string, unknown>)[clave]);
+      const v = canonizar((valor as Record<string, unknown>)[clave], profundidad + 1);
       if (!v.ok) return v;
       partes.push(`${c.value}:${v.value}`);
     }

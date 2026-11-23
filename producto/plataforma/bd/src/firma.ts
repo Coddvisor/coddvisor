@@ -67,7 +67,9 @@ export interface RegistroFirmado extends Firmado<"registrar_usuario"> {
  * de su plazo, y la cuenta activa deja de servir cuando vence, aunque la
  * transacción siga abierta (cada instrucción nueva lo revisa). La base acepta
  * hasta TOLERANCIA_RELOJ_SEGUNDOS más, por si el reloj de la API va adelantado.
- * Estos dos números se repiten en candado.exigir_firma: si cambia uno, cambia el otro.
+ * Estos dos números se repiten en candado.exigir_firma (firmas de persona) y en
+ * candado.exigir_firma_lineas (firmas de caja, propósito "abrir_dispositivo"): si
+ * cambia uno, cambian los tres.
  */
 export const DURACION_FIRMA_SEGUNDOS = 120;
 export const TOLERANCIA_RELOJ_SEGUNDOS = 60;

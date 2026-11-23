@@ -85,6 +85,14 @@ module.exports = {
       to: { path: "^plataforma/bd/src/firma\\.ts$", dependencyTypesNot: ["type-only"] },
     },
     {
+      name: "nadie-importa-pruebas",
+      severity: "error",
+      comment:
+        "Un archivo de prueba (*.test.ts) puede firmar y usar escenarios inventados. Si el código de producción importara uno, heredaría esas puertas por la vía de atrás.",
+      from: { pathNot: PRUEBAS },
+      to: { path: PRUEBAS },
+    },
+    {
       name: "hono-solo-en-http",
       severity: "error",
       comment:
