@@ -51,7 +51,9 @@ export const temas = [
     nombre: 'Marketing y clientes',
     id: 'marketing',
     duda: 'Cómo vender más y lograr que el cliente vuelva.',
-    subtemas: ['Vender más en la tienda', 'Vender por internet', 'Que lo encuentren', 'Clientes que vuelven'],
+    // Ordenados por el camino del cliente, no por canal: los canales (Instagram, TikTok) cambian;
+    // que lo encuentren, que compre y que vuelva, no. El canal es el artículo.
+    subtemas: ['Que lo encuentren', 'Que entre y compre', 'WhatsApp y redes', 'Que vuelva', 'Medir lo que funciona'],
   },
   {
     nombre: 'Su equipo',
