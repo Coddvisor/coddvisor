@@ -335,8 +335,13 @@ reescribas con Space Grotesk. Alto mínimo: 24 px.
 
 1. **Nada que prometa lo que no existe.** Lo que todavía no funciona va marcado
    «En desarrollo».
-2. **Empresa independiente.** El sitio no menciona a ningún otro negocio ni usa
-   sus cifras. No hay clientes, logos de clientes ni testimonios.
+2. **Empresa independiente.** El sitio no habla en nombre de otro negocio, no
+   lo pone de ejemplo ni lo compara, y no usa sus cifras. No hay clientes,
+   logos de clientes ni testimonios. Única excepción (22-nov-2026): se nombra
+   una plataforma o un medio de pago cuando hace falta para explicar cómo
+   usarlo (Yape, Plin, WhatsApp, Instagram, Google Maps), sin opinar de él ni
+   compararlo con otro. Las ideas de otras empresas pueden inspirar un
+   artículo, pero no se nombran.
 3. **Toda maqueta se rotula:** «Maqueta con datos inventados; no es una captura.»
 4. **Solo información pública.** Nada de documentos internos ni planes
    financieros: este repositorio es público, y su historial también.

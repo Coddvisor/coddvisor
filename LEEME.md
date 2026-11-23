@@ -1,6 +1,6 @@
 # Coddvisor
 
-Carpeta del proyecto: el software de gestión para micro y pequeñas empresas del Perú. Coddvisor es una empresa independiente: ni el sitio ni este repositorio mencionan a otros negocios. "Coddvisor" es el nombre elegido por el fundador (por Edgar F. Codd y "advisor"); el dominio `coddvisor.com` ya está comprado. La marca todavía no está registrada.
+Carpeta del proyecto: el software de gestión para micro y pequeñas empresas del Perú. Coddvisor es una empresa independiente: ni el sitio ni este repositorio hablan en nombre de otro negocio, lo ponen de ejemplo, lo comparan ni usan sus cifras. Solo se nombra una plataforma o un medio de pago (Yape, WhatsApp, Google Maps) cuando hace falta para explicar cómo usarlo. "Coddvisor" es el nombre elegido por el fundador (por Edgar F. Codd y "advisor"); el dominio `coddvisor.com` ya está comprado. La marca todavía no está registrada.
 
 - `web/`: el sitio web público (se desplegará en Vercel).
 - `sistema/`: el sistema de gestión. Hoy tiene sus cimientos: la base de datos inicial y las revisiones automáticas.

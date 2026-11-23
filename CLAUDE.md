@@ -47,8 +47,13 @@ a D34) y en `arquitectura/reports/Referencia de diseño y primer alcance.md`.
 - El sistema trata a la persona de **usted** y habla como el dueño de un
   negocio, sin jerga contable ni técnica.
 - No se usa el punto medio «·» como separador.
-- Coddvisor es una empresa independiente: ni el sitio ni el sistema mencionan
-  a otros negocios.
+- Coddvisor es una empresa independiente: ni el sitio ni el sistema hablan
+  en nombre de otro negocio, lo ponen de ejemplo, lo comparan ni usan sus
+  cifras, logos o testimonios. Única excepción: se puede nombrar una
+  plataforma o un medio de pago cuando hace falta para explicar cómo usarlo
+  (por ejemplo, Yape, WhatsApp o Google Maps), sin opinar de él ni
+  compararlo. Las ideas de otras empresas pueden inspirar un texto, pero
+  no se nombran. (Cambio aprobado por la fundadora el 22-nov-2026.)
 
 ## El repositorio es público
 
