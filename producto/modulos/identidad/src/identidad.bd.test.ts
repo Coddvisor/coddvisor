@@ -1,14 +1,6 @@
 import { randomUUID } from "node:crypto";
-import {
-  type Contexto,
-  conTenant,
-  crearPool,
-  firmarContexto,
-  firmarCreacionDeCuenta,
-  firmarRegistroDeUsuario,
-  leerLlave,
-  operacionDeSistema,
-} from "@coddvisor-plataforma/bd";
+import { type Contexto, conTenant, crearPool, operacionDeSistema } from "@coddvisor-plataforma/bd";
+import { firmarContexto, firmarCreacionDeCuenta, firmarRegistroDeUsuario, leerLlave } from "@coddvisor-plataforma/bd/firma";
 import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
 import { crearEmpresa, crearLocal, listarLocales, registrarCuenta, registrarDispositivo, registrarUsuario } from "./api.ts";
 

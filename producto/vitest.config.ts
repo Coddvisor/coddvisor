@@ -7,6 +7,7 @@ const carpeta = (c: string) => fileURLToPath(new URL(`./${c}/`, import.meta.url)
 const alias = [
   { find: /^@coddvisor\/([^/]+)$/, replacement: `${carpeta("paquetes")}$1/src/index.ts` },
   { find: /^@coddvisor-plataforma\/([^/]+)$/, replacement: `${carpeta("plataforma")}$1/src/index.ts` },
+  { find: /^@coddvisor-plataforma\/bd\/firma$/, replacement: `${carpeta("plataforma")}bd/src/firma.ts` },
   { find: /^@coddvisor-modulo\/([^/]+)$/, replacement: `${carpeta("modulos")}$1/src/api.ts` },
 ];
 const CARPETAS = "{apps,paquetes,modulos,plataforma,herramientas}/*/src/**";

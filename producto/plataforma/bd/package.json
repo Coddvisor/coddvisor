@@ -4,7 +4,8 @@
   "type": "module",
   "description": "La única puerta a la base de datos: conexión, candado entre negocios (conTenant) y migraciones.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./firma": "./src/firma.ts"
   },
   "dependencies": {
     "pg": "8.23.1"

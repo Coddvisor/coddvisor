@@ -98,6 +98,18 @@ caso("fronteras", "un módulo no usa el conector de PostgreSQL", "fallar", "solo
 caso("fronteras", "un módulo no abre conexiones con la plataforma", "fallar", "modulos-solo-usan-tipos-de-la-base", {
   "modulos/m20/src/api.ts": 'import { crearPool } from "@coddvisor-plataforma/bd";\nexport const p = crearPool;\n',
 });
+caso("fronteras", "una ruta de la API no firma", "fallar", "solo-la-autenticacion-firma", {
+  "apps/api/src/comandos/r22.ts": 'import { firmarContexto } from "@coddvisor-plataforma/bd/firma";\nexport const f = firmarContexto;\n',
+});
+caso("fronteras", "un módulo no firma", "fallar", "solo-la-autenticacion-firma", {
+  "modulos/m23/src/api.ts": 'import { firmarContexto } from "@coddvisor-plataforma/bd/firma";\nexport const f = firmarContexto;\n',
+});
+caso("fronteras", "permitido: la autenticación de la API firma", "pasar", null, {
+  "apps/api/src/autenticacion/a24.ts": 'import { firmarContexto } from "@coddvisor-plataforma/bd/firma";\nexport const f = firmarContexto;\n',
+});
+caso("fronteras", "permitido: un módulo usa los tipos de la firma", "pasar", null, {
+  "modulos/m25/src/api.ts": 'import type { ContextoFirmado } from "@coddvisor-plataforma/bd/firma";\nexport const usar = (c: ContextoFirmado) => c.cuentaId;\n',
+});
 caso("fronteras", "permitido: un módulo importa solo los tipos de la base", "pasar", null, {
   "modulos/m21/src/api.ts": 'import type { Tx } from "@coddvisor-plataforma/bd";\nexport const usar = (tx: Tx) => tx;\n',
 });

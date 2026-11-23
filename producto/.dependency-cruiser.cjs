@@ -77,6 +77,14 @@ module.exports = {
       to: { path: "^plataforma/bd/", dependencyTypesNot: ["type-only"] },
     },
     {
+      name: "solo-la-autenticacion-firma",
+      severity: "error",
+      comment:
+        "Firmar es decirle a la base «esta persona (o esta caja) es quien dice ser». Solo la capa que verificó la sesión o la credencial lo hace (apps/api/src/autenticacion/). Si una ruta o un módulo firmara un identificador que vino del pedido, la firma no probaría nada. Los tipos sí se pueden importar.",
+      from: { pathNot: ["^plataforma/bd/", "^apps/api/src/autenticacion/", PRUEBAS] },
+      to: { path: "^plataforma/bd/src/firma\\.ts$", dependencyTypesNot: ["type-only"] },
+    },
+    {
       name: "caja-solo-paquetes",
       severity: "error",
       comment:

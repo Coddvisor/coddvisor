@@ -5,5 +5,9 @@
   "description": "Cuentas, usuarios, membresías, empresas, locales y dispositivos de caja.",
   "exports": {
     ".": "./src/api.ts"
+  },
+  "dependencies": {
+    "@coddvisor/nucleo": "workspace:*",
+    "@coddvisor-plataforma/bd": "workspace:*"
   }
 }
