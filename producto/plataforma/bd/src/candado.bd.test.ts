@@ -557,7 +557,7 @@ describe("sin la llave del servidor nadie abre una cuenta", () => {
     await comoPrograma(async (c) => {
       await c.query("begin");
       await c.query("select 1");
-      await c.query("select pg_sleep(5)");
+      await c.query("select pg_sleep(4)"); // menos que el statement_timeout del rol (5 s)
       await expect(c.query(FIJAR, comoParametros(casiVencida))).rejects.toThrow(/firma_vencida/);
       await c.query("rollback");
     });
@@ -570,7 +570,7 @@ describe("sin la llave del servidor nadie abre una cuenta", () => {
       await c.query(FIJAR, comoParametros(casiVencida));
       const { rows } = await c.query("select count(*)::int as n from nucleo.empresa");
       expect(rows[0]).toEqual({ n: 1 });
-      await c.query("select pg_sleep(5)");
+      await c.query("select pg_sleep(4)"); // menos que el statement_timeout del rol (5 s)
       // Falla con error, no con tablas "vacías": nadie saca conclusiones de datos que no vio.
       await expect(c.query("select count(*) from nucleo.empresa")).rejects.toThrow(/firma_vencida/);
       await c.query("rollback");
@@ -726,7 +726,7 @@ describe("la caja como actor", () => {
     await comoPrograma(async (c) => {
       await c.query("begin");
       await c.query(FIJAR_CAJA, paramsCaja(casiVencida));
-      await c.query("select pg_sleep(5)");
+      await c.query("select pg_sleep(4)"); // menos que el statement_timeout del rol (5 s)
       await expect(c.query("select candado.dispositivo_activo()")).rejects.toThrow(/firma_vencida/);
       await c.query("rollback");
     });

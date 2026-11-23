@@ -1,0 +1,16 @@
+{
+  "name": "@coddvisor-app/api",
+  "private": true,
+  "type": "module",
+  "description": "La ventanilla única: toda escritura entra por aquí como un verbo. Hoy, las cajas suben sus comandos por POST /v1/comandos.",
+  "dependencies": {
+    "@coddvisor/canonico": "workspace:*",
+    "@coddvisor/nucleo": "workspace:*",
+    "@coddvisor/protocolo-caja": "workspace:*",
+    "@coddvisor-modulo/sincronizacion": "workspace:*",
+    "@coddvisor-modulo/ventas": "workspace:*",
+    "@coddvisor-plataforma/bd": "workspace:*",
+    "@hono/node-server": "2.1.6",
+    "hono": "4.13.17"
+  }
+}

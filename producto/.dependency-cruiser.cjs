@@ -85,12 +85,21 @@ module.exports = {
       to: { path: "^plataforma/bd/src/firma\\.ts$", dependencyTypesNot: ["type-only"] },
     },
     {
+      name: "hono-solo-en-http",
+      severity: "error",
+      comment:
+        "La librería HTTP (hono) vive solo en apps/api/src/http/. La lógica (atenderLote, verbos) no sabe de HTTP: así se prueba sin servidor y cambiar de librería toca una sola carpeta.",
+      from: { pathNot: ["^apps/api/src/http/", PRUEBAS] },
+      to: { path: "(^|/)node_modules/(hono|@hono/[^/]+)/" },
+    },
+    {
       name: "escenarios-solo-en-pruebas",
       severity: "error",
       comment:
         "Los escenarios de prueba (plataforma/bd/src/pruebas/) crean negocios inventados y firman por dentro. Si un archivo que no es prueba los importara, tendría una puerta trasera para firmar.",
       from: { pathNot: [PRUEBAS, "^plataforma/bd/src/pruebas/"] },
-      to: { path: "^plataforma/bd/src/pruebas/" },
+      // Los tipos no abren ninguna puerta: solo describen el escenario.
+      to: { path: "^plataforma/bd/src/pruebas/", dependencyTypesNot: ["type-only"] },
     },
     {
       name: "caja-solo-paquetes",

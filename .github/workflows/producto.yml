@@ -61,3 +61,17 @@ jobs:
           cache-dependency-path: producto/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm verificar
+      # La API arrancada de verdad, como proceso: atrapa lo que las pruebas no ven
+      # (un import que solo falla fuera de vitest, una variable que falta). La llave
+      # se genera aquí para esta corrida y muere con ella: no es un secreto.
+      - name: Arrancar la API de verdad (prueba de humo)
+        env:
+          CODDVISOR_BD_ADMIN: postgres://postgres@127.0.0.1:54329/coddvisor
+        run: |
+          export CODDVISOR_LLAVE_CONTEXTO="$(node plataforma/bd/src/llave-nueva.ts)"
+          pnpm -s bd:migrar
+          PUERTO=8080 node apps/api/src/principal.ts > api.log 2>&1 &
+          curl --retry 20 --retry-delay 1 --retry-connrefused -fsS localhost:8080/salud
+          curl -fsS localhost:8080/listo
+          codigo="$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'content-type: application/json' -d '{"comandos":[{}]}' localhost:8080/v1/comandos)"
+          test "$codigo" = 401 || { echo "Sin credencial se esperaba 401 y llegó $codigo"; cat api.log; exit 1; }

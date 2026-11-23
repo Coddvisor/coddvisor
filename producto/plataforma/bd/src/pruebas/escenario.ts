@@ -1,5 +1,5 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import type pg from "pg";
+import pg from "pg";
 import { conTenant, operacionDeSistema } from "../con-tenant.ts";
 import {
   type Contexto,
@@ -65,4 +65,15 @@ export async function crearNegocioConCaja(pool: pg.Pool, llave: Llave, nombre = 
     comoDuenia: () => firmarContexto(llave, duenia),
     otraCaja: vincular,
   };
+}
+
+/**
+ * Solo para pruebas: una conexión de administración, para provocar situaciones que
+ * el programa no puede (por ejemplo, trabar una tabla). Así las pruebas de las apps
+ * no usan el conector de PostgreSQL directamente.
+ */
+export async function conexionDeAdministrador(url: string): Promise<{ query(sql: string): Promise<unknown>; end(): Promise<void> }> {
+  const cliente = new pg.Client({ connectionString: url });
+  await cliente.connect();
+  return { query: (sql) => cliente.query(sql), end: () => cliente.end() };
 }

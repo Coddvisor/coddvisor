@@ -193,8 +193,34 @@ export function operacionDeSistema<T>(pool: pg.Pool, trabajo: (tx: Tx) => Promis
   return enTransaccion(pool, false, async () => undefined, trabajo);
 }
 
+/**
+ * ¿La base responde ahora? Para el chequeo "listo" de la API: un select 1 sin
+ * cuenta, con un límite corto. Nunca lanza: responde sí o no.
+ */
+export async function baseDisponible(pool: pg.Pool, limiteMs = 1000): Promise<boolean> {
+  let reloj: ReturnType<typeof setTimeout> | undefined;
+  const limite = new Promise<false>((resolver) => (reloj = setTimeout(() => resolver(false), limiteMs)));
+  const consulta = operacionDeSistema(pool, (tx) => tx.query("select 1")).then(
+    () => true,
+    () => false,
+  );
+  try {
+    return await Promise.race([consulta, limite]);
+  } finally {
+    clearTimeout(reloj);
+  }
+}
+
+/** El grupo de conexiones, como tipo: las apps lo reciben sin importar el conector. */
+export type Pool = pg.Pool;
+
+/**
+ * Un grupo de conexiones que falla rápido cuando la base no responde, en vez de
+ * dejar esperando a la caja: 2 s como máximo para conseguir una conexión y 7 s
+ * para cualquier consulta (la base corta antes, a los 5 s; ver arranque.sql).
+ */
 export function crearPool(url: string, maximo = 10): pg.Pool {
-  const pool = new pg.Pool({ connectionString: url, max: maximo });
+  const pool = new pg.Pool({ connectionString: url, max: maximo, connectionTimeoutMillis: 2000, query_timeout: 7000, keepAlive: true });
   // Un error de una conexión libre no debe tumbar el proceso: se anota, la conexión
   // se descarta y el pool abre otra.
   pool.on("error", (e) => console.error(`conexión del pool descartada: ${e.message}`));

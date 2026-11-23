@@ -12,4 +12,6 @@ Cada dependencia entra con una línea que dice por qué. Las versiones están fi
 | @types/node | 24.19.2 | Tipos de Node 24 para las herramientas | La versión 26, que describe un Node que el equipo no tiene instalado |
 | zod (solo en `paquetes/protocolo-caja`) | 4.6.7 | Un solo validador del protocolo, compartido por la caja y el servidor: el sobre, cada verbo y el lote. Se configura sin `eval` (`jitless`), porque viaja al celular | Validadores escritos a mano: con 18 verbos aparecen dos copias, una en la caja y otra en el servidor, que se desalinean. Valibot: más liviano, pero el equipo ya conoce zod y la diferencia de peso no importa en una app instalada |
 
-Salvo `pg`, que corre en el servidor, y `zod`, que corre en los dos lados, todas son herramientas de desarrollo. Solo `zod` llega al celular del negocio.
+| hono y @hono/node-server (solo en `apps/api/src/http/`) | 4.13.17 y 2.1.6 | La parte HTTP de la API: rutas, límite del tamaño del cuerpo y respuestas. Corre en Node y, si algún día hiciera falta, en otros entornos sin cambiar las rutas | Escribir el servidor a mano con `node:http`: el límite del cuerpo, los tiempos y CORS (que la caja necesitará en el paso 4) serían código propio que también puede fallar. Fastify y Express: atan el código a Node |
+
+Corren en el servidor `pg`, `hono` y `@hono/node-server`; `zod` corre en los dos lados. Las demás son herramientas de desarrollo. Solo `zod` llega al celular del negocio.

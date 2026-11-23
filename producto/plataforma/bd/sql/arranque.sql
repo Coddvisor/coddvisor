@@ -61,6 +61,14 @@ begin
   -- parámetros: para el programa se anotan vacíos. Solo un superusuario puede
   -- cambiar este ajuste, así que el programa no lo revierte. Donde el arranque no
   -- es superusuario (Supabase) no se puede, y se revisa a mano: ver la decisión 0002.
+  -- Nada espera para siempre: una consulta del programa se corta a los 5 s, una
+  -- espera por un bloqueo a los 2 s, y una transacción abierta sin hacer nada a los
+  -- 10 s. Así una base lenta o una transacción olvidada no tumban a todos. Son los
+  -- valores por omisión del rol: sobreviven al "reset all" de conTenant.
+  alter role coddvisor_app set statement_timeout = '5s';
+  alter role coddvisor_app set lock_timeout = '2s';
+  alter role coddvisor_app set idle_in_transaction_session_timeout = '10s';
+
   begin
     alter role coddvisor_app set log_parameter_max_length = 0;
   exception when insufficient_privilege then

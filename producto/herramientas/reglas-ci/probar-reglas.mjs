@@ -104,6 +104,16 @@ caso("fronteras", "una ruta de la API no firma", "fallar", "solo-la-autenticacio
 caso("fronteras", "un módulo no firma", "fallar", "solo-la-autenticacion-firma", {
   "modulos/m23/src/api.ts": 'import { firmarContexto } from "@coddvisor-plataforma/bd/firma";\nexport const f = firmarContexto;\n',
 });
+caso("fronteras", "la lógica de la API no usa hono", "fallar", "hono-solo-en-http", {
+  "apps/api30/package.json": '{ "name": "api30", "private": true, "dependencies": { "hono": "4.13.17" } }\n',
+  "apps/api30/node_modules/hono": { enlace: "apps/api/node_modules/hono" },
+  "apps/api30/src/comandos/a.ts": 'import { Hono } from "hono";\nexport const h = Hono;\n',
+});
+caso("fronteras", "un módulo no usa hono", "fallar", "hono-solo-en-http", {
+  "modulos/m31/package.json": '{ "name": "m31", "private": true, "dependencies": { "hono": "4.13.17" } }\n',
+  "modulos/m31/node_modules/hono": { enlace: "apps/api/node_modules/hono" },
+  "modulos/m31/src/api.ts": 'import { Hono } from "hono";\nexport const h = Hono;\n',
+});
 caso("fronteras", "un archivo que no es prueba no usa los escenarios de prueba", "fallar", "escenarios-solo-en-pruebas", {
   "apps/api/src/comandos/r28.ts": 'import { crearNegocioConCaja } from "@coddvisor-plataforma/bd/pruebas";\nexport const e = crearNegocioConCaja;\n',
 });
