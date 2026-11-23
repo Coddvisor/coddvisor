@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
 import { carpetasDeMigraciones } from "./carpetas.ts";
@@ -8,6 +8,7 @@ import {
   type ContextoFirmado,
   type CreacionFirmada,
   firmarContexto,
+  firmarContextoDeCaja,
   firmarCreacionDeCuenta,
   firmarRegistroDeUsuario,
   DURACION_FIRMA_SEGUNDOS,
@@ -106,6 +107,17 @@ async function tablasDelNucleo(): Promise<string[]> {
      where n.nspname = 'nucleo' and c.relkind in ('r', 'p') order by 1`,
   );
   return rows.map((r) => r.relname);
+}
+
+// Tablas del núcleo que el programa no puede leer nunca, ni con su cuenta abierta.
+// Es una lista explícita: una tabla nueva sin permiso de lectura tiene que
+// agregarse aquí a conciencia, y las pruebas de fuga la siguen cubriendo con un
+// "permiso denegado".
+const SIN_LECTURA_DEL_PROGRAMA = ["credencial_dispositivo"];
+
+/** Las tablas del núcleo que el programa puede leer (las demás le dan permiso denegado). */
+async function tablasQueLeeElPrograma(): Promise<string[]> {
+  return (await tablasDelNucleo()).filter((t) => !SIN_LECTURA_DEL_PROGRAMA.includes(t));
 }
 
 beforeAll(async () => {
@@ -226,7 +238,10 @@ describe("el catálogo de la base cumple las reglas del candado", () => {
       where n.nspname = any ($1) and has_function_privilege('${PROGRAMA}', p.oid, 'EXECUTE') order by 1`, [ESQUEMAS_PROPIOS]);
     expect(rows.map((r) => r.funcion)).toEqual([
       "candado.cuenta_activa",
+      "candado.dispositivo_activo",
+      "candado.emitir_credencial_dispositivo",
       "candado.fijar_contexto",
+      "candado.fijar_contexto_dispositivo",
       "candado.registrar_cuenta",
       "candado.registrar_usuario",
       "candado.usuario_activo",
@@ -608,9 +623,201 @@ describe("sin la llave del servidor nadie abre una cuenta", () => {
   });
 });
 
+describe("la caja como actor", () => {
+  const NADIE = "00000000-0000-0000-0000-000000000000";
+  const FIJAR_CAJA = "select candado.fijar_contexto_dispositivo($1, $2, $3, $4, $5, $6)";
+  const huellaDe = (secreto: Buffer) => createHash("sha256").update(secreto).digest();
+  const deCaja = (c: { dispositivoId: string; cuentaId: string; huellaCredencial: Buffer }, ahora?: Date) =>
+    firmarContextoDeCaja(llave, c, ahora);
+  const paramsCaja = (f: ReturnType<typeof deCaja>) => [f.dispositivoId, f.cuentaId, f.huellaCredencial, f.vence, f.version, f.firma];
+
+  /** Una caja nueva en el local de A, con su primera credencial emitida por la dueña. */
+  async function cajaDeA() {
+    const dispositivoId = randomUUID();
+    const secreto = randomBytes(32);
+    await conTenant(pool, firmar(A), async (tx) => {
+      await tx.query("insert into nucleo.dispositivo (tenant_id, id, local_id, nombre) values (candado.cuenta_activa(), $1, $2, 'caja de prueba')", [
+        dispositivoId,
+        localDeA,
+      ]);
+      await tx.query("select candado.emitir_credencial_dispositivo($1, $2)", [dispositivoId, huellaDe(secreto)]);
+    });
+    return { dispositivoId, cuentaId: A.cuentaId, huellaCredencial: huellaDe(secreto) };
+  }
+
+  it("una caja con su credencial abre su cuenta, como aparato y no como persona", async () => {
+    const caja = await cajaDeA();
+    const { rows } = await conTenant(pool, deCaja(caja), (tx) =>
+      tx.query("select candado.cuenta_activa() as cuenta, candado.usuario_activo() as usuario, candado.dispositivo_activo() as caja"),
+    );
+    expect(rows[0]).toEqual({ cuenta: A.cuentaId, usuario: NADIE, caja: caja.dispositivoId });
+  });
+
+  it("una persona no tiene caja activa", async () => {
+    const { rows } = await conTenant(pool, firmar(A), (tx) => tx.query("select candado.dispositivo_activo() as caja"));
+    expect(rows[0]).toEqual({ caja: null });
+  });
+
+  it("rechaza una credencial equivocada, y la versión anterior después de renovarla", async () => {
+    const caja = await cajaDeA();
+    await expect(conTenant(pool, deCaja({ ...caja, huellaCredencial: randomBytes(32) }), (tx) => tx.query("select 1"))).rejects.toThrow(
+      /credencial_invalida/,
+    );
+    const nueva = huellaDe(randomBytes(32));
+    const version = await conTenant(pool, firmar(A), async (tx) =>
+      (await tx.query<{ v: number }>("select candado.emitir_credencial_dispositivo($1, $2) as v", [caja.dispositivoId, nueva])).rows[0]?.v,
+    );
+    expect(version).toBe(2);
+    await expect(conTenant(pool, deCaja(caja), (tx) => tx.query("select 1"))).rejects.toThrow(/credencial_invalida/);
+    await expect(conTenant(pool, deCaja({ ...caja, huellaCredencial: nueva }), (tx) => tx.query("select 1"))).resolves.toBeDefined();
+  });
+
+  it("una caja revocada no entra", async () => {
+    const caja = await cajaDeA();
+    await conTenant(pool, firmar(A), (tx) => tx.query("update nucleo.dispositivo set estado = 'revocado' where id = $1", [caja.dispositivoId]));
+    await expect(conTenant(pool, deCaja(caja), (tx) => tx.query("select 1"))).rejects.toThrow(/dispositivo_inactivo/);
+  });
+
+  it("la credencial de una caja de A no abre la cuenta B", async () => {
+    const caja = await cajaDeA();
+    await expect(conTenant(pool, deCaja({ ...caja, cuentaId: B.cuentaId }), (tx) => tx.query("select 1"))).rejects.toThrow(
+      /credencial_invalida/,
+    );
+  });
+
+  it("la firma de caja no sirve para abrir como persona, ni al revés", async () => {
+    const caja = await cajaDeA();
+    const f = deCaja(caja);
+    const p = firmar(A);
+    await comoPrograma(async (c) => {
+      await expect(c.query(FIJAR, [A.usuarioId, f.cuentaId, f.vence, f.version, f.firma])).rejects.toThrow(/firma_invalida/);
+      await expect(c.query(FIJAR_CAJA, [caja.dispositivoId, A.cuentaId, caja.huellaCredencial, p.vence, p.version, p.firma])).rejects.toThrow(
+        /firma_invalida/,
+      );
+      await expect(c.query(FIJAR_CAJA, [caja.dispositivoId, A.cuentaId, caja.huellaCredencial, f.vence, f.version, randomBytes(32)])).rejects.toThrow(
+        /firma_invalida/,
+      );
+    });
+  });
+
+  it("una firma de caja vencida no vale", async () => {
+    const caja = await cajaDeA();
+    await expect(conTenant(pool, deCaja(caja, new Date(Date.now() - 6 * 60_000)), (tx) => tx.query("select 1"))).rejects.toThrow(/firma_vencida/);
+  });
+
+  it("cuando vence la firma de la caja, tampoco queda caja activa", async () => {
+    const caja = await cajaDeA();
+    const casiVencida = deCaja(caja, new Date((await horaDeLaBase()) - (DURACION_FIRMA_SEGUNDOS - 3) * 1000));
+    await comoPrograma(async (c) => {
+      await c.query("begin");
+      await c.query(FIJAR_CAJA, paramsCaja(casiVencida));
+      await c.query("select pg_sleep(5)");
+      await expect(c.query("select candado.dispositivo_activo()")).rejects.toThrow(/firma_vencida/);
+      await c.query("rollback");
+    });
+  }, 15_000);
+
+  it("si la credencial no vale, la cuenta no queda abierta", async () => {
+    const caja = await cajaDeA();
+    await comoPrograma(async (c) => {
+      await c.query("begin");
+      await c.query("savepoint s");
+      await expect(c.query(FIJAR_CAJA, paramsCaja(deCaja({ ...caja, huellaCredencial: randomBytes(32) })))).rejects.toThrow(/credencial_invalida/);
+      await c.query("rollback to savepoint s");
+      const { rows } = await c.query("select candado.cuenta_activa() as cuenta, (select count(*)::int from nucleo.empresa) as n");
+      expect(rows[0]).toEqual({ cuenta: null, n: 0 });
+      await c.query("rollback");
+    });
+  });
+
+  it("una transacción de caja no puede abrir otra cuenta después", async () => {
+    const caja = await cajaDeA();
+    await comoPrograma(async (c) => {
+      await c.query("begin");
+      await c.query(FIJAR_CAJA, paramsCaja(deCaja(caja)));
+      await expect(c.query(FIJAR, comoParametros(B))).rejects.toThrow(/cuenta_ya_fijada/);
+      await c.query("rollback");
+    });
+  });
+
+  it.each([
+    ["sumarse como miembro", (t: string) => `insert into nucleo.membresia (tenant_id, usuario_id, rol) values (candado.cuenta_activa(), '${t}', 'cajero')`],
+    ["cambiar un rol", () => "update nucleo.membresia set rol = 'encargado' where rol = 'cajero'"],
+    ["crear un local", () => `insert into nucleo.local (tenant_id, id, empresa_id, nombre) values (candado.cuenta_activa(), gen_random_uuid(), '${empresaDeA}', 'colado')`],
+    ["renombrar la empresa", () => "update nucleo.empresa set razon_social = 'tomada' where true"],
+    ["dar de baja una caja", () => "update nucleo.dispositivo set estado = 'revocado' where true"],
+    ["renombrar la cuenta", () => "update nucleo.cuenta set nombre = 'tomada' where true"],
+  ])("una caja no puede %s", async (_, sql) => {
+    const caja = await cajaDeA();
+    await expect(conTenant(pool, deCaja(caja), (tx) => tx.query(sql(intruso)))).rejects.toThrow(/caja_no_toca_identidad/);
+  });
+
+  it("una caja no lee credenciales ni emite una para sí misma", async () => {
+    const caja = await cajaDeA();
+    await expect(conTenant(pool, deCaja(caja), (tx) => tx.query("select * from nucleo.credencial_dispositivo"))).rejects.toMatchObject({
+      code: "42501",
+    });
+    await expect(
+      conTenant(pool, deCaja(caja), (tx) => tx.query("select candado.emitir_credencial_dispositivo($1, $2)", [caja.dispositivoId, randomBytes(32)])),
+    ).rejects.toThrow(/sin_permiso_para_vincular/);
+  });
+
+  it("solo una dueña o encargada activa emite credenciales; un cajero no", async () => {
+    const cajero = randomUUID();
+    const dispositivoId = randomUUID();
+    await operacionDeSistema(pool, (tx) => tx.query(REGISTRAR_USUARIO, paraRegistrar(cajero, "cajero que quiere vincular")));
+    await conTenant(pool, firmar(A), async (tx) => {
+      await tx.query("insert into nucleo.membresia (tenant_id, usuario_id, rol) values (candado.cuenta_activa(), $1, 'cajero')", [cajero]);
+      await tx.query("insert into nucleo.dispositivo (tenant_id, id, local_id, nombre) values (candado.cuenta_activa(), $1, $2, 'otra caja')", [
+        dispositivoId,
+        localDeA,
+      ]);
+    });
+    await expect(
+      conTenant(pool, firmar({ usuarioId: cajero, cuentaId: A.cuentaId }), (tx) =>
+        tx.query("select candado.emitir_credencial_dispositivo($1, $2)", [dispositivoId, randomBytes(32)]),
+      ),
+    ).rejects.toThrow(/sin_permiso_para_vincular/);
+    const { rows } = await conTenant(pool, firmar(A), (tx) =>
+      tx.query<{ v: number }>("select candado.emitir_credencial_dispositivo($1, $2) as v", [dispositivoId, randomBytes(32)]),
+    );
+    expect(rows[0]?.v).toBe(1);
+  });
+
+  it("el programa no ve credenciales ni con la cuenta abierta por una persona", async () => {
+    await expect(conTenant(pool, firmar(A), (tx) => tx.query("select * from nucleo.credencial_dispositivo"))).rejects.toMatchObject({
+      code: "42501",
+    });
+  });
+
+  it("nadie puede ser la persona nula", async () => {
+    await expect(operacionDeSistema(pool, (tx) => tx.query(REGISTRAR_USUARIO, paraRegistrar(NADIE, "nadie")))).rejects.toMatchObject({
+      code: "23514",
+    });
+  });
+
+  it("un módulo no llama a las funciones del candado por dentro de conTenant", async () => {
+    const caja = await cajaDeA();
+    await expect(conTenant(pool, firmar(A), (tx) => tx.query(FIJAR_CAJA, paramsCaja(deCaja(caja))))).rejects.toThrow(/consulta_prohibida/);
+  });
+});
+
 describe("la cuenta A nunca ve ni toca la cuenta B", () => {
+  it("las tablas que el programa no puede leer son exactamente las de la lista", async () => {
+    const { rows } = await admin.query<{ relname: string }>(
+      `select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace
+       where n.nspname = 'nucleo' and c.relkind in ('r', 'p') and not has_table_privilege('${PROGRAMA}', c.oid, 'SELECT') order by 1`,
+    );
+    expect(rows.map((r) => r.relname)).toEqual(SIN_LECTURA_DEL_PROGRAMA);
+    for (const tabla of SIN_LECTURA_DEL_PROGRAMA) {
+      await expect(conTenant(pool, firmar(A), (tx) => tx.query(`select 1 from nucleo.${tabla}`)), tabla).rejects.toMatchObject({
+        code: "42501",
+      });
+    }
+  });
+
   it("ninguna tabla del núcleo devuelve una fila de B ni su texto trampa", async () => {
-    const tablas = await tablasDelNucleo();
+    const tablas = await tablasQueLeeElPrograma();
     await conTenant(pool, firmar(A), async (tx) => {
       for (const tabla of tablas) {
         const { rows } = await tx.query<{ tenant_id: string; fila: string }>(
@@ -658,7 +865,7 @@ describe("la cuenta A nunca ve ni toca la cuenta B", () => {
 
 describe("sin candado no se ve ni se escribe nada", () => {
   it("una operación del sistema no ve filas de ninguna cuenta", async () => {
-    const tablas = await tablasDelNucleo();
+    const tablas = await tablasQueLeeElPrograma();
     await operacionDeSistema(pool, async (tx) => {
       for (const tabla of tablas) {
         const { rows } = await tx.query<{ n: number }>(`select count(*)::int as n from nucleo.${tabla}`);

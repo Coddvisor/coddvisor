@@ -1,6 +1,14 @@
 import { createHash, createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { DURACION_FIRMA_SEGUNDOS, firmarContexto, firmarCreacionDeCuenta, firmarRegistroDeUsuario, generarLlave, leerLlave } from "./firma.ts";
+import {
+  DURACION_FIRMA_SEGUNDOS,
+  firmarContexto,
+  firmarContextoDeCaja,
+  firmarCreacionDeCuenta,
+  firmarRegistroDeUsuario,
+  generarLlave,
+  leerLlave,
+} from "./firma.ts";
 
 const llave = leerLlave(`1:${Buffer.alloc(32, 7).toString("base64")}`);
 const ctx = { usuarioId: "0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b", cuentaId: "0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5c" };
@@ -67,5 +75,16 @@ describe("firmarContexto", () => {
 
   it("rechaza identificadores que no son UUID (no firma texto arbitrario)", () => {
     expect(() => firmarContexto(llave, { ...ctx, usuarioId: "x\ncoddvisor" }, ahora)).toThrow(/usuarioId/);
+  });
+
+  it("la firma de caja cubre la caja, la cuenta y la huella de su credencial, con su propio propósito", () => {
+    const huella = createHash("sha256").update("secreto de prueba").digest();
+    const caja = { dispositivoId: ctx.usuarioId, cuentaId: ctx.cuentaId, huellaCredencial: huella };
+    const f = firmarContextoDeCaja(llave, caja, ahora);
+    expect(f.proposito).toBe("abrir_dispositivo");
+    const mensaje = `coddvisor/v1\nabrir_dispositivo\n${ctx.usuarioId}\n${ctx.cuentaId}\n${huella.toString("hex")}\n${f.vence}`;
+    expect(f.firma.toString("hex")).toBe(createHmac("sha256", llave.secreto).update(mensaje).digest("hex"));
+    expect(firmarContextoDeCaja(llave, { ...caja, huellaCredencial: createHash("sha256").update("otro").digest() }, ahora).firma).not.toEqual(f.firma);
+    expect(() => firmarContextoDeCaja(llave, { ...caja, huellaCredencial: Buffer.alloc(16) }, ahora)).toThrow(/32 bytes/);
   });
 });

@@ -1,8 +1,16 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { type Contexto, conTenant, crearPool, operacionDeSistema } from "@coddvisor-plataforma/bd";
 import { firmarContexto, firmarCreacionDeCuenta, firmarRegistroDeUsuario, leerLlave } from "@coddvisor-plataforma/bd/firma";
 import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
-import { crearEmpresa, crearLocal, listarLocales, registrarCuenta, registrarDispositivo, registrarUsuario } from "./api.ts";
+import {
+  crearEmpresa,
+  crearLocal,
+  emitirCredencialDispositivo,
+  listarLocales,
+  registrarCuenta,
+  registrarDispositivo,
+  registrarUsuario,
+} from "./api.ts";
 
 let pool: ReturnType<typeof crearPool>;
 const llave = leerLlave(inject("llave"));
@@ -106,5 +114,27 @@ describe("identidad: los estados que nunca existen", () => {
       return registrarCuenta(tx, firmarCreacionDeCuenta(llave, { usuarioId: otro, cuentaId: ctx.cuentaId }, "Usurpadora"));
     });
     expect(r).toEqual({ ok: false, error: "ya_existe" });
+  });
+});
+
+describe("identidad: vincular una caja", () => {
+  it("la dueña emite credenciales con versión creciente; una caja revocada no recibe una nueva", async () => {
+    const ctx = await nuevaCuenta("Bodega con caja");
+    const caja = randomUUID();
+    const huella = () => createHash("sha256").update(randomBytes(32)).digest();
+    await conTenant(pool, firmar(ctx), async (tx) => {
+      const empresa = randomUUID();
+      const local = randomUUID();
+      await crearEmpresa(tx, { id: empresa, ruc: null, razonSocial: "Bodega" });
+      await crearLocal(tx, { id: local, empresaId: empresa, nombre: "Principal" });
+      return registrarDispositivo(tx, { id: caja, localId: local, nombre: "Caja 1" });
+    });
+    expect(await conTenant(pool, firmar(ctx), (tx) => emitirCredencialDispositivo(tx, caja, huella()))).toEqual({ ok: true, value: 1 });
+    expect(await conTenant(pool, firmar(ctx), (tx) => emitirCredencialDispositivo(tx, caja, huella()))).toEqual({ ok: true, value: 2 });
+    await conTenant(pool, firmar(ctx), (tx) => tx.query("update nucleo.dispositivo set estado = 'revocado' where id = $1", [caja]));
+    expect(await conTenant(pool, firmar(ctx), (tx) => emitirCredencialDispositivo(tx, caja, huella()))).toEqual({
+      ok: false,
+      error: "dispositivo_inactivo",
+    });
   });
 });

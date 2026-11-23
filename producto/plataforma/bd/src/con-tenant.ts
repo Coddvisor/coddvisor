@@ -1,5 +1,5 @@
 import pg from "pg";
-import type { ContextoFirmado } from "./firma.ts";
+import type { ContextoDeCajaFirmado, ContextoFirmado } from "./firma.ts";
 import { leerSql } from "./sql-lexico.ts";
 
 /**
@@ -38,7 +38,8 @@ const INSTRUCCION_PROHIBIDA =
   /^\s*(begin|commit|end|rollback|abort|savepoint|release|start|prepare|set|reset|discard|lock|listen|notify|copy|do|call|create|alter|drop|grant|revoke|truncate|vacuum|analyze|cluster|reindex|security|load|declare|fetch|move|close)\b/i;
 // Funciones que solo usa la plataforma, en cualquier lugar de la consulta.
 // Los candados consultivos también: uno tomado por un módulo puede trabar despliegues.
-const FUNCION_PROHIBIDA = /\b(set_config|fijar_contexto|poner|pg_terminate_backend|pg_cancel_backend|pg_(try_)?advisory\w*|dblink\w*|lo_\w+)\s*\(/i;
+const FUNCION_PROHIBIDA =
+  /\b(set_config|fijar_contexto\w*|poner\w*|exigir_firma\w*|pg_terminate_backend|pg_cancel_backend|pg_(try_)?advisory\w*|dblink\w*|lo_\w+)\s*\(/i;
 // Dentro de una cuenta tampoco se puede crear otra: registrar_cuenta cambia la
 // cuenta activa (la base además lo rechaza: una transacción, una sola cuenta).
 const SOLO_FUERA_DE_UNA_CUENTA = /\bregistrar_cuenta\s*\(/i;
@@ -156,16 +157,30 @@ async function enTransaccion<T>(
   }
 }
 
-/** Trabajo dentro de una cuenta, con el candado puesto. */
-export function conTenant<T>(pool: pg.Pool, ctx: ContextoFirmado, trabajo: (tx: Tx) => Promise<T>): Promise<T> {
-  return enTransaccion(
-    pool,
-    true,
-    async (c) => {
-      await c.query("select candado.fijar_contexto($1, $2, $3, $4, $5)", [ctx.usuarioId, ctx.cuentaId, ctx.vence, ctx.version, ctx.firma]);
-    },
-    trabajo,
-  );
+// Cómo abre la cuenta cada tipo de actor: una persona (fijar_contexto) o una caja
+// (fijar_contexto_dispositivo). Lo demás de conTenant es idéntico para los dos.
+function abrirCuenta(c: pg.PoolClient, ctx: ContextoFirmado | ContextoDeCajaFirmado): Promise<unknown> {
+  if (ctx.proposito === "abrir_dispositivo") {
+    return c.query("select candado.fijar_contexto_dispositivo($1, $2, $3, $4, $5, $6)", [
+      ctx.dispositivoId,
+      ctx.cuentaId,
+      ctx.huellaCredencial,
+      ctx.vence,
+      ctx.version,
+      ctx.firma,
+    ]);
+  }
+  return c.query("select candado.fijar_contexto($1, $2, $3, $4, $5)", [ctx.usuarioId, ctx.cuentaId, ctx.vence, ctx.version, ctx.firma]);
+}
+
+/**
+ * Trabajo dentro de una cuenta, con el candado puesto. Quien actúa es una persona
+ * (ContextoFirmado) o una caja (ContextoDeCajaFirmado); dentro de una transacción
+ * de caja, candado.usuario_activo() es el UUID nulo ("ninguna persona") y
+ * candado.dispositivo_activo() dice qué caja es.
+ */
+export function conTenant<T>(pool: pg.Pool, ctx: ContextoFirmado | ContextoDeCajaFirmado, trabajo: (tx: Tx) => Promise<T>): Promise<T> {
+  return enTransaccion(pool, true, async (c) => void (await abrirCuenta(c, ctx)), trabajo);
 }
 
 /**

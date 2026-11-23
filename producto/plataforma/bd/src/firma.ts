@@ -91,12 +91,20 @@ export function generarLlave(version = 1): string {
   return `${version}:${randomBytes(32).toString("base64")}`;
 }
 
-// El mismo mensaje que arma candado.exigir_firma: si cambia uno, cambia el otro.
-// El nombre va como su huella: así ningún salto de línea dentro del nombre puede
-// correr los campos.
+// Una sola forma de armar todo mensaje firmado, la misma que en la base
+// (candado.exigir_firma y candado.exigir_firma_lineas): "coddvisor/v1", las
+// líneas del propósito (la primera es el propósito) y el vencimiento. Si cambia
+// uno, cambia el otro.
+function mensajeDeLineas(lineas: readonly string[], vence: number): string {
+  return ["coddvisor/v1", ...lineas, String(vence)].join("\n");
+}
+
+// Las firmas de persona: propósito, persona, cuenta (o "-") y la huella del nombre
+// (o "-"). El nombre va como huella para que un salto de línea dentro del nombre
+// no pueda correr los campos.
 function mensaje(proposito: Proposito, usuarioId: string, cuentaId: string | null, nombre: string | null, vence: number): string {
   const huellaNombre = nombre === null ? "-" : createHash("sha256").update(nombre, "utf8").digest("hex");
-  return ["coddvisor/v1", proposito, usuarioId, cuentaId ?? "-", huellaNombre, String(vence)].join("\n");
+  return mensajeDeLineas([proposito, usuarioId, cuentaId ?? "-", huellaNombre], vence);
 }
 
 function normalizarUuid(valor: string, campo: string): string {
@@ -110,6 +118,36 @@ function sellar(llave: Llave, proposito: Proposito, usuarioId: string, cuentaId:
   const vence = Math.floor(ahora.getTime() / 1000) + DURACION_FIRMA_SEGUNDOS;
   const firma = createHmac("sha256", llave.secreto).update(mensaje(proposito, usuarioId, cuentaId, nombre, vence), "utf8").digest();
   return { vence, version: llave.version, firma };
+}
+
+/**
+ * Un pedido firmado para que una caja (un aparato, no una persona) trabaje en su
+ * cuenta. La firma cubre la huella de la credencial que presentó la caja: la base
+ * la compara con la última versión emitida para esa caja.
+ */
+export interface ContextoDeCajaFirmado {
+  readonly proposito: "abrir_dispositivo";
+  readonly dispositivoId: string;
+  readonly cuentaId: string;
+  readonly huellaCredencial: Buffer;
+  readonly vence: number;
+  readonly version: number;
+  readonly firma: Buffer;
+}
+
+/** Firma "esta caja, con esta credencial, trabaja en esta cuenta" para conTenant. */
+export function firmarContextoDeCaja(
+  llave: Llave,
+  caja: { dispositivoId: string; cuentaId: string; huellaCredencial: Buffer },
+  ahora = new Date(),
+): ContextoDeCajaFirmado {
+  const dispositivoId = normalizarUuid(caja.dispositivoId, "dispositivoId");
+  const cuentaId = normalizarUuid(caja.cuentaId, "cuentaId");
+  if (caja.huellaCredencial.length !== 32) throw new Error("La huella de la credencial tiene 32 bytes.");
+  const vence = Math.floor(ahora.getTime() / 1000) + DURACION_FIRMA_SEGUNDOS;
+  const lineas = ["abrir_dispositivo", dispositivoId, cuentaId, caja.huellaCredencial.toString("hex")];
+  const firma = createHmac("sha256", llave.secreto).update(mensajeDeLineas(lineas, vence), "utf8").digest();
+  return { proposito: "abrir_dispositivo", dispositivoId, cuentaId, huellaCredencial: caja.huellaCredencial, vence, version: llave.version, firma };
 }
 
 /** Firma "esta persona trabaja en esta cuenta" para conTenant. */

@@ -94,6 +94,33 @@ export function registrarDispositivo(tx: Tx, d: { id: string; localId: string; n
   );
 }
 
+/**
+ * Emite una credencial nueva para una caja de la cuenta activa y devuelve su
+ * versión. Solo funciona dentro de conTenant de una persona dueña o encargada
+ * activa; nunca desde una caja. Recibe solo la huella (sha256) del secreto: el
+ * secreto lo genera y lo entrega la API, y la base nunca lo ve.
+ */
+export async function emitirCredencialDispositivo(
+  tx: Tx,
+  dispositivoId: string,
+  huella: Buffer,
+): Promise<Result<number, "sin_permiso" | "dispositivo_inactivo">> {
+  try {
+    const { rows } = await tx.query<{ version: number }>("select candado.emitir_credencial_dispositivo($1, $2) as version", [
+      dispositivoId,
+      huella,
+    ]);
+    const version = rows[0]?.version;
+    if (version === undefined) throw new Error("emitir_credencial_dispositivo no devolvió la versión");
+    return ok(version);
+  } catch (e) {
+    const mensaje = (e as { message?: string }).message;
+    if (mensaje === "sin_permiso_para_vincular") return err("sin_permiso");
+    if (mensaje === "dispositivo_inactivo") return err("dispositivo_inactivo");
+    throw e;
+  }
+}
+
 export interface LocalVisto {
   readonly id: string;
   readonly empresaId: string;
