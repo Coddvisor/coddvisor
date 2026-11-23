@@ -9,6 +9,9 @@
      - Si envía el formulario y todo salió bien, se alegra y salta el punto de la «i»; si falta un
        dato o algo falló, se preocupa un momento. Lo avisa sitio.js con el evento «coddvisor:gato».
      - Si nadie lo toca un buen rato, le da sueño y se duerme. Al volver, se despierta de un salto.
+     - Una página puede pedir que el gato ya esté dormido al llegar, con data-gato-inicio="duerme"
+       en cualquier elemento (la de error lo hace: nadie esperaba visita ahí). Despierta de un salto
+       con el primer movimiento de la persona, pero no antes de un momento, para que se le vea dormir.
      - Si usted se fue a otra pestaña y regresa, se alegra de verle.
    Las caras son solo posiciones de párpados (ver Logotipo.astro y fluido.css): la silueta del gato
    nunca cambia. Otras piezas pueden pedirle un gesto con:
@@ -127,9 +130,10 @@
   /* ---------- Sueño: le da sueño si nadie lo toca, despierta de un salto ---------- */
   var SUENO = 40000, DUERME = 80000;
   var ultimo = Date.now();
+  var noDespiertaAntes = 0;
   function actividad() {
     ultimo = Date.now();
-    if (sueno) { sueno = 0; gesto('asombro'); }
+    if (sueno && ultimo >= noDespiertaAntes) { sueno = 0; gesto('asombro'); }
   }
   ['pointermove', 'pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'].forEach(function (ev) {
     window.addEventListener(ev, actividad, { passive: true });
@@ -160,6 +164,10 @@
   document.addEventListener('coddvisor:gato', function (e) { gesto(e.detail); });
 
   /* ---------- Al llegar ---------- */
-  if (document.documentElement.classList.contains('logo-intro')) gesto('despierta');
+  if (document.querySelector('[data-gato-inicio="duerme"]')) {
+    sueno = 2;
+    poner('duerme', 0);
+    noDespiertaAntes = Date.now() + 1500;
+  } else if (document.documentElement.classList.contains('logo-intro')) gesto('despierta');
   programarParpadeo();
 })();
