@@ -298,26 +298,41 @@ más visto» cuántas personas dejaron sus datos después de leer cada artículo
 
 ### Entrar al panel
 
-Con **correo y contraseña** de Supabase Auth, en `www.coddvisor.com/equipo/`. Supabase guarda la
-contraseña cifrada; ni el sitio ni el repositorio la conocen. Cada vez que el panel pide cifras, la
-base revisa que la sesión sea de un correo **confirmado** y **activo** en `sitio.colaboradores`.
+En `www.coddvisor.com/equipo/`, en dos pasos:
+
+1. **Correo y contraseña** de Supabase Auth. Supabase guarda la contraseña cifrada; ni el sitio ni
+   el repositorio la conocen.
+2. **Un código de 6 cifras que llega a ese correo.** Vence en 10 minutos, admite 5 intentos y se
+   pide hasta 5 veces por hora. Escrito el código, esa sesión vale 7 días. Quien tenga la contraseña
+   pero no pueda abrir el correo, no entra.
+
+Cada vez que el panel pide cifras, la base revisa que la sesión sea de un correo **confirmado**,
+**activo** en `sitio.colaboradores` y que ya escribió su código.
+
+**El código sale por Resend desde la base** (extensión `pg_net`). Su clave se guarda en la bóveda de
+Supabase, nunca en el repositorio: **Project Settings → Vault → Add new secret**, nombre
+`resend_api_key`, valor: una clave de Resend con permiso de envío (conviene crear una propia para
+esto en resend.com → API Keys). Sin esa clave, el paso 2 avisa «Falta la clave de Resend».
+El remitente y los minutos del código son filas de `sitio.ajustes` (`correo_remitente`,
+`minutos_codigo`, `dias_verificacion`).
+
+**El panel se actualiza solo** cada 5 minutos mientras la pestaña está a la vista, y al volver a la
+pestaña si pasó más de un minuto. Cada actualización es una sola consulta sobre tablas ya sumadas
+por día: no carga la base. También hay un botón «Actualizar».
 
 Decisión del equipo (24-nov-2026): el panel se usa con **una sola cuenta compartida**,
 `soporte@coddvisor.com`. Los clientes siguen escribiendo a `equipo@coddvisor.com`, que no cambia.
 La contraseña se comparte por un canal privado, nunca por chat ni en un archivo.
 
-**Dar acceso a otro correo** (dos pasos, en Supabase → proyecto `coddvisor`):
-1. **Authentication → Users → Add user → Create new user**: el correo, una contraseña, y marcar
-   **Auto Confirm User**.
-2. **SQL Editor**:
-   ```sql
-   INSERT INTO sitio.colaboradores (correo, nombre) VALUES ('nombre@coddvisor.com', 'Nombre');
-   ```
+**Dar o quitar acceso:** en el panel, sección **«Equipo: quién puede entrar»**. Solo la ve quien
+administra (`soporte@` administra). Cada cambio queda en `sitio.equipo_historial`, que solo crece.
+Quitar el acceso corta las sesiones de esa persona en ese momento. Nadie puede quitarse el acceso a
+sí mismo, para que el equipo no se quede sin administrador.
 
-**Quitar acceso** (corta la sesión en ese momento; la fila queda para saber quién atendió qué):
-```sql
-UPDATE sitio.colaboradores SET archivado_en = now() WHERE correo = 'nombre@coddvisor.com';
-```
+Quien recibe acceso necesita además su usuario de Supabase: **Authentication → Users → Add user →
+Create new user**, con su correo, una contraseña y **Auto Confirm User**. El panel avisa «Falta
+crear su usuario» mientras no exista.
+
 Con una cuenta compartida, si alguien deja el equipo se cambia la contraseña de `soporte@` en
 **Authentication → Users**.
 
@@ -335,12 +350,16 @@ está en `sitio.colaboradores`), pero es mejor cerrarlo.
 ### Seguridad y la excepción a D30
 
 Las tablas del esquema `sitio` no se pueden leer ni escribir desde fuera: la API de Supabase solo
-publica cinco funciones (`public.sitio_*`), cada una con su permiso. Las del navegador (anotar una
-visita, registrar un pedido) las puede llamar cualquiera; las del panel, solo un colaborador activo.
+publica el esquema `public`, donde no hay tablas, solo las funciones `public.sitio_*`, cada una con
+su permiso. Las del navegador (anotar una visita, registrar un pedido) las puede llamar cualquiera;
+las del panel, solo una sesión iniciada, y cada una revisa además quién es. **No se crean tablas en
+`public`:** desde que está publicado, Supabase les daría acceso por la API.
+
+En Supabase → **Project Settings → Data API**, «Exposed schemas» debe tener solo `public`.
 
 La decisión D30 de la arquitectura dice que el sistema tendrá apagada la API de datos de Supabase.
-**Excepción aprobada el 24-nov-2026:** el sitio usa esa API solo para estas cinco funciones, nunca
-para tablas. **Se revisa cuando llegue el sistema al mismo proyecto:** o el sitio pasa a su propio
+**Excepción aprobada el 24-nov-2026:** el sitio usa esa API solo para sus funciones, nunca para
+tablas. **Se revisa cuando llegue el sistema al mismo proyecto:** o el sitio pasa a su propio
 proyecto, o sus funciones se sirven desde el servicio del sistema.
 
 La llave que está en `servidor/supabase.js` es la **publicable**: está hecha para viajar a cada

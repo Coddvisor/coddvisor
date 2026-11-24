@@ -46,6 +46,8 @@ for (const [ruta, md] of Object.entries(archivos)) {
     <button type="button" role="radio" aria-checked="false" data-escala="mes">Por mes</button>
   </div>
   <p class="eq-periodo" data-periodo-texto aria-live="polite"></p>
+  <!-- Se actualiza solo cada 5 minutos mientras la pestaña está a la vista (public/equipo/panel.js). -->
+  <p class="eq-actualizado"><span data-actualizado></span> <button type="button" class="boton-2 boton-chico" data-actualizar>Actualizar</button></p>
 </div>
 
 <p class="estado" data-estado role="status" aria-live="polite">Cargando las cifras…</p>
@@ -106,10 +108,30 @@ for (const [ruta, md] of Object.entries(archivos)) {
     </table></div>
   </section>
 
-  <section class="tarjeta" aria-labelledby="q-t">
+  <section class="tarjeta" aria-labelledby="q-t" id="pedidos">
     <h2 id="q-t">Quiénes dejaron sus datos</h2>
     <p class="nota">Lo que escribieron en el formulario «Quiero ser de los primeros» y qué páginas leyeron antes. Marque «Ya le escribimos» cuando alguien del equipo le responda.</p>
     <ol class="pedidos" data-pedidos></ol>
+  </section>
+
+  <!-- Solo para quien administra: quién puede entrar al panel, y el historial de cambios. -->
+  <section class="tarjeta" aria-labelledby="eq-t" data-equipo hidden>
+    <h2 id="eq-t">Equipo: quién puede entrar</h2>
+    <p class="nota">Dé o quite acceso al panel. Cada cambio queda anotado. Quien recibe acceso entra con su correo, su contraseña y un código que le llega al correo.</p>
+    <form class="form-linea" data-equipo-form novalidate>
+      <label class="oculto" for="eq-nombre">Nombre</label>
+      <input id="eq-nombre" name="nombre" placeholder="Nombre" maxlength="80" autocomplete="off">
+      <label class="oculto" for="eq-correo">Correo</label>
+      <input id="eq-correo" name="correo" type="email" placeholder="correo@coddvisor.com" maxlength="120" autocomplete="off">
+      <label class="check"><input type="checkbox" name="administra"> Puede administrar</label>
+      <button type="submit" class="boton">Dar acceso</button>
+    </form>
+    <p class="estado" data-equipo-estado role="status" aria-live="polite"></p>
+    <ul class="personas" data-equipo-lista></ul>
+    <details class="tabla-vista">
+      <summary>Historial de cambios</summary>
+      <ol class="historial" data-equipo-historial></ol>
+    </details>
   </section>
 </div>
 
