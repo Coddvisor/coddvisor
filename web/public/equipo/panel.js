@@ -1,5 +1,5 @@
 /* Panel del equipo (src/pages/equipo/index.astro). Sin librerías.
-   Pide las cifras a la función sitio_resumen de la base (Supabase), con la sesión de
+   Pide las cifras a la función sitio_panel de la base (Supabase), con la sesión de
    public/equipo/sesion.js, y las dibuja. Todo texto que viene de la base se pone con
    textContent, nunca como HTML: un nombre escrito en el formulario no puede volverse código. */
 (function () {
@@ -14,7 +14,7 @@
   var paises = null;
   try { paises = new Intl.DisplayNames(['es'], { type: 'region' }); } catch (e) {}
 
-  var estado = { escala: 'dia', periodo: null, filtroPaginas: 'todas', datos: null, administra: false };
+  var estado = { escala: 'dia', periodo: null, filtroPaginas: 'todas', datos: null, permisos: [], pestana: null, yo: null };
   var NOMBRE_ANTERIOR = { dia: 'el día anterior', semana: 'la semana anterior', mes: 'el mes anterior' };
   var FRENTE = { dia: 'frente al día anterior', semana: 'frente a la semana anterior', mes: 'frente al mes anterior' };
   var DISPOSITIVOS = { celular: 'Celular', tableta: 'Tableta', computadora: 'Computadora' };
@@ -53,7 +53,7 @@
   var ultimaCarga = 0;
   function cargar(silencioso) {
     if (!silencioso) decir('Cargando las cifras…');
-    return window.CoddvisorSesion.llamar('sitio_resumen', { p_escala: estado.escala, p_periodo: estado.periodo })
+    return window.CoddvisorSesion.llamar('sitio_panel', { p_escala: estado.escala, p_periodo: estado.periodo })
       .then(function (r) {
         // 401: la sesión terminó. 403: falta el código del correo, o ya no tiene acceso.
         if (r.estado === 401 || r.estado === 403) { location.replace('/equipo/entrar/'); return; }
@@ -88,7 +88,7 @@
     contarMinutos();
     if (document.visibilityState === 'visible' && ultimaCarga && Date.now() - ultimaCarga >= CADA) {
       cargar(true);
-      if (estado.administra) cargarEquipo();
+      if (estado.pestana === 'equipo') cargarEquipo();
     }
   }, 30000);
   document.addEventListener('visibilitychange', function () {
@@ -98,8 +98,8 @@
   // ---------- Dibujar ----------
   function dibujar() {
     var d = estado.datos;
-    $('[data-contenido]').hidden = false;
-    $('[data-quien]').textContent = d.quien ? d.quien.nombre : '';
+    $('[data-contenido]').hidden = !(estado.pestana === null || estado.pestana === 'analisis' || estado.pestana === 'pedidos');
+    $('[data-quien]').textContent = estado.yo ? estado.yo.nombre + ' (' + estado.yo.rol_nombre + ')' : '';
     var actual = d.serie.filter(function (p) { return p.periodo === d.periodo; })[0] || { periodo: d.periodo, desde: d.desde, hasta: d.hasta };
     $('[data-periodo-texto]').textContent = 'Mostrando: ' + nombrePeriodo(actual, true) + (d.periodo === d.serie[d.serie.length - 1].periodo ? ' (en curso)' : '');
     tiles(d);
@@ -359,6 +359,7 @@
       wa.rel = 'noopener';
       acciones.appendChild(wa);
       var marcar = el('button', 'boton-2');
+      marcar.hidden = !d.puede_atender;
       marcar.type = 'button';
       acciones.appendChild(marcar);
       var aviso = el('p', 'pedido-aviso');
@@ -378,7 +379,7 @@
       marcar.addEventListener('click', function () {
         marcar.disabled = true;
         aviso.textContent = '';
-        window.CoddvisorSesion.llamar('sitio_marcar_pedido', { p_id: p.id, p_atendido: !p.atendido_en }).then(function (r) {
+        window.CoddvisorSesion.llamar('sitio_atender_pedido', { p_id: p.id, p_atendido: !p.atendido_en }).then(function (r) {
           if (r.estado === 401) { location.replace('/equipo/entrar/'); return; }
           marcar.disabled = false;
           if (r.estado !== 200) {
@@ -428,65 +429,151 @@
     reloj = setTimeout(function () { if (estado.datos) grafico(estado.datos); }, 150);
   });
 
-  // ---------- Equipo (solo quien administra) ----------
-  var equipo = $('[data-equipo]');
-  function decirEquipo(t) { $('[data-equipo-estado]').textContent = t; }
+  // ---------- Pestañas (según los permisos del rol) ----------
+  var PESTANAS = { analisis: 'ver_analisis', pedidos: 'ver_pedidos', equipo: 'ver_equipo', configuracion: 'configurar' };
+  function puede(p) { return estado.permisos.indexOf(p) !== -1; }
+  function abrir(nombre) {
+    if (!puede(PESTANAS[nombre])) nombre = Object.keys(PESTANAS).filter(function (k) { return puede(PESTANAS[k]); })[0];
+    estado.pestana = nombre;
+    $$('[data-pestana]').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.pestana === nombre ? 'true' : 'false'); });
+    $$('[data-panel]').forEach(function (p) { p.hidden = p.dataset.panel !== nombre; });
+    var conCifras = nombre === 'analisis' || nombre === 'pedidos';
+    $('[data-filtros]').hidden = !conCifras;
+    $('[data-contenido]').hidden = !conCifras || !estado.datos;
+    if (!conCifras) decir('');
+    if (nombre === 'equipo') cargarEquipo();
+    if (nombre === 'configuracion') cargarConfig();
+    try { history.replaceState(null, '', '#' + nombre); } catch (e) {}
+  }
+  $$('[data-pestana]').forEach(function (b) { b.addEventListener('click', function () { abrir(b.dataset.pestana); }); });
+
   function cuando(t) { return new Date(t).toLocaleString('es-PE', { dateStyle: 'medium', timeStyle: 'short' }); }
-  var ACCIONES = { dar_acceso: 'dio acceso a', quitar_acceso: 'quitó el acceso a', devolver_acceso: 'devolvió el acceso a', cambiar_administra: 'cambió los permisos de' };
+  function respuesta(caja, exito, despues) {
+    return function (r) {
+      if (r.estado === 401) { location.replace('/equipo/entrar/'); return; }
+      if (r.estado !== 200) {
+        caja.textContent = r.estado === 0 ? 'No hay conexión. El cambio no se guardó.' : ((r.cuerpo && r.cuerpo.message) || 'No pudimos guardar el cambio.');
+        return;
+      }
+      caja.textContent = exito || '';
+      despues(r.cuerpo);
+    };
+  }
+
+  // ---------- Equipo ----------
+  var ACCIONES = {
+    dar_acceso: 'dio acceso a', quitar_acceso: 'quitó el acceso a', devolver_acceso: 'devolvió el acceso a',
+    invitar: 'invitó a', anular_invitacion: 'anuló la invitación de', aceptar_invitacion: 'aceptó su invitación:',
+    restablecer_contrasena: 'creó un enlace de contraseña nueva para', cambiar_rol: 'cambió el rol de',
+    cambiar_permiso: 'cambió un permiso', cambiar_ajuste: 'cambió un ajuste', cambiar_administra: 'cambió los permisos de',
+  };
+  var estadoEquipo = $('[data-equipo-estado]');
+  var roles = [];
+  function nombreRol(c) { var r = roles.filter(function (x) { return x.codigo === c; })[0]; return r ? r.nombre : c; }
+
+  function mostrarEnlace(res) {
+    var url = location.origin + '/equipo/invitacion/?e=' + encodeURIComponent(res.enlace);
+    var caja = $('[data-enlace]');
+    caja.hidden = false;
+    $('[data-enlace-texto]').textContent = (res.tipo === 'restablecer'
+      ? 'Enlace para que ' + res.correo + ' cree una contraseña nueva.'
+      : 'Invitación lista para ' + res.correo + '.') + ' Envíesela; solo se muestra ahora. Vence el ' + cuando(res.vence_en).replace(/\.$/, '') + '.';
+    $('[data-enlace-valor]').value = url;
+    var texto = 'Hola. Este es tu enlace para entrar al panel del equipo de Coddvisor: ' + url;
+    $('[data-enlace-whatsapp]').href = 'https://wa.me/?text=' + encodeURIComponent(texto);
+    caja.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  $('[data-enlace-copiar]').addEventListener('click', function () {
+    var campo = $('[data-enlace-valor]');
+    var listo = function () { estadoEquipo.textContent = 'Enlace copiado.'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(campo.value).then(listo, function () { campo.select(); });
+    else { campo.select(); try { document.execCommand('copy'); listo(); } catch (e) {} }
+  });
 
   function dibujarEquipo(e) {
+    roles = e.roles || [];
+    var admin = e.puede_administrar;
+    $('[data-equipo-admin]').hidden = !admin;
+    var sel = $('[data-roles]');
+    if (!sel.options.length) roles.forEach(function (r) { var o = el('option', null, r.nombre); o.value = r.codigo; sel.appendChild(o); });
+
     var lista = $('[data-equipo-lista]');
     lista.textContent = '';
     e.personas.forEach(function (p) {
       var li = el('li', 'persona');
       var datos = el('div', 'persona-datos');
-      datos.appendChild(el('b', null, p.nombre));
+      datos.appendChild(el('b', null, p.nombre + (p.correo === e.yo ? ' (usted)' : '')));
       datos.appendChild(el('small', null, p.correo));
       li.appendChild(datos);
       var chips = el('div', 'persona-chips');
-      if (p.administra) chips.appendChild(el('span', 'chip', 'Administra'));
+      if (admin && p.correo !== e.yo && !p.archivado_en) {
+        var cambio = el('select', 'rol-select');
+        cambio.setAttribute('aria-label', 'Rol de ' + p.nombre);
+        roles.forEach(function (r) { var o = el('option', null, r.nombre); o.value = r.codigo; o.selected = r.codigo === p.rol; cambio.appendChild(o); });
+        cambio.addEventListener('change', function () {
+          window.CoddvisorSesion.llamar('sitio_equipo_cambiar_rol', { p_correo: p.correo, p_rol: cambio.value })
+            .then(respuesta(estadoEquipo, p.nombre + ' ahora es ' + nombreRol(cambio.value) + '.', dibujarEquipo));
+        });
+        chips.appendChild(cambio);
+      } else {
+        chips.appendChild(el('span', 'chip', nombreRol(p.rol)));
+      }
       chips.appendChild(el('span', 'chip-estado ' + (p.archivado_en ? 'pendiente' : 'hecho'), p.archivado_en ? '● Sin acceso' : '✓ Con acceso'));
-      if (p.correo !== e.yo) {
+      if (admin && p.correo !== e.yo) {
+        if (!p.archivado_en) {
+          var rest = el('button', 'boton-2 boton-chico', p.tiene_usuario ? 'Contraseña nueva' : 'Reenviar invitación');
+          rest.type = 'button';
+          rest.addEventListener('click', function () {
+            window.CoddvisorSesion.llamar('sitio_equipo_restablecer', { p_correo: p.correo })
+              .then(respuesta(estadoEquipo, '', function (res) { mostrarEnlace(res); cargarEquipo(); }));
+          });
+          chips.appendChild(rest);
+        }
         var b = el('button', 'boton-2 boton-chico', p.archivado_en ? 'Devolver acceso' : 'Quitar acceso');
         b.type = 'button';
         b.addEventListener('click', function () {
-          b.disabled = true;
-          var pedido = p.archivado_en
-            ? window.CoddvisorSesion.llamar('sitio_equipo_dar_acceso', { p_correo: p.correo, p_nombre: p.nombre, p_administra: p.administra })
-            : window.CoddvisorSesion.llamar('sitio_equipo_quitar_acceso', { p_correo: p.correo });
-          pedido.then(respuestaEquipo(p.archivado_en ? 'Acceso devuelto a ' + p.nombre + '.' : 'Acceso quitado a ' + p.nombre + '. Su sesión se cortó.'));
+          var fn = p.archivado_en ? 'sitio_equipo_devolver_acceso' : 'sitio_equipo_quitar_acceso';
+          window.CoddvisorSesion.llamar(fn, { p_correo: p.correo })
+            .then(respuesta(estadoEquipo, p.archivado_en ? 'Acceso devuelto a ' + p.nombre + '.' : 'Acceso quitado a ' + p.nombre + '. Ya no puede entrar.', function () { cargarEquipo(); }));
         });
         chips.appendChild(b);
       }
       li.appendChild(chips);
-      if (!p.archivado_en && !p.tiene_usuario) {
-        li.appendChild(el('p', 'nota-usuario', 'Falta crear su usuario: en Supabase → Authentication → Users → Add user, con este correo, una contraseña y «Auto Confirm User». Hasta entonces no puede entrar.'));
-      }
       lista.appendChild(li);
     });
+
+    var inv = $('[data-equipo-invitaciones]');
+    inv.textContent = '';
+    $('[data-equipo-invitaciones-caja]').hidden = !admin || !e.invitaciones.length;
+    e.invitaciones.forEach(function (i) {
+      var li = el('li', 'persona');
+      var datos = el('div', 'persona-datos');
+      datos.appendChild(el('b', null, i.nombre + ' (' + nombreRol(i.rol) + ')'));
+      datos.appendChild(el('small', null, i.correo + ', ' + (i.tipo === 'restablecer' ? 'contraseña nueva' : 'invitación') + ', vence el ' + cuando(i.vence_en)));
+      li.appendChild(datos);
+      var anular = el('button', 'boton-2 boton-chico', 'Anular');
+      anular.type = 'button';
+      anular.addEventListener('click', function () {
+        window.CoddvisorSesion.llamar('sitio_equipo_anular_invitacion', { p_id: i.id }).then(respuesta(estadoEquipo, 'Invitación anulada: ese enlace ya no sirve.', dibujarEquipo));
+      });
+      li.appendChild(anular);
+      inv.appendChild(li);
+    });
+
     var hist = $('[data-equipo-historial]');
     hist.textContent = '';
+    $('[data-equipo-historial-caja]').hidden = !admin;
     if (!e.historial.length) hist.appendChild(el('li', null, 'Todavía no hay cambios.'));
     e.historial.forEach(function (h) {
-      hist.appendChild(el('li', null, cuando(h.en) + ': ' + h.quien + ' ' + (ACCIONES[h.accion] || h.accion) + ' ' + h.correo + (h.detalle ? ' (' + h.detalle + ')' : '') + '.'));
+      hist.appendChild(el('li', null, cuando(h.en) + ': ' + h.quien + ' ' + (ACCIONES[h.accion] || h.accion) +
+        (h.correo && h.correo !== '-' ? ' ' + h.correo : '') + (h.detalle ? ' (' + h.detalle + ')' : '') + '.'));
     });
-  }
-  function respuestaEquipo(exito) {
-    return function (r) {
-      if (r.estado === 401) { location.replace('/equipo/entrar/'); return; }
-      if (r.estado !== 200) {
-        decirEquipo(r.estado === 0 ? 'No hay conexión. El cambio no se guardó.' : ((r.cuerpo && r.cuerpo.message) || 'No pudimos guardar el cambio.'));
-        cargarEquipo();
-        return;
-      }
-      decirEquipo(exito);
-      dibujarEquipo(r.cuerpo);
-    };
   }
   function cargarEquipo() {
     return window.CoddvisorSesion.llamar('sitio_equipo', {}).then(function (r) {
-      if (r.estado === 200) { equipo.hidden = false; dibujarEquipo(r.cuerpo); }
-      else if (r.estado === 403) equipo.hidden = true;
+      if (r.estado === 401) { location.replace('/equipo/entrar/'); return; }
+      if (r.estado === 200) dibujarEquipo(r.cuerpo);
+      else estadoEquipo.textContent = 'No pudimos leer el equipo. Recargue la página.';
     });
   }
   $('[data-equipo-form]').addEventListener('submit', function (ev) {
@@ -494,33 +581,117 @@
     var f = ev.target;
     var nombre = f.nombre.value.trim();
     var correo = f.correo.value.trim().toLowerCase();
-    if (!nombre) { decirEquipo('Escriba el nombre de la persona.'); f.nombre.focus(); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) { decirEquipo('Revise el correo: debe tener la forma nombre@dominio.com.'); f.correo.focus(); return; }
+    if (!nombre) { estadoEquipo.textContent = 'Escriba el nombre de la persona.'; f.nombre.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) { estadoEquipo.textContent = 'Revise el correo: debe tener la forma nombre@dominio.com.'; f.correo.focus(); return; }
     var boton = f.querySelector('button');
     boton.disabled = true;
-    window.CoddvisorSesion.llamar('sitio_equipo_dar_acceso', { p_correo: correo, p_nombre: nombre, p_administra: f.administra.checked })
-      .then(function (r) {
-        boton.disabled = false;
-        respuestaEquipo('Listo: ' + nombre + ' tiene acceso. Si todavía no tiene usuario, créelo en Supabase (ver abajo).')(r);
-        if (r.estado === 200) f.reset();
-      });
-  });
-  $('[data-actualizar]').addEventListener('click', function () {
-    cargar(true);
-    if (estado.administra) cargarEquipo();
+    window.CoddvisorSesion.llamar('sitio_equipo_invitar', { p_correo: correo, p_nombre: nombre, p_rol: f.rol.value }).then(function (r) {
+      boton.disabled = false;
+      respuesta(estadoEquipo, '', function (res) {
+        f.reset();
+        if (res.ya_tiene_cuenta) {
+          estadoEquipo.textContent = nombre + ' ya tenía cuenta: le dimos acceso. Puede entrar con su contraseña.';
+          $('[data-enlace]').hidden = true;
+        } else {
+          mostrarEnlace(res);
+        }
+        cargarEquipo();
+      })(r);
+    });
   });
 
+  // ---------- Configuración ----------
+  var estadoConfig = $('[data-config-estado]');
+  function dibujarConfig(c) {
+    var fijos = c.fijos || {};
+    var tabla = $('[data-matriz]');
+    var cab = tabla.querySelector('thead');
+    var cuerpo = tabla.querySelector('tbody');
+    cab.textContent = '';
+    cuerpo.textContent = '';
+    var tr = el('tr');
+    tr.appendChild(el('th', null, 'Permiso')).setAttribute('scope', 'col');
+    c.roles.forEach(function (r) { tr.appendChild(el('th', null, r.nombre)).setAttribute('scope', 'col'); });
+    cab.appendChild(tr);
+    c.permisos.forEach(function (p) {
+      var fila = el('tr');
+      var th = el('th');
+      th.scope = 'row';
+      th.appendChild(el('span', null, p.nombre));
+      th.appendChild(el('small', 'matriz-desc', p.descripcion));
+      fila.appendChild(th);
+      c.roles.forEach(function (r) {
+        var td = el('td');
+        var caja = el('input');
+        caja.type = 'checkbox';
+        caja.checked = r.permisos.indexOf(p.codigo) !== -1;
+        caja.setAttribute('aria-label', r.nombre + ': ' + p.nombre);
+        caja.disabled = (fijos[r.codigo] || []).indexOf(p.codigo) !== -1;
+        caja.addEventListener('change', function () {
+          caja.disabled = true;
+          window.CoddvisorSesion.llamar('sitio_configurar_permiso', { p_rol: r.codigo, p_permiso: p.codigo, p_activo: caja.checked })
+            .then(function (x) {
+              respuesta(estadoConfig, 'Guardado: ' + r.nombre + (caja.checked ? ' ahora puede ' : ' ya no puede ') + p.nombre.toLowerCase() + '.', dibujarConfig)(x);
+              if (x.estado !== 200) cargarConfig();
+            });
+        });
+        td.appendChild(caja);
+        fila.appendChild(td);
+      });
+      cuerpo.appendChild(fila);
+    });
+
+    var aj = $('[data-ajustes]');
+    aj.textContent = '';
+    c.ajustes.forEach(function (a) {
+      var f = el('form', 'ajuste');
+      var id = 'aj-' + a.clave;
+      var lab = el('label', null, a.explicacion);
+      lab.setAttribute('for', id);
+      f.appendChild(lab);
+      var fila = el('div', 'ajuste-fila');
+      var campo = el('input');
+      campo.id = id;
+      campo.value = a.valor;
+      campo.maxLength = 60;
+      fila.appendChild(campo);
+      var b = el('button', 'boton-2 boton-chico', 'Guardar');
+      b.type = 'submit';
+      fila.appendChild(b);
+      f.appendChild(fila);
+      f.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        window.CoddvisorSesion.llamar('sitio_configurar_ajuste', { p_clave: a.clave, p_valor: campo.value })
+          .then(respuesta(estadoConfig, 'Ajuste guardado.', dibujarConfig));
+      });
+      aj.appendChild(f);
+    });
+  }
+  function cargarConfig() {
+    return window.CoddvisorSesion.llamar('sitio_configuracion', {}).then(function (r) {
+      if (r.estado === 401) { location.replace('/equipo/entrar/'); return; }
+      if (r.estado === 200) dibujarConfig(r.cuerpo);
+      else estadoConfig.textContent = 'No pudimos leer la configuración. Recargue la página.';
+    });
+  }
+
+  $('[data-actualizar]').addEventListener('click', function () { cargar(true); });
+
   // ---------- Al abrir ----------
-  // Primero se revisa el ingreso: sin el código del correo, de vuelta a «Entrar al panel».
+  // Primero se revisa quién entró y qué puede hacer; las pestañas aparecen según su rol.
   window.CoddvisorSesion.llamar('sitio_estado_ingreso', {}).then(function (r) {
     if (r.estado !== 200) {
       if (r.estado === 0) { decir(mensajeError(r)); return; }
       location.replace('/equipo/entrar/');
       return;
     }
-    if (!r.cuerpo.colaborador || !r.cuerpo.verificado) { location.replace('/equipo/entrar/'); return; }
-    estado.administra = !!r.cuerpo.administra;
-    cargar();
-    if (estado.administra) cargarEquipo();
+    if (!r.cuerpo.colaborador) { location.replace('/equipo/entrar/'); return; }
+    estado.yo = r.cuerpo;
+    estado.permisos = r.cuerpo.permisos || [];
+    $$('[data-pestana]').forEach(function (b) { b.hidden = !puede(PESTANAS[b.dataset.pestana]); });
+    $('[data-quien]').textContent = r.cuerpo.nombre + ' (' + r.cuerpo.rol_nombre + ')';
+    var pedida = location.hash.slice(1);
+    if (puede('ver_analisis')) cargar().then(function () { abrir(PESTANAS[pedida] ? pedida : 'analisis'); });
+    else { decir(''); abrir(PESTANAS[pedida] ? pedida : 'equipo'); }
   });
 })();

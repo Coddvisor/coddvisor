@@ -38,8 +38,16 @@ for (const [ruta, md] of Object.entries(archivos)) {
   </div>
 </header>
 
-<!-- Un solo filtro, arriba de todo: la escala de tiempo. El periodo se elige tocando una barra. -->
-<div class="eq-filtros">
+<!-- Pestañas: cada una aparece solo si el rol tiene su permiso (public/equipo/panel.js). -->
+<nav class="pestanas" role="tablist" aria-label="Secciones del panel" data-pestanas>
+  <button type="button" role="tab" aria-selected="true" data-pestana="analisis" hidden>Análisis</button>
+  <button type="button" role="tab" aria-selected="false" data-pestana="pedidos" hidden>Pedidos</button>
+  <button type="button" role="tab" aria-selected="false" data-pestana="equipo" hidden>Equipo</button>
+  <button type="button" role="tab" aria-selected="false" data-pestana="configuracion" hidden>Configuración</button>
+</nav>
+
+<!-- Un solo filtro para Análisis y Pedidos: la escala de tiempo. El periodo se elige tocando una barra. -->
+<div class="eq-filtros" data-filtros>
   <div class="seg" role="radiogroup" aria-label="Ver por">
     <button type="button" role="radio" aria-checked="true" data-escala="dia">Por día</button>
     <button type="button" role="radio" aria-checked="false" data-escala="semana">Por semana</button>
@@ -53,6 +61,7 @@ for (const [ruta, md] of Object.entries(archivos)) {
 <p class="estado" data-estado role="status" aria-live="polite">Cargando las cifras…</p>
 
 <div data-contenido hidden>
+<div data-panel="analisis" class="eq-panel">
   <section class="eq-tiles" aria-label="Resumen del periodo">
     <div class="tile"><p class="tile-rot">Entraron al sitio</p><p class="tile-val" data-tile="entradas"></p><p class="tile-delta" data-delta="entradas"></p></div>
     <div class="tile"><p class="tile-rot">Páginas vistas</p><p class="tile-val" data-tile="paginas"></p><p class="tile-delta" data-delta="paginas"></p></div>
@@ -108,30 +117,71 @@ for (const [ruta, md] of Object.entries(archivos)) {
     </table></div>
   </section>
 
-  <section class="tarjeta" aria-labelledby="q-t" id="pedidos">
+</div>
+
+<div data-panel="pedidos" class="eq-panel" hidden>
+  <section class="tarjeta" aria-labelledby="q-t">
     <h2 id="q-t">Quiénes dejaron sus datos</h2>
     <p class="nota">Lo que escribieron en el formulario «Quiero ser de los primeros» y qué páginas leyeron antes. Marque «Ya le escribimos» cuando alguien del equipo le responda.</p>
     <ol class="pedidos" data-pedidos></ol>
   </section>
+</div>
+</div>
 
-  <!-- Solo para quien administra: quién puede entrar al panel, y el historial de cambios. -->
-  <section class="tarjeta" aria-labelledby="eq-t" data-equipo hidden>
-    <h2 id="eq-t">Equipo: quién puede entrar</h2>
-    <p class="nota">Dé o quite acceso al panel. Cada cambio queda anotado. Quien recibe acceso entra con su correo, su contraseña y un código que le llega al correo.</p>
+<!-- Equipo: quién puede entrar y con qué rol. Invitar, cambiar rol y quitar acceso: solo administración. -->
+<div data-panel="equipo" class="eq-panel" hidden>
+  <section class="tarjeta" aria-labelledby="eq-inv-t" data-equipo-admin hidden>
+    <h2 id="eq-inv-t">Invitar a alguien</h2>
+    <p class="nota">Escriba su nombre, su correo y su rol. Le daremos un enlace para que cree su contraseña; envíeselo por WhatsApp o por correo. Sirve una vez y vence en unos días.</p>
     <form class="form-linea" data-equipo-form novalidate>
       <label class="oculto" for="eq-nombre">Nombre</label>
       <input id="eq-nombre" name="nombre" placeholder="Nombre" maxlength="80" autocomplete="off">
       <label class="oculto" for="eq-correo">Correo</label>
       <input id="eq-correo" name="correo" type="email" placeholder="correo@coddvisor.com" maxlength="120" autocomplete="off">
-      <label class="check"><input type="checkbox" name="administra"> Puede administrar</label>
-      <button type="submit" class="boton">Dar acceso</button>
+      <label class="oculto" for="eq-rol">Rol</label>
+      <select id="eq-rol" name="rol" data-roles></select>
+      <button type="submit" class="boton">Invitar</button>
     </form>
     <p class="estado" data-equipo-estado role="status" aria-live="polite"></p>
+    <div class="enlace-listo" data-enlace hidden>
+      <p data-enlace-texto></p>
+      <input type="text" readonly data-enlace-valor aria-label="Enlace de invitación">
+      <div class="entrar-acciones">
+        <button type="button" class="boton-2" data-enlace-copiar>Copiar enlace</button>
+        <a class="boton-2" data-enlace-whatsapp target="_blank" rel="noopener">Enviar por WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="eq-t">
+    <h2 id="eq-t">Quiénes pueden entrar</h2>
     <ul class="personas" data-equipo-lista></ul>
-    <details class="tabla-vista">
-      <summary>Historial de cambios</summary>
-      <ol class="historial" data-equipo-historial></ol>
-    </details>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="eq-pend-t" data-equipo-invitaciones-caja hidden>
+    <h2 id="eq-pend-t">Invitaciones sin aceptar</h2>
+    <ul class="personas" data-equipo-invitaciones></ul>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="eq-h-t" data-equipo-historial-caja hidden>
+    <h2 id="eq-h-t">Historial de cambios</h2>
+    <ol class="historial" data-equipo-historial></ol>
+  </section>
+</div>
+
+<!-- Configuración: qué puede ver y hacer cada rol, y ajustes del panel. -->
+<div data-panel="configuracion" class="eq-panel" hidden>
+  <section class="tarjeta" aria-labelledby="cf-t">
+    <h2 id="cf-t">Qué puede hacer cada rol</h2>
+    <p class="nota">Marque o desmarque y se guarda al momento. El administrador siempre conserva «Administrar el equipo» y «Configurar».</p>
+    <div class="tabla-envoltura"><table class="tabla matriz" data-matriz>
+      <thead></thead><tbody></tbody>
+    </table></div>
+    <p class="estado" data-config-estado role="status" aria-live="polite"></p>
+  </section>
+  <section class="tarjeta" aria-labelledby="aj-t">
+    <h2 id="aj-t">Ajustes</h2>
+    <div class="ajustes" data-ajustes></div>
   </section>
 </div>
 

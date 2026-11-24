@@ -296,56 +296,55 @@ lista sale **solo si envía el formulario**, y se guarda con el pedido en `recor
 dice, por ejemplo: «Rosa leyó *Liquidación de beneficios* y la portada antes de escribir», y en «Lo
 más visto» cuántas personas dejaron sus datos después de leer cada artículo.
 
-### Entrar al panel
+### Entrar al panel, roles e invitaciones
 
-En `www.coddvisor.com/equipo/`, en dos pasos:
+Se entra como en CAYLA: **correo y contraseña** de Supabase Auth, en `www.coddvisor.com/equipo/`.
+Supabase guarda la contraseña cifrada; ni el sitio ni el repositorio la conocen. Cada vez que el panel
+pide algo, la base revisa que la sesión sea de un correo activo en `sitio.colaboradores` y que su
+**rol** tenga el permiso. (Del 24-nov-2026 hubo un código por correo como segundo paso; se quitó el
+mismo día por decisión del equipo. Sus tablas quedan, sin uso.)
 
-1. **Correo y contraseña** de Supabase Auth. Supabase guarda la contraseña cifrada; ni el sitio ni
-   el repositorio la conocen.
-2. **Un código de 6 cifras que llega a ese correo.** Vence en 10 minutos, admite 5 intentos y se
-   pide hasta 5 veces por hora. Escrito el código, esa sesión vale 7 días. Quien tenga la contraseña
-   pero no pueda abrir el correo, no entra.
+**Roles** (decisión del equipo, 24-nov-2026). Lo que puede cada uno es configurable desde la pestaña
+**Configuración**; así empiezan:
 
-Cada vez que el panel pide cifras, la base revisa que la sesión sea de un correo **confirmado**,
-**activo** en `sitio.colaboradores` y que ya escribió su código.
+| Puede… | Integrante | Líder | Administrador |
+|---|:-:|:-:|:-:|
+| Ver el análisis (sin nombres de personas) | ✓ | ✓ | ✓ |
+| Ver quiénes dejaron sus datos | | ✓ | ✓ |
+| Marcar «Ya le escribimos» | | ✓ | ✓ |
+| Ver el equipo | | ✓ | ✓ |
+| Invitar, cambiar roles, quitar acceso | | | ✓ |
+| Configurar | | | ✓ |
 
-**El código sale por Resend desde la base** (extensión `pg_net`). Su clave se guarda en la bóveda de
-Supabase, nunca en el repositorio: **Project Settings → Vault → Add new secret**, nombre
-`resend_api_key`, valor: una clave de Resend con permiso de envío (conviene crear una propia para
-esto en resend.com → API Keys). Sin esa clave, el paso 2 avisa «Falta la clave de Resend».
-El remitente y los minutos del código son filas de `sitio.ajustes` (`correo_remitente`,
-`minutos_codigo`, `dias_verificacion`).
+Las pestañas aparecen según el rol, y la base no entrega lo que el rol no puede ver: a un integrante
+no le llegan los nombres ni los WhatsApp de los pedidos. El administrador siempre conserva
+«Administrar el equipo» y «Configurar». Nadie cambia su propio rol ni se quita el acceso a sí mismo.
+Cada cambio queda en `sitio.equipo_historial`, que solo crece.
+
+**Invitar a alguien** (pestaña Equipo): nombre, correo y rol → **Invitar**. El panel muestra un
+enlace con **Copiar enlace** y **Enviar por WhatsApp**: se le manda a la persona, que lo abre, crea
+su contraseña y entra. El enlace sirve una vez y vence en 7 días (ajuste `dias_invitacion`). Si la
+persona ya tenía cuenta, recibe el acceso al momento.
+
+**Olvidó su contraseña:** en la pestaña Equipo, **Contraseña nueva** junto a su nombre: sale un enlace
+igual al de la invitación para que cree una nueva.
+
+**Cómo se crea la cuenta:** igual que CAYLA desde su servidor, la crea el pequeño servidor del sitio
+(`functions/api/equipo/invitacion.js`) con la **llave secreta** de Supabase. Esa llave vive solo en
+Cloudflare como secreto (`SUPABASE_LLAVE_SECRETA`), nunca en el repositorio ni en el navegador. No
+hace falta Resend: el enlace se manda por WhatsApp o por correo, a mano.
 
 **El panel se actualiza solo** cada 5 minutos mientras la pestaña está a la vista, y al volver a la
 pestaña si pasó más de un minuto. Cada actualización es una sola consulta sobre tablas ya sumadas
 por día: no carga la base. También hay un botón «Actualizar».
-
-Decisión del equipo (24-nov-2026): el panel se usa con **una sola cuenta compartida**,
-`soporte@coddvisor.com`. Los clientes siguen escribiendo a `equipo@coddvisor.com`, que no cambia.
-La contraseña se comparte por un canal privado, nunca por chat ni en un archivo.
-
-**Dar o quitar acceso:** en el panel, sección **«Equipo: quién puede entrar»**. Solo la ve quien
-administra (`soporte@` administra). Cada cambio queda en `sitio.equipo_historial`, que solo crece.
-Quitar el acceso corta las sesiones de esa persona en ese momento. Nadie puede quitarse el acceso a
-sí mismo, para que el equipo no se quede sin administrador.
-
-Quien recibe acceso necesita además su usuario de Supabase: **Authentication → Users → Add user →
-Create new user**, con su correo, una contraseña y **Auto Confirm User**. El panel avisa «Falta
-crear su usuario» mientras no exista.
-
-Con una cuenta compartida, si alguien deja el equipo se cambia la contraseña de `soporte@` en
-**Authentication → Users**.
-
-**Que nadie de fuera pueda crearse una cuenta:** en **Authentication → Sign In / Providers**, debe
-estar apagado **Allow new users to sign up**. Aun encendido, una cuenta nueva no vería nada (no
-está en `sitio.colaboradores`), pero es mejor cerrarlo.
 
 ### Lo que se cambia sin tocar el programa
 
 - **Qué dominio es «Buscadores», «Redes sociales» o «WhatsApp»:** la tabla `sitio.origenes_visita`.
   Para sumar uno: `INSERT INTO sitio.origenes_visita (patron, grupo) VALUES ('%.ejemplo.com', 'Redes sociales');`
   (`%` es cualquier texto).
-- **La zona horaria del día:** la fila `zona_horaria` de `sitio.ajustes` (hoy `America/Lima`).
+- **La zona horaria del día y los días que dura una invitación:** pestaña Configuración → Ajustes.
+- **Qué puede ver cada rol:** pestaña Configuración.
 
 ### Seguridad y la excepción a D30
 
@@ -634,23 +633,26 @@ hasta copiar los pedidos de antes; después se quita en **Settings → Bindings*
 
 ### Paso 6: Encender el contador y el panel
 
-Lo hecho el 24-nov-2026 (no se repite):
-- La migración `supabase/migraciones/20261124180000_sitio.sql` ya está aplicada en el proyecto
-  `coddvisor` de Supabase, con el conector «Supabase Coddvisor».
-- `soporte@coddvisor.com` ya está en `sitio.colaboradores`.
+Hecho el 24-nov-2026 (no se repite):
+- Las migraciones de `supabase/migraciones/` están aplicadas en el proyecto `coddvisor` de
+  Supabase, con el conector «Supabase Coddvisor». El conector solo ve ese proyecto.
+- `soporte@coddvisor.com` existe en Supabase Auth y es administrador del panel.
+- En Supabase → **Project Settings → Data API**, «Exposed schemas» tiene solo `public`.
 
-Lo que falta, en este orden:
+Para que funcionen las invitaciones (una sola vez):
 
-1. **Crear el usuario** en Supabase → proyecto `coddvisor` → **Authentication → Users → Add user →
-   Create new user**: `soporte@coddvisor.com`, una contraseña nueva (12 caracteres o más, que no
-   se haya escrito en ningún chat) y **Auto Confirm User** marcado.
-2. **Cerrar el registro:** **Authentication → Sign In / Providers** → apagar **Allow new users to
-   sign up**.
-3. **Unir el cambio** a `main`. Cloudflare publica solo. En Cloudflare no hay que configurar nada
-   nuevo.
-4. **Probar:** abre `https://www.coddvisor.com/equipo/` → «Entrar al panel» → correo y contraseña.
-   Abre unas páginas del sitio desde tu celular y recarga el panel: deben aparecer. Envía el
-   formulario con tus datos: debe aparecer en «Quiénes dejaron sus datos».
+1. **Copiar la llave secreta** en Supabase → proyecto `coddvisor` → **Project Settings → API Keys**
+   → sección **Secret keys** → crear o copiar una (empieza con `sb_secret_`). No la pegues en un
+   chat ni en un archivo.
+2. **Guardarla en Cloudflare:** Workers & Pages → proyecto del sitio → **Settings → Variables and
+   secrets → Add** → **Type:** `Secret`, **Name:** `SUPABASE_LLAVE_SECRETA`, **Value:** la llave.
+   Para **Production** (y **Preview** si se quiere probar en las versiones de prueba).
+3. **Volver a publicar:** Deployments → último despliegue → **Retry deployment** (los secretos
+   nuevos entran con un despliegue nuevo).
+4. **Cerrar el registro público:** Supabase → **Authentication → Sign In / Providers** → apagar
+   **Allow new users to sign up**. Las cuentas se crean solo por invitación.
+5. **Probar:** en la pestaña Equipo, invítate con otro correo tuyo como Integrante, abre el enlace en
+   una ventana privada, crea la contraseña y revisa que solo veas la pestaña Análisis.
 
 ---
 

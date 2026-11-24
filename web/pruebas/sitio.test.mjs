@@ -11,7 +11,7 @@ const PEDIDO = (extra = {}) => ({
 const hoyLima = async (db) => (await db.query(`SELECT to_char((now() AT TIME ZONE 'America/Lima')::date, 'YYYY-MM-DD') AS d`)).rows[0].d;
 const sumarDias = (dia, n) => new Date(Date.parse(dia + 'T12:00:00Z') + n * 86400000).toISOString().slice(0, 10);
 const resumen = async (db, escala, periodo = null, usuario = ID_SOPORTE) =>
-  (await como(db, 'authenticated', 'SELECT public.sitio_resumen($1, $2) AS r', [escala, periodo], { usuario })).rows[0].r;
+  (await como(db, 'authenticated', 'SELECT public.sitio_panel($1, $2) AS r', [escala, periodo], { usuario })).rows[0].r;
 
 test('desde fuera no se ve ninguna tabla: ni anon ni authenticated', async () => {
   const db = await baseNueva();
@@ -27,8 +27,8 @@ test('anon puede anotar visitas y registrar pedidos, pero no ver el panel', asyn
   const db = await baseNueva();
   await como(db, 'anon', `SELECT public.sitio_anotar_visita('/', '', '', 'celular', true)`);
   await como(db, 'anon', 'SELECT public.sitio_registrar_pedido($1)', [PEDIDO()]);
-  await assert.rejects(como(db, 'anon', `SELECT public.sitio_resumen('dia', null)`), /permission denied/);
-  await assert.rejects(como(db, 'anon', `SELECT public.sitio_marcar_pedido($1, true)`, [PEDIDO().id]), /permission denied/);
+  await assert.rejects(como(db, 'anon', `SELECT public.sitio_panel('dia', null)`), /permission denied/);
+  await assert.rejects(como(db, 'anon', `SELECT public.sitio_atender_pedido($1, true)`, [PEDIDO().id]), /permission denied/);
 });
 
 test('el panel solo responde a un colaborador activo y confirmado', async () => {
@@ -36,16 +36,16 @@ test('el panel solo responde a un colaborador activo y confirmado', async () => 
   await conColaborador(db);
   assert.equal((await resumen(db, 'dia')).quien.nombre, 'Equipo');
   // Alguien con cuenta pero que no es del equipo.
-  await assert.rejects(resumen(db, 'dia', null, ID_EXTRANO), /no tiene acceso/);
+  await assert.rejects(resumen(db, 'dia', null, ID_EXTRANO), /no permite/);
   // Sin sesión.
-  await assert.rejects(resumen(db, 'dia', null, null), /no tiene acceso/);
+  await assert.rejects(resumen(db, 'dia', null, null), /no permite/);
   // Correo sin confirmar.
   await db.exec(`UPDATE auth.users SET email_confirmed_at = NULL WHERE email = 'soporte@coddvisor.com'`);
-  await assert.rejects(resumen(db, 'dia'), /no tiene acceso/);
+  await assert.rejects(resumen(db, 'dia'), /no permite/);
   await db.exec(`UPDATE auth.users SET email_confirmed_at = now() WHERE email = 'soporte@coddvisor.com'`);
   // Archivado: el acceso se corta en ese momento.
   await db.exec(`UPDATE sitio.colaboradores SET archivado_en = now()`);
-  await assert.rejects(resumen(db, 'dia'), /no tiene acceso/);
+  await assert.rejects(resumen(db, 'dia'), /no permite/);
 });
 
 test('el contador suma por día, página y procedencia; lo interno no lleva dominio', async () => {
@@ -94,14 +94,14 @@ test('marcar atendido guarda quién; marcar dos veces no cambia nada; se puede d
   await conColaborador(db);
   await como(db, 'anon', 'SELECT public.sitio_registrar_pedido($1)', [PEDIDO()]);
   const marcar = (atendido, usuario = ID_SOPORTE) =>
-    como(db, 'authenticated', 'SELECT public.sitio_marcar_pedido($1, $2) AS r', [PEDIDO().id, atendido], { usuario }).then((x) => x.rows[0].r);
+    como(db, 'authenticated', 'SELECT public.sitio_atender_pedido($1, $2) AS r', [PEDIDO().id, atendido], { usuario }).then((x) => x.rows[0].r);
   const a = await marcar(true);
   assert.equal(a.atendido_por, 'soporte@coddvisor.com');
   assert.ok(a.atendido_en);
   assert.deepEqual(await marcar(true), a);
   assert.deepEqual(await marcar(false), { atendido_en: null, atendido_por: null });
-  await assert.rejects(marcar(true, ID_EXTRANO), /no tiene acceso/);
-  await assert.rejects(como(db, 'authenticated', 'SELECT public.sitio_marcar_pedido($1, true)', [crypto.randomUUID()], { usuario: ID_SOPORTE }), /no existe/);
+  await assert.rejects(marcar(true, ID_EXTRANO), /no permite/);
+  await assert.rejects(como(db, 'authenticated', 'SELECT public.sitio_atender_pedido($1, true)', [crypto.randomUUID()], { usuario: ID_SOPORTE }), /no existe/);
 });
 
 test('las cifras: hoy frente a ayer, semana de lunes a domingo, pedidos por hora de Lima y lo que leyeron', async () => {

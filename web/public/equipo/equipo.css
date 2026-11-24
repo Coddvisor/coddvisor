@@ -154,3 +154,26 @@ thead th { color:var(--texto-2); font-weight:600; font-size:13px; }
   .form-linea { grid-template-columns:1fr; }
   .eq-actualizado { margin-left:0; }
 }
+
+/* ---------- Pestañas ---------- */
+.pestanas { display:flex; gap:4px; border-bottom:1px solid var(--borde); overflow-x:auto; }
+.pestanas button { min-height:44px; padding:0 16px; border:0; border-bottom:3px solid transparent; background:transparent; color:var(--texto-2); font-weight:600; cursor:pointer; white-space:nowrap; }
+.pestanas button[aria-selected="true"] { color:var(--tinta); border-bottom-color:var(--boton); }
+.eq-panel { display:grid; gap:20px; }
+[data-contenido]:not([hidden]) { display:grid; gap:20px; }
+
+/* ---------- Equipo: invitar, roles, enlace ---------- */
+.form-linea select, .rol-select { min-height:44px; padding:0 10px; border:1px solid var(--borde-fuerte); border-radius:10px; background:var(--tarjeta); color:var(--tinta); font:inherit; }
+.rol-select { min-height:36px; font-size:14px; }
+.enlace-listo { display:grid; gap:10px; margin-top:12px; padding:14px; border-radius:12px; background:var(--correcto-fondo); }
+.enlace-listo p { color:var(--correcto); font-weight:600; font-size:14px; }
+.enlace-listo input { min-height:44px; padding:0 12px; border:1px solid var(--borde-fuerte); border-radius:10px; background:var(--tarjeta); color:var(--tinta); font:400 13px/1 var(--mono); width:100%; }
+
+/* ---------- Configuración ---------- */
+.matriz td { text-align:center; }
+.matriz input { width:20px; height:20px; }
+.matriz-desc { display:block; color:var(--texto-3); font-size:12px; font-weight:400; margin-top:2px; }
+.ajustes { display:grid; gap:14px; margin-top:12px; }
+.ajuste label { display:block; font-size:14px; color:var(--texto-2); margin-bottom:6px; }
+.ajuste-fila { display:flex; gap:8px; }
+.ajuste-fila input { min-height:40px; padding:0 12px; border:1px solid var(--borde-fuerte); border-radius:10px; background:var(--tarjeta); color:var(--tinta); font:inherit; flex:1; min-width:0; max-width:320px; }
