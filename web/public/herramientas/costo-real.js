@@ -7,8 +7,9 @@
    - Con «No lo sé», los tres regímenes lado a lado; el número grande es el del régimen general,
      el más alto, para que la persona nunca se quede corta al decidir.
    - Avisa si el sueldo es menor que la mínima que corresponde a la jornada (R.M. 091-92-TR, art. 3).
-   - Pago por horas: sueldo del mes = tarifa × horas al día × días a la semana × 52 ÷ 12. El promedio
-     diario se toma sobre un centro de trabajo de 6 días (D.S. 001-96-TR, art. 12).
+   - La jornada sale de las horas a la semana, con las horas extra, y los días que va la persona
+     (L.jornada): menos de 24 horas con 6 días, o de 20 con 5 o menos, es jornada de menos de 4 horas.
+   - Pago por horas: sueldo del mes = tarifa × horas a la semana × 52 ÷ 12.
    - Avisa la retención de quinta si el ingreso del año pasa de 7 UIT (no es costo del negocio). */
 (function () {
   'use strict';
@@ -29,23 +30,16 @@
     var regSel = elegido('regimen') || 'nose';
     var porHoras = elegido('pago') === 'horas';
     var rmv = L.rmv();
-    var sueldo, horasDia;
-    if (porHoras) {
-      var tarifa = L.centimos(el('tarifa').value);
-      horasDia = parseFloat(String(el('horas').value).replace(',', '.')) || 0;
-      var dias = L.entero(el('dias').value, 7);
-      sueldo = Math.round(tarifa * horasDia * dias * 52 / 12);
-      horasDia = horasDia * dias / 6; // promedio diario en un centro de trabajo de 6 días
-    } else {
-      sueldo = L.centimos(el('sueldo').value);
-      horasDia = el('horas4').checked ? 8 : 0; // sin las horas exactas, no se avisa la mínima proporcional
-    }
+    var horasSem = parseFloat(String(el('horas').value).replace(',', '.')) || 48; // sin dato, jornada completa: el costo más alto
+    var dias = L.entero(el('dias').value, 7) || 6;
+    var sueldo = porHoras ? Math.round(L.centimos(el('tarifa').value) * horasSem * 52 / 12) : L.centimos(el('sueldo').value);
+    var j = L.jornada(rmv, horasSem, dias);
     var asig = el('asignacion').checked ? L.asignacion() : 0;
     var extras = L.centimos(el('extras').value);
     var regulares = el('extras3').checked ? extras : 0;
     return {
-      regSel: regSel, porHoras: porHoras, rmv: rmv, sueldo: sueldo, horasDia: horasDia,
-      menos4h: horasDia < 4, mensual: sueldo + asig + extras, base: sueldo + asig + regulares,
+      regSel: regSel, porHoras: porHoras, rmv: rmv, sueldo: sueldo, jornada: j, horasSem: horasSem,
+      menos4h: j.menos4h, mensual: sueldo + asig + extras, base: sueldo + asig + regulares,
       personas: Math.max(1, L.entero(el('personas').value) || 1)
     };
   }
@@ -73,6 +67,9 @@
     $('[data-antes]').hidden = !(d.regSel === 'pequena' || d.regSel === 'micro');
     $('[data-f="fijo"]').hidden = d.porHoras;
     $('[data-f="horas"]').hidden = !d.porHoras;
+    $('[data-f="horas-sueldo"]').hidden = !d.porHoras;
+    r('jornada').textContent = d.horasSem > 0 && d.menos4h
+      ? 'Menos de 4 horas al día en promedio: tiene gratificación, pero no CTS.' : '';
     $('[data-f="afp"]').hidden = elegido('pension') !== 'afp';
     $('[data-f="prima"]').hidden = !el('sctr').checked;
     r('salud-a').textContent = micro ? 'SIS' : 'EsSalud';
@@ -82,7 +79,7 @@
     if (d.porHoras) r('sueldo-horas').textContent = L.soles(d.sueldo) + ' al mes';
 
     // Aviso de la mínima según la jornada
-    var minima = L.minimaJornada(d.rmv, d.horasDia);
+    var minima = d.jornada.minima;
     var bajo = d.sueldo > 0 && d.sueldo < minima;
     r('aviso-minima').hidden = !bajo;
     if (bajo) r('aviso-minima').textContent = 'Este sueldo está por debajo de la mínima que corresponde a la jornada: ' + L.soles(minima) + ' al mes. Pagar menos es una infracción ante la SUNAFIL.';
