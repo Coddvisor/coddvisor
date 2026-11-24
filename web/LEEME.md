@@ -20,8 +20,14 @@ cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar
 | `public/estilos.css`     | Tonos de apoyo, qué color usa cada pieza, letras, espacios, celular |
 | `public/sitio.js`        | El movimiento: panel de la portada, pestañas, formularios y aparición al bajar |
 | `public/fluido.css`, `public/fluido.js` | La capa «fluida»: acabado (vidrio, sombras suaves, degradados) y movimiento al estilo de las páginas de Apple. Solo agrega; ver «La capa fluida» |
-| `functions/api/contacto.js` | Lo único que corre en el servidor: recibe el formulario de contacto, lo guarda y avisa por correo |
-| `migrations/`            | Cómo es la tabla donde se guardan los pedidos de contacto    |
+| `functions/api/contacto.js` | Recibe el formulario de contacto, lo guarda y avisa por correo |
+| `functions/_middleware.js` | El contador de puerta: suma cada página abierta (ver «Visitas y panel del equipo») |
+| `functions/api/equipo/`  | Lo que usa el panel del equipo: entrar, salir, las cifras y marcar pedidos atendidos |
+| `servidor/`              | La lógica de esas funciones (contador, sesiones, cifras) y sus límites en `config.js` |
+| `src/pages/equipo/`, `public/equipo/` | El panel `/equipo/` y su página de entrada. No salen en el menú ni en Google |
+| `integraciones/rutas-cloudflare.mjs` | Arma `_routes.json` al construir: solo las páginas pasan por el contador |
+| `migrations/`            | Cómo son las tablas de la base: pedidos (0001), visitas y equipo (0002) |
+| `pruebas/`               | Las pruebas de todo lo anterior (`npm run probar`)            |
 | `public/favicon*`, `public/apple-touch-icon.png` | Los íconos de la pestaña y del iPhone |
 | `public/vista-previa.png`| La imagen que sale al compartir el enlace (WhatsApp, redes). Copia de `marca/logo/redes/coddvisor-vista-previa-enlace.png` |
 | `public/fuentes/`       | Space Grotesk y Space Mono, servidas desde el sitio (no desde Google). Licencia en `LICENCIA.txt` |
@@ -185,6 +191,17 @@ Para revisar exactamente lo que se va a publicar:
 npm run build && npm run preview
 ```
 
+Antes de dar un cambio por terminado (corre las pruebas del contador, del panel y del formulario,
+y arma el sitio):
+
+```bash
+npm run verificar
+```
+
+En `npm run dev` no corren las funciones del servidor: el panel `/equipo/` pide entrar y el
+formulario usa su camino de respaldo. Las pruebas usan una base SQLite de mentira con las mismas
+migraciones, así que sí revisan las consultas de verdad.
+
 ## Correo y WhatsApp (un solo lugar)
 
 En `src/layouts/Base.astro`, la etiqueta `<body>` lleva dos datos:
@@ -239,6 +256,10 @@ UPDATE pedidos_contacto SET atendido_en = strftime('%Y-%m-%dT%H:%M:%SZ','now')
 WHERE whatsapp = '51987654321';
 ```
 
+Desde el panel del equipo (`/equipo/`) se ve lo mismo sin escribir consultas, y el botón
+**«Ya le escribimos»** marca el pedido con la hora y el correo de quien lo marcó. Las consultas de
+arriba quedan como respaldo.
+
 Una vez al mes, borra lo que pasó el plazo que promete la página de privacidad
 (12 meses) sin que empezaran a trabajar juntos:
 
@@ -248,6 +269,75 @@ DELETE FROM pedidos_contacto WHERE recibido_en < strftime('%Y-%m-%dT%H:%M:%SZ','
 
 En tu computadora (`npm run dev`) no existe el servidor: el formulario siempre
 usa el camino de respaldo. Es lo esperado.
+
+## Visitas y panel del equipo
+
+Como en una tienda: **un contador en la puerta** (cuántos entraron y qué miraron), **el cuaderno de
+pedidos** (quiénes dejaron sus datos) y **la conversión** (de cada 100 que entran, cuántos dejan sus
+datos). Todo se ve en `/equipo/`, por día, semana o mes.
+
+### El contador de puerta
+
+`functions/_middleware.js` corre en el servidor cada vez que alguien abre una página. Suma uno en la
+tabla `visitas_dia`: **una fila por día, página y procedencia**, nunca una fila por persona.
+
+- **Entrada:** la persona llegó desde fuera del sitio (Google, Facebook, un enlace de WhatsApp). Es
+  como alguien que cruza la puerta. **Página vista:** toda página abierta, también al pasar de una
+  página a otra del sitio.
+- **No guarda nada de la persona:** ni IP, ni cookies, ni la dirección completa de donde vino. Solo
+  el dominio (`google.com.pe`), el nombre de la campaña del enlace (`?utm_campaign=lanzamiento`), si
+  es celular, tableta o computadora, y el país y la región que calcula Cloudflare.
+- **No cuenta** robots ni buscadores, las vistas previas que arman WhatsApp o Facebook al pegar un
+  enlace, las páginas que el navegador pide por adelantado, los errores (404) ni el propio panel.
+- **Si la base falla, la página se entrega igual.** La suma se hace después de entregarla.
+- **Lo que no sabe:** si alguien volvió (no hay cookies) ni si leyó hasta el final. Un robot que se
+  hace pasar por navegador se cuela. Las cifras son buenas para comparar semanas, no son exactas.
+- **WhatsApp casi nunca dice de dónde viene la persona:** cae en «Directo, WhatsApp o una app». Para
+  saber qué mensaje trajo gente, comparta el enlace con campaña:
+  `https://www.coddvisor.com/blog/liquidacion/?utm_campaign=whatsapp-noviembre`.
+
+Las imágenes, estilos y programas no pasan por el contador: `integraciones/rutas-cloudflare.mjs`
+arma `_routes.json` al construir el sitio. Si un día el sitio tiene más de 100 archivos sueltos en
+`public/`, el armado se detiene y explica cómo agruparlos en una carpeta.
+
+### Quiénes dejaron sus datos y qué leyeron
+
+`sitio.js` anota en el navegador de la persona las páginas que abre en esa visita (hasta 15). Esa
+lista sale **solo si envía el formulario**, y se guarda con el pedido en `recorrido`. Así el panel
+dice, por ejemplo: «Rosa leyó *Liquidación de beneficios* y la portada antes de escribir», y en «Lo
+más visto» cuántas personas dejaron sus datos después de leer cada artículo.
+
+### Entrar al panel
+
+No hay contraseñas. La persona escribe su correo en `/equipo/entrar/`; si está en la tabla
+`colaboradores`, le llega un enlace que vence en 15 minutos y sirve una sola vez. La sesión dura 7
+días. La base guarda solo la huella de cada enlace y sesión: quien la lea no puede entrar con eso.
+Un correo de fuera recibe la misma respuesta que uno del equipo, pero no le llega nada.
+
+**Dar acceso** (en la consola de D1, cambia el correo y el nombre):
+
+```sql
+INSERT INTO colaboradores (correo, nombre) VALUES ('nombre@coddvisor.com', 'Nombre');
+```
+
+El correo va en minúsculas; la base rechaza uno con mayúsculas.
+
+**Quitar acceso** (corta la sesión en ese momento; la fila queda para saber quién atendió qué):
+
+```sql
+UPDATE colaboradores SET archivado_en = strftime('%Y-%m-%dT%H:%M:%SZ','now')
+WHERE correo = 'nombre@coddvisor.com';
+```
+
+### Lo que se cambia sin tocar el programa
+
+- **Qué dominio es «Buscadores», «Redes sociales» o «WhatsApp»:** la tabla `origenes_visita`. Para
+  sumar uno: `INSERT INTO origenes_visita (patron, grupo) VALUES ('*.ejemplo.com', 'Redes sociales');`
+  (`*` es cualquier texto).
+- **La zona horaria del día:** la variable `ZONA_HORARIA` en Cloudflare (por defecto `America/Lima`).
+- **Los límites** (cuánto dura el enlace, cuántos periodos muestra el gráfico): `servidor/config.js`.
+
+Para encenderlo, ver «Paso 6» en «Pasos para publicarlo».
 
 ## El movimiento
 
@@ -518,6 +608,24 @@ Hasta que hagas estos pasos, el sitio publicado sigue funcionando como antes
    que la variable se llame `DB`). Si se guarda pero no llega el correo, el
    paso 5b o 5c no quedó bien: Resend → **Logs** te dice por qué.
 
+### Paso 6: Encender el contador y el panel
+
+Hazlo **antes** de unir este cambio a `main`, en este orden:
+
+1. **La base:** Storage & Databases → D1 → `coddvisor-contacto` → Console. Copia todo el archivo
+   `web/migrations/0002_visitas_y_equipo.sql`, pégalo y pulsa **Execute**. Solo agrega tablas y
+   columnas; no toca los pedidos que ya hay.
+   (Si se publica sin este paso, el formulario sigue guardando los pedidos, sin el recorrido, y el
+   contador no suma nada hasta que se pegue.)
+2. **Tu acceso:** en la misma consola, la línea de «Dar acceso» con tu correo.
+3. **Unir el cambio** a `main`. Cloudflare publica solo.
+4. **Probar:** abre `https://www.coddvisor.com/equipo/` → te lleva a «Entrar al panel» → escribe tu
+   correo → abre el enlace del correo → **Entrar al panel**. Abre unas páginas del sitio desde tu
+   celular y recarga el panel: deben aparecer.
+
+El panel usa la misma clave de Resend del formulario (paso 5c). Sin ella, «Entrar al panel» avisa que
+el ingreso por correo no está encendido.
+
 ---
 
 ## Lo que cuesta
@@ -528,8 +636,15 @@ Hasta que hagas estos pasos, el sitio publicado sigue funcionando como antes
 - **GoDaddy:** ya pagaste el dominio; el reenvío del dominio es gratis.
   Revisa la fecha de renovación del dominio.
 - **Zoho Mail:** según el plan que ya tienes.
-- **Cloudflare D1** (la base de los pedidos): gratis hasta 5 GB y 100 000
-  escrituras al día. Con 100 pedidos al mes se usa una fracción mínima.
+- **Cloudflare D1** (la base de los pedidos y de las visitas): gratis hasta 5 GB
+  y 100 000 escrituras al día. **Cada página vista es una escritura.**
+- **Cloudflare Pages Functions:** gratis hasta 100 000 pedidos al día. Cada página vista pasa por
+  el contador y cuenta como uno; las imágenes y estilos no (ver `_routes.json`).
+- **Cuándo revisar el contador:** con más de 50 000 páginas vistas al día se acerca al límite gratis.
+  El paso siguiente es Workers Analytics Engine, hecho para contar millones de eventos; la tabla
+  `visitas_dia` y el panel no cambian de idea. Si se pasa el límite antes, Cloudflare deja de
+  ejecutar las funciones ese día: el sitio se sigue viendo, pero no cuenta visitas ni recibe el
+  formulario (que usa su camino de respaldo por correo).
 - **Resend:** gratis hasta 3 000 correos al mes y 100 al día. Cada pedido es un
   correo.
 

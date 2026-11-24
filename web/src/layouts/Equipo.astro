@@ -1,0 +1,30 @@
+---
+// Molde de las páginas del equipo (/equipo/). No lleva el menú, el pie ni el aviso del sitio
+// público: es una herramienta de trabajo. Sigue el modo claro u oscuro del teléfono o la computadora
+// (colores.css cambia la paleta sola porque aquí no se fija data-tema).
+// Los buscadores no la indexan: robots.txt la excluye y la página lo repite con «noindex».
+interface Props {
+  titulo: string;
+}
+const { titulo } = Astro.props;
+---
+<!doctype html>
+<html lang="es-PE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>{titulo}</title>
+<link rel="icon" href="/favicon.svg?v=5" type="image/svg+xml">
+<link rel="preload" href="/fuentes/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/colores.css">
+<link rel="stylesheet" href="/equipo/equipo.css">
+<slot name="cabeza" />
+</head>
+<body>
+<main id="contenido" class="eq">
+<slot />
+</main>
+</body>
+</html>

@@ -1,0 +1,29 @@
+---
+// Entrada al panel del equipo. Dos momentos en la misma página:
+//   1. Sin enlace: la persona escribe su correo y recibe un enlace (functions/api/equipo/entrar.js).
+//   2. Con enlace (?t=...): un botón cambia el enlace por una sesión (functions/api/equipo/sesion.js).
+// El enlace no entra solo al abrirse: los programas que revisan los correos abren los enlaces por
+// su cuenta y gastarían el ingreso antes que la persona.
+import Equipo from '../../layouts/Equipo.astro';
+---
+<Equipo titulo="Entrar al panel del equipo | Coddvisor">
+<script slot="cabeza" is:inline src="/equipo/entrar.js" defer></script>
+<section class="entrar" aria-labelledby="en-t">
+  <p class="rotulo">Coddvisor, equipo</p>
+  <h1 id="en-t">Entrar al panel</h1>
+
+  <form data-paso="correo" novalidate>
+    <p>Escriba el correo con que el equipo le dio acceso. Le llegará un enlace para entrar, sin contraseña.</p>
+    <label for="en-correo">Su correo</label>
+    <input id="en-correo" name="correo" type="email" autocomplete="email" inputmode="email" required maxlength="120" placeholder="nombre@coddvisor.com">
+    <button type="submit" class="boton">Enviarme el enlace</button>
+  </form>
+
+  <div data-paso="enlace" hidden>
+    <p>Su enlace está listo. Pulse el botón para entrar en este navegador.</p>
+    <button type="button" class="boton" data-entrar>Entrar al panel</button>
+  </div>
+
+  <p class="estado" data-estado role="status" aria-live="polite"></p>
+</section>
+</Equipo>

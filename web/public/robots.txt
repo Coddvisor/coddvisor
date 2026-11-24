@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+# El panel del equipo no es para el público ni para los buscadores.
+Disallow: /equipo/

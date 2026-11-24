@@ -1,6 +1,8 @@
 /* Coddvisor, sitio público. Un solo archivo, sin librerías.
    1. Contacto: WhatsApp y correo salen de data-whatsapp y data-correo del <body>.
    2. Formularios: guardan el pedido en /api/contacto; si eso falla, abren WhatsApp o el correo.
+      Con el pedido va el recorrido: las páginas de este sitio que la persona abrió en esta visita.
+      Se anota solo en su navegador (sessionStorage) y sale únicamente si envía el formulario.
    3. Panel «¿Cómo le va hoy?»: la maqueta cuenta el día, se queda un momento en el estado final
       y vuelve a empezar (solo mientras se ve).
    4. Pestañas de «Qué hace»: avanzan solas cada 6.6 s hasta que la persona las toca.
@@ -62,6 +64,20 @@
   }
   // Número único del pedido: si la persona pulsa dos veces o la red reintenta, el servidor
   // reconoce que es el mismo y no lo guarda dos veces.
+  /* Recorrido de esta visita: rutas del sitio, sin repetir, en el orden en que se abrieron. */
+  var RECORRIDO_MAX = 15;
+  function leerRecorrido() {
+    try { var r = JSON.parse(sessionStorage.getItem('recorrido') || '[]'); return Array.isArray(r) ? r : []; }
+    catch (e) { return []; }
+  }
+  try {
+    var recorrido = leerRecorrido();
+    if (recorrido.indexOf(location.pathname) === -1 && recorrido.length < RECORRIDO_MAX) {
+      recorrido.push(location.pathname);
+      sessionStorage.setItem('recorrido', JSON.stringify(recorrido));
+    }
+  } catch (e) {}
+
   function nuevoId() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
     var b = new Uint8Array(16);
@@ -136,7 +152,7 @@
       guardar({
         id: id, nombre: v('nombre'), whatsapp: v('whatsapp'), vende: v('vende'),
         personas: v('personas'), sedes: v('sedes'), sitio_web: v('sitio_web'),
-        pagina: location.pathname
+        pagina: location.pathname, recorrido: leerRecorrido()
       }).then(function (r) {
         enviando = false;
         if (boton) { boton.disabled = false; boton.textContent = textoBoton; }
