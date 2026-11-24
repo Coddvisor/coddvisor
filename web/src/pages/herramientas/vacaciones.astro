@@ -3,7 +3,7 @@
 // Cuentas en public/herramientas/laboral.js (compartidas con gratificación, CTS y liquidación);
 // esta página las usa desde public/herramientas/vacaciones.js.
 // Truncas en la MYPE: sobre 15 días, con el criterio del MTPE (Boletín N.° 85) y su nota.
-// Indemnización por vacaciones no tomadas en la MYPE: pendiente; la herramienta remite al contador.
+// Indemnización por vacaciones no tomadas en la MYPE: 15 + 15 días, criterio adoptado por Coddvisor, con nota.
 // Diseño: el mismo de las herramientas nuevas (herramienta.css). La guía conserva TODO su texto.
 import Base from '../../layouts/Base.astro';
 import { llamado } from '../../datos/navegacion';
@@ -72,7 +72,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
               <div class="campo"><label for="va-meses">Meses completos trabajados</label><input id="va-meses" name="meses" type="number" inputmode="numeric" min="0" max="11" step="1" value="7"></div>
               <div class="campo"><label for="va-dias">Días sueltos además</label><input id="va-dias" name="dias" type="number" inputmode="numeric" min="0" max="29" step="1" value="10"></div>
             </div>
-            <label class="casilla"><input type="checkbox" name="horas4" checked> Trabaja 4 horas al día o más <small>(si no, no le corresponden vacaciones)</small></label>
+            <label class="casilla"><input type="checkbox" name="horas4" checked> Trabaja 4 horas al día o más <small>(si no, le corresponden 6 días al año)</small></label>
             <label class="casilla" data-vende><input type="checkbox" name="vende"> Quiere vender 15 de sus 30 días <small>(por acuerdo escrito)</small></label>
           </div>
         </div>
@@ -95,6 +95,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
               <a href="#g-calculo">Por qué se divide entre 30</a>
             </div>
             <p class="igv-ayuda" data-r="nota" hidden>Calculado con el criterio del Ministerio de Trabajo (Boletín Informativo Laboral N.° 85): dozavos de los 15 días. Si hay un reclamo, confírmelo con su contador.</p>
+            <p class="igv-ayuda" data-r="nota-mype" hidden>Es la lectura más usada: 15 días por el descanso y 15 de indemnización. Una lectura literal del D. Leg. 713, art. 23 c), podría pedir un sueldo completo de indemnización. Si hay un reclamo, confírmelo con su contador.</p>
           </div>
           <div class="tres" data-tres hidden>
             <div><p class="tres-t">Régimen general</p><p class="tres-v" data-r="t-general">S/ 0.00</p><p class="tres-d" data-r="t-general-det"></p></div>
@@ -189,10 +190,13 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
       <div class="guia-texto">
         <p><b>Quiere vender sus vacaciones.</b> En el régimen general, la persona puede vender hasta 15 de sus 30 días, por acuerdo escrito. Con un sueldo de S/ 1,500, descansa 15 días pagados con S/ 750, trabaja los otros 15 y recibe S/ 750 más por esos días vendidos. Ese pago lleva los mismos descuentos y aportes que el sueldo.</p>
         <p><b>Quiere partirlas en pedazos.</b> En el régimen general, la persona puede pedir por escrito tomarlas por partes. Debe tomar 15 días seguidos, o un bloque de 7 y otro de 8, y el resto puede repartirlo en días sueltos.</p>
-        <p>En una micro o pequeña empresa inscrita, se puede acordar por escrito reducir el descanso de 15 a 7 días. Por los 8 días que no descansa, la persona recibe una compensación de 8 días de sueldo: con S/ 1,500, son S/ 750 de vacaciones más S/ 400 de compensación. La venta de días y el reparto en partes no funcionan igual que en el régimen general, así que consúltelo con su contador antes de firmar.</p>
+        <p>En una micro o pequeña empresa inscrita, si se parten las vacaciones, cada tramo debe ser de al menos 7 días. Con 15 días, en la práctica quedan 15 seguidos o un bloque de 7 y otro de 8.</p>
+        <p>Otra cosa es reducir el descanso: se puede acordar por escrito bajarlo de 15 a 7 días, y por los 8 días que no descansa, la persona recibe una compensación de 8 días de sueldo. Con S/ 1,500, son S/ 750 de vacaciones más S/ 400 de compensación. La venta de días no funciona igual que en el régimen general, así que consúltela con su contador antes de firmar.</p>
         <p><b>No las tomó a tiempo.</b> Si pasa el año siguiente y la persona no descansó, usted debe un sueldo por el descanso no tomado y otro de indemnización. Con S/ 1,500, son <b>S/ 3,000</b> además del sueldo que ya le pagó por trabajar. Se calcula con el sueldo vigente el día del pago, y la indemnización no lleva aportes ni impuestos.</p>
+        <p>En una micro o pequeña empresa inscrita, se deben 15 días de sueldo por el descanso no tomado y 15 días más de indemnización. Con S/ 1,500, son S/ 750 + S/ 750 = <b>S/ 1,500</b>. Aquí tampoco la indemnización lleva aportes ni impuestos.</p>
+        <p><small>Es la lectura más usada. Una lectura literal del D. Leg. 713, art. 23 c), podría pedir una remuneración mensual completa como indemnización (S/ 750 + S/ 1,500 = S/ 2,250). Si hay un reclamo, confírmelo con su contador.</small></p>
         <p><b>Se va antes de cumplir el año.</b> Se le pagan las vacaciones <i>truncas</i> si trabajó al menos un mes. Si gana S/ 1,500 y se va con 7 meses y 10 días, recibe S/ 1,500 ÷ 12 × 7 = S/ 875 más S/ 1,500 ÷ 360 × 10 = S/ 41.67. Total: <b>S/ 916.67</b>, junto con su liquidación.</p>
-        <p>En una micro o pequeña empresa se calcula sobre sus 15 días: con el mismo sueldo y el mismo tiempo, son <b>S/ 458.33</b>. Así lo indica el Ministerio de Trabajo; si hay un reclamo, confírmelo con su contador.</p>
+        <p>En una micro o pequeña empresa, las truncas se pagan en dozavos y treintavos de lo que corresponde por un año, que en la MYPE es de 15 días (D. Leg. 713, art. 22; TUO MYPE, art. 55). Con el mismo sueldo y el mismo tiempo, son <b>S/ 458.33</b>. Así lo indica el Ministerio de Trabajo en su Boletín Informativo Laboral N.° 85; si hay un reclamo, confírmelo con su contador.</p>
       </div>
     </section>
 
@@ -222,7 +226,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
     <section class="guia-sec" id="g-preguntas" aria-labelledby="g-preguntas-t">
       <h3 class="guia-sec-t" id="g-preguntas-t">Preguntas frecuentes</h3>
       <div class="faq guia-faq">
-        <details><summary>¿Le tocan vacaciones a quien trabaja medio tiempo?<span class="mas" aria-hidden="true">+</span></summary><p>Depende de las horas. Si trabaja 4 horas diarias o más, sí. Si trabaja menos de 4 horas al día, la ley no le da vacaciones.</p></details>
+        <details><summary>¿Le tocan vacaciones a quien trabaja medio tiempo?<span class="mas" aria-hidden="true">+</span></summary><p>Depende de las horas. Si trabaja 4 horas diarias o más, le tocan los días completos de su régimen. Con menos de 4 horas al día, la ley peruana no le da esos días, pero la SUNAFIL y la Corte Suprema le reconocen al menos 6 días de descanso al año, por un convenio internacional que el Perú firmó.</p></details>
         <details><summary>¿Puedo adelantarle días antes de que cumpla el año?<span class="mas" aria-hidden="true">+</span></summary><p>Sí, por acuerdo escrito. Si luego se va, esos días se descuentan de sus vacaciones truncas, y lo que no alcance a cubrirse no se le cobra.</p></details>
         <details><summary>¿Quién decide la fecha?<span class="mas" aria-hidden="true">+</span></summary><p>Se fija de común acuerdo. Si no se ponen de acuerdo, decide el negocio, pero el reparto en partes solo puede pedirlo la persona.</p></details>
         <details><summary>¿Qué pasa si no doy vacaciones?<span class="mas" aria-hidden="true">+</span></summary><p>No darlas es una infracción muy grave ante la SUNAFIL, y no pagarlas a tiempo es grave. Además, se debe la indemnización por vacaciones no tomadas.</p></details>
@@ -234,6 +238,7 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
           <li>Días, pago, venta, truncas y no tomadas: <a href="https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=110007" rel="noopener" target="_blank">D. Leg. 713</a>, arts. 10 a 23, y su reglamento, D.S. 012-92-TR.</li>
           <li>Reparto por partes y venta: <a href="https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=42" rel="noopener" target="_blank">D. Leg. 1405 y D.S. 002-2019-TR</a>.</li>
           <li>15 días en la micro y pequeña empresa: <a href="https://elperuano.pe/NormasElperuano/2013/12/28/1033071-5.html" rel="noopener" target="_blank">TUO de la Ley MYPE</a>, art. 55. Reducción a 7 días: D.S. 008-2008-TR, art. 37. Truncas sobre 15 días: <a href="https://cdn.www.gob.pe/uploads/document/file/289278/Art%C3%ADculo_REMYPE_-_Enero_2019.pdf" rel="noopener" target="_blank">Ministerio de Trabajo, Boletín Informativo Laboral N.° 85</a>.</li>
+          <li>Medio tiempo, al menos 6 días: <a href="https://www.gob.pe/institucion/sunafil/noticias/1092181-cuando-te-corresponden-vacaciones-todo-lo-que-necesitas-saber-para-planificar-tu-descanso" rel="noopener" target="_blank">SUNAFIL, nota del 17 de enero de 2025</a> (Convenio 52 de la OIT); Tribunal de Fiscalización Laboral, Resolución 826-2023-SUNAFIL/TFL; Corte Suprema, <a href="https://elperuano.pe/noticia/287240-dictan-doctrina-jurisprudencial-sobre-descanso-vacacional-pagado" rel="noopener" target="_blank">Casación Laboral 35267-2023</a>.</li>
           <li>Aportes: <a href="https://orientacion.sunat.gob.pe/3094-principales-conceptos-afectos-al-aporte-al-snp-onp-personas" rel="noopener" target="_blank">SUNAT, conceptos afectos a ONP</a>. Infracciones: <a href="https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=47" rel="noopener" target="_blank">D.S. 019-2006-TR</a>.</li>
         </ul>
       </div>

@@ -8,8 +8,11 @@
    - Menos de 4 horas al día: sin derecho (D.S. 012-92-TR, art. 11).
    - Truncas en la micro y pequeña empresa: sobre sus 15 días, con el criterio del Ministerio de
      Trabajo (Boletín N.° 85), y una nota con la fuente debajo de la cifra.
-   - NO SE CALCULA (pendiente de confirmar): la indemnización por vacaciones no tomadas en la MYPE.
-     La página lo dice y remite al contador, en vez de adivinar. */
+   - No tomadas en la MYPE: 15 días + 15 de indemnización (criterio adoptado por Coddvisor), con una nota
+     que dice que la lectura literal podría pedir un sueldo completo de indemnización.
+   - Menos de 4 horas al día: al menos 6 días de descanso al año (SUNAFIL, Res. 826-2023-SUNAFIL/TFL;
+     Casación Laboral 35267-2023; Convenio 52 de la OIT). Sin monto: si son días laborables o
+     calendario no está resuelto. */
 (function () {
   'use strict';
   var L = window.CoddvisorLaboral;
@@ -50,8 +53,15 @@
     $('[data-uno]').hidden = false;
     ['venta', 'gana', 'limite'].forEach(function (k) { fila(k, null); });
     r('nota').hidden = true;
+    r('nota-mype').hidden = true;
 
-    if (!el('horas4').checked) { $('[data-uno]').hidden = true; aviso(null, 'Quien trabaja menos de 4 horas al día no tiene derecho a vacaciones por ley.'); return L.fichas(form); }
+    if (!el('horas4').checked) {
+      $('[data-uno]').hidden = true;
+      aviso(null, modo === 'anio'
+        ? 'Con menos de 4 horas al día no le tocan los días completos, pero sí al menos 6 días de descanso pagado al año: así lo reconocen la SUNAFIL y la Corte Suprema. Désele esos 6 días.'
+        : 'Con menos de 4 horas al día le corresponden al menos 6 días de descanso al año. Cómo se pagan si no los tomó o si se va, confírmelo con su contador.');
+      return L.fichas(form);
+    }
     if (sueldo === 0) { $('[data-uno]').hidden = true; aviso(null, 'Escriba el sueldo mensual de la persona para ver sus días y su pago.'); return L.fichas(form); }
 
     if (modo === 'anio') {
@@ -117,16 +127,24 @@
     }
 
     // No tomadas a tiempo
-    var v = L.vacacionesVencidas({ regimen: regimen, sueldo: sueldo });
-    if (!v || noSabe) {
+    if (noSabe) {
+      // Sin saber el régimen, el monto grande es el del régimen general: el más alto, nunca se queda corto.
       $('[data-uno]').hidden = true;
-      aviso(null, 'Consulte con su contador. Cómo se calcula la indemnización en la micro y pequeña empresa no está claro en la ley, y preferimos no darle un número que podría estar mal.');
+      $('[data-tres]').hidden = false;
+      ['general', 'pequena', 'micro'].forEach(function (g) {
+        var y = L.vacacionesVencidas({ regimen: g, sueldo: sueldo });
+        r('t-' + g).textContent = L.soles(y.total);
+        r('t-' + g + '-det').textContent = y.mype ? '15 + 15 días' : '30 + 30 días';
+      });
+      aviso(L.vacacionesVencidas({ regimen: 'general', sueldo: sueldo }).total, 'Prepare el monto del régimen general: es el más alto. Confirme su régimen en la consulta del REMYPE.');
       return L.fichas(form);
     }
+    var v = L.vacacionesVencidas({ regimen: regimen, sueldo: sueldo });
     r('l-dias').textContent = 'Qué se debe';
     r('dias').textContent = 'Descanso + indemnización';
     r('pago').textContent = L.soles(v.descanso) + ' + ' + L.soles(v.indemnizacion);
     r('cuenta').innerHTML = 'Descanso: <span class="ce">' + L.numero(v.descanso) + '</span><br>Indemnización: <span class="ce">' + L.numero(v.indemnizacion) + '</span><br>Total: <span class="am">' + L.numero(v.total) + '</span>';
+    r('nota-mype').hidden = !v.mype;
     aviso(v.total, 'Además del sueldo que ya le pagó por trabajar. La indemnización, ' + L.soles(v.indemnizacion) + ', no lleva aportes ni impuestos.');
     L.fichas(form);
   }

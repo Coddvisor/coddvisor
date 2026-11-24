@@ -79,7 +79,7 @@ export const herramientas: Herramienta[] = [
     subtema: 'Beneficios del año',
     publicada: '2026-11-21',
     lectura: 6,
-    verificada: '2026-11-20',
+    verificada: '2026-11-24',
   },
   {
     nombre: 'CTS',

@@ -113,9 +113,13 @@
     return { remuneracion: rem, porMeses: porMeses, porDias: porDias, total: porMeses + porDias, criterioMtpe: o.regimen !== 'general' };
   };
   /** No tomadas a tiempo, solo régimen general: un sueldo por el descanso + uno de indemnización. */
+  /** No tomadas a tiempo (D. Leg. 713, art. 23). En la MYPE, 15 días por el descanso + 15 de indemnización:
+      criterio adoptado por Coddvisor, la lectura más usada (la literal del art. 23 c) daría un sueldo
+      completo de indemnización). mype: true para que la página muestre esa nota. */
   L.vacacionesVencidas = function (o) {
-    if (o.regimen !== 'general') return null;
-    return { descanso: o.sueldo, indemnizacion: o.sueldo, total: o.sueldo * 2 };
+    if (o.regimen === 'general') return { descanso: o.sueldo, indemnizacion: o.sueldo, total: o.sueldo * 2, mype: false };
+    var q = Math.round(o.sueldo * 15 / 30);
+    return { descanso: q, indemnizacion: q, total: q * 2, mype: true };
   };
 
   /* ---------- CTS (TUO Ley CTS, D.S. 001-97-TR; TUO Ley MYPE art. 50) ---------- */
