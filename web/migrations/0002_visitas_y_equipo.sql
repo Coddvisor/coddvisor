@@ -3,17 +3,17 @@
 -- Solo agrega: no cambia ni borra nada de lo que ya existe.
 --
 -- Qué impide la base misma, aunque el código tenga un error:
---   - un conteo negativo, o más entradas que páginas vistas en la misma fila;
---   - un día que no tiene forma AAAA-MM-DD;
---   - un correo de colaborador con mayúsculas o sin @ (la búsqueda sería ambigua);
---   - un enlace de ingreso o una sesión sin dueño, o que vence antes de crearse;
+--   - un conteo negativo, o más entradas que páginas vistas en la misma fila.
+--   - un día que no tiene forma AAAA-MM-DD.
+--   - un correo de colaborador con mayúsculas o sin @ (la búsqueda sería ambigua).
+--   - un enlace de ingreso o una sesión sin dueño, o que vence antes de crearse.
 --   - un recorrido que no sea una lista JSON.
 -- STRICT: SQLite no acepta, por ejemplo, un número donde va texto.
 
 -- ---------------------------------------------------------------------------------------------
 -- 1. El contador de puerta (functions/_middleware.js).
 -- Una fila por combinación de día, página y procedencia. No guarda nada de la persona: ni IP,
--- ni cookies, ni dirección completa de donde vino; solo el dominio (google.com, facebook.com).
+-- ni cookies, ni dirección completa de donde vino. Solo el dominio (google.com, facebook.com).
 -- Un valor desconocido se guarda como '' y no como NULL, para que la clave no se repita.
 CREATE TABLE IF NOT EXISTS visitas_dia (
   dia         TEXT NOT NULL CHECK (dia GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'),
@@ -70,7 +70,7 @@ ALTER TABLE pedidos_contacto ADD COLUMN atendido_por TEXT CHECK (atendido_por IS
 -- ---------------------------------------------------------------------------------------------
 -- 3. Quién puede entrar al panel /equipo/.
 -- Se entra con un enlace que llega al correo: no hay contraseñas que guardar ni que se filtren.
--- Para dar acceso se agrega una fila; para quitarlo se llena `archivado_en` (nunca se borra:
+-- Para dar acceso se agrega una fila. para quitarlo se llena `archivado_en` (nunca se borra:
 -- así se sabe quién atendió cada pedido aunque ya no esté en el equipo).
 CREATE TABLE IF NOT EXISTS colaboradores (
   correo       TEXT PRIMARY KEY CHECK (correo = lower(trim(correo)) AND correo LIKE '_%@_%._%' AND length(correo) <= 120),
