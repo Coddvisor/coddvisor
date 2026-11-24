@@ -11,9 +11,9 @@
 --
 -- Invitaciones: el administrador crea una; la base devuelve un enlace que sirve una vez y vence en
 -- 7 días. Solo se guarda la huella SHA-256 del enlace. Al abrirlo, la persona crea su contraseña:
--- la cuenta la crea el servidor del sitio (functions/api/equipo/invitacion.js) con la llave secreta
--- de Supabase, como CAYLA lo hace desde su servidor. La misma vía sirve para restablecer una
--- contraseña olvidada.
+-- la cuenta la crea la función de Supabase equipo-invitacion (web/supabase/funciones/) con la llave
+-- secreta, que Supabase le da a la función sin copiarla a otro lado. La misma vía sirve para
+-- restablecer una contraseña olvidada.
 
 -- ---------------------------------------------------------------------------------------------
 -- Catálogos de permisos y roles.
@@ -432,7 +432,7 @@ END
 $$;
 
 -- ---------------------------------------------------------------------------------------------
--- La invitación, vista por quien la abre (sin sesión) y aceptada por el servidor del sitio.
+-- La invitación, vista por quien la abre (sin sesión) y aceptada por la función equipo-invitacion.
 
 CREATE FUNCTION public.sitio_invitacion_ver(p_enlace text) RETURNS jsonb
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = '' AS $$
@@ -469,7 +469,7 @@ END
 $$;
 COMMENT ON FUNCTION public.sitio_invitacion_cuenta(text) IS 'Para el servidor: si el enlace sirve y qué cuenta tiene ese correo. Solo con la llave secreta.';
 
--- Solo la llave secreta (service_role): la llama functions/api/equipo/invitacion.js después de crear
+-- Solo la llave secreta (service_role): la llama la función equipo-invitacion después de crear
 -- la cuenta o cambiar la contraseña en Supabase Auth. Marca el enlace usado y da el acceso.
 CREATE FUNCTION public.sitio_invitacion_aceptar(p_enlace text) RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path = '' AS $$
@@ -489,7 +489,7 @@ BEGIN
   RETURN jsonb_build_object('ok', true, 'correo', i.correo, 'tipo', i.tipo);
 END
 $$;
-COMMENT ON FUNCTION public.sitio_invitacion_aceptar(text) IS 'Marca un enlace como usado y da el acceso. Solo con la llave secreta, desde el servidor del sitio.';
+COMMENT ON FUNCTION public.sitio_invitacion_aceptar(text) IS 'Marca un enlace como usado y da el acceso. Solo con la llave secreta, desde la función equipo-invitacion.';
 
 -- ---------------------------------------------------------------------------------------------
 -- Permisos.

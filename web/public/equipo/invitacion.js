@@ -1,7 +1,7 @@
 /* Aceptar una invitación al panel (src/pages/equipo/invitacion.astro). Usa public/equipo/sesion.js.
    1. Lee el enlace de la dirección (?e=...) y lo quita de la barra, para que no quede en el historial.
    2. Pregunta a la base si sirve y para qué correo (sitio_invitacion_ver).
-   3. La persona crea su contraseña; el servidor del sitio crea la cuenta (/api/equipo/invitacion).
+   3. La persona crea su contraseña; la función de Supabase equipo-invitacion crea la cuenta.
    4. Entra con esa contraseña y va al panel. */
 (function () {
   'use strict';
@@ -54,9 +54,9 @@
     var boton = form.querySelector('button');
     boton.disabled = true;
     decir('Creando su acceso…');
-    fetch('/api/equipo/invitacion', {
+    fetch(b.getAttribute('data-supabase') + '/functions/v1/equipo-invitacion', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { apikey: b.getAttribute('data-supabase-llave'), 'content-type': 'application/json' },
       body: JSON.stringify({ enlace: enlace, clave: clave }),
     }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) { return { estado: r.status, cuerpo: j }; });

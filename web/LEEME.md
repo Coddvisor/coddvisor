@@ -329,10 +329,12 @@ persona ya tenía cuenta, recibe el acceso al momento.
 **Olvidó su contraseña:** en la pestaña Equipo, **Contraseña nueva** junto a su nombre: sale un enlace
 igual al de la invitación para que cree una nueva.
 
-**Cómo se crea la cuenta:** igual que CAYLA desde su servidor, la crea el pequeño servidor del sitio
-(`functions/api/equipo/invitacion.js`) con la **llave secreta** de Supabase. Esa llave vive solo en
-Cloudflare como secreto (`SUPABASE_LLAVE_SECRETA`), nunca en el repositorio ni en el navegador. No
-hace falta Resend: el enlace se manda por WhatsApp o por correo, a mano.
+**Cómo se crea la cuenta:** la crea la función de Supabase **`equipo-invitacion`**
+(`supabase/funciones/equipo-invitacion/`), con la llave secreta que Supabase le entrega a la función
+por dentro: no se copia a Cloudflare ni a ningún otro lado. No hace falta Resend: el enlace se manda
+por WhatsApp o por correo, a mano. Si se cambia `aceptar.js` o `index.ts`, se vuelve a subir la
+función con el conector «Supabase Coddvisor» (o `supabase functions deploy equipo-invitacion
+--no-verify-jwt`).
 
 **El panel se actualiza solo** cada 5 minutos mientras la pestaña está a la vista, y al volver a la
 pestaña si pasó más de un minuto. Cada actualización es una sola consulta sobre tablas ya sumadas
@@ -639,19 +641,14 @@ Hecho el 24-nov-2026 (no se repite):
 - `soporte@coddvisor.com` existe en Supabase Auth y es administrador del panel.
 - En Supabase → **Project Settings → Data API**, «Exposed schemas» tiene solo `public`.
 
-Para que funcionen las invitaciones (una sola vez):
+- La función `equipo-invitacion` está subida en Supabase (Edge Functions), sin pedir sesión: la
+  protege el enlace de un solo uso.
 
-1. **Copiar la llave secreta** en Supabase → proyecto `coddvisor` → **Project Settings → API Keys**
-   → sección **Secret keys** → crear o copiar una (empieza con `sb_secret_`). No la pegues en un
-   chat ni en un archivo.
-2. **Guardarla en Cloudflare:** Workers & Pages → proyecto del sitio → **Settings → Variables and
-   secrets → Add** → **Type:** `Secret`, **Name:** `SUPABASE_LLAVE_SECRETA`, **Value:** la llave.
-   Para **Production** (y **Preview** si se quiere probar en las versiones de prueba).
-3. **Volver a publicar:** Deployments → último despliegue → **Retry deployment** (los secretos
-   nuevos entran con un despliegue nuevo).
-4. **Cerrar el registro público:** Supabase → **Authentication → Sign In / Providers** → apagar
+Lo que falta, una sola vez:
+
+1. **Cerrar el registro público:** Supabase → **Authentication → Sign In / Providers** → apagar
    **Allow new users to sign up**. Las cuentas se crean solo por invitación.
-5. **Probar:** en la pestaña Equipo, invítate con otro correo tuyo como Integrante, abre el enlace en
+2. **Probar:** en la pestaña Equipo, invítate con otro correo tuyo como Integrante, abre el enlace en
    una ventana privada, crea la contraseña y revisa que solo veas la pestaña Análisis.
 
 ---

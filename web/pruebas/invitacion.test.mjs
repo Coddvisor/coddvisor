@@ -1,16 +1,15 @@
-// El servidor que acepta invitaciones (functions/api/equipo/invitacion.js), contra la base de prueba.
+// Aceptar invitaciones (la función de Supabase equipo-invitacion, archivo aceptar.js), contra la
+// base de prueba. Se prueba el mismo archivo que se sube a Supabase.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { baseNueva, como, conColaborador, ID_SOPORTE } from './apoyo.mjs';
-import { onRequestPost } from '../functions/api/equipo/invitacion.js';
+import { aceptarInvitacion } from '../supabase/funciones/equipo-invitacion/aceptar.js';
 
-const ENV = { SUPABASE_LLAVE_SECRETA: 'sb_secret_prueba' };
-const enviar = (datos, env = ENV) => onRequestPost({
-  request: new Request('https://www.coddvisor.com/api/equipo/invitacion', {
-    method: 'POST', headers: { origin: 'https://www.coddvisor.com' }, body: JSON.stringify(datos),
-  }),
-  env,
-});
+const OP = { url: 'https://x.supabase.co', llave: 'sb_secret_prueba', fetchar: (...a) => globalThis.fetch(...a), avisar: () => {} };
+const enviar = async (datos, op = OP) => {
+  const r = await aceptarInvitacion(datos, op);
+  return { status: r.estado, json: async () => r.cuerpo };
+};
 
 // Supabase de mentira: la API de datos corre en la base de prueba con el papel service_role, y la
 // de cuentas (Auth) anota en auth.users. Guarda las contraseñas recibidas para revisarlas.
@@ -76,14 +75,11 @@ test('si Supabase Auth falla, no se gasta el enlace: se puede volver a intentar'
   const db = await baseNueva();
   await conColaborador(db);
   const enlace = await invitar(db);
-  const errores = console.error;
-  console.error = () => {};
   let sb = supabaseFalso(db, { authFalla: true });
   try {
     assert.equal((await enviar({ enlace, clave: 'una-clave-larga-1' })).status, 503);
   } finally {
     sb.restaurar();
-    console.error = errores;
   }
   sb = supabaseFalso(db);
   try {
@@ -93,7 +89,7 @@ test('si Supabase Auth falla, no se gasta el enlace: se puede volver a intentar'
   }
 });
 
-test('contraseña corta, enlace raro, otro sitio o sin llave secreta: se explica y no se toca nada', async () => {
+test('contraseña corta, enlace raro o sin llave secreta: se explica y no se toca nada', async () => {
   const db = await baseNueva();
   await conColaborador(db);
   const enlace = await invitar(db);
@@ -101,12 +97,8 @@ test('contraseña corta, enlace raro, otro sitio o sin llave secreta: se explica
   try {
     assert.match((await (await enviar({ enlace, clave: 'corta' })).json()).error, /al menos 10/);
     assert.equal((await enviar({ enlace: '<script>', clave: 'una-clave-larga-1' })).status, 400);
-    assert.equal((await enviar({ enlace, clave: 'una-clave-larga-1' }, {})).status, 503);
-    const otro = await onRequestPost({
-      request: new Request('https://www.coddvisor.com/api/equipo/invitacion', { method: 'POST', headers: { origin: 'https://malo.com' }, body: '{}' }),
-      env: ENV,
-    });
-    assert.equal(otro.status, 403);
+    assert.equal((await enviar({ enlace, clave: 'una-clave-larga-1' }, { ...OP, llave: '' })).status, 503);
+    assert.equal((await enviar(null)).status, 400);
     assert.deepEqual(sb.claves, []);
   } finally {
     sb.restaurar();
