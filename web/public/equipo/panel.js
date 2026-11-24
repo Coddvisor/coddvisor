@@ -1,5 +1,6 @@
 /* Panel del equipo (src/pages/equipo/index.astro). Sin librerías.
-   Pide las cifras a /api/equipo/visitas y las dibuja. Todo texto que viene de la base se pone con
+   Pide las cifras a la función sitio_resumen de la base (Supabase), con la sesión de
+   public/equipo/sesion.js, y las dibuja. Todo texto que viene de la base se pone con
    textContent, nunca como HTML: un nombre escrito en el formulario no puede volverse código. */
 (function () {
   'use strict';
@@ -30,14 +31,14 @@
   function fecha(dia) { return new Date(dia + 'T12:00:00Z'); }
   function fmt(dia, op) { return new Intl.DateTimeFormat('es-PE', Object.assign({ timeZone: 'UTC' }, op)).format(fecha(dia)); }
   function nombrePeriodo(p, largo) {
-    if (estado.escala === 'mes') return fmt(p.periodo + '-01', { month: 'long', year: 'numeric' });
+    if (estado.escala === 'mes') return fmt(p.periodo, { month: 'long', year: 'numeric' });
     if (estado.escala === 'semana') {
       return (largo ? 'Semana del ' : '') + fmt(p.desde, { day: 'numeric', month: 'short' }) + ' al ' + fmt(p.hasta, { day: 'numeric', month: 'short' });
     }
     return fmt(p.periodo, largo ? { weekday: 'long', day: 'numeric', month: 'long' } : { day: 'numeric', month: 'short' });
   }
   function etiquetaCorta(p) {
-    if (estado.escala === 'mes') return fmt(p.periodo + '-01', { month: 'short' });
+    if (estado.escala === 'mes') return fmt(p.periodo, { month: 'short' });
     return fmt(p.periodo, { day: 'numeric', month: 'short' });
   }
 
@@ -48,23 +49,22 @@
   // ---------- Pedir datos ----------
   function cargar() {
     decir('Cargando las cifras…');
-    var q = '?escala=' + estado.escala + (estado.periodo ? '&periodo=' + encodeURIComponent(estado.periodo) : '');
-    fetch('/api/equipo/visitas' + q, { credentials: 'same-origin', cache: 'no-store' })
+    window.CoddvisorSesion.llamar('sitio_resumen', { p_escala: estado.escala, p_periodo: estado.periodo })
       .then(function (r) {
-        if (r.status === 401) { location.replace('/equipo/entrar/'); return null; }
-        return r.json().catch(function () { return {}; }).then(function (j) { return { estado: r.status, cuerpo: j }; });
-      }, function () { return { estado: 0, cuerpo: {} }; })
-      .then(function (r) {
-        if (!r) return;
-        if (r.estado !== 200) {
-          decir(r.cuerpo.error || 'No hay conexión con el servidor. Revise su internet y recargue la página.');
-          return;
-        }
+        if (r.estado === 401) { location.replace('/equipo/entrar/'); return; }
+        if (r.estado !== 200) { decir(mensajeError(r)); return; }
         estado.datos = r.cuerpo;
         estado.periodo = r.cuerpo.periodo;
         decir('');
         dibujar();
       });
+  }
+
+  // Qué pasó, en palabras de la persona. 403: la sesión abrió, pero ese correo no es del equipo.
+  function mensajeError(r) {
+    if (r.estado === 0) return 'No hay conexión. Revise su internet y recargue la página.';
+    if (r.estado === 403) return 'Su cuenta entró, pero no tiene acceso al panel. Pida a quien administra el sitio que la agregue al equipo, o pulse «Salir».';
+    return 'No pudimos leer las cifras. Recargue la página en un momento.';
   }
 
   // ---------- Dibujar ----------
@@ -350,17 +350,13 @@
       marcar.addEventListener('click', function () {
         marcar.disabled = true;
         aviso.textContent = '';
-        fetch('/api/equipo/pedido', {
-          method: 'POST', credentials: 'same-origin',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ id: p.id, atendido: !p.atendido_en }),
-        }).then(function (r) {
-          if (r.status === 401) { location.replace('/equipo/entrar/'); return null; }
-          return r.json().catch(function () { return {}; }).then(function (j) { return { estado: r.status, cuerpo: j }; });
-        }, function () { return { estado: 0, cuerpo: {} }; }).then(function (r) {
-          if (!r) return;
+        window.CoddvisorSesion.llamar('sitio_marcar_pedido', { p_id: p.id, p_atendido: !p.atendido_en }).then(function (r) {
+          if (r.estado === 401) { location.replace('/equipo/entrar/'); return; }
           marcar.disabled = false;
-          if (r.estado !== 200) { aviso.textContent = r.cuerpo.error || 'No hay conexión. El cambio no se guardó; intente otra vez.'; return; }
+          if (r.estado !== 200) {
+            aviso.textContent = r.estado === 0 ? 'No hay conexión. El cambio no se guardó; intente otra vez.' : 'No pudimos guardar el cambio. Intente otra vez.';
+            return;
+          }
           p.atendido_en = r.cuerpo.atendido_en;
           p.atendido_por = r.cuerpo.atendido_por;
           pintar();
@@ -394,9 +390,7 @@
     });
   });
   $('[data-salir]').addEventListener('click', function () {
-    fetch('/api/equipo/salir', { method: 'POST', credentials: 'same-origin' })
-      .catch(function () {})
-      .then(function () { location.replace('/equipo/entrar/'); });
+    window.CoddvisorSesion.salir().then(function () { location.replace('/equipo/entrar/'); });
   });
   window.addEventListener('scroll', ocultarGlobo, { passive: true });
   // Al girar el teléfono o cambiar el ancho de la ventana, las fechas del gráfico se vuelven a repartir.

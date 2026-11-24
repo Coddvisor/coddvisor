@@ -5,6 +5,7 @@
 import Logotipo from '../components/Logotipo.astro';
 import Cabecera from '../components/Cabecera.astro';
 import Pie from '../components/Pie.astro';
+import { SUPABASE_URL, SUPABASE_LLAVE_PUBLICA } from '../../servidor/supabase.js';
 
 interface Props {
   /** Lo que se ve en la pestaña del navegador y en Google. */
@@ -15,6 +16,9 @@ interface Props {
 const { titulo, descripcion } = Astro.props;
 // Dirección completa de esta página: Google y las redes no entienden direcciones relativas.
 const url = new URL(Astro.url.pathname, Astro.site).href;
+// El contador solo suma en la dirección oficial (no en la computadora de quien programa ni en las
+// versiones de prueba). Sale de `site` en astro.config.mjs.
+const hostOficial = new URL(Astro.site!).host;
 ---
 <!doctype html>
 <!-- data-tema="claro": la página alterna sola franjas claras y oscuras, así que no sigue el modo
@@ -66,6 +70,8 @@ const url = new URL(Astro.url.pathname, Astro.site).href;
 <!-- fluido.js va antes que sitio.js: suma piezas a la aparición al bajar, que anima sitio.js. -->
 <script is:inline src="/fluido.js" defer></script>
 <script is:inline src="/sitio.js" defer></script>
+<!-- Contador de puerta: suma la visita en la base, sin cookies ni datos de la persona. Ver contador.js. -->
+<script is:inline src="/contador.js" defer></script>
 <!-- El gato del logo siente: parpadea, sonríe, se concentra, se duerme. Ver gato-vivo.js. -->
 <script is:inline src="/gato-vivo.js" defer></script>
 <!-- Lo que una página agrega a su <head> (por ejemplo, los estilos de las herramientas). -->
@@ -74,8 +80,11 @@ const url = new URL(Astro.url.pathname, Astro.site).href;
 <!-- Contacto en UN solo lugar:
      data-correo    → a qué correo escriben los formularios y el enlace de correo.
      data-whatsapp  → número con código de país, solo dígitos (ej. 51987654321). Mientras esté
-                      vacío, los botones de WhatsApp no se muestran y los formularios usan el correo. -->
-<body data-correo="equipo@coddvisor.com" data-whatsapp="">
+                      vacío, los botones de WhatsApp no se muestran y los formularios usan el correo.
+     data-supabase, data-supabase-llave → la base del sitio (servidor/supabase.js). La llave es la
+                      pública: no abre ninguna tabla.
+     data-sitio-host → la dirección oficial; fuera de ella el contador no suma. -->
+<body data-correo="equipo@coddvisor.com" data-whatsapp="" data-supabase={SUPABASE_URL} data-supabase-llave={SUPABASE_LLAVE_PUBLICA} data-sitio-host={hostOficial}>
 
 <Logotipo />
 

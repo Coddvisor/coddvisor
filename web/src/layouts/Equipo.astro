@@ -3,6 +3,7 @@
 // público: es una herramienta de trabajo. Sigue el modo claro u oscuro del teléfono o la computadora
 // (colores.css cambia la paleta sola porque aquí no se fija data-tema).
 // Los buscadores no la indexan: robots.txt la excluye y la página lo repite con «noindex».
+import { SUPABASE_URL, SUPABASE_LLAVE_PUBLICA } from '../../servidor/supabase.js';
 interface Props {
   titulo: string;
 }
@@ -20,9 +21,12 @@ const { titulo } = Astro.props;
 <link rel="preload" href="/fuentes/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/colores.css">
 <link rel="stylesheet" href="/equipo/equipo.css">
+<script is:inline src="/equipo/sesion.js"></script>
 <slot name="cabeza" />
 </head>
-<body>
+<!-- La base del sitio (servidor/supabase.js). La llave es la pública; el panel entra con la sesión
+     de Supabase Auth de quien inició sesión (public/equipo/sesion.js). -->
+<body data-supabase={SUPABASE_URL} data-supabase-llave={SUPABASE_LLAVE_PUBLICA}>
 <main id="contenido" class="eq">
 <slot />
 </main>

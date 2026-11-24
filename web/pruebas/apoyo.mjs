@@ -1,60 +1,53 @@
-// Apoyo para las pruebas: una base D1 de mentira sobre SQLite (la que trae Node), con las mismas
-// migraciones que se pegan en Cloudflare. Así las pruebas corren las consultas de verdad.
-import { DatabaseSync } from 'node:sqlite';
-import { readFileSync } from 'node:fs';
+// Apoyo para las pruebas: un PostgreSQL de verdad en memoria (PGlite) con lo mínimo de Supabase
+// (los papeles anon y authenticated, auth.users y auth.uid()) y la migración del sitio tal cual se
+// aplica en el proyecto. Así las pruebas corren las mismas funciones y permisos que producción.
+import { PGlite } from '@electric-sql/pglite';
+import { readFileSync, readdirSync } from 'node:fs';
 
-const MIGRACIONES = ['0001_pedidos_contacto.sql', '0002_visitas_y_equipo.sql'];
+const CARPETA = new URL('../supabase/migraciones/', import.meta.url);
 
-class Sentencia {
-  constructor(db, sql, valores = []) { this.db = db; this.sql = sql; this.valores = valores; }
-  bind(...valores) { return new Sentencia(this.db, this.sql, valores); }
-  async first() { return this.db.prepare(this.sql).get(...this.valores) ?? null; }
-  async all() { return { results: this.db.prepare(this.sql).all(...this.valores), success: true }; }
-  async run() { const r = this.db.prepare(this.sql).run(...this.valores); return { success: true, meta: { changes: r.changes } }; }
+// Lo que Supabase ya trae y la migración usa.
+const SUPABASE_MINIMO = `
+  CREATE ROLE anon NOLOGIN;
+  CREATE ROLE authenticated NOLOGIN;
+  CREATE SCHEMA auth;
+  CREATE TABLE auth.users (id uuid PRIMARY KEY, email text, email_confirmed_at timestamptz);
+  CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$
+    SELECT nullif(nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub', '')::uuid
+  $$;
+  GRANT USAGE ON SCHEMA auth TO anon, authenticated;
+  GRANT EXECUTE ON FUNCTION auth.uid() TO anon, authenticated;
+  GRANT USAGE ON SCHEMA public TO anon, authenticated;
+`;
+
+export async function baseNueva() {
+  const db = new PGlite();
+  await db.exec(SUPABASE_MINIMO);
+  for (const archivo of readdirSync(CARPETA).filter((a) => a.endsWith('.sql')).sort()) {
+    await db.exec(readFileSync(new URL(archivo, CARPETA), 'utf8'));
+  }
+  return db;
 }
 
-// Lo que el programa usa de D1: prepare, bind, first, all, run y batch.
-export function baseFalsa({ hasta = MIGRACIONES.length } = {}) {
-  const db = new DatabaseSync(':memory:');
-  for (const m of MIGRACIONES.slice(0, hasta)) db.exec(readFileSync(new URL('../migrations/' + m, import.meta.url), 'utf8'));
-  return {
-    sqlite: db,
-    prepare: (sql) => new Sentencia(db, sql),
-    batch: async (sentencias) => {
-      db.exec('BEGIN');
-      try {
-        const r = [];
-        for (const s of sentencias) r.push(await s.all());
-        db.exec('COMMIT');
-        return r;
-      } catch (e) {
-        db.exec('ROLLBACK');
-        throw e;
-      }
-    },
-  };
+// Corre `sql` como lo haría la API de Supabase: con el papel dado, la sesión (sub) y las cabeceras.
+export async function como(db, papel, sql, params = [], { usuario = null, cabeceras = {} } = {}) {
+  await db.exec('RESET ROLE');
+  await db.query(`SELECT set_config('request.jwt.claims', $1, false), set_config('request.headers', $2, false)`,
+    [usuario ? JSON.stringify({ sub: usuario }) : '', JSON.stringify(cabeceras)]);
+  await db.exec(`SET ROLE ${papel}`);
+  try {
+    return await db.query(sql, params);
+  } finally {
+    await db.exec('RESET ROLE');
+  }
 }
 
-// Un pedido como los que hace Cloudflare, con su `cf` (país y región).
-export function pedido(url, { metodo = 'GET', cabeceras = {}, cuerpo, cf } = {}) {
-  const r = new Request(url, { method: metodo, headers: cabeceras, body: cuerpo });
-  if (cf) Object.defineProperty(r, 'cf', { value: cf });
-  return r;
-}
+export const ID_SOPORTE = '11111111-1111-4111-8111-111111111111';
+export const ID_EXTRANO = '22222222-2222-4222-8222-222222222222';
 
-export const NAVEGADOR = 'Mozilla/5.0 (Linux; Android 14; SM-A145M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Mobile Safari/537.36';
-export const COMPUTADORA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36';
-
-export const paginaHtml = (estado = 200) =>
-  new Response('<!doctype html><title>x</title>', { status: estado, headers: { 'content-type': 'text/html; charset=utf-8' } });
-
-// Cambia `fetch` (el que envía correos por Resend) por uno que anota lo enviado.
-export function correoFalso() {
-  const enviados = [];
-  const original = globalThis.fetch;
-  globalThis.fetch = async (url, op) => {
-    enviados.push({ url: String(url), cuerpo: JSON.parse(op.body) });
-    return new Response('{}', { status: 200 });
-  };
-  return { enviados, restaurar: () => { globalThis.fetch = original; } };
+// Un usuario de Supabase Auth confirmado y registrado como colaborador.
+export async function conColaborador(db) {
+  await db.query(`INSERT INTO auth.users VALUES ($1, 'soporte@coddvisor.com', now()), ($2, 'curioso@ejemplo.com', now())`,
+    [ID_SOPORTE, ID_EXTRANO]);
+  await db.exec(`INSERT INTO sitio.colaboradores (correo, nombre) VALUES ('soporte@coddvisor.com', 'Equipo')`);
 }

@@ -1,9 +1,7 @@
 ---
-// Entrada al panel del equipo. Dos momentos en la misma página:
-//   1. Sin enlace: la persona escribe su correo y recibe un enlace (functions/api/equipo/entrar.js).
-//   2. Con enlace (?t=...): un botón cambia el enlace por una sesión (functions/api/equipo/sesion.js).
-// El enlace no entra solo al abrirse: los programas que revisan los correos abren los enlaces por
-// su cuenta y gastarían el ingreso antes que la persona.
+// Entrada al panel del equipo: correo y contraseña de Supabase Auth (public/equipo/sesion.js).
+// El usuario se crea en Supabase (Authentication → Users) y su correo se anota en
+// sitio.colaboradores. Sin esas dos cosas, la sesión abre pero el panel no muestra nada.
 import Equipo from '../../layouts/Equipo.astro';
 ---
 <Equipo titulo="Entrar al panel del equipo | Coddvisor">
@@ -12,17 +10,14 @@ import Equipo from '../../layouts/Equipo.astro';
   <p class="rotulo">Coddvisor, equipo</p>
   <h1 id="en-t">Entrar al panel</h1>
 
-  <form data-paso="correo" novalidate>
-    <p>Escriba el correo con que el equipo le dio acceso. Le llegará un enlace para entrar, sin contraseña.</p>
-    <label for="en-correo">Su correo</label>
-    <input id="en-correo" name="correo" type="email" autocomplete="email" inputmode="email" required maxlength="120" placeholder="nombre@coddvisor.com">
-    <button type="submit" class="boton">Enviarme el enlace</button>
+  <form novalidate>
+    <p>Visitas al sitio y pedidos de contacto. Solo para el equipo de Coddvisor.</p>
+    <label for="en-correo">Correo</label>
+    <input id="en-correo" name="correo" type="email" autocomplete="username" inputmode="email" required maxlength="120" placeholder="soporte@coddvisor.com">
+    <label for="en-clave">Contraseña</label>
+    <input id="en-clave" name="clave" type="password" autocomplete="current-password" required maxlength="200">
+    <button type="submit" class="boton">Entrar</button>
   </form>
-
-  <div data-paso="enlace" hidden>
-    <p>Su enlace está listo. Pulse el botón para entrar en este navegador.</p>
-    <button type="button" class="boton" data-entrar>Entrar al panel</button>
-  </div>
 
   <p class="estado" data-estado role="status" aria-live="polite"></p>
 </section>
