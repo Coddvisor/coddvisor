@@ -20,8 +20,9 @@ const SUPABASE_MINIMO = `
   CREATE TABLE vault.decrypted_secrets (name text PRIMARY KEY, decrypted_secret text);
   CREATE ROLE anon NOLOGIN;
   CREATE ROLE authenticated NOLOGIN;
+  CREATE ROLE service_role NOLOGIN;
   CREATE SCHEMA auth;
-  CREATE TABLE auth.users (id uuid PRIMARY KEY, email text, email_confirmed_at timestamptz);
+  CREATE TABLE auth.users (id uuid PRIMARY KEY, email text, email_confirmed_at timestamptz, created_at timestamptz DEFAULT now());
   CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql STABLE AS $$
     SELECT coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb
   $$;
@@ -30,7 +31,7 @@ const SUPABASE_MINIMO = `
   $$;
   GRANT USAGE ON SCHEMA auth TO anon, authenticated;
   GRANT EXECUTE ON FUNCTION auth.uid(), auth.jwt() TO anon, authenticated;
-  GRANT USAGE ON SCHEMA public TO anon, authenticated;
+  GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 `;
 
 export async function baseNueva() {
@@ -62,12 +63,12 @@ export const ID_EXTRANO = '22222222-2222-4222-8222-222222222222';
 export const SESION_SOPORTE = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const SESIONES = { [ID_SOPORTE]: SESION_SOPORTE };
 
-// Un usuario de Supabase Auth confirmado, registrado como colaborador que administra. Con
-// `verificado`, su sesión ya escribió el código del correo (si no, el panel no le responde).
+// Un usuario de Supabase Auth confirmado, registrado como colaborador con rol administrador.
+// `verificado` queda de la etapa del código por correo, que ya no se pide.
 export async function conColaborador(db, { verificado = true } = {}) {
-  await db.query(`INSERT INTO auth.users VALUES ($1, 'soporte@coddvisor.com', now()), ($2, 'curioso@ejemplo.com', now())`,
+  await db.query(`INSERT INTO auth.users (id, email, email_confirmed_at) VALUES ($1, 'soporte@coddvisor.com', now()), ($2, 'curioso@ejemplo.com', now())`,
     [ID_SOPORTE, ID_EXTRANO]);
-  await db.exec(`INSERT INTO sitio.colaboradores (correo, nombre, administra) VALUES ('soporte@coddvisor.com', 'Equipo', true)`);
+  await db.exec(`INSERT INTO sitio.colaboradores (correo, nombre, administra, rol) VALUES ('soporte@coddvisor.com', 'Equipo', true, 'administrador')`);
   if (verificado) {
     await db.query(`INSERT INTO sitio.sesiones_verificadas (sesion_id, correo, vence_en) VALUES ($1, 'soporte@coddvisor.com', now() + interval '7 days')`,
       [SESION_SOPORTE]);

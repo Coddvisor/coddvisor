@@ -6,6 +6,9 @@
 // Lo que protege los datos son los permisos de cada función (web/supabase/migraciones/). Nunca se
 // pone aquí la llave secreta (service_role o sb_secret_...): esa no va en el repositorio.
 // En Cloudflare se pueden reemplazar con las variables SUPABASE_URL y SUPABASE_LLAVE_PUBLICA.
+//
+// La llave SECRETA (para crear cuentas al aceptar una invitación) no sale de Supabase: la usa la
+// función equipo-invitacion (web/supabase/funciones/), que la recibe de Supabase mismo.
 export const SUPABASE_URL = 'https://peyrzsvpuyllxeidbxue.supabase.co';
 export const SUPABASE_LLAVE_PUBLICA = 'sb_publishable_o5536Ns-pJL5sB2ReCIugQ_T_tuMNHa';
 
