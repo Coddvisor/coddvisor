@@ -12,6 +12,8 @@ enlaces:
   - { texto: "Calcule las vacaciones truncas", href: "/herramientas/vacaciones/" }
   - { texto: "Calcule la CTS trunca", href: "/herramientas/cts/" }
 fuentes:
+  - norma: "TUO del D. Leg. 728, D.S. 003-97-TR, art. 34: la indemnización por despido arbitrario es la reparación por el daño sufrido (por eso no paga EsSalud, ONP ni AFP)"
+    enlace: "https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=35"
   - norma: "TUO de la Ley de CTS, D.S. 001-97-TR, art. 3 (la CTS del tiempo no depositado se paga directamente dentro de las 48 horas del cese) y art. 45 (constancia de cese dentro de las 48 horas, para retirar la CTS)"
     enlace: "https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=37"
   - norma: "Ley 27735, art. 7, y D.S. 005-2002-TR, art. 5 (gratificación trunca: al menos un mes completo, con el sueldo del mes anterior al cese, pagada con los demás beneficios dentro de las 48 horas)"
@@ -84,7 +86,7 @@ Una persona del régimen general gana S/ 1,500. Entró el 1 de enero de 2026, to
 No. La indemnización es solo para el despido sin causa justa.
 
 **¿Se le descuenta algo?**
-Del sueldo y de las vacaciones truncas, la ONP o la AFP, como cada mes. La gratificación trunca y su bonificación se pagan sin esos descuentos.
+Del sueldo y de las vacaciones truncas, la ONP o la AFP, como cada mes. La gratificación trunca y su bonificación se pagan sin esos descuentos. La indemnización por despido no paga impuesto a la renta, EsSalud, ONP ni AFP, porque es una reparación y no un sueldo.
 
 **¿Qué pasa si no firmó la liquidación?**
 Pague igual dentro del plazo y guarde la constancia del depósito. El pago a tiempo es lo que la ley exige.
