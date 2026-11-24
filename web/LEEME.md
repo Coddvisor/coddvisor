@@ -126,6 +126,7 @@ Fechas en que algo del sitio queda viejo si nadie lo revisa:
 | Cuándo | Qué revisar |
 |---|---|
 | Cuando salga la lista del subsidio (hacia el 2 de diciembre de 2026) | `src/articulos/subsidio-microempresas.md`: poner arriba la fecha real y el enlace a la resolución |
+| Noviembre de cada año | `src/articulos/feriado-trabajado.md`: poner la lista de feriados que vienen y mover `vence` al 1 de enero siguiente. Si el Gobierno declara no laborables el 24 o el 31 de diciembre, decir que obligan al sector privado solo si se acuerda |
 | 31 de diciembre de 2026 | El subsidio termina. El aviso sale solo; decidir si se retira el artículo |
 | Enero de 2027 | IGV: el texto dice «en 2026 es 10.5 %» (la tasa especial pasa a 15 %). CTS: revisar si se aprobó el proyecto de ley que amplía el retiro total |
 | Cuando salga el decreto del mínimo de S/ 1,300 (primer semestre de 2027) | Agregar la fila en `src/datos/laboral.ts` y actualizar `src/articulos/sueldo-minimo.md` (su tabla dice «estimado») |
