@@ -8,7 +8,7 @@ import { fechaLarga } from '../datos/herramientas';
 
 // PENDIENTE antes de publicar: razón social y RUC de quien es responsable de los datos.
 const titular = { nombre: 'Coddvisor', ruc: '' };
-const vigente = '2026-11-21';
+const vigente = '2026-11-24';
 ---
 <Base
   titulo="Privacidad: qué datos guardamos y para qué | Coddvisor"
@@ -33,25 +33,32 @@ const vigente = '2026-11-21';
     </header>
 
     <div class="guia-cuerpo">
-      <p><b>Solo guardamos lo que usted escribe en el formulario «Quiero ser de los primeros».</b> Lo usamos para responderle. No lo vendemos, no lo prestamos y no le mandamos publicidad.</p>
+      <p><b>De usted, solo guardamos lo que escribe en el formulario «Quiero ser de los primeros»</b>, y qué páginas del sitio leyó antes de escribirnos. Lo usamos para responderle. No lo vendemos, no lo prestamos y no le mandamos publicidad.</p>
+      <p>Además contamos cuántas veces se abre cada página, sin saber quién la abrió.</p>
 
       <h3>Qué datos guardamos</h3>
-      <p>Su nombre, su número de WhatsApp, lo que vende, cuántas personas trabajan con usted y cuántas sedes tiene. Además, la fecha en que nos escribió y desde qué página del sitio.</p>
+      <p>Su nombre, su número de WhatsApp, lo que vende, cuántas personas trabajan con usted y cuántas sedes tiene. Además, la fecha en que nos escribió, desde qué página del sitio y qué páginas del sitio abrió antes de escribirnos en esa misma visita (por ejemplo, una guía del blog). Esa lista se anota solo en su navegador mientras navega y nos llega únicamente si envía el formulario.</p>
+
+      <h3>Cuántas personas visitan el sitio</h3>
+      <p>Contamos cuántas veces se abre cada página, por día. Es como el contador de la puerta de una tienda: suma uno, pero no sabe quién entró.</p>
+      <p>Junto a cada número guardamos solo datos generales: si llegó desde un buscador, una red social u otro sitio (solo su nombre, como google.com), el nombre de la campaña si el enlace lo traía, si fue desde un celular o una computadora, y el país, cuando el servicio que guarda los datos lo informa. <b>No guardamos</b> su dirección IP, no usamos cookies para seguirle y no podemos saber quién es usted con estos números.</p>
       <p>Las herramientas gratis, como el <a href="/herramientas/cierre-de-caja/">cierre de caja</a>, no guardan nada: las cuentas se hacen en su computadora y lo que escribe no sale de ella.</p>
 
       <h3>Para qué los usamos</h3>
       <p>Para escribirle por WhatsApp y conversar sobre si Coddvisor le sirve a su negocio. Para nada más.</p>
 
       <h3>Quién más los ve</h3>
-      <p>Nadie fuera del equipo de Coddvisor. Dos empresas nos dan el servicio técnico y por eso pasan por sus servidores, que están fuera del Perú:</p>
+      <p>Nadie fuera del equipo de Coddvisor. Tres empresas nos dan el servicio técnico y por eso pasan por sus servidores, que están fuera del Perú:</p>
       <ul class="revisar">
-        <li><b>Cloudflare</b> publica este sitio y guarda los datos del formulario.</li>
+        <li><b>Cloudflare</b> publica este sitio.</li>
+        <li><b>Supabase</b> guarda los datos del formulario y el conteo de visitas.</li>
         <li><b>Resend</b> nos envía un correo de aviso cada vez que alguien escribe.</li>
       </ul>
-      <p>Ninguna de las dos puede usarlos para otra cosa.</p>
+      <p>Ninguna puede usarlos para otra cosa.</p>
 
       <h3>Cuánto tiempo los guardamos</h3>
       <p>Doce meses desde que nos escribió. Si en ese tiempo no empezamos a trabajar juntos, los borramos.</p>
+      <p>El conteo de visitas no tiene datos de ninguna persona, así que lo guardamos para comparar un año con otro.</p>
 
       <h3>Cómo pedir que los veamos, corrijamos o borremos</h3>
       <p>Escríbanos a <a href="mailto:equipo@coddvisor.com">equipo@coddvisor.com</a> desde cualquier correo, con su nombre y su número de WhatsApp para encontrarlos. Puede pedir verlos, corregirlos, borrarlos o que dejemos de usarlos. Le respondemos dentro de los plazos que fija la ley.</p>

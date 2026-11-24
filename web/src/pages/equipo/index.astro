@@ -1,0 +1,117 @@
+---
+// Panel del equipo: visitas al sitio y quiénes dejaron sus datos, por día, semana o mes.
+// Como en una tienda: cuántos entraron (el contador de puerta), qué miraron, cuántos dejaron sus
+// datos (el cuaderno de pedidos) y a cuántos ya se les escribió.
+// La página es una cáscara sin datos: las cifras llegan de /api/equipo/visitas solo a quien entró
+// con su enlace. Si nadie entró, public/equipo/panel.js lleva a /equipo/entrar/.
+import Equipo from '../../layouts/Equipo.astro';
+import { herramientas } from '../../datos/herramientas';
+import { pie } from '../../datos/navegacion';
+
+// Nombre de cada página para mostrarlo en vez de su dirección. Sale de las mismas listas que el
+// menú y el blog: una página nueva aparece con su nombre sin tocar el panel.
+type Titulo = { titulo: string; tipo: 'articulo' | 'herramienta' | 'pagina' };
+const titulos: Record<string, Titulo> = { '/': { titulo: 'Portada', tipo: 'pagina' } };
+for (const g of pie) for (const e of g.enlaces) {
+  const ruta = e.href.split('#')[0];
+  if (ruta && !titulos[ruta]) titulos[ruta] = { titulo: e.texto, tipo: 'pagina' };
+}
+titulos['/blog/'] = { titulo: 'Blog', tipo: 'pagina' };
+for (const h of herramientas) titulos[h.href] = { titulo: h.nombre + ' (herramienta y guía)', tipo: 'herramienta' };
+const archivos = import.meta.glob('../../articulos/*.md', { eager: true }) as Record<string, any>;
+for (const [ruta, md] of Object.entries(archivos)) {
+  titulos['/blog/' + ruta.split('/').pop()!.replace(/\.md$/, '') + '/'] = { titulo: md.frontmatter.titulo, tipo: 'articulo' };
+}
+---
+<Equipo titulo="Visitas y pedidos | Coddvisor">
+<script slot="cabeza" is:inline src="/equipo/panel.js" defer></script>
+<script type="application/json" id="titulos" set:html={JSON.stringify(titulos).replace(/</g, '\\u003c')}></script>
+
+<header class="eq-cab">
+  <div>
+    <p class="rotulo">Coddvisor, equipo</p>
+    <h1>Visitas y pedidos</h1>
+  </div>
+  <div class="eq-quien">
+    <span data-quien></span>
+    <button type="button" class="boton-2" data-salir>Salir</button>
+  </div>
+</header>
+
+<!-- Un solo filtro, arriba de todo: la escala de tiempo. El periodo se elige tocando una barra. -->
+<div class="eq-filtros">
+  <div class="seg" role="radiogroup" aria-label="Ver por">
+    <button type="button" role="radio" aria-checked="true" data-escala="dia">Por día</button>
+    <button type="button" role="radio" aria-checked="false" data-escala="semana">Por semana</button>
+    <button type="button" role="radio" aria-checked="false" data-escala="mes">Por mes</button>
+  </div>
+  <p class="eq-periodo" data-periodo-texto aria-live="polite"></p>
+</div>
+
+<p class="estado" data-estado role="status" aria-live="polite">Cargando las cifras…</p>
+
+<div data-contenido hidden>
+  <section class="eq-tiles" aria-label="Resumen del periodo">
+    <div class="tile"><p class="tile-rot">Entraron al sitio</p><p class="tile-val" data-tile="entradas"></p><p class="tile-delta" data-delta="entradas"></p></div>
+    <div class="tile"><p class="tile-rot">Páginas vistas</p><p class="tile-val" data-tile="paginas"></p><p class="tile-delta" data-delta="paginas"></p></div>
+    <div class="tile"><p class="tile-rot">Dejaron sus datos</p><p class="tile-val" data-tile="pedidos"></p><p class="tile-delta" data-delta="pedidos"></p></div>
+    <div class="tile"><p class="tile-rot">De cada 100 que entran, dejan sus datos</p><p class="tile-val" data-tile="conversion"></p><p class="tile-delta" data-delta="conversion"></p></div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="g-t">
+    <h2 id="g-t">Entradas al sitio</h2>
+    <p class="nota" data-grafico-nota></p>
+    <div class="grafico" data-grafico></div>
+    <details class="tabla-vista">
+      <summary>Ver como tabla</summary>
+      <div class="tabla-envoltura"><table data-tabla-serie>
+        <thead><tr><th scope="col">Periodo</th><th scope="col">Entradas</th><th scope="col">Páginas vistas</th><th scope="col">Dejaron sus datos</th><th scope="col">Ya atendidos</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </details>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="e-t">
+    <h2 id="e-t">Del que entra al que dejó sus datos</h2>
+    <p class="nota">Como en una tienda: cuántos entraron, cuántos pidieron que les escribamos y a cuántos ya les escribimos.</p>
+    <div class="embudo" data-embudo></div>
+  </section>
+
+  <div class="eq-doble">
+    <section class="tarjeta" aria-labelledby="o-t">
+      <h2 id="o-t">De dónde llegan</h2>
+      <div class="barras" data-origenes></div>
+      <details class="tabla-vista" data-campanas-caja hidden>
+        <summary>Campañas</summary>
+        <div class="barras" data-campanas></div>
+      </details>
+    </section>
+    <section class="tarjeta" aria-labelledby="d-t">
+      <h2 id="d-t">Desde qué equipo y lugar</h2>
+      <div class="barras" data-dispositivos></div>
+      <h3>Lugares</h3>
+      <div class="barras" data-lugares></div>
+    </section>
+  </div>
+
+  <section class="tarjeta" aria-labelledby="p-t">
+    <h2 id="p-t">Lo más visto</h2>
+    <div class="seg seg--chico" role="radiogroup" aria-label="Mostrar">
+      <button type="button" role="radio" aria-checked="true" data-filtro-paginas="todas">Todo el sitio</button>
+      <button type="button" role="radio" aria-checked="false" data-filtro-paginas="blog">Blog y herramientas</button>
+    </div>
+    <div class="tabla-envoltura"><table class="tabla" data-tabla-paginas>
+      <thead><tr><th scope="col">Página</th><th scope="col">Páginas vistas</th><th scope="col">Entradas</th><th scope="col">Dejaron sus datos después</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="q-t">
+    <h2 id="q-t">Quiénes dejaron sus datos</h2>
+    <p class="nota">Lo que escribieron en el formulario «Quiero ser de los primeros» y qué páginas leyeron antes. Marque «Ya le escribimos» cuando alguien del equipo le responda.</p>
+    <ol class="pedidos" data-pedidos></ol>
+  </section>
+</div>
+
+<div class="globo" data-globo role="tooltip" hidden></div>
+</Equipo>

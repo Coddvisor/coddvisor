@@ -1,21 +1,38 @@
 // Recibe el formulario «Quiero ser de los primeros» y lo guarda.
 //
 // Qué promete:
-//   1. Responde «ok» SOLO cuando el pedido ya quedó guardado en la base de datos (D1).
+//   1. Responde «ok» SOLO cuando el pedido ya quedó guardado en la base (Supabase, proyecto
+//      «coddvisor», función sitio_registrar_pedido: web/supabase/migraciones/).
 //   2. El mismo pedido enviado dos veces (doble clic, red que reintenta) queda UNA sola vez:
 //      el navegador le pone un número único y la base rechaza el repetido.
 //   3. El aviso por correo va DESPUÉS de guardar y por separado: si el correo falla, el pedido
-//      sigue guardado y se ve en la consulta de pendientes (LEEME, «Pedidos de contacto»).
-// Qué asume: Cloudflare conecta la base como `DB`. La clave de Resend (`RESEND_API_KEY`) es
-// opcional: sin ella se guarda igual, solo que nadie recibe el aviso.
+//      sigue guardado y se ve en el panel /equipo/ (LEEME, «Pedidos de contacto»).
+// Qué asume: la dirección y la llave pública de Supabase (servidor/supabase.js). La clave de Resend
+// (`RESEND_API_KEY`) es opcional: sin ella se guarda igual, solo que nadie recibe el aviso.
 // Si responde error, el navegador abre WhatsApp o el correo con el mensaje listo, como antes.
 
-// Las mismas opciones del formulario y de la tabla (migrations/0001_pedidos_contacto.sql).
+import { llamar } from '../../servidor/supabase.js';
+
+// Las mismas opciones del formulario y de la tabla (web/supabase/migraciones/, sitio.pedidos_contacto).
 const PERSONAS = ['1 a 5', '6 a 15', '16 a 40'];
 const SEDES = ['1', '2 o 3', '4 o más'];
 // Qué versión del aviso de privacidad vio la persona. Se sube cuando cambia /privacidad/.
-const AVISO_VERSION = '2026-11-21';
+const AVISO_VERSION = '2026-11-24';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+// Recorrido: páginas del sitio que la persona abrió antes de escribir (las anota sitio.js en su
+// navegador y llegan solo con el formulario). Se aceptan rutas del sitio, sin repetir.
+const RECORRIDO_MAX = 15;
+const RUTA = /^\/[A-Za-z0-9\-._~\/%]{0,199}$/;
+
+export function limpiarRecorrido(v) {
+  if (!Array.isArray(v)) return null;
+  const rutas = [];
+  for (const r of v) {
+    if (typeof r === 'string' && RUTA.test(r) && !r.startsWith('/equipo/') && !rutas.includes(r)) rutas.push(r);
+    if (rutas.length === RECORRIDO_MAX) break;
+  }
+  return rutas.length ? rutas : null;
+}
 
 function respuesta(estado, cuerpo) {
   return new Response(JSON.stringify(cuerpo), {
@@ -46,6 +63,7 @@ export function validar(d) {
     personas: texto(d.personas, 20),
     sedes: texto(d.sedes, 20),
     pagina: texto(d.pagina, 200) || '/',
+    recorrido: limpiarRecorrido(d.recorrido),
   };
   if (!UUID.test(p.id)) return { error: 'No pudimos leer el formulario. Recargue la página e intente otra vez.' };
   if (!p.nombre) return { error: 'Falta su nombre.' };
@@ -66,6 +84,7 @@ async function enviarAviso(env, p) {
     'Personas que trabajan: ' + p.personas,
     'Sedes: ' + p.sedes,
     'Desde la página: ' + p.pagina,
+    'Leyó antes de escribir: ' + (p.recorrido ? p.recorrido.join(', ') : '-'),
     '',
     'Número de pedido: ' + p.id,
   ];
@@ -102,15 +121,11 @@ export async function onRequestPost({ request, env, waitUntil }) {
   const { pedido: p, error } = validar(datos);
   if (error) return respuesta(400, { error });
 
-  if (!env.DB) return respuesta(503, { error: 'sin-base' });
   let nuevo;
   try {
-    const r = await env.DB.prepare(
-      `INSERT INTO pedidos_contacto (id, nombre, whatsapp, vende, personas, sedes, pagina, aviso_version)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
-       ON CONFLICT (id) DO NOTHING`
-    ).bind(p.id, p.nombre, p.whatsapp, p.vende, p.personas, p.sedes, p.pagina, AVISO_VERSION).run();
-    nuevo = r.meta && r.meta.changes === 1;
+    const r = await llamar(env, 'sitio_registrar_pedido', { p: { ...p, aviso_version: AVISO_VERSION } });
+    if (r.estado !== 200) throw new Error('Supabase respondió ' + r.estado + ': ' + JSON.stringify(r.cuerpo));
+    nuevo = !!(r.cuerpo && r.cuerpo.nuevo);
   } catch (e) {
     console.error('contacto: no se guardó', e);
     return respuesta(503, { error: 'sin-base' });
@@ -119,9 +134,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
   // Un reintento del mismo pedido no manda un segundo correo.
   if (nuevo) {
     const avisar = enviarAviso(env, p)
-      .then((ok) => ok && env.DB.prepare(
-        `UPDATE pedidos_contacto SET aviso_enviado_en = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?1`
-      ).bind(p.id).run())
+      .then((ok) => ok && llamar(env, 'sitio_aviso_enviado', { p_id: p.id }))
       .catch((e) => console.error('contacto: guardado, pero el aviso falló', e));
     if (waitUntil) waitUntil(avisar); else await avisar;
   }
