@@ -617,7 +617,14 @@ Hazlo **antes** de unir este cambio a `main`, en este orden:
    columnas; no toca los pedidos que ya hay.
    (Si se publica sin este paso, el formulario sigue guardando los pedidos, sin el recorrido, y el
    contador no suma nada hasta que se pegue.)
-2. **Tu acceso:** en la misma consola, la línea de «Dar acceso» con tu correo.
+2. **El acceso del equipo:** en la misma consola, pega esta línea:
+   ```sql
+   INSERT INTO colaboradores (correo, nombre) VALUES ('soporte@coddvisor.com', 'Equipo');
+   ```
+   Decisión del equipo (24-nov-2026): el panel se usa con **una sola cuenta compartida**,
+   `soporte@coddvisor.com`, creada en Zoho solo para esto. Los clientes siguen escribiendo a
+   `equipo@coddvisor.com`, que no cambia. Si un día cada integrante tiene su correo, se agrega una
+   fila por persona y se archiva `soporte@`.
 3. **Unir el cambio** a `main`. Cloudflare publica solo.
 4. **Probar:** abre `https://www.coddvisor.com/equipo/` → te lleva a «Entrar al panel» → escribe tu
    correo → abre el enlace del correo → **Entrar al panel**. Abre unas páginas del sitio desde tu
