@@ -1,7 +1,8 @@
 ---
-// Entrada al panel del equipo: correo y contraseña de Supabase Auth (public/equipo/sesion.js).
-// El usuario se crea en Supabase (Authentication → Users) y su correo se anota en
-// sitio.colaboradores. Sin esas dos cosas, la sesión abre pero el panel no muestra nada.
+// Entrada al panel del equipo, en dos pasos (public/equipo/entrar.js y sesion.js):
+//   1. Correo y contraseña de Supabase Auth.
+//   2. Un código de 6 cifras que llega a ese correo (sitio_pedir_codigo y sitio_verificar_codigo).
+// Quien tenga la contraseña pero no pueda abrir el correo, no entra.
 import Equipo from '../../layouts/Equipo.astro';
 ---
 <Equipo titulo="Entrar al panel del equipo | Coddvisor">
@@ -10,13 +11,24 @@ import Equipo from '../../layouts/Equipo.astro';
   <p class="rotulo">Coddvisor, equipo</p>
   <h1 id="en-t">Entrar al panel</h1>
 
-  <form novalidate>
+  <form data-paso="clave" novalidate>
     <p>Visitas al sitio y pedidos de contacto. Solo para el equipo de Coddvisor.</p>
     <label for="en-correo">Correo</label>
     <input id="en-correo" name="correo" type="email" autocomplete="username" inputmode="email" required maxlength="120" placeholder="soporte@coddvisor.com">
     <label for="en-clave">Contraseña</label>
     <input id="en-clave" name="clave" type="password" autocomplete="current-password" required maxlength="200">
     <button type="submit" class="boton">Entrar</button>
+  </form>
+
+  <form data-paso="codigo" novalidate hidden>
+    <p data-codigo-texto>Le enviamos un código de 6 cifras a su correo. Escríbalo aquí.</p>
+    <label for="en-codigo">Código del correo</label>
+    <input id="en-codigo" name="codigo" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required class="codigo">
+    <button type="submit" class="boton">Entrar al panel</button>
+    <div class="entrar-acciones">
+      <button type="button" class="boton-2" data-reenviar>Enviarme otro código</button>
+      <button type="button" class="boton-2" data-otra-cuenta>Usar otra cuenta</button>
+    </div>
   </form>
 
   <p class="estado" data-estado role="status" aria-live="polite"></p>

@@ -14,7 +14,7 @@
   var paises = null;
   try { paises = new Intl.DisplayNames(['es'], { type: 'region' }); } catch (e) {}
 
-  var estado = { escala: 'dia', periodo: null, filtroPaginas: 'todas', datos: null };
+  var estado = { escala: 'dia', periodo: null, filtroPaginas: 'todas', datos: null, administra: false };
   var NOMBRE_ANTERIOR = { dia: 'el día anterior', semana: 'la semana anterior', mes: 'el mes anterior' };
   var FRENTE = { dia: 'frente al día anterior', semana: 'frente a la semana anterior', mes: 'frente al mes anterior' };
   var DISPOSITIVOS = { celular: 'Celular', tableta: 'Tableta', computadora: 'Computadora' };
@@ -47,25 +47,53 @@
   function conversion(t) { return t.entradas ? (t.pedidos / t.entradas) * 100 : 0; }
 
   // ---------- Pedir datos ----------
-  function cargar() {
-    decir('Cargando las cifras…');
-    window.CoddvisorSesion.llamar('sitio_resumen', { p_escala: estado.escala, p_periodo: estado.periodo })
+  // `estado.periodo` es el que eligió la persona tocando una columna; vacío = el periodo en curso,
+  // así la actualización automática sigue mostrando «hoy» aunque cambie el día.
+  // `silencioso`: actualización automática; no borra lo que se ve mientras llega lo nuevo.
+  var ultimaCarga = 0;
+  function cargar(silencioso) {
+    if (!silencioso) decir('Cargando las cifras…');
+    return window.CoddvisorSesion.llamar('sitio_resumen', { p_escala: estado.escala, p_periodo: estado.periodo })
       .then(function (r) {
-        if (r.estado === 401) { location.replace('/equipo/entrar/'); return; }
-        if (r.estado !== 200) { decir(mensajeError(r)); return; }
+        // 401: la sesión terminó. 403: falta el código del correo, o ya no tiene acceso.
+        if (r.estado === 401 || r.estado === 403) { location.replace('/equipo/entrar/'); return; }
+        if (r.estado !== 200) {
+          if (!silencioso || !estado.datos) decir(mensajeError(r));
+          return;
+        }
         estado.datos = r.cuerpo;
-        estado.periodo = r.cuerpo.periodo;
+        ultimaCarga = Date.now();
         decir('');
         dibujar();
+        contarMinutos();
       });
   }
 
-  // Qué pasó, en palabras de la persona. 403: la sesión abrió, pero ese correo no es del equipo.
   function mensajeError(r) {
     if (r.estado === 0) return 'No hay conexión. Revise su internet y recargue la página.';
-    if (r.estado === 403) return 'Su cuenta entró, pero no tiene acceso al panel. Pida a quien administra el sitio que la agregue al equipo, o pulse «Salir».';
     return 'No pudimos leer las cifras. Recargue la página en un momento.';
   }
+
+  // ---------- Actualización automática ----------
+  // Cada 5 minutos, solo con la pestaña a la vista. Al volver a la pestaña, si pasó más de un minuto.
+  // Cada actualización es una sola consulta sobre tablas ya sumadas por día: no carga la base.
+  var CADA = 5 * 60000;
+  function contarMinutos() {
+    var el = $('[data-actualizado]');
+    if (!ultimaCarga) { el.textContent = ''; return; }
+    var min = Math.floor((Date.now() - ultimaCarga) / 60000);
+    el.textContent = min < 1 ? 'Actualizado hace un momento.' : 'Actualizado hace ' + min + (min === 1 ? ' minuto.' : ' minutos.');
+  }
+  setInterval(function () {
+    contarMinutos();
+    if (document.visibilityState === 'visible' && ultimaCarga && Date.now() - ultimaCarga >= CADA) {
+      cargar(true);
+      if (estado.administra) cargarEquipo();
+    }
+  }, 30000);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && ultimaCarga && Date.now() - ultimaCarga >= 60000) cargar(true);
+  });
 
   // ---------- Dibujar ----------
   function dibujar() {
@@ -400,5 +428,99 @@
     reloj = setTimeout(function () { if (estado.datos) grafico(estado.datos); }, 150);
   });
 
-  cargar();
+  // ---------- Equipo (solo quien administra) ----------
+  var equipo = $('[data-equipo]');
+  function decirEquipo(t) { $('[data-equipo-estado]').textContent = t; }
+  function cuando(t) { return new Date(t).toLocaleString('es-PE', { dateStyle: 'medium', timeStyle: 'short' }); }
+  var ACCIONES = { dar_acceso: 'dio acceso a', quitar_acceso: 'quitó el acceso a', devolver_acceso: 'devolvió el acceso a', cambiar_administra: 'cambió los permisos de' };
+
+  function dibujarEquipo(e) {
+    var lista = $('[data-equipo-lista]');
+    lista.textContent = '';
+    e.personas.forEach(function (p) {
+      var li = el('li', 'persona');
+      var datos = el('div', 'persona-datos');
+      datos.appendChild(el('b', null, p.nombre));
+      datos.appendChild(el('small', null, p.correo));
+      li.appendChild(datos);
+      var chips = el('div', 'persona-chips');
+      if (p.administra) chips.appendChild(el('span', 'chip', 'Administra'));
+      chips.appendChild(el('span', 'chip-estado ' + (p.archivado_en ? 'pendiente' : 'hecho'), p.archivado_en ? '● Sin acceso' : '✓ Con acceso'));
+      if (p.correo !== e.yo) {
+        var b = el('button', 'boton-2 boton-chico', p.archivado_en ? 'Devolver acceso' : 'Quitar acceso');
+        b.type = 'button';
+        b.addEventListener('click', function () {
+          b.disabled = true;
+          var pedido = p.archivado_en
+            ? window.CoddvisorSesion.llamar('sitio_equipo_dar_acceso', { p_correo: p.correo, p_nombre: p.nombre, p_administra: p.administra })
+            : window.CoddvisorSesion.llamar('sitio_equipo_quitar_acceso', { p_correo: p.correo });
+          pedido.then(respuestaEquipo(p.archivado_en ? 'Acceso devuelto a ' + p.nombre + '.' : 'Acceso quitado a ' + p.nombre + '. Su sesión se cortó.'));
+        });
+        chips.appendChild(b);
+      }
+      li.appendChild(chips);
+      if (!p.archivado_en && !p.tiene_usuario) {
+        li.appendChild(el('p', 'nota-usuario', 'Falta crear su usuario: en Supabase → Authentication → Users → Add user, con este correo, una contraseña y «Auto Confirm User». Hasta entonces no puede entrar.'));
+      }
+      lista.appendChild(li);
+    });
+    var hist = $('[data-equipo-historial]');
+    hist.textContent = '';
+    if (!e.historial.length) hist.appendChild(el('li', null, 'Todavía no hay cambios.'));
+    e.historial.forEach(function (h) {
+      hist.appendChild(el('li', null, cuando(h.en) + ': ' + h.quien + ' ' + (ACCIONES[h.accion] || h.accion) + ' ' + h.correo + (h.detalle ? ' (' + h.detalle + ')' : '') + '.'));
+    });
+  }
+  function respuestaEquipo(exito) {
+    return function (r) {
+      if (r.estado === 401) { location.replace('/equipo/entrar/'); return; }
+      if (r.estado !== 200) {
+        decirEquipo(r.estado === 0 ? 'No hay conexión. El cambio no se guardó.' : ((r.cuerpo && r.cuerpo.message) || 'No pudimos guardar el cambio.'));
+        cargarEquipo();
+        return;
+      }
+      decirEquipo(exito);
+      dibujarEquipo(r.cuerpo);
+    };
+  }
+  function cargarEquipo() {
+    return window.CoddvisorSesion.llamar('sitio_equipo', {}).then(function (r) {
+      if (r.estado === 200) { equipo.hidden = false; dibujarEquipo(r.cuerpo); }
+      else if (r.estado === 403) equipo.hidden = true;
+    });
+  }
+  $('[data-equipo-form]').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var f = ev.target;
+    var nombre = f.nombre.value.trim();
+    var correo = f.correo.value.trim().toLowerCase();
+    if (!nombre) { decirEquipo('Escriba el nombre de la persona.'); f.nombre.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) { decirEquipo('Revise el correo: debe tener la forma nombre@dominio.com.'); f.correo.focus(); return; }
+    var boton = f.querySelector('button');
+    boton.disabled = true;
+    window.CoddvisorSesion.llamar('sitio_equipo_dar_acceso', { p_correo: correo, p_nombre: nombre, p_administra: f.administra.checked })
+      .then(function (r) {
+        boton.disabled = false;
+        respuestaEquipo('Listo: ' + nombre + ' tiene acceso. Si todavía no tiene usuario, créelo en Supabase (ver abajo).')(r);
+        if (r.estado === 200) f.reset();
+      });
+  });
+  $('[data-actualizar]').addEventListener('click', function () {
+    cargar(true);
+    if (estado.administra) cargarEquipo();
+  });
+
+  // ---------- Al abrir ----------
+  // Primero se revisa el ingreso: sin el código del correo, de vuelta a «Entrar al panel».
+  window.CoddvisorSesion.llamar('sitio_estado_ingreso', {}).then(function (r) {
+    if (r.estado !== 200) {
+      if (r.estado === 0) { decir(mensajeError(r)); return; }
+      location.replace('/equipo/entrar/');
+      return;
+    }
+    if (!r.cuerpo.colaborador || !r.cuerpo.verificado) { location.replace('/equipo/entrar/'); return; }
+    estado.administra = !!r.cuerpo.administra;
+    cargar();
+    if (estado.administra) cargarEquipo();
+  });
 })();
