@@ -166,10 +166,16 @@
     return Math.round(o.mensual * p.afpAporte / 10000) + Math.round(Math.min(o.mensual, p.maximaAsegurable) * prima / 10000) +
       (o.mixta ? 0 : Math.round(o.mensual * afp.flujo / 10000));
   };
-  /** Remuneración mínima según la jornada (R.M. 091-92-TR, art. 3): con menos de 4 horas diarias en
-      promedio, proporcional a una jornada de 8 horas; con 4 o más, la mínima completa. */
-  L.minimaJornada = function (rmv, horasDia) {
-    return horasDia < 4 ? Math.round(rmv * horasDia / 8) : rmv;
+  /** La jornada a partir de las horas a la semana (horas extra incluidas, Sala Plena 003-2023-SUNAFIL/TFL)
+      y los días que va la persona.
+      - Promedio diario = horas semanales ÷ días del centro de trabajo: 6, o 5 si va 5 días o menos
+        (D.S. 001-96-TR, art. 12; con menos de 5 días, el límite es 20 horas, D.S. 004-97-TR, art. 3).
+      - Menos de 4 horas en promedio: mínima proporcional a una jornada de 8 (R.M. 091-92-TR, art. 3).
+        El promedio no se redondea: solo el resultado (23 h, 6 días: 1,230 × 23 ÷ 6 ÷ 8 = 589.38). */
+  L.jornada = function (rmv, horasSemana, dias) {
+    var divisor = dias >= 6 ? 6 : 5;
+    var menos4h = horasSemana < 4 * divisor;
+    return { menos4h: menos4h, divisor: divisor, minima: menos4h ? Math.round(rmv * horasSemana / divisor / 8) : rmv };
   };
 
   /* ---------- Piezas de la página (iguales en todas las calculadoras) ---------- */
