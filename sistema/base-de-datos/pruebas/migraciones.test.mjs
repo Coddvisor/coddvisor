@@ -78,6 +78,18 @@ describe('archivos de migración', () => {
     assert.deepEqual(revisarArchivos([m], sellar(m)), []);
   });
 
+  test('rechaza reemplazar el cuerpo de una función sin declararlo', () => {
+    const m = migracion('20270102030405_cambio.sql',
+      "create or replace function nucleo.tenant_actual() returns uuid language sql as $ select null::uuid $;");
+    assert.match(detalles(revisarArchivos([m], sellar(m))), /CREATE OR REPLACE/);
+  });
+
+  test('acepta reemplazar el cuerpo de una función cuando la migración lo declara', () => {
+    const m = migracion('20270102030405_cambio.sql',
+      "-- reemplaza: nucleo.algo() ahora redondea hacia abajo\ncreate or replace function nucleo.algo() returns integer language sql as $ select 1 $;");
+    assert.deepEqual(revisarArchivos([m], sellar(m)), []);
+  });
+
   test('no confunde un comentario ni un disparador con una sentencia que borra', () => {
     const m = migracion('20270102030405_disparador.sql',
       '-- aquí no hay ningún drop table\ncreate trigger t before update or delete on nucleo.algo for each row execute function nucleo.f();\ncreate trigger v before truncate on nucleo.algo for each statement execute function nucleo.f();');

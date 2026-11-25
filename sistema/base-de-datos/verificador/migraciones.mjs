@@ -28,6 +28,11 @@ const DESTRUCTIVAS = [
 
 const MARCA_DE_CONTRACCION = /^--\s*contraer:\s*\S+/m;
 
+// Reemplazar el cuerpo de algo que ya existe tampoco es agregar: quien revisa
+// ve una función entera y no qué cambió. Solo vale si la migración lo declara.
+const REEMPLAZO = /\bcreate\s+or\s+replace\b/i;
+const MARCA_DE_REEMPLAZO = /^--\s*reemplaza:\s*\S+/m;
+
 export function huella(contenido) {
   return createHash('sha256').update(contenido).digest('hex');
 }
@@ -90,6 +95,13 @@ export function revisarArchivos(migraciones, candado) {
           });
         }
       }
+    }
+
+    if (REEMPLAZO.test(sql) && !MARCA_DE_REEMPLAZO.test(m.contenido)) {
+      violaciones.push({
+        objeto: m.nombre,
+        detalle: 'Contiene CREATE OR REPLACE. Lo nuevo se crea con CREATE a secas; para cambiar el cuerpo de algo que ya existe, el archivo lleva una línea «-- reemplaza: qué y por qué».',
+      });
     }
 
     const sellada = candado[m.nombre];
