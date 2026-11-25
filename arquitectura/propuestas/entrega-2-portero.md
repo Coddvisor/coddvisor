@@ -63,7 +63,7 @@ endurecidas.
 |---|---|---|
 | `npm run verificar` | Node 24, Postgres en memoria | 486 pruebas, las quince reglas |
 | Las tres migraciones, sin superusuario | Base de prueba local con los permisos de una administrada (Postgres 17) | Se aplican sin error |
-| Diecisiete ataques entrando como el servicio | La misma base | Los diecisiete fallan. El ajuste viejo se puede cambiar y no sirve |
+| Dieciséis ataques entrando como el servicio | La misma base | Quince se rechazan. El otro, cambiar el ajuste viejo, se puede hacer y no sirve |
 | Quien migra escribe una fila de un cliente | La misma base | Funciona, y queda sin autor |
 | HMAC | Vectores de RFC 4231 | Coincide |
 
