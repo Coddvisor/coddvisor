@@ -42,8 +42,7 @@ prueba que se borran. Ninguna base real se tocó.
 | Los cimientos de `sistema/` en una base de prueba con los permisos de una administrada, donde quien migra no es superusuario | Se aplican sin error |
 | El candado en esa misma base | No se instala tal cual: falla al entregarle sus funciones al portero. Se instala con una variante de dos líneas, y así rechaza los trece ataques probados |
 
-El detalle de la última fila irá en la propuesta de la entrega 2, que todavía
-no está en el repositorio.
+El detalle de la última fila está en [entrega-2-portero.md](entrega-2-portero.md).
 
 ## Las decisiones
 
@@ -99,7 +98,7 @@ Cada entrega va en su rama, con su solicitud de revisión, y pasa
 | Entrega | Qué trae | Qué necesita aprobado |
 |---|---|---|
 | 1. Código puro y andamiaje | El dinero con su moneda, el sellado de los comandos, el contrato de la caja en borrador, y las revisiones automáticas del código | La carpeta `contratos/` y las reglas del código, descritas en [entrega-1-codigo-puro.md](entrega-1-codigo-puro.md) |
-| 2. El candado | El portero, la firma del servidor, usuarios, membresías y cajas, como migraciones nuevas; el documento de identidad y membresía (decisión D26); las pruebas de ataque | Ese documento y el cambio a la regla de permisos |
+| 2. El portero | Primero el mecanismo: el portero, la firma del servidor y las pruebas de ataque. Después, con el documento de identidad y membresía (decisión D26), usuarios, membresías y cajas | Los cambios de regla de [entrega-2-portero.md](entrega-2-portero.md), y después ese documento |
 | 3. La cadena de la caja y la venta | Las tablas donde queda cada comando sellado y la primera venta, con importe y moneda | Que el contrato de la caja esté publicado |
 | 4. La ventanilla única y el migrador | El servicio que recibe los comandos y la herramienta que aplica migraciones a una base real | La región de la base y el inventario de datos personales (decisiones D30 y D27) |
 
@@ -149,5 +148,5 @@ que siga valiendo debe quedar escrito en `main`.
 - **Del documento de identidad y membresía.** La entrega 2 lo trae como
   propuesta; sin él no se sabe dónde viven los usuarios.
 - **De la plataforma de la base.** Varias garantías del candado solo se
-  pueden comprobar en un proyecto real de esa plataforma. La lista irá en la
-  propuesta de la entrega 2.
+  pueden comprobar en un proyecto real de esa plataforma. La lista está en
+  [entrega-2-portero.md](entrega-2-portero.md).
