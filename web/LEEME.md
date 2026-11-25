@@ -300,7 +300,7 @@ más visto» cuántas personas dejaron sus datos después de leer cada artículo
 
 ### Entrar al panel, roles e invitaciones
 
-Se entra como en CAYLA: **correo y contraseña** de Supabase Auth, en `www.coddvisor.com/equipo/`.
+Se entra con **correo y contraseña** de Supabase Auth, en `www.coddvisor.com/equipo/`.
 Supabase guarda la contraseña cifrada; ni el sitio ni el repositorio la conocen. Cada vez que el panel
 pide algo, la base revisa que la sesión sea de un correo activo en `sitio.colaboradores` y que su
 **rol** tenga el permiso. (Del 24-nov-2026 hubo un código por correo como segundo paso; se quitó el
