@@ -1,0 +1,54 @@
+{
+  "leame": "Lo que sellar escribe, letra por letra, para unas entradas dadas.",
+  "casos": [
+    {
+      "verbo": "prueba",
+      "argumento": {
+        "nota": "hola"
+      },
+      "hecho": {
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "contexto": {
+          "app": "1.4.2"
+        }
+      },
+      "cabeza": null,
+      "de": {
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a"
+      },
+      "sobre": "{\"autor\":{\"usuario_id\":\"019a8f20-0000-7000-8000-00000000c0de\",\"via\":\"pin\"},\"contexto\":{\"app\":\"1.4.2\"},\"datos\":{\"nota\":\"hola\"},\"dispositivo_id\":\"019a8f20-1111-7000-8000-00000000ca1a\",\"huella_anterior\":null,\"ocurrido_en_ms\":1764000000001,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-000000000001\",\"protocolo\":1,\"secuencia\":1,\"tenant_id\":\"019a8f20-0000-7000-8000-0000000000a0\",\"verbo\":\"prueba\",\"verbo_version\":1}",
+      "huella": "f62b0be57d420dfa0d209e16eef8fdce2f79d6db9c3c42796cfda10f8b2fdb62"
+    },
+    {
+      "verbo": "prueba",
+      "argumento": {
+        "nota": "sin persona"
+      },
+      "hecho": {
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000002",
+        "ocurrido_en_ms": 1764000000002,
+        "autor": null,
+        "contexto": {
+          "app": "2.0.0",
+          "desfase_ms": -1500
+        }
+      },
+      "cabeza": {
+        "secuencia": 41,
+        "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "de": {
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a"
+      },
+      "sobre": "{\"autor\":null,\"contexto\":{\"app\":\"2.0.0\",\"desfase_ms\":-1500},\"datos\":{\"nota\":\"sin persona\"},\"dispositivo_id\":\"019a8f20-1111-7000-8000-00000000ca1a\",\"huella_anterior\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"ocurrido_en_ms\":1764000000002,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-000000000002\",\"protocolo\":1,\"secuencia\":42,\"tenant_id\":\"019a8f20-0000-7000-8000-0000000000a0\",\"verbo\":\"prueba\",\"verbo_version\":1}",
+      "huella": "13590f9334faccc071ec39fddf9aa0cd46a61da4899c629e33cdd1237c3df7a8"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  // Zonas puras: corren igual en la caja sin red y en el servidor. Aquí
+  // TypeScript no conoce Node ni el navegador: fetch, process, Buffer,
+  // setTimeout o crypto no existen, y usarlos no compila. La lista de carpetas
+  // sale de herramientas/guardia/capas.json; una prueba exige que coincidan.
+  //
+  // ES2020 a propósito: es lo que entiende el celular más viejo que se admite
+  // (Chrome y WebView 80). Con una lib más nueva compilaría algo que allá no
+  // existe, y el error se vería recién en el mostrador.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "types": []
+  },
+  "include": ["nucleo/**/*.ts", "contratos/**/*.ts", "paquetes/**/*.ts", "modulos/*/dominio/**/*.ts"],
+  "exclude": ["node_modules", "**/pruebas/**"]
+}

@@ -17,7 +17,7 @@ Toda tabla declara qué clase es. De la clase salen su aislamiento y sus permiso
 | `negocio`  | Datos de un cliente que se editan                  | Leer, crear, editar | `nucleo.empresa`          |
 | `libro`    | Datos de un cliente que solo se anexan             | Leer                | movimientos de stock, de caja, asientos |
 | `catalogo` | Datos iguales para todos los clientes              | Leer                | `nucleo.moneda`, `nucleo.parametro_legal` |
-| `control`  | Lo que vive fuera de las celdas (enrutador, identidad) | Nada            | reservado                 |
+| `control`  | Lo que vive fuera de las celdas (enrutador, identidad) | Nada            | `portero.llave`           |
 
 Nadie borra. Lo que deja de usarse se archiva (`archivado_en`) o se anula con
 un movimiento inverso.
@@ -58,6 +58,25 @@ comment on table ventas.cotizacion is '...';
 select nucleo.preparar_tabla('ventas.cotizacion', 'negocio');
 ```
 
+## El portero
+
+El cliente activo de una transacción no lo fija el programa: lo abre el
+**portero**, un rol aparte, y solo con la firma del servicio. Lo guarda en una
+tabla temporal de la conexión que el programa no puede leer, escribir ni
+reemplazar, y que se vacía sola al terminar la transacción.
+
+- El servicio entra a la base con `coddvisor_entrada`. Hereda los permisos de
+  `coddvisor_app`, no puede cambiarse a ningún otro rol y no es dueño de nada.
+  Nunca entra con el rol que aplica las migraciones.
+- Para trabajar en un negocio se llama a `portero.abrir`, con una persona o con
+  una caja. Una transacción trabaja en un solo negocio.
+- Las políticas y los sellos leen de `nucleo.tenant_actual()`,
+  `nucleo.actor_actual()` y `nucleo.dispositivo_actual()`. Un módulo nunca recibe
+  el cliente como dato.
+- Hasta que llegue el documento de identidad, el portero comprueba que el
+  servicio firmó, no que la persona sea miembro: eso lo comprueba el servicio
+  antes de firmar.
+
 ## Las reglas
 
 ### Aislamiento
@@ -78,12 +97,25 @@ apunta al plano de control, y ningún catálogo apunta a datos de un cliente.
 
 **BD-04. La seguridad por fila está activa y forzada, y toda política filtra por el cliente activo.**
 Es la segunda barrera: si el programa olvida filtrar, la base no devuelve
-nada. Sin cliente activo en la transacción, no se ve ninguna fila.
+nada. Sin cliente activo en la transacción, no se ve ninguna fila. El cliente
+activo sale de `nucleo.tenant_actual()`, que lee del portero: su cuerpo está
+escrito en la configuración del verificador, y cambiarlo es cambiar esta regla.
+Una vista consulta con los permisos de quien la usa (`security_invoker`), y no
+hay vistas materializadas.
 
 **BD-05. Los permisos son los mínimos.**
 La aplicación no borra, no escribe directo en un libro, no cambia un catálogo
 y ningún objeto queda abierto a todos los roles. Los roles de la aplicación
-no pueden saltarse la seguridad por fila.
+no pueden saltarse la seguridad por fila. Además:
+
+- El servicio entra solo con un rol de entrada, que hereda de la aplicación.
+  Ningún rol puede volverse otro, y nadie puede volverse portero.
+- El portero toca solo las tablas de su lista cerrada, una por una.
+- Los permisos se dan por tabla, nunca por columna.
+- Ningún rol de la aplicación es dueño de una tabla ni crea objetos.
+- La aplicación no crea tablas temporales.
+- Una función que corre con los permisos de su dueño es una puerta: quién puede
+  ejecutarla figura, con nombre, en la lista de puertas.
 
 ### Tipos
 
@@ -114,6 +146,7 @@ una vez, ahí. Una tabla con importes tiene una columna `moneda_codigo`.
 `creado_en`, `creado_por`, `actualizado_en`, `actualizado_por` y `version`.
 Los pone la base, no el programa, así que no se pueden falsear. `version`
 sube en cada cambio y permite avisar cuando dos personas editan lo mismo.
+Vale también para una tabla de control que alguien edita.
 
 **BD-10. Un libro solo se anexa.**
 No se edita, no se borra y no se vacía, ni siquiera por el dueño de la base.
@@ -142,12 +175,16 @@ personales que pide la ley sale de una consulta.
 **BD-14. Toda función fija su `search_path`, tiene una sola firma y no corre con permisos de más.**
 Al cambiar la firma de una función, la anterior se elimina en la misma
 migración. Una función que corre con los permisos de su dueño pertenece a un
-rol que no puede saltarse la seguridad por fila.
+rol que no puede saltarse la seguridad por fila, y fija
+`search_path = pg_catalog, pg_temp`: con el esquema temporal nombrado al final,
+ninguna tabla temporal se usa antes que la de verdad.
 
 **BD-15. Las migraciones llevan fecha, solo agregan y no se editan después de aceptadas.**
 El nombre es `AAAAMMDDHHMMSS_descripcion.sql`. Para quitar algo, primero deja
 de usarse en el programa y después se quita en una migración aparte que
-empieza con `-- contraer: motivo`. `migraciones.candado.json` guarda la huella
+empieza con `-- contraer: motivo`. Cambiar el cuerpo de algo que ya existe
+(`CREATE OR REPLACE`) solo vale en una migración que lo declare con
+`-- reemplaza: qué y por qué`. `migraciones.candado.json` guarda la huella
 de cada archivo. Nadie ejecuta SQL a mano en producción.
 
 ## Reglas que revisa una persona
@@ -174,12 +211,12 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 
 | Pieza | Depende de |
 |---|---|
-| Función que fija el cliente activo tras validar la membresía del usuario | Documento de identidad y membresía (decisión D26) |
+| Que el portero compruebe la membresía además de la firma, y cómo abre un negocio un trabajo automático | Documento de identidad y membresía (decisión D26) |
 | Enrutador de celdas y tablas de identidad en el esquema `control` | El mismo documento |
 | Auditoría por disparador y su partición por fecha | Primer módulo de negocio |
 | Una clase de tabla para los saldos: los lee la aplicación y solo los escriben las funciones de los libros | Primer libro (tesorería o inventario) |
 | Tablas de intercambio entre dos clientes, con regla de dos partes | Red entre negocios (después del primer alcance) |
-| Identificador de operación (`op_id`) y contrato de la caja | Protocolo de sincronización (D12) |
+| Identificador de operación (`op_id`) en las tablas. El contrato de la caja ya existe, en borrador, en `sistema/contratos/caja/` | Protocolo de sincronización (D12) |
 | Campos propios y su definición | Módulo de configuración (D16) |
 | Valores legales del Perú en `parametro_legal` | Confirmación del contador asesor, con norma y fecha |
 

@@ -1,0 +1,129 @@
+{
+  "leame": "Qué textos son JSON canónico. Solo importa aceptar o rechazar; el motivo puede variar.",
+  "casos": [
+    {
+      "acepta": true,
+      "texto": "{\"a\":1,\"b\":\"x\"}"
+    },
+    {
+      "acepta": true,
+      "texto": "[]"
+    },
+    {
+      "acepta": true,
+      "texto": "{}"
+    },
+    {
+      "acepta": true,
+      "texto": "null"
+    },
+    {
+      "acepta": true,
+      "texto": "0"
+    },
+    {
+      "acepta": true,
+      "texto": "-5"
+    },
+    {
+      "acepta": true,
+      "texto": "9007199254740991"
+    },
+    {
+      "acepta": true,
+      "texto": "\"\\u0001\\b\\t\\n\\f\\r\\\"\\\\/\""
+    },
+    {
+      "acepta": true,
+      "texto": "\"ñ€ 😀\""
+    },
+    {
+      "acepta": true,
+      "texto": "{\"a_1\":{\"b\":[true,false,null]}}"
+    },
+    {
+      "acepta": false,
+      "texto": "{\"b\":\"x\",\"a\":1}"
+    },
+    {
+      "acepta": false,
+      "texto": "{\"a\":1, \"b\":\"x\"}"
+    },
+    {
+      "acepta": false,
+      "texto": "{\"a\":1.0}"
+    },
+    {
+      "acepta": false,
+      "texto": "{\"a\":1e0}"
+    },
+    {
+      "acepta": false,
+      "texto": "{\"a\":1.5}"
+    },
+    {
+      "acepta": false,
+      "texto": "{\"a\":2,\"a\":1}"
+    },
+    {
+      "acepta": false,
+      "texto": "\"\\u0078\""
+    },
+    {
+      "acepta": false,
+      "texto": "\"\\/\""
+    },
+    {
+      "acepta": false,
+      "texto": "\"\\u00f1\""
+    },
+    {
+      "acepta": false,
+      "texto": "{\"\\u0061\":1}"
+    },
+    {
+      "acepta": false,
+      "texto": "{\"A\":1}"
+    },
+    {
+      "acepta": false,
+      "texto": "{\"\":1}"
+    },
+    {
+      "acepta": false,
+      "texto": "{\"1\":1}"
+    },
+    {
+      "acepta": false,
+      "texto": "-0"
+    },
+    {
+      "acepta": false,
+      "texto": "9007199254740992"
+    },
+    {
+      "acepta": false,
+      "texto": " 1"
+    },
+    {
+      "acepta": false,
+      "texto": "1\n"
+    },
+    {
+      "acepta": false,
+      "texto": "\"\\u0000\""
+    },
+    {
+      "acepta": false,
+      "texto": "\"\\ud800\""
+    },
+    {
+      "acepta": false,
+      "texto": "{"
+    },
+    {
+      "acepta": false,
+      "texto": ""
+    }
+  ]
+}

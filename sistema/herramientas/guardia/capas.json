@@ -1,0 +1,67 @@
+{
+  "leame": "Las capas del código del sistema: qué carpeta puede usar a cuál, cuáles son puras y qué librerías de npm entran en cada una. Quién usa a quién ENTRE MÓDULOS no está aquí: se lee de la tabla «Qué depende de qué» de arquitectura/bases/05-modulos.md. Cambiar este archivo es cambiar una frontera: lo aprueba el fundador.",
+  "puerta": "publico.ts",
+  "documento_de_modulos": "../arquitectura/bases/05-modulos.md",
+  "titulo_de_la_tabla": "## Qué depende de qué",
+  "titulo_del_arbol": "## Dónde vive cada cosa",
+  "capas": [
+    {
+      "nombre": "nucleo",
+      "unidades": false,
+      "pura": true,
+      "usa": [],
+      "npm": [],
+      "porque": "El núcleo no conoce a los módulos, ni a los países, ni a los rubros (05-modulos.md, regla 4). Si importara algo de arriba, cada cambio en un módulo podría romper el Dinero de todos."
+    },
+    {
+      "nombre": "contratos",
+      "unidades": true,
+      "pura": true,
+      "usa": [
+        "nucleo"
+      ],
+      "npm": [],
+      "porque": "Un contrato es lo que ve el exterior y queda congelado con su versión (05-modulos.md, regla 6). Lo leen la caja sin red y el servidor: si importara un módulo o la base, la caja dejaría de poder sellar una venta."
+    },
+    {
+      "nombre": "paquetes",
+      "unidades": true,
+      "pura": true,
+      "usa": [
+        "nucleo"
+      ],
+      "npm": [],
+      "porque": "Un país es un paquete de datos y funciones fiscales (05-modulos.md, regla 5). Corre igual en la caja y en el servidor: si importara un módulo, aparecerían dos cálculos del mismo impuesto."
+    },
+    {
+      "nombre": "modulos",
+      "unidades": true,
+      "pura": false,
+      "subcarpetas_puras": [
+        "dominio"
+      ],
+      "usa": [
+        "nucleo",
+        "contratos",
+        "modulos"
+      ],
+      "npm": [],
+      "segun_la_tabla": true,
+      "porque": "Un módulo usa el núcleo, los contratos y a los módulos que le permite la tabla de 05-modulos.md. No importa el paquete de un país por su nombre: el paquete se elige con el dato empresa.pais_codigo (03-nada-fijo-en-el-codigo.md), así que un segundo país no obliga a tocar el módulo. Tampoco una aplicación ni una herramienta: la capa de abajo quedaría atada a una pantalla."
+    }
+  ],
+  "fuera_del_producto": {
+    "carpetas": [
+      "herramientas",
+      "base-de-datos"
+    ],
+    "porque": "Las herramientas y el verificador de la base corren en la computadora del equipo y en la revisión automática, nunca en el negocio del cliente. El producto no las importa."
+  },
+  "pruebas": {
+    "patrones": [
+      "(^|/)pruebas/",
+      "\\.test\\.(ts|mts|mjs)$"
+    ],
+    "porque": "Una prueba puede usar Node, datos inventados y atajos. Si el código de producción importara una, heredaría esos atajos."
+  }
+}

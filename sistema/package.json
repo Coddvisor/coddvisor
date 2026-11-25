@@ -3,17 +3,30 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=24"
+    "node": ">=24.12"
+  },
+  "imports": {
+    "#nucleo": "./nucleo/publico.ts",
+    "#contratos/*": "./contratos/*/publico.ts",
+    "#modulos/*": "./modulos/*/publico.ts",
+    "#paquetes/*": "./paquetes/*/publico.ts"
   },
   "scripts": {
-    "verificar": "node base-de-datos/verificador/correr.mjs && node herramientas/valores-fijos.mjs && node --test",
-    "verificar:base": "node base-de-datos/verificador/correr.mjs",
+    "verificar": "node herramientas/verificar.mjs",
+    "verificar:tipos": "tsc -p tsconfig.puro.json && tsc -p tsconfig.json",
+    "verificar:codigo": "node herramientas/guardia/correr.mjs",
     "verificar:valores-fijos": "node herramientas/valores-fijos.mjs",
+    "verificar:candados": "node herramientas/candados/contratos.mjs && node herramientas/candados/contra-main.mjs",
+    "verificar:base": "node base-de-datos/verificador/correr.mjs",
     "pruebas": "node --test",
     "candado": "node base-de-datos/verificador/candado.mjs",
+    "contratos:sellar": "node herramientas/candados/contratos.mjs sellar",
+    "contratos:publicar": "node herramientas/candados/contratos.mjs publicar",
     "revisor-ia": "node herramientas/revisor-ia.mjs"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "0.5.15"
+    "@electric-sql/pglite": "0.5.15",
+    "@types/node": "24.19.2",
+    "typescript": "6.0.3"
   }
 }

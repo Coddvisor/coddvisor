@@ -24,6 +24,9 @@ try {
 resultados.sort((a, b) => a.id.localeCompare(b.id));
 
 const clases = await contarTablas(db);
+// La base en memoria deja el proceso esperando unos diez segundos si no se
+// cierra: ya no hace falta, todo lo que sigue es escribir el resultado.
+await db.close();
 const totalTablas = clases.reduce((suma, c) => suma + c.cantidad, 0);
 console.log(`\nBase de datos: ${migraciones.length} migraciones, ${totalTablas} tablas (${clases.map((c) => `${c.cantidad} ${c.clase}`).join(', ')}).\n`);
 
