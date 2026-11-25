@@ -3,10 +3,10 @@
 name: Bases del sistema
 
 on:
+  # Corre en toda solicitud de revisión, toque la carpeta que toque. Así esta
+  # revisión se puede exigir para unir a main sin que una solicitud que solo
+  # cambia el sitio se quede esperando una revisión que nunca arranca.
   pull_request:
-    paths:
-      - 'sistema/**'
-      - '.github/workflows/bases.yml'
   push:
     branches: [main]
     paths:
