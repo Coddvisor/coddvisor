@@ -179,7 +179,7 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 | Auditoría por disparador y su partición por fecha | Primer módulo de negocio |
 | Una clase de tabla para los saldos: los lee la aplicación y solo los escriben las funciones de los libros | Primer libro (tesorería o inventario) |
 | Tablas de intercambio entre dos clientes, con regla de dos partes | Red entre negocios (después del primer alcance) |
-| Identificador de operación (`op_id`) y contrato de la caja | Protocolo de sincronización (D12) |
+| Identificador de operación (`op_id`) en las tablas. El contrato de la caja ya existe, en borrador, en `sistema/contratos/caja/` | Protocolo de sincronización (D12) |
 | Campos propios y su definición | Módulo de configuración (D16) |
 | Valores legales del Perú en `parametro_legal` | Confirmación del contador asesor, con norma y fecha |
 

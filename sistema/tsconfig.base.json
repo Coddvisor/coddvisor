@@ -1,0 +1,28 @@
+{
+  // Lo común a las dos revisiones de tipos. Node ejecuta los .ts tal cual
+  // (borra los tipos), así que TypeScript solo revisa: nunca genera archivos.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    // Las mismas reglas de resolución que usa Node al ejecutar: extensiones
+    // obligatorias y el campo "imports" de package.json para los nombres con #.
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedSideEffectImports": true,
+    "useUnknownInCatchVariables": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

@@ -1,0 +1,10 @@
+{
+  // Revisa todo el TypeScript del sistema, pruebas incluidas, con los tipos de
+  // Node. Las zonas puras se revisan además sin Node: tsconfig.puro.json.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["**/*.ts", "**/*.mts"],
+  "exclude": ["node_modules"]
+}

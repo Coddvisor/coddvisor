@@ -1,0 +1,25 @@
+{
+  "leame": "Ventas rápidas en monedas de dos, cero y tres decimales. El total lleva siempre cuatro.",
+  "eslabones": [
+    {
+      "sobre": "{\"autor\":{\"usuario_id\":\"019a8f20-0000-7000-8000-00000000c0de\",\"via\":\"pin\"},\"contexto\":{\"app\":\"1.4.2\"},\"datos\":{\"moneda_codigo\":\"PEN\",\"total\":\"7.5000\"},\"dispositivo_id\":\"019a8f20-1111-7000-8000-00000000ca1a\",\"huella_anterior\":null,\"ocurrido_en_ms\":1764000000001,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-000000000001\",\"protocolo\":1,\"secuencia\":1,\"tenant_id\":\"019a8f20-0000-7000-8000-0000000000a0\",\"verbo\":\"vender\",\"verbo_version\":1}",
+      "huella": "43a4a101273b926b4a07bfafe091912be6acd66dd9898463f2308123e863152f"
+    },
+    {
+      "sobre": "{\"autor\":{\"usuario_id\":\"019a8f20-0000-7000-8000-00000000c0de\",\"via\":\"pin\"},\"contexto\":{\"app\":\"1.4.2\"},\"datos\":{\"moneda_codigo\":\"CLP\",\"total\":\"1500.0000\"},\"dispositivo_id\":\"019a8f20-1111-7000-8000-00000000ca1a\",\"huella_anterior\":\"43a4a101273b926b4a07bfafe091912be6acd66dd9898463f2308123e863152f\",\"ocurrido_en_ms\":1764000000002,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-000000000002\",\"protocolo\":1,\"secuencia\":2,\"tenant_id\":\"019a8f20-0000-7000-8000-0000000000a0\",\"verbo\":\"vender\",\"verbo_version\":1}",
+      "huella": "fffc6c4d7f6adad3646980c09aa90dc2c0e83ed707360bb9442b8442813a42e1"
+    },
+    {
+      "sobre": "{\"autor\":{\"usuario_id\":\"019a8f20-0000-7000-8000-00000000c0de\",\"via\":\"pin\"},\"contexto\":{\"app\":\"1.4.2\"},\"datos\":{\"moneda_codigo\":\"KWD\",\"total\":\"1.2550\"},\"dispositivo_id\":\"019a8f20-1111-7000-8000-00000000ca1a\",\"huella_anterior\":\"fffc6c4d7f6adad3646980c09aa90dc2c0e83ed707360bb9442b8442813a42e1\",\"ocurrido_en_ms\":1764000000003,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-000000000003\",\"protocolo\":1,\"secuencia\":3,\"tenant_id\":\"019a8f20-0000-7000-8000-0000000000a0\",\"verbo\":\"vender\",\"verbo_version\":1}",
+      "huella": "c72abc44ab2f37aaad21b22eb7dbea0a6f63755b4ac05afcc2702e19d570c02f"
+    },
+    {
+      "sobre": "{\"autor\":{\"usuario_id\":\"019a8f20-0000-7000-8000-00000000c0de\",\"via\":\"pin\"},\"contexto\":{\"app\":\"1.4.2\"},\"datos\":{\"moneda_codigo\":\"PEN\",\"total\":\"0.0100\"},\"dispositivo_id\":\"019a8f20-1111-7000-8000-00000000ca1a\",\"huella_anterior\":\"c72abc44ab2f37aaad21b22eb7dbea0a6f63755b4ac05afcc2702e19d570c02f\",\"ocurrido_en_ms\":1764000000004,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-000000000004\",\"protocolo\":1,\"secuencia\":4,\"tenant_id\":\"019a8f20-0000-7000-8000-0000000000a0\",\"verbo\":\"vender\",\"verbo_version\":1}",
+      "huella": "2b2b869b5b0010b2c52081e4757aebf1e38002ae3e54acb2ace2011a928858ae"
+    },
+    {
+      "sobre": "{\"autor\":{\"usuario_id\":\"019a8f20-0000-7000-8000-00000000c0de\",\"via\":\"pin\"},\"contexto\":{\"app\":\"1.4.2\"},\"datos\":{\"moneda_codigo\":\"PEN\",\"total\":\"99999999999.9900\"},\"dispositivo_id\":\"019a8f20-1111-7000-8000-00000000ca1a\",\"huella_anterior\":\"2b2b869b5b0010b2c52081e4757aebf1e38002ae3e54acb2ace2011a928858ae\",\"ocurrido_en_ms\":1764000000005,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-000000000005\",\"protocolo\":1,\"secuencia\":5,\"tenant_id\":\"019a8f20-0000-7000-8000-0000000000a0\",\"verbo\":\"vender\",\"verbo_version\":1}",
+      "huella": "bda93cf00a27540ba981f17ac8d9aeb34940cbb8b6e77c42adfc77e3dc057508"
+    }
+  ]
+}

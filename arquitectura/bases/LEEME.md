@@ -19,8 +19,9 @@ pueden revisar.
 
 ## Cómo se hacen cumplir
 
-Las reglas de la base de datos (BD-01 a BD-15) y la guardia de valores fijos
-(VF-01 a VF-05) se revisan solas en cada cambio:
+Las reglas de la base de datos (BD-01 a BD-15), las del código (PU, FR, PL y PR),
+las de los contratos (CT-01) y la guardia de valores fijos (VF-01 a VF-05) se
+revisan solas en cada cambio:
 
 ```bash
 cd sistema && npm run verificar

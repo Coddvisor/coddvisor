@@ -1,0 +1,34 @@
+{
+  "v1/bordes.json": {
+    "estado": "borrador",
+    "huella": "52dc1c1f7aca043067f2b2bb36ae8ea88c78dd41eb98120319de5bff6d34da0b"
+  },
+  "v1/cadena.json": {
+    "estado": "borrador",
+    "huella": "2730c984f3b121ade0356252f791361dd05086794a3d583d3e0648b253824d92"
+  },
+  "v1/canonico.json": {
+    "estado": "borrador",
+    "huella": "98ad6c98a42da084fd4e3a0ba20c96cf5b14b42208712745e9817aef5823af3e"
+  },
+  "v1/limites.json": {
+    "estado": "borrador",
+    "huella": "30030342e11eb3f3631e18e07bd0a2a7c507498d58ec7def8325a312d257003c"
+  },
+  "v1/respuestas.json": {
+    "estado": "borrador",
+    "huella": "05d512e29ad9227a687fa45d857dd162dbadce37e4dff31f50d998870e563444"
+  },
+  "v1/sellar.json": {
+    "estado": "borrador",
+    "huella": "582b02df7602bdf7273422f8d26f228a9dc992b36f2abd27b14e86ae41471a5a"
+  },
+  "v1/vender-v1-datos.json": {
+    "estado": "borrador",
+    "huella": "fe920ee92b7e2b1a22458e11b3b57e54763eddcf7dab1b4139893b3c930b1e6a"
+  },
+  "v1/vender-v1.json": {
+    "estado": "borrador",
+    "huella": "dd98bff1090365f80917c56b05324ce6caf33040f96ce1802752e356b38c61e5"
+  }
+}

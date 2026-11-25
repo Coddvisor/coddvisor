@@ -1,19 +1,24 @@
 # Revisa en cada cambio que el sistema cumple las bases de arquitectura/bases/.
 # Si una regla se incumple, el cambio no se puede unir a main.
+#
+# Corre en TODA solicitud de revisión, sin filtrar por carpetas, para que se pueda
+# marcar como obligatoria: con un filtro, una solicitud que no toque sistema/
+# quedaría esperando para siempre una revisión que nunca arranca. Tarda poco.
 name: Bases del sistema
 
 on:
   pull_request:
-    paths:
-      - 'sistema/**'
-      - '.github/workflows/bases.yml'
   push:
     branches: [main]
-    paths:
-      - 'sistema/**'
 
 permissions:
   contents: read
+
+# En una solicitud, un cambio nuevo reemplaza la revisión anterior. En main no se
+# cancela ninguna.
+concurrency:
+  group: bases-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   verificar:
@@ -28,6 +33,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # Con la historia, para comparar los candados con lo aceptado en main.
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: sistema/.nvmrc

@@ -1,0 +1,4 @@
+# Las migraciones y los vectores del contrato se sellan con su huella: un cambio
+# de fin de línea (CRLF en Windows) la cambiaría sin que nadie tocara nada.
+*.sql text eol=lf
+contratos/*/vectores/** text eol=lf
