@@ -94,6 +94,9 @@ exige que toda regla tenga al menos un caso.
 
 ## Lo que esto todavía no es
 
-Ninguna migración se aplicó a una base real desde este repositorio. El contrato
-de la caja es un borrador: ninguna caja real selló nada. La lista de lo pendiente está al final
-de `arquitectura/bases/02-base-de-datos.md`.
+No hay registro de que alguna migración de esta carpeta se haya aplicado a
+una base real. El proyecto de base de datos del sistema ya está creado en
+Supabase (`coddvisor-sistema`, región São Paulo), pero todavía no existe el
+camino para llevarle las migraciones, y nadie las aplica a mano. El contrato de
+la caja es un borrador: ninguna caja real selló nada. La lista de lo pendiente
+está al final de `arquitectura/bases/02-base-de-datos.md`.
