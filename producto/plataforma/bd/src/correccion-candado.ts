@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type pg from "pg";
-import { revisarMigracion } from "./revisor-migraciones.ts";
+import { revisarSql } from "./revisor-migraciones.ts";
 import { leerSql } from "./sql-lexico.ts";
 
 /**
@@ -69,7 +69,7 @@ export function revisarCorreccion(sql: string): string[] {
   }
   // Además, las mismas reglas que una migración (nada de DROP, SQL armado al vuelo,
   // funciones con permisos de su dueño sin search_path fijo, etc.).
-  for (const p of revisarMigracion(sql)) problemas.push(`${p.regla}: ${p.detalle}`);
+  for (const p of revisarSql(sql)) problemas.push(`${p.regla}: ${p.detalle}`);
   return problemas;
 }
 

@@ -37,13 +37,23 @@ begin
     end if;
   end loop;
 
-  -- Quien corre el arranque actúa como dueño para migrar.
-  if not pg_has_role(current_user, 'coddvisor_duenio', 'member') then
-    execute format('grant coddvisor_duenio to %I', current_user);
+  -- Quien corre el arranque actúa como dueño para migrar y como portero para
+  -- instalar la llave y corregir el candado. Se pregunta por 'set' (poder actuar
+  -- como ese rol) y 'usage' (tener sus permisos) y no por 'member': donde quien
+  -- arranca no es superusuario pero puede crear roles (postgres en Supabase), al
+  -- crear un rol queda como miembro con permiso de administrarlo, pero sin poder
+  -- actuar como él ni usar sus permisos. Medido en PostgreSQL 18; en Supabase se
+  -- comprueba antes de la primera migración real.
+  if not (pg_has_role(current_user, 'coddvisor_duenio', 'set') and pg_has_role(current_user, 'coddvisor_duenio', 'usage')) then
+    execute format('grant coddvisor_duenio to %I with inherit true, set true', current_user);
   end if;
-  -- El dueño crea las funciones del portero y se las entrega.
-  if not pg_has_role('coddvisor_duenio', 'coddvisor_portero', 'member') then
-    grant coddvisor_portero to coddvisor_duenio;
+  if not (pg_has_role(current_user, 'coddvisor_portero', 'set') and pg_has_role(current_user, 'coddvisor_portero', 'usage')) then
+    execute format('grant coddvisor_portero to %I with inherit true, set true', current_user);
+  end if;
+  -- El dueño crea las funciones del portero y se las entrega (solo en las
+  -- migraciones fundacionales; el migrador vigila el resto).
+  if not pg_has_role('coddvisor_duenio', 'coddvisor_portero', 'set') then
+    grant coddvisor_portero to coddvisor_duenio with set true;
   end if;
 
   -- Permisos sobre esta base (los roles son de todo el servidor; los permisos, de cada base).
@@ -104,3 +114,43 @@ create table if not exists registro.correccion_candado (
 );
 alter table registro.correccion_candado owner to coddvisor_duenio;
 revoke all on schema registro from public;
+
+-- ---------- El arranque comprueba lo que dejó ----------
+-- Un REVOKE que no tiene permiso no falla: solo avisa. Si quien arranca no es dueño
+-- de la base, "revoke temporary … from public" no quita nada y el programa podría
+-- fabricarse su propia cuenta activa. Por eso, al final, se revisa el resultado y
+-- no la intención: si algo no quedó como debe, el arranque falla y no se migra.
+do $$
+declare
+  v_falla text;
+begin
+  select string_agg(problema, '; ') into v_falla from (
+    select 'el rol ' || r.rolname || ' tiene atributos de más' as problema
+    from pg_roles r
+    where r.rolname in ('coddvisor_duenio', 'coddvisor_portero', 'coddvisor_app')
+      and (r.rolsuper or r.rolcreatedb or r.rolcreaterole or r.rolinherit or r.rolbypassrls or r.rolreplication
+           or r.rolcanlogin <> (r.rolname = 'coddvisor_app'))
+    union all
+    select 'coddvisor_app puede crear tablas temporales'
+    where has_database_privilege('coddvisor_app', current_database(), 'TEMPORARY')
+    union all
+    select 'coddvisor_app pertenece a otro rol'
+    where exists (select 1 from pg_auth_members m where m.member = 'coddvisor_app'::regrole)
+    union all
+    select 'el portero no puede crear su tabla temporal'
+    where not has_database_privilege('coddvisor_portero', current_database(), 'TEMPORARY')
+    union all
+    select 'quien arranca no puede actuar como coddvisor_duenio'
+    where not (pg_has_role(current_user, 'coddvisor_duenio', 'set') and pg_has_role(current_user, 'coddvisor_duenio', 'usage'))
+    union all
+    select 'quien arranca no puede actuar como coddvisor_portero'
+    where not (pg_has_role(current_user, 'coddvisor_portero', 'set') and pg_has_role(current_user, 'coddvisor_portero', 'usage'))
+    union all
+    select 'coddvisor_duenio no puede actuar como coddvisor_portero'
+    where not pg_has_role('coddvisor_duenio', 'coddvisor_portero', 'set')
+  ) problemas;
+  if v_falla is not null then
+    raise exception 'El arranque no quedó como debe: %. Revíselo con quien administra la base antes de migrar.', v_falla;
+  end if;
+end
+$$;

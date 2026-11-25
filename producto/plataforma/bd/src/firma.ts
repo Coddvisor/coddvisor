@@ -190,7 +190,8 @@ export async function instalarLlave(admin: pg.ClientBase, llave: Llave): Promise
   };
   await admin.query("begin");
   try {
-    await admin.query("set local role coddvisor_duenio");
+    // La llave es del portero (0001_esquemas.sql): ni el dueño la puede tocar.
+    await admin.query("set local role coddvisor_portero");
     let igual = await yaInstalada();
     let resultado: "instalada" | "ya_estaba" = "ya_estaba";
     if (igual === undefined) {

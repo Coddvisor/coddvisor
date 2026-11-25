@@ -117,6 +117,10 @@ begin
   if v_estado is distinct from 'activo' then
     raise exception 'dispositivo_inactivo' using errcode = '28000';
   end if;
+  -- Lo mismo que poner(): antes de tocar la tabla temporal de la caja, se revisa
+  -- que sea del portero. dispositivo_activo() y credencial_activa() la leen después
+  -- de cuenta_activa(), que hace la misma revisión.
+  perform candado.revisar_temporales();
   if to_regclass('pg_temp.dispositivo_activo') is null then
     create temporary table dispositivo_activo (dispositivo_id uuid not null, credencial_version smallint not null) on commit delete rows;
   end if;

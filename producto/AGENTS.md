@@ -34,7 +34,7 @@ Reglas para cualquier persona o agente de IA que escriba código en `producto/`.
    - Toda consulta se espera con `await`: ESLint rechaza una promesa suelta.
    - Las tablas nuevas van en el esquema `nucleo`, con `tenant_id`, seguridad por fila forzada y `tenant_id` dentro de cada relación. La prueba del catálogo lo exige.
    - Al insertar se usa `candado.cuenta_activa()`; nunca se pasa el `tenant_id` como parámetro.
-   - Las migraciones son `NNNN_nombre.sql` y solo avanzan: el revisor rechaza `DROP`, `TRUNCATE`, `CASCADE`, `DELETE` sin `WHERE` y apagar el candado.
+   - Las migraciones son `NNNN_nombre.sql` y solo avanzan: el revisor rechaza `DROP`, `TRUNCATE`, `CASCADE`, `DELETE` sin `WHERE`, y apagar el candado. Además, el migrador compara el catálogo antes y después de cada migración: si cambió algo que corre con permisos del portero (sus tablas, sus funciones, la llave o el registro), se deshace todo. También se deshace si una tabla del núcleo queda sin su candado (decisión 0002).
 4. **Cada regla tiene su caso** en `herramientas/reglas-ci/probar-reglas.mjs`, que escribe código prohibido en una copia temporal y exige que lo atrape esa regla exacta. Si agregas una regla, agrega su caso.
 
 Estas revisiones son una cerca, no un muro: siempre puede haber un atajo que no previmos. Si encuentras uno, ciérralo y agrega su caso.

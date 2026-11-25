@@ -161,7 +161,36 @@ describe("la base no responde", () => {
         if ((r.rows[0]?.n ?? 0) >= 10) break;
         await new Promise((listo) => setTimeout(listo, 5));
       }
-      await admin.query(`select pg_terminate_backend(pid) from pg_stat_activity where application_name = '${nombre}'`);
+      // Se traban las ventas que faltan y recién entonces se corta. Sin esta traba,
+      // el corte podía caer entre dos ventas, con la conexión libre: el pool abría
+      // otra y el lote terminaba bien (200). No era un error del sistema, pero la
+      // prueba no probaba lo que dice. Trabada, la conexión está a mitad de escribir.
+      const traba = await conexionDeAdministrador(inject("urlAdmin"));
+      try {
+        await traba.query("begin");
+        // Se traba la fila de ESTA caja: cada comando nuevo de la caja la necesita
+        // (la cadena apunta a ella), y las demás pruebas no se frenan.
+        await traba.query(`select 1 from nucleo.dispositivo where id = '${n.caja.dispositivoId}' for update`);
+        const enCurso = (await traba.query(
+          `select count(*)::int as n from nucleo.venta where tenant_id = '${n.caja.cuentaId}'`,
+        )) as { rows: { n: number }[] };
+        expect(enCurso.rows[0]?.n, "el lote terminó antes del corte: la prueba no probó nada").toBeLessThan(100);
+        // Se espera a ver a la API detenida en la traba (menos que los 2 s de
+        // lock_timeout del programa): así se corta una conexión ocupada, no una libre.
+        let trabada = false;
+        for (let i = 0; i < 100 && !trabada; i++) {
+          const espera = (await admin.query(
+            `select count(*)::int as n from pg_stat_activity where application_name = '${nombre}' and wait_event_type = 'Lock'`,
+          )) as { rows: { n: number }[] };
+          trabada = (espera.rows[0]?.n ?? 0) > 0;
+          if (!trabada) await new Promise((listo) => setTimeout(listo, 10));
+        }
+        expect(trabada, "la API no llegó a la traba: el corte caería sobre una conexión libre").toBe(true);
+        await admin.query(`select pg_terminate_backend(pid) from pg_stat_activity where application_name = '${nombre}'`);
+      } finally {
+        await traba.query("rollback");
+        await traba.end();
+      }
       const r1 = await respuesta;
       expect(r1.status).toBe(503);
       // El proceso sigue vivo (si no, esta línea no correría) y el mismo pool sigue sirviendo.

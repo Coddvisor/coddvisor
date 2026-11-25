@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { carpetasDeMigraciones } from "./carpetas.ts";
 import { leerMigraciones } from "./migrador.ts";
-import { revisarMigracion } from "./revisor-migraciones.ts";
+import { esFundacional, revisarMigracion, revisarSql } from "./revisor-migraciones.ts";
 
 const reglas = (sql: string) => revisarMigracion(sql).map((p) => p.regla);
 
@@ -41,6 +41,34 @@ describe("revisor de migraciones", () => {
     ["alter table nucleo.membresia disable trigger all;", "sin-apagar-disparadores"],
     ["alter default privileges grant select on tables to coddvisor_portero;", "sin-privilegios-por-defecto"],
     ["grant coddvisor_portero to coddvisor_app;", "sin-membresia-de-roles"],
+    // Escapes Unicode: set_config escrito con códigos (medido el 24-nov: pasaba).
+    [`select pg_catalog.U&"set\\005fconfig"('role', 'coddvisor_portero', true);`, "sin-escapes-unicode"],
+    [`do $$ begin perform U&"set\\005fconfig"('role', 'x', true); end $$;`, "sin-escapes-unicode"],
+    ["select U&'\\0064rop';", "sin-escapes-unicode"],
+    // SQL armado al vuelo sin la palabra EXECUTE.
+    ["select query_to_xml(format('select * from %I.%I', 'cand' || 'ado', 'llave'), true, false, '');", "sin-sql-dinamico"],
+    ["select table_to_xml('x'::regclass, true, false, '');", "sin-sql-dinamico"],
+    ["create function f() returns xml language sql as $$ select query_to_xml('select 1', true, false, '') $$;", "sin-sql-dinamico"],
+    // Conversiones y operadores propios.
+    ["create cast (nucleo.mi_tipo as uuid) with function nucleo.convertir(nucleo.mi_tipo) as implicit;", "sin-conversiones-propias"],
+    ["create operator nucleo.=== (leftarg = uuid, rightarg = uuid, function = nucleo.igual);", "sin-conversiones-propias"],
+    // Políticas.
+    ["alter policy solo_cuenta_activa on nucleo.venta using (true) with check (true);", "sin-alterar-politicas"],
+    // search_path distinto de pg_catalog, pg_temp.
+    ["set search_path = candado; insert into nucleo.x select secreto from llave;", "search-path-fijo"],
+    ["create function f() returns bytea language sql set search_path = candado as $$ select secreto from llave $$;", "search-path-fijo"],
+    ["alter function nucleo.f() set search_path to public;", "search-path-fijo"],
+    ["set search_path = pg_catalog, pg_temp, candado; grant select on llave to coddvisor_app;", "search-path-fijo"],
+    ["create function f() returns void language sql security definer set search_path = pg_catalog, pg_temp, nucleo as $$ select 1 $$;", "definer-con-search-path"],
+    // Más SQL armado al vuelo, esquemas, extensiones y dueños (revisión del 24-nov).
+    ["select ts_stat('select to_tsvector(''simple'', ''x'')');", "sin-sql-dinamico"],
+    ["select ts_rewrite('a'::tsquery, 'select ''a''::tsquery, ''b''::tsquery');", "sin-sql-dinamico"],
+    ["alter schema candado rename to c2;", "sin-mover-esquemas"],
+    ["create extension dblink;", "sin-extensiones"],
+    ["create schema s authorization coddvisor_portero;", "sin-cambiar-de-dueno"],
+    ["alter function candado.abrir_sin_firma() owner to coddvisor_portero;", "sin-cambiar-de-dueno"],
+    ["alter table candado.llave owner to coddvisor_portero;", "sin-cambiar-de-dueno"],
+    ["create policy p on nucleo.membresia for select to coddvisor_portero using (true);", "politica-por-cuenta"],
   ])("rechaza: %s", (sql, regla) => {
     expect(reglas(sql)).toContain(regla);
   });
@@ -58,16 +86,34 @@ describe("revisor de migraciones", () => {
     ["create function f() returns void language plpgsql as $$ begin if true then return; end if; end $$;"],
     ["create function f() returns void language plpgsql as $$ begin create temporary table x (a int) on commit delete rows; end $$;"],
     ["create policy p on nucleo.local using (tenant_id = (select candado.cuenta_activa()));"],
-    ["create policy p on nucleo.membresia for select to coddvisor_portero using (true);"],
-    ["alter function candado.f() owner to coddvisor_portero;"],
     ["grant execute on function candado.f() to coddvisor_app;"],
+    ["create table nucleo.cadena (tenant_id uuid, autor_id uuid, foreign key (tenant_id, autor_id) references nucleo.membresia (tenant_id, usuario_id));"],
+    ["create function f() returns void language sql set search_path = '' as $$ select 1 $$;"],
+    ["create function f() returns void language plpgsql as $$ declare registro record; begin for registro in select 1 as a loop perform registro.a; end loop; end $$;"],
   ])("permite: %s", (sql) => {
     expect(reglas(sql)).toEqual([]);
   });
 
   it("las migraciones reales del producto pasan la revisión", () => {
     for (const m of leerMigraciones(carpetasDeMigraciones())) {
-      expect(revisarMigracion(readFileSync(m.ruta, "utf8")), m.nombre).toEqual([]);
+      expect(revisarMigracion(readFileSync(m.ruta, "utf8"), m.nombre), m.nombre).toEqual([]);
     }
+  });
+
+  it("las migraciones fundacionales pierden su permiso si cambia una sola letra", () => {
+    const fundacional = leerMigraciones(carpetasDeMigraciones()).find((m) => m.nombre === "0002_identidad.sql");
+    expect(fundacional).toBeDefined();
+    const sql = readFileSync(fundacional?.ruta ?? "", "utf8");
+    expect(esFundacional("0002_identidad.sql", sql)).toBe(true);
+    expect(revisarMigracion(sql, "0002_identidad.sql")).toEqual([]);
+    // Con una letra más, o con otro nombre, entregarle funciones al portero se rechaza.
+    expect(esFundacional("0002_identidad.sql", `${sql}\n`)).toBe(false);
+    expect(revisarMigracion(`${sql}\n`, "0002_identidad.sql").map((p) => p.regla)).toContain("sin-cambiar-de-dueno");
+    expect(revisarMigracion(sql, "0006_copia.sql").map((p) => p.regla)).toContain("sin-cambiar-de-dueno");
+  });
+
+  it("las correcciones del candado no pasan por las reglas del portero, pero sí por las demás", () => {
+    expect(revisarSql("create or replace function candado.f() returns bytea language sql as $$ select secreto from candado.llave $$;")).toEqual([]);
+    expect(revisarSql(`select U&"set\\005fconfig"('role', 'x', true);`).map((p) => p.regla)).toContain("sin-escapes-unicode");
   });
 });

@@ -30,6 +30,34 @@ grant usage on schema nucleo, global to coddvisor_portero;
 -- Antes se usaba un ajuste de sesión (set_config) y cualquier consulta del
 -- programa lo podía cambiar: con una inyección de SQL se veía a otro negocio.
 
+-- Uso interno: revisa que lo temporal que usa el candado sea de verdad del portero.
+-- Por qué: si alguien pudiera crear tablas temporales (un permiso que el arranque
+-- quita, pero que una actualización de la plataforma podría devolver), crearía su
+-- propia contexto_activo, o una vista con ese nombre, con un disparador. El portero
+-- la tocaría y ese disparador correría con sus permisos, que leen la llave. Por
+-- eso se revisa ANTES de leer o escribir nada temporal, en cada función que lo
+-- toca: tipo (tabla o secuencia, nunca vista), dueño (el portero), lugar (el
+-- esquema temporal de esta conexión) y que no tenga disparadores ni reglas. Si
+-- algo no cuadra, falla cerrado.
+create function candado.revisar_temporales() returns void
+  language plpgsql stable
+  set search_path = pg_catalog, pg_temp
+  as $$
+begin
+  if exists (
+    select 1 from pg_catalog.pg_class c
+    where c.relnamespace = pg_catalog.pg_my_temp_schema()
+      and c.relname in ('contexto_activo', 'contexto_marca', 'dispositivo_activo')
+      and (c.relowner <> 'coddvisor_portero'::pg_catalog.regrole
+           or c.relkind <> (case c.relname when 'contexto_marca' then 'S' else 'r' end)::"char"
+           or c.relhastriggers or c.relhasrules or c.relrowsecurity)
+  ) then
+    raise exception 'candado_falsificado' using errcode = '28000';
+  end if;
+end
+$$;
+revoke all on function candado.revisar_temporales() from public;
+
 -- Uso interno: pone la cuenta activa hasta que vence la firma. Nadie más que el
 -- portero la puede ejecutar.
 create function candado.poner(p_cuenta uuid, p_usuario uuid, p_vence timestamptz) returns void
@@ -39,6 +67,15 @@ create function candado.poner(p_cuenta uuid, p_usuario uuid, p_vence timestamptz
 declare
   v_transaccion bigint := pg_current_xact_id()::text::bigint;
 begin
+  -- Quien inició sesión no puede crear tablas temporales: si pudiera, falsificaría
+  -- la cuenta activa (ver revisar_temporales). Se revisa en cada apertura, no solo
+  -- al migrar, porque el permiso podría volver sin que nadie migre. Un superusuario
+  -- puede todo de todos modos: no tiene sentido pedírselo.
+  if has_database_privilege(session_user, current_database(), 'TEMPORARY')
+     and not (select r.rolsuper from pg_catalog.pg_roles r where r.rolname = session_user) then
+    raise exception 'sesion_con_temporales' using errcode = '28000';
+  end if;
+  perform candado.revisar_temporales();
   if to_regclass('pg_temp.contexto_activo') is null then
     create temporary table contexto_activo (
       tenant_id uuid not null,
@@ -81,6 +118,7 @@ declare
   v_valor uuid;
   v_vence timestamptz;
 begin
+  perform candado.revisar_temporales();
   if to_regclass('pg_temp.contexto_activo') is null then
     return null;
   end if;
@@ -103,6 +141,7 @@ declare
   v_valor uuid;
   v_vence timestamptz;
 begin
+  perform candado.revisar_temporales();
   if to_regclass('pg_temp.contexto_activo') is null then
     return null;
   end if;
@@ -132,7 +171,10 @@ create table candado.llave (
   creada_en timestamptz not null default now()
 );
 revoke all on candado.llave from public;
-grant select on candado.llave to coddvisor_portero;
+-- La llave es del portero, no del dueño: el dueño corre las migraciones, y una
+-- migración apurada que pudiera leerla o escribirla le daría al programa la
+-- manera de firmarse solo (medido el 24-nov: así se entraba a otro negocio).
+alter table candado.llave owner to coddvisor_portero;
 
 -- HMAC-SHA256 (RFC 2104) con la función sha256 que ya trae PostgreSQL. Sin
 -- extensiones: funciona igual en la base local y en Supabase, donde pgcrypto vive
@@ -214,6 +256,7 @@ revoke all on function candado.hmac_sha256(bytea, bytea) from public;
 revoke all on function candado.exigir_firma(text, uuid, uuid, text, bigint, integer, bytea) from public;
 
 -- Al final, y no antes: después de cambiar de dueño, el dueño ya no puede tocar sus permisos.
+alter function candado.revisar_temporales() owner to coddvisor_portero;
 alter function candado.cuenta_activa() owner to coddvisor_portero;
 alter function candado.usuario_activo() owner to coddvisor_portero;
 -- Las usa solo el portero (dentro de sus funciones). El programa no las puede ejecutar.

@@ -2,7 +2,9 @@ import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type pg from "pg";
-import { revisarMigracion } from "./revisor-migraciones.ts";
+import { faltasDeAislamiento } from "./aislamiento.ts";
+import { huellaDelPortero } from "./huella-del-portero.ts";
+import { esFundacional, revisarMigracion } from "./revisor-migraciones.ts";
 
 /**
  * Migraciones que solo avanzan.
@@ -112,7 +114,7 @@ export async function ejecutarMigraciones(admin: pg.ClientBase, migraciones: rea
         if (previa !== m.huella) throw new Error(`La migración ${m.nombre} ya estaba aplicada y su contenido cambió. Las migraciones solo avanzan.`);
         continue;
       }
-      const problemas = revisarMigracion(m.sql);
+      const problemas = revisarMigracion(m.sql, m.nombre);
       if (problemas.length) {
         throw new Error(`La migración ${m.nombre} no pasa la revisión:\n${problemas.map((p) => `- ${p.regla}: ${p.detalle}`).join("\n")}`);
       }
@@ -121,12 +123,27 @@ export async function ejecutarMigraciones(admin: pg.ClientBase, migraciones: rea
     const { rows: antes } = await admin.query<{ xid: string }>("select pg_current_xact_id()::text as xid");
     for (const m of migraciones) {
       if (yaAplicadas.has(m.nombre)) continue;
+      const portero = await huellaDelPortero(admin);
       await admin.query("set local role coddvisor_duenio");
       await admin.query(m.sql);
       // La migración no pudo cambiar de rol ni confirmar a mitad de camino.
       const { rows } = await admin.query<{ rol: string; xid: string }>("select current_user::text as rol, pg_current_xact_id()::text as xid");
       if (rows[0]?.rol !== "coddvisor_duenio" || rows[0]?.xid !== antes[0]?.xid) {
         throw new Error(`La migración ${m.nombre} cambió de rol o de transacción. Se deshace todo.`);
+      }
+      // Y no tocó nada de lo que corre con permisos del portero: se compara el
+      // catálogo antes y después, no el texto (ver huella-del-portero.ts). Solo las
+      // migraciones fundacionales, que crean el portero, pueden cambiarlo.
+      if (!esFundacional(m.nombre, m.sql) && (await huellaDelPortero(admin)) !== portero) {
+        throw new Error(
+          `La migración ${m.nombre} cambió algo que corre con los permisos del portero (sus tablas, sus funciones, la llave o el registro). Se deshace todo.`,
+        );
+      }
+      // Y ninguna tabla del núcleo quedó sin su candado: se revisa el resultado,
+      // no el texto (ver aislamiento.ts). Vale también para las fundacionales.
+      const faltas = await faltasDeAislamiento(admin);
+      if (faltas.length) {
+        throw new Error(`La migración ${m.nombre} deja una falta de aislamiento entre negocios. Se deshace todo.\n- ${faltas.join("\n- ")}`);
       }
       await admin.query("insert into registro.migracion (nombre, huella) values ($1, $2)", [m.nombre, m.huella]);
       await admin.query("reset role");

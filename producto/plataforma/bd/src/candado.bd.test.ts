@@ -1,7 +1,8 @@
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
-import { carpetasDeMigraciones } from "./carpetas.ts";
+import { carpetasDeMigraciones, RUTA_ARRANQUE } from "./carpetas.ts";
 import { conTenant, crearPool, operacionDeSistema, type Tx } from "./con-tenant.ts";
 import {
   type Contexto,
@@ -17,7 +18,8 @@ import {
   instalarLlave,
   leerLlave,
 } from "./firma.ts";
-import { ejecutarMigraciones, leerMigraciones } from "./migrador.ts";
+import { ejecutarArranque, ejecutarMigraciones, leerMigraciones } from "./migrador.ts";
+import { revisarMigracion } from "./revisor-migraciones.ts";
 
 /**
  * Pruebas del candado entre negocios contra PostgreSQL real.
@@ -232,12 +234,13 @@ describe("el catálogo de la base cumple las reglas del candado", () => {
     expect(rows).toEqual([]);
   });
 
-  it("todo es del dueño, salvo las funciones del portero", async () => {
+  it("todo es del dueño, salvo las funciones del portero y su llave", async () => {
     const { rows: objetos } = await admin.query<{ objeto: string; dueno: string }>(`
       select n.nspname || '.' || c.relname as objeto, c.relowner::regrole::text as dueno
       from pg_class c join pg_namespace n on n.oid = c.relnamespace
       where n.nspname = any ($1) and c.relkind in ('r', 'p', 'v', 'm', 'S', 'f')`, [ESQUEMAS_PROPIOS]);
-    for (const o of objetos) expect(o.dueno, o.objeto).toBe("coddvisor_duenio");
+    // La llave es del portero: el dueño, que corre las migraciones, no la puede leer.
+    for (const o of objetos) expect(o.dueno, o.objeto).toBe(o.objeto === "candado.llave" ? "coddvisor_portero" : "coddvisor_duenio");
 
     const { rows: funciones } = await admin.query<{ funcion: string; dueno: string }>(`
       select n.nspname || '.' || p.proname as funcion, p.proowner::regrole::text as dueno
@@ -1163,6 +1166,62 @@ describe("las migraciones solo avanzan", () => {
     await expect(ejecutarMigraciones(admin, [tarde, ...reales])).rejects.toThrow(/llegó tarde/);
   });
 
+  // Los ataques que el revisor de texto no veía (revisión del 24-nov). Cada uno
+  // pasa la revisión de texto; lo detiene la huella del catálogo del portero.
+  it.each([
+    ["un disparador nuevo en la cuenta, con CREATE OR REPLACE TRIGGER",
+      "create function nucleo.copiar() returns trigger language plpgsql set search_path = pg_catalog, pg_temp as $$ begin return new; end $$; create or replace trigger copiar before insert on nucleo.cuenta for each row execute function nucleo.copiar();"],
+    ["renombrar la tabla de membresías con ALTER INDEX", "alter index nucleo.membresia rename to membresia_vieja;"],
+    ["una tabla hija de las membresías", "create table nucleo.membresia_historica () inherits (nucleo.membresia);"],
+    ["una política más en las membresías", "create policy otra on nucleo.membresia using (tenant_id = (select candado.cuenta_activa()));"],
+    ["otro valor por omisión en la cuenta", "alter table nucleo.cuenta alter column creado_en set default (now() + interval '1 second');"],
+    ["un permiso sobre una tabla del portero, nombrada en segundo lugar", "grant select on nucleo.empresa, nucleo.credencial_dispositivo to coddvisor_app;"],
+    ["un índice en las membresías", "create index membresia_por_rol on nucleo.membresia (rol);"],
+    ["borrar una fila del registro de migraciones", "delete from registro.migracion where nombre = '0005_ventas.sql';"],
+  ])("una migración que hace %s no se aplica", async (_, sql) => {
+    expect(revisarMigracion(sql, "9998_ataque.sql"), "este caso debe pasar el texto: lo que se prueba es la huella").toEqual([]);
+    const reales = leerMigraciones(carpetasDeMigraciones());
+    const ataque = { numero: 9998, nombre: "9998_ataque.sql", ruta: "", sql, huella: "z" };
+    await expect(ejecutarMigraciones(admin, [...reales, ataque])).rejects.toThrow(/permisos del portero/);
+    const { rows } = await admin.query("select count(*)::int as n from registro.migracion where nombre in ('9998_ataque.sql', '0005_ventas.sql')");
+    expect(rows[0].n).toBe(1);
+  });
+
+  // El aislamiento de las tablas de negocio que el portero no toca (revisión del 24-nov).
+  it.each([
+    ["una política que menciona la cuenta activa pero deja pasar todo",
+      "create policy fuga on nucleo.empresa for select using (candado.cuenta_activa() is null or true);"],
+    ["una política de escritura que deja escribir en cualquier cuenta",
+      "create policy fuga on nucleo.local for insert with check (true or candado.cuenta_activa() is not null);"],
+    ["una tabla nueva del núcleo sin seguridad por fila",
+      "create table nucleo.sin_candado (tenant_id uuid not null, nota text); grant select on nucleo.sin_candado to coddvisor_app;"],
+    ["una vista del núcleo que se salta la seguridad por fila", "create view nucleo.todas_las_empresas as select * from nucleo.empresa;"],
+  ])("una migración con %s no se aplica", async (_, sql) => {
+    const reales = leerMigraciones(carpetasDeMigraciones());
+    const fuga = { numero: 9996, nombre: "9996_fuga.sql", ruta: "", sql, huella: "v" };
+    await expect(ejecutarMigraciones(admin, [...reales, fuga])).rejects.toThrow(/aislamiento entre negocios/);
+    const { rows } = await admin.query("select count(*)::int as n from pg_policy where polname = 'fuga'");
+    expect(rows[0].n).toBe(0);
+  });
+
+  it("una migración normal de un módulo, con clave foránea a las membresías, sí se aplica", async () => {
+    const reales = leerMigraciones(carpetasDeMigraciones());
+    const sql = `create table nucleo.prueba_modulo (tenant_id uuid not null, autor_id uuid not null,
+      foreign key (tenant_id, autor_id) references nucleo.membresia (tenant_id, usuario_id));
+      alter table nucleo.prueba_modulo enable row level security;
+      alter table nucleo.prueba_modulo force row level security;
+      create policy solo_cuenta_activa on nucleo.prueba_modulo
+        using (tenant_id = (select candado.cuenta_activa())) with check (tenant_id = (select candado.cuenta_activa()));`;
+    const normal = { numero: 9997, nombre: "9997_modulo.sql", ruta: "", sql, huella: "w" };
+    try {
+      await expect(ejecutarMigraciones(admin, [...reales, normal])).resolves.toEqual(["9997_modulo.sql"]);
+    } finally {
+      // Se limpia a mano, para que las demás pruebas vean la base como la dejan las migraciones reales.
+      await admin.query("drop table if exists nucleo.prueba_modulo");
+      await admin.query("delete from registro.migracion where nombre = '9997_modulo.sql'");
+    }
+  });
+
   it("una migración nueva que no pasa la revisión no se aplica", async () => {
     const reales = leerMigraciones(carpetasDeMigraciones());
     const mala = { numero: 9999, nombre: "9999_mala.sql", ruta: "", sql: "create table nucleo.otra (a int); commit;", huella: "x" };
@@ -1171,3 +1230,129 @@ describe("las migraciones solo avanzan", () => {
     expect(rows[0].t).toBeNull();
   });
 });
+
+// ---------- Huecos cerrados el 24-nov (propuesta de unión, sección 10) ----------
+// Una migración o un permiso que vuelve sin aviso no deben poder abrir el candado.
+
+describe("si alguien pudiera crear tablas temporales, el candado falla cerrado", () => {
+  // Un login de prueba CON permiso de tablas temporales, como quedaría el programa
+  // si una actualización de la plataforma se lo devolviera. Nombre al azar: los
+  // roles son de todo el servidor.
+  const intrusoConTemporales = `prueba_temporales_${randomBytes(4).toString("hex")}`;
+  let url: string;
+
+  beforeAll(async () => {
+    await admin.query(`create role ${intrusoConTemporales} login`);
+    await admin.query(`grant connect, temporary on database ${await nombreDeLaBase()} to ${intrusoConTemporales}`);
+    await admin.query(`grant usage on schema candado, nucleo to ${intrusoConTemporales}`);
+    await admin.query(`grant execute on function candado.fijar_contexto(uuid, uuid, bigint, integer, bytea), candado.cuenta_activa() to ${intrusoConTemporales}`);
+    const u = new URL(inject("urlApp"));
+    u.username = intrusoConTemporales;
+    url = u.toString();
+  });
+
+  afterAll(async () => {
+    await admin.query(`drop owned by ${intrusoConTemporales}`);
+    await admin.query(`drop role ${intrusoConTemporales}`);
+  });
+
+  async function comoIntruso<T>(trabajo: (c: pg.Client) => Promise<T>): Promise<T> {
+    const c = new pg.Client({ connectionString: url });
+    await c.connect();
+    try {
+      return await trabajo(c);
+    } finally {
+      await c.end();
+    }
+  }
+
+  it("con la firma correcta, el portero se niega a abrir porque la sesión puede crear tablas temporales", async () => {
+    await comoIntruso(async (c) => {
+      await expect(c.query(FIJAR, comoParametros(A))).rejects.toMatchObject({ code: "28000", message: "sesion_con_temporales" });
+    });
+  });
+
+  it.each([
+    ["una tabla propia con el nombre del contexto", "create temporary table contexto_activo (tenant_id uuid, usuario_id uuid, vence timestamptz)"],
+    ["una vista con el nombre del contexto", "create temporary view contexto_activo as select null::uuid as tenant_id, null::uuid as usuario_id, null::timestamptz as vence"],
+    ["una tabla de la caja con el nombre que usa el portero", "create temporary table dispositivo_activo (dispositivo_id uuid, credencial_version smallint)"],
+    ["una secuencia propia con el nombre de la marca", "create temporary sequence contexto_marca"],
+  ])("leer la cuenta activa con %s falla cerrado, no devuelve otra cuenta", async (_, sql) => {
+    await comoIntruso(async (c) => {
+      await c.query(sql);
+      await expect(c.query("select candado.cuenta_activa()")).rejects.toMatchObject({ code: "28000", message: "candado_falsificado" });
+    });
+  });
+});
+
+describe("las tablas que toca el portero no tienen nada que corra con sus permisos", () => {
+  const TABLAS = ["nucleo.cuenta", "nucleo.membresia", "nucleo.dispositivo", "nucleo.credencial_dispositivo", "global.usuario", "candado.llave"];
+
+  it("sus disparadores usan solo las funciones conocidas", async () => {
+    const { rows } = await admin.query<{ tabla: string; funcion: string }>(
+      `select (t.tgrelid::regclass)::text as tabla, n.nspname || '.' || p.proname as funcion
+       from pg_trigger t join pg_proc p on p.oid = t.tgfoid join pg_namespace n on n.oid = p.pronamespace
+       where not t.tgisinternal and (t.tgrelid::regclass)::text = any ($1) order by 1, 2`,
+      [TABLAS],
+    );
+    const permitidas = ["nucleo.exigir_un_duenio", "nucleo.proteger_roles", "nucleo.revocado_es_final", "nucleo.caja_no_toca_identidad"];
+    for (const r of rows) expect(permitidas, `${r.tabla} → ${r.funcion}`).toContain(r.funcion);
+  });
+
+  it("sus valores por omisión, restricciones, índices y políticas solo llaman funciones de PostgreSQL o del portero", async () => {
+    const { rows } = await admin.query<{ objeto: string; funcion: string; dueno: string }>(
+      `with tablas as (select unnest($1::text[])::regclass as oid)
+       select d.classid::regclass::text || ' ' || d.objid as objeto, n.nspname || '.' || p.proname as funcion, p.proowner::regrole::text as dueno
+       from pg_depend d
+       join pg_proc p on d.refclassid = 'pg_proc'::regclass and p.oid = d.refobjid
+       join pg_namespace n on n.oid = p.pronamespace
+       where (d.classid = 'pg_attrdef'::regclass and d.objid in (select oid from pg_attrdef where adrelid in (select oid from tablas)))
+          or (d.classid = 'pg_constraint'::regclass and d.objid in (select oid from pg_constraint where conrelid in (select oid from tablas)))
+          or (d.classid = 'pg_policy'::regclass and d.objid in (select oid from pg_policy where polrelid in (select oid from tablas)))
+          or (d.classid = 'pg_class'::regclass and d.objid in (select indexrelid from pg_index where indrelid in (select oid from tablas)))`,
+      [TABLAS],
+    );
+    for (const r of rows) expect(r.funcion.startsWith("pg_catalog.") || r.dueno === "coddvisor_portero", `${r.objeto} → ${r.funcion}`).toBe(true);
+  });
+
+  it("no hay conversiones de tipo hechas con funciones del dueño", async () => {
+    const { rows } = await admin.query(
+      "select c.oid from pg_cast c join pg_proc p on p.oid = c.castfunc where p.proowner = 'coddvisor_duenio'::regrole",
+    );
+    expect(rows).toEqual([]);
+  });
+
+  it("el registro de migraciones y de correcciones no tiene disparadores, reglas ni políticas", async () => {
+    const { rows } = await admin.query(
+      `select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace
+       where n.nspname = 'registro' and (c.relhastriggers or c.relhasrules or c.relrowsecurity)`,
+    );
+    expect(rows).toEqual([]);
+  });
+});
+
+describe("el arranque comprueba lo que dejó", () => {
+  it("se puede correr otra vez sin cambiar nada", async () => {
+    await expect(ejecutarArranque(admin, RUTA_ARRANQUE)).resolves.toBeUndefined();
+  });
+
+  it("si el programa quedó con permiso de tablas temporales, falla en vez de seguir", async () => {
+    const c = new pg.Client({ connectionString: inject("urlAdmin") });
+    await c.connect();
+    try {
+      await c.query("begin");
+      await c.query(`grant temporary on database ${await nombreDeLaBase()} to coddvisor_app`);
+      // El arranque solo le quita el permiso a public: un permiso dado al programa
+      // con nombre propio sobrevive, y la comprobación final lo tiene que ver.
+      await expect(c.query(readFileSync(RUTA_ARRANQUE, "utf8"))).rejects.toThrow(/coddvisor_app puede crear tablas temporales/);
+    } finally {
+      await c.query("rollback").catch(() => undefined);
+      await c.end();
+    }
+  });
+});
+
+async function nombreDeLaBase(): Promise<string> {
+  const { rows } = await admin.query<{ base: string }>("select current_database() as base");
+  return rows[0]?.base ?? "";
+}
