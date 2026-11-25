@@ -187,8 +187,8 @@ export const reglas = [
   {
     id: 'BD-04',
     titulo: 'La seguridad por fila está activa y forzada, y toda política filtra por el cliente activo',
-    async revisar(db) {
-      return filas(db, `
+    async revisar(db, cfg) {
+      const violaciones = await filas(db, `
         ${con(TABLAS)}
         select esquema || '.' || tabla as objeto,
                'La seguridad por fila debe estar activada y forzada (ENABLE y FORCE ROW LEVEL SECURITY).' as detalle
@@ -210,6 +210,36 @@ export const reglas = [
             or not p.polpermissive
           )
         order by 1`);
+
+      // Una vista corre con los permisos de su dueño, que puede saltarse la seguridad
+      // por fila: abriría todos los negocios de una vez.
+      violaciones.push(...await filas(db, `
+        select n.nspname || '.' || c.relname as objeto,
+               case when c.relkind = 'm' then 'Una vista materializada guarda filas de todos los clientes sin seguridad por fila.'
+                    else 'La vista debe consultar con los permisos de quien la usa: with (security_invoker = true).' end as detalle
+        from pg_class c join pg_namespace n on n.oid = c.relnamespace
+        where c.relkind in ('v', 'm') and n.nspname not in ('pg_catalog', 'information_schema') and n.nspname !~ '^pg_'
+          and (c.relkind = 'm' or not coalesce(c.reloptions::text ~ 'security_invoker=(true|on|1)', false))
+        order by 1`));
+
+      // El filtro de toda política es nucleo.tenant_actual(). Si su cuerpo cambia,
+      // cambia el aislamiento de todas las tablas a la vez y ninguna política lo nota.
+      for (const [nombre, cuerpo] of Object.entries(cfg.portero.funciones)) {
+        const [esquema, funcion] = nombre.split('.');
+        const encontradas = await filas(db, `
+          select p.prosrc as cuerpo, p.prosecdef as corre_como_dueno
+          from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+          where n.nspname = $1 and p.proname = $2`, [esquema, funcion]);
+        if (encontradas.length !== 1) {
+          violaciones.push({ objeto: `${nombre}()`, detalle: 'No existe. De esta función leen las políticas y los sellos.' });
+        } else if (encontradas[0].cuerpo.replace(/\s+/g, ' ').trim() !== cuerpo || encontradas[0].corre_como_dueno) {
+          violaciones.push({
+            objeto: `${nombre}()`,
+            detalle: `Su cuerpo debe ser exactamente «${cuerpo}», sin correr con los permisos de su dueño. De ahí sale el cliente activo de todas las políticas: cambiarlo es cambiar la regla BD-04.`,
+          });
+        }
+      }
+      return violaciones;
     },
   },
 
@@ -220,18 +250,56 @@ export const reglas = [
       const violaciones = [];
       const rolesConocidos = Object.keys(cfg.permisos);
 
+      const entradas = cfg.portero.entradas;
+      const rolesDelSistema = [...rolesConocidos, ...entradas];
+
       const roles = await filas(db, `
-        select rolname, rolsuper, rolbypassrls, rolcanlogin
-        from pg_roles where rolname = any($1)`, [rolesConocidos]);
-      for (const nombre of rolesConocidos) {
+        select rolname, rolsuper, rolbypassrls, rolcanlogin, rolcreaterole, rolcreatedb, rolreplication
+        from pg_roles where rolname = any($1)`, [rolesDelSistema]);
+      for (const nombre of rolesDelSistema) {
         const rol = roles.find((r) => r.rolname === nombre);
         if (!rol) {
           violaciones.push({ objeto: `rol ${nombre}`, detalle: 'El rol no existe.' });
-        } else if (rol.rolsuper || rol.rolbypassrls) {
+          continue;
+        }
+        if (rol.rolsuper || rol.rolbypassrls) {
           violaciones.push({
             objeto: `rol ${nombre}`,
             detalle: 'El rol puede saltarse la seguridad por fila (SUPERUSER o BYPASSRLS).',
           });
+        }
+        if (rol.rolcreaterole || rol.rolcreatedb || rol.rolreplication) {
+          violaciones.push({ objeto: `rol ${nombre}`, detalle: 'El rol puede crear roles o bases, o replicar. Un rol de la aplicación no administra nada.' });
+        }
+        if (rol.rolcanlogin && !entradas.includes(nombre)) {
+          violaciones.push({ objeto: `rol ${nombre}`, detalle: `El rol inicia sesión por sí mismo. El servicio entra solo con un rol de entrada (${entradas.join(', ')}).` });
+        }
+      }
+
+      // Quién puede actuar como quién. Un rol de entrada hereda de la aplicación y
+      // nada más; nadie se vuelve portero ni rol de libros. Quien crea un rol queda
+      // como su administrador (solo ADMIN): eso no da sus permisos y no cuenta.
+      const membresias = await filas(db, `
+        select r.rolname as rol, m.rolname as miembro, a.inherit_option as hereda, a.set_option as se_cambia, a.admin_option as administra
+        from pg_auth_members a
+        join pg_roles r on r.oid = a.roleid
+        join pg_roles m on m.oid = a.member
+        where r.rolname = any($1) or m.rolname = any($1)
+        order by 1, 2`, [rolesDelSistema]);
+      for (const m of membresias) {
+        const esLaHerencia = entradas.includes(m.miembro) && m.rol === cfg.portero.heredanDe
+          && m.hereda && !m.se_cambia && !m.administra;
+        const soloAdministra = !rolesDelSistema.includes(m.miembro) && !m.hereda && !m.se_cambia;
+        if (!esLaHerencia && !soloAdministra) {
+          violaciones.push({
+            objeto: `rol ${m.miembro}`,
+            detalle: `Es miembro de ${m.rol} (${[m.hereda && 'hereda sus permisos', m.se_cambia && 'puede cambiarse a él', m.administra && 'lo administra'].filter(Boolean).join(', ')}). Solo un rol de entrada hereda de ${cfg.portero.heredanDe}, sin poder cambiarse a él; nadie más actúa como otro rol.`,
+          });
+        }
+      }
+      for (const entrada of entradas) {
+        if (!membresias.some((m) => m.miembro === entrada && m.rol === cfg.portero.heredanDe)) {
+          violaciones.push({ objeto: `rol ${entrada}`, detalle: `No hereda de ${cfg.portero.heredanDe}: el servicio entraría sin ningún permiso.` });
         }
       }
 
@@ -246,7 +314,9 @@ export const reglas = [
         where a.grantee <> t.relowner
         order by 1, 3, 4`);
       for (const c of concesiones) {
-        const permitidos = cfg.permisos[c.rol]?.[c.clase];
+        // Un rol con lista cerrada no trabaja por clase: manda su lista, tabla por tabla.
+        const lista = cfg.permisosPorTabla[c.rol];
+        const permitidos = lista ? (lista[c.objeto] ?? []) : cfg.permisos[c.rol]?.[c.clase];
         if (c.rol === 'PUBLIC') {
           violaciones.push({ objeto: c.objeto, detalle: `PUBLIC tiene ${c.permiso}. Ninguna tabla queda abierta a todos los roles.` });
         } else if (!permitidos) {
@@ -254,10 +324,81 @@ export const reglas = [
         } else if (!permitidos.includes(c.permiso)) {
           violaciones.push({
             objeto: c.objeto,
-            detalle: `El rol ${c.rol} tiene ${c.permiso} sobre una tabla de clase ${c.clase}. Lo permitido es: ${permitidos.join(', ') || 'nada'}.`,
+            detalle: lista
+              ? `El rol ${c.rol} tiene ${c.permiso} y su lista cerrada para esta tabla es: ${permitidos.join(', ') || 'nada'}.`
+              : `El rol ${c.rol} tiene ${c.permiso} sobre una tabla de clase ${c.clase}. Lo permitido es: ${permitidos.join(', ') || 'nada'}.`,
           });
         }
       }
+
+      // Un permiso dado por columna no aparece en los permisos de la tabla: se
+      // escaparía de la revisión de arriba. Los permisos se dan por tabla.
+      violaciones.push(...await filas(db, `
+        ${con(TABLAS)}
+        select t.esquema || '.' || t.tabla || '.' || a.attname as objeto,
+               'Tiene un permiso dado por columna (' || x.privilege_type || ' a '
+                 || case when x.grantee = 0 then 'PUBLIC' else g.rolname end
+                 || '). Los permisos se dan por tabla, donde esta regla los ve.' as detalle
+        from t
+        join pg_attribute a on a.attrelid = t.oid and a.attnum > 0 and not a.attisdropped and a.attacl is not null
+        cross join lateral aclexplode(a.attacl) x
+        left join pg_roles g on g.oid = x.grantee
+        order by 1`));
+
+      // El dueño de una tabla puede todo sobre ella, también apagar su seguridad
+      // por fila. Ningún rol de la aplicación es dueño de una tabla ni de un esquema.
+      violaciones.push(...await filas(db, `
+        ${con(TABLAS)}
+        select t.esquema || '.' || t.tabla as objeto,
+               'Su dueño es ' || o.rolname || ', un rol de la aplicación. Las tablas son de quien migra.' as detalle
+        from t join pg_roles o on o.oid = t.relowner
+        where o.rolname = any($1)
+        union all
+        select 'esquema ' || n.nspname, 'Su dueño es ' || o.rolname || ', un rol de la aplicación. Los esquemas son de quien migra.'
+        from pg_namespace n join pg_roles o on o.oid = n.nspowner
+        where o.rolname = any($1)
+        union all
+        select 'esquema ' || n.nspname, 'El rol ' || g.rolname || ' puede crear objetos en el esquema. Solo crea quien migra.'
+        from pg_namespace n
+        cross join lateral aclexplode(n.nspacl) a
+        join pg_roles g on g.oid = a.grantee
+        where n.nspname not in ('pg_catalog', 'information_schema', 'public') and n.nspname !~ '^pg_'
+          and a.privilege_type = 'CREATE' and a.grantee <> n.nspowner
+        order by 1`, [rolesDelSistema]));
+
+      // Una función que corre con los permisos de su dueño es una puerta. Solo
+      // la ejecuta quien figura en la lista de puertas. Quien migra (el dueño de
+      // las tablas) no cuenta: sus sellos también preguntan quién actúa.
+      const puertas = await filas(db, `
+        ${con(FUNCIONES)}
+        select f.esquema || '.' || f.nombre as funcion, g.rolname as rol
+        from f
+        cross join lateral aclexplode(f.proacl) x
+        join pg_roles g on g.oid = x.grantee
+        where f.prosecdef and x.privilege_type = 'EXECUTE' and g.rolname <> f.dueno
+          and g.oid <> (select c.relowner from pg_class c where c.oid = 'nucleo.tabla_registrada'::regclass)
+        order by 1, 2`);
+      for (const p of puertas) {
+        if (!(cfg.puertas[p.funcion] ?? []).includes(p.rol)) {
+          violaciones.push({
+            objeto: `${p.funcion}()`,
+            detalle: `El rol ${p.rol} puede ejecutar esta función, que corre con los permisos de su dueño, y no figura en la lista de puertas.`,
+          });
+        }
+      }
+
+      // El cliente activo vive en una tabla temporal del portero. Si otro rol
+      // pudiera crear tablas temporales, podría poner la suya en su lugar.
+      violaciones.push(...await filas(db, `
+        select 'base de datos' as objeto,
+               case when a.grantee = 0 then 'PUBLIC' else g.rolname end
+                 || ' puede crear tablas temporales. Solo el portero puede: ahí guarda el cliente activo.' as detalle
+        from pg_database d
+        cross join lateral aclexplode(coalesce(d.datacl, acldefault('d', d.datdba))) a
+        left join pg_roles g on g.oid = a.grantee
+        where d.datname = current_database() and a.privilege_type = 'TEMPORARY'
+          and (a.grantee = 0 or (g.rolname = any($2) and g.rolname <> $1))
+        order by 2`, [cfg.portero.rol, rolesDelSistema]));
 
       violaciones.push(...await filas(db, `
         ${con(FUNCIONES)}
@@ -382,12 +523,18 @@ export const reglas = [
           ('actualizado_en', 'timestamp with time zone', true),
           ('actualizado_por', 'uuid', false),
           ('version', 'integer', true)
+        ),
+        -- Una tabla de control se edita si alguien que no es su dueño puede hacer UPDATE.
+        control_editable as (
+          select t.oid from t
+          where t.clase = 'control'
+            and exists (select 1 from aclexplode(t.relacl) a where a.privilege_type = 'UPDATE' and a.grantee <> t.relowner)
         )
         select t.esquema || '.' || t.tabla as objeto,
                'Falta la columna ' || r.columna || ' (' || r.tipo
                  || case when r.obligatoria then ', obligatoria' else '' end || ').' as detalle
         from t cross join requerida r
-        where t.clase in ('raiz', 'negocio')
+        where (t.clase in ('raiz', 'negocio') or t.oid in (select oid from control_editable))
           and not exists (
             select 1 from col
             where col.tabla_oid = t.oid and col.columna = r.columna and col.tipo_base = r.tipo
@@ -396,7 +543,7 @@ export const reglas = [
         select t.esquema || '.' || t.tabla,
                'Falta el disparador de sello (nucleo.sellar_fila, antes de insertar y de actualizar cada fila).'
         from t
-        where t.clase in ('raiz', 'negocio')
+        where (t.clase in ('raiz', 'negocio') or t.oid in (select oid from control_editable))
           and not exists (
             select 1 from pg_trigger g
             where g.tgrelid = t.oid and not g.tgisinternal and g.tgenabled <> 'D'
@@ -599,9 +746,16 @@ export const reglas = [
         from f where prosecdef and (rolsuper or rolbypassrls)
         union all
         select esquema || '.' || nombre || '(' || argumentos || ')',
+               'Corre con los permisos de su dueño y su search_path no es «pg_catalog, pg_temp». Sin el esquema temporal nombrado al final, una tabla o un tipo temporal con el mismo nombre se usa antes que el de verdad.'
+        from f
+        where prosecdef
+          and exists (select 1 from unnest(coalesce(proconfig, '{}')) c where c like 'search_path=%')
+          and not exists (select 1 from unnest(proconfig) c where c = $2)
+        union all
+        select esquema || '.' || nombre || '(' || argumentos || ')',
                'Lenguaje no admitido: ' || lenguaje || '.'
         from f where not (lenguaje = any($1))
-        order by 1`, [cfg.lenguajes]);
+        order by 1`, [cfg.lenguajes, cfg.portero.rutaDePuertas]);
     },
   },
 ];
