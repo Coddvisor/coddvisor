@@ -161,5 +161,13 @@ con usuarios el trato de usted, porque otras aplicaciones peruanas de pagos tute
 
 - Colores escritos a mano y símbolos de moneda: guardia de valores fijos
   (VF-03 y VF-05).
-- Contraste, tamaño de los objetivos táctiles y peso del JavaScript: se
-  agregan a `npm run verificar` cuando exista la primera pantalla.
+- Desde la primera pantalla (entrar, 26-nov-2026), `npm run verificar` revisa en
+  `sistema/aplicaciones/oficina/pruebas/paginas.test.ts`: que las páginas no
+  escriban texto fuera del catálogo y que toda clave exista (EX-19), sin punto
+  medio ni frases de más de 25 palabras (EX-02); un solo botón ámbar por
+  pantalla (EX-10); objetivos de 48 px en botones, enlaces y campos (EX-18);
+  colores solo por su papel y contraste AA de cada pareja, en claro y en oscuro
+  (EX-17, EX-18); y el peso del JavaScript de cada pantalla (EX-20).
+- El catálogo de textos vive en `sistema/diseno/textos/`, un archivo por idioma
+  y país, con claves. Una frase con datos lleva sus huecos con nombre
+  («{negocio} en Coddvisor»): nunca se arma pegando pedazos.

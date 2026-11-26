@@ -10,6 +10,7 @@
 import { err, esUuid, ok, type Result, type Transaccion } from "#nucleo";
 import {
   abrirNegocio,
+  cerrarSesion,
   crearFirmador,
   crearLlavero,
   leerCuenta,
@@ -101,5 +102,18 @@ export async function trabajarEnNegocio<R>(
     const abierto = await abrirNegocio(t, piezas.firmar, { cuenta: cuenta.value.id, tenant, nivel: verificado.value.nivel });
     if (!abierto.ok) return err(abierto.error);
     return ok(await trabajo(t, abierto.value));
+  });
+}
+
+/**
+ * Salir de verdad: si el pase todavía vale, anota su sesión como cerrada, y desde
+ * ahí ningún pedido con ese pase entra aunque alguien lo haya copiado (decisión 5
+ * de identidad). Un pase que ya no vale no se anota: tampoco entra.
+ */
+export async function cerrarLaSesion(piezas: Piezas, textoDelPase: string): Promise<void> {
+  const verificado = await pase(piezas, textoDelPase);
+  if (!verificado.ok) return;
+  await prestar(piezas.repartidor, async (t) => {
+    await cerrarSesion(t, piezas.firmar, verificado.value);
   });
 }

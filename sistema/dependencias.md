@@ -23,9 +23,17 @@ Nada de esto viaja al negocio del cliente.
   dejaban pasar `a < b` sobre la plata. La guardia propia mira los tipos, y su
   examen demuestra que cada regla atrapa su falta.
 - **Una librería de pases (`jose` y parecidas).** Verificar un pase ES256 de
-  Supabase y firmar con HMAC lo trae Node 24 (`node:crypto`, y `fetch` para el juego
-  de llaves). La verificación propia es corta, queda a la vista y tiene un vector
-  por cada ataque conocido (`modulos/identidad/pruebas/pase.test.ts`).
+  Supabase y firmar con HMAC lo trae WebCrypto (`crypto.subtle`), igual en Node 24
+  y en Deno, y `fetch` para el juego de llaves. La verificación propia es corta,
+  queda a la vista y tiene un vector por cada ataque conocido
+  (`modulos/identidad/pruebas/pase.test.ts`). Hasta el 26-nov-2026 usaba
+  `node:crypto`; pasó a WebCrypto para correr en una función de Supabase.
+- **Un marco para las pantallas (React, Astro y parecidos) y un servidor web
+  (Express y parecidos).** Las pantallas de entrar son HTML, CSS y unos 17 KiB de
+  JavaScript propio, sin construir: el navegador del celular más viejo los
+  entiende tal cual. Las rutas usan Request y Response, que traen Node y Deno; el
+  modo de prueba local pone delante `node:http`. Un marco se evalúa cuando una
+  pantalla de verdad lo pida, con su peso medido contra EX-20.
 - **Un validador de datos.** Lo que acepta un contrato publicado no debe depender
   de la versión de una librería en cada lado.
 - **TypeScript 7.** La guardia se apoya en la forma del compilador 6. Subir de

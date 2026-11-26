@@ -9,15 +9,24 @@
  * (cuánto dura una firma, la tolerancia del reloj) están en su módulo.
  */
 import { err, ok, type Result } from "#nucleo";
-import { LIMITES_DE_IDENTIDAD, type LlaveDelPortero } from "#modulos/identidad";
+import { deBase64, LIMITES_DE_IDENTIDAD, type LlaveDelPortero } from "#modulos/identidad";
 
 export const LIMITES_DEL_SERVICIO = {
   /** Cuántos negocios muestra cada página de «¿A qué negocio entra?». Como mucho, el tope de la puerta. */
   negociosPorPagina: 20,
+  /** El cuerpo más largo que se lee de un pedido, en bytes. Entrar con correo mide unos cientos. */
+  largoMaximoDelPedido: 4096,
+  /** El correo más largo que se acepta (el tope de una dirección de correo). */
+  largoMaximoDelCorreo: 254,
+  /** La contraseña más larga que se acepta. La mínima la fija el proveedor de cuentas. */
+  largoMaximoDeLaContrasena: 1024,
+  /** Cuánto dura el ida y vuelta con Google, en segundos, antes de que su cookie venza. */
+  duracionDeLaVueltaDeGoogleS: 600,
 } as const;
 
 /** El nombre de cada variable de entorno que lee el servicio. */
 export const VARIABLES = {
+  origenDelPanel: "CODDVISOR_ORIGEN",
   emisorDelPase: "CODDVISOR_PASE_EMISOR",
   audienciaDelPase: "CODDVISOR_PASE_AUDIENCIA",
   llavesDelPase: "CODDVISOR_PASE_LLAVES",
@@ -26,6 +35,8 @@ export const VARIABLES = {
 } as const;
 
 export interface Configuracion {
+  /** El origen público del panel (https://app.coddvisor.com): todo pedido que cambia algo debe venir de aquí. */
+  readonly origen: string;
   readonly pase: {
     /** La dirección de Supabase Auth del proyecto, tal como la escribe en «iss». */
     readonly emisor: string;
@@ -63,12 +74,17 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
     return v;
   };
 
+  const origen = valor(VARIABLES.origenDelPanel);
   const emisor = valor(VARIABLES.emisorDelPase);
   const audiencia = valor(VARIABLES.audienciaDelPase);
   const llaves = valor(VARIABLES.llavesDelPase);
   const numero = valor(VARIABLES.numeroDeLaLlaveDelPortero);
   const secreto = valor(VARIABLES.secretoDeLaLlaveDelPortero);
 
+  const urlDelOrigen = origen === "" ? null : direccionSegura(origen);
+  if (origen !== "" && (urlDelOrigen === null || urlDelOrigen.origin !== origen)) {
+    faltas.push(`${VARIABLES.origenDelPanel} debe ser solo un origen https, sin ruta ni barra final (https://app.ejemplo.test).`);
+  }
   const urlDelEmisor = emisor === "" ? null : direccionSegura(emisor);
   if (emisor !== "" && urlDelEmisor === null) faltas.push(`${VARIABLES.emisorDelPase} debe ser una dirección https, sin usuario ni contraseña.`);
   const urlDeLasLlaves = llaves === "" ? null : direccionSegura(llaves);
@@ -78,7 +94,7 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
     faltas.push(`${VARIABLES.llavesDelPase} debe estar en el mismo origen que ${VARIABLES.emisorDelPase}.`);
   }
   if (numero !== "" && !NUMERO_DE_LLAVE.test(numero)) faltas.push(`${VARIABLES.numeroDeLaLlaveDelPortero} debe ser un número entero positivo.`);
-  const bytes = BASE64.test(secreto) ? Buffer.from(secreto, "base64") : null;
+  const bytes = BASE64.test(secreto) ? deBase64(secreto) : null;
   if (secreto !== "" && (bytes === null || bytes.length < BYTES_MINIMOS_DE_LA_LLAVE)) {
     faltas.push(`${VARIABLES.secretoDeLaLlaveDelPortero} debe ser base64 de al menos ${String(BYTES_MINIMOS_DE_LA_LLAVE)} bytes.`);
   }
@@ -88,14 +104,20 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
 
   if (faltas.length > 0 || bytes === null) return err(faltas);
   return ok({
+    origen,
     pase: { emisor, audiencia, direccionDeLasLlaves: llaves },
     llaveDelPortero: { numero: Number.parseInt(numero, 10), secreto: bytes },
   });
 }
 
-/** La configuración del entorno del proceso. Si algo falta, el servicio no arranca. */
-export function configuracionDelEntorno(): Configuracion {
-  const leida = leerConfiguracion(process.env);
+/**
+ * La configuración del entorno, o un error que dice qué revisar: el servicio no
+ * arranca. Quien arranca le pasa su entorno (process.env en Node,
+ * Deno.env.toObject() en una función de Supabase): esta capa no lee el del
+ * proceso, para correr igual en los dos (regla PO-01).
+ */
+export function exigirConfiguracion(entorno: Entorno): Configuracion {
+  const leida = leerConfiguracion(entorno);
   if (!leida.ok) throw new Error(`El servicio no arranca. Revise su entorno:\n  - ${leida.error.join("\n  - ")}`);
   return leida.value;
 }

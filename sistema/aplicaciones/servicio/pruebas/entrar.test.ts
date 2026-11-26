@@ -175,7 +175,7 @@ describe("una invitación, de pendiente a vendedora", () => {
     const invitacion = { membresia: uuid7(), asignacion: uuid7() };
     // Beto, dueño con aal2, invita a Ana como vendedora en todo el negocio.
     const invito = await trabajarEnNegocio(piezas, pase(beto), panaderia.tenant, async (t, negocio) => {
-      const f = firmar("identidad_invitar", [campoUuid(negocio.tenantId), campoUuid(negocio.membresiaId), campoUuid(invitacion.membresia), campoUuid(invitacion.asignacion), campoUuid(ana.id), campoTexto("vendedor"), campoUuidOpcional(null), campoUuidOpcional(null)]);
+      const f = await firmar("identidad_invitar", [campoUuid(negocio.tenantId), campoUuid(negocio.membresiaId), campoUuid(invitacion.membresia), campoUuid(invitacion.asignacion), campoUuid(ana.id), campoTexto("vendedor"), campoUuidOpcional(null), campoUuidOpcional(null)]);
       await t.consultar("select identidad.invitar($1, $2, $3, $4, $5, $6, $7, $8, $9)", [invitacion.membresia, invitacion.asignacion, ana.id, "vendedor", null, null, f.venceS, f.numero, f.firma]);
       return true;
     });
@@ -187,7 +187,7 @@ describe("una invitación, de pendiente a vendedora", () => {
     assert.deepEqual(await trabajarEnNegocio(piezas, pase(ana, { aal: "aal1" }), panaderia.tenant, async () => await Promise.resolve(null)), { ok: false, error: "membresia_inactiva" });
 
     await prestar(repartidor, async (t) => {
-      const f = firmar("identidad_aceptar", [campoUuid(panaderia.tenant), campoUuid(ana.id), campoUuid(invitacion.membresia)]);
+      const f = await firmar("identidad_aceptar", [campoUuid(panaderia.tenant), campoUuid(ana.id), campoUuid(invitacion.membresia)]);
       await t.consultar("select identidad.aceptar_invitacion($1, $2, $3, $4, $5, $6)", [panaderia.tenant, ana.id, invitacion.membresia, f.venceS, f.numero, f.firma]);
     });
 

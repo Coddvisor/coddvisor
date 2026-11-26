@@ -133,7 +133,7 @@ export interface CuentaDePrueba {
 export const nuevaCuenta = (nombre: string): CuentaDePrueba => ({ id: uuid7(), proveedor: uuid7(), correo: `${nombre.toLowerCase()}.${uuid7()}@ejemplo.test`, nombre });
 
 export async function registrar(db: Base, firmar: Firmador, c: CuentaDePrueba): Promise<void> {
-  const f = firmar("identidad_registrar_cuenta", [campoUuid(c.id), campoUuid(c.proveedor), campoTexto(c.correo), campoTexto(c.nombre)]);
+  const f = await firmar("identidad_registrar_cuenta", [campoUuid(c.id), campoUuid(c.proveedor), campoTexto(c.correo), campoTexto(c.nombre)]);
   await db.query("select identidad.registrar_cuenta($1, $2, $3, $4, $5, $6, $7)", [c.id, c.proveedor, c.correo, c.nombre, f.venceS, f.numero, f.firma]);
 }
 
@@ -148,7 +148,7 @@ export const CELDA = "principal";
 
 export async function fundar(db: Base, firmar: Firmador, cuenta: string, nombre: string): Promise<NegocioDePrueba> {
   const n = { tenant: uuid7(), nombre, cuenta, membresia: uuid7(), asignacion: uuid7(), automatica: uuid7(), asignacionAutomatica: uuid7() };
-  const f = firmar("identidad_fundar", [campoUuid(n.tenant), campoTexto(n.nombre), campoUuid(n.cuenta), campoUuid(n.membresia), campoUuid(n.asignacion), campoUuid(n.automatica), campoUuid(n.asignacionAutomatica), campoTexto(CELDA)]);
+  const f = await firmar("identidad_fundar", [campoUuid(n.tenant), campoTexto(n.nombre), campoUuid(n.cuenta), campoUuid(n.membresia), campoUuid(n.asignacion), campoUuid(n.automatica), campoUuid(n.asignacionAutomatica), campoTexto(CELDA)]);
   await db.query("select identidad.fundar_negocio($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
     [n.tenant, n.nombre, n.cuenta, n.membresia, n.asignacion, n.automatica, n.asignacionAutomatica, CELDA, f.venceS, f.numero, f.firma]);
   return { tenant: n.tenant, nombre: n.nombre, cuenta: n.cuenta, membresia: n.membresia };

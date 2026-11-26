@@ -110,12 +110,15 @@ export function revisarAfirmaciones(cuerpo: unknown, esperado: EsperadoDelPase, 
   return ok({ cuentaDelProveedor: cuenta, sesion, nivel, emitidoEnS: emitido, venceEnS: vence });
 }
 
-export type RechazoDeLaCuenta = "cuenta_desconocida" | "cuenta_inactiva" | "pase_revocado";
+/** `sesion_cerrada`: la persona salió de la sesión de este pase (decisión 5 de identidad). */
+export type RechazoDeLaCuenta = "cuenta_desconocida" | "cuenta_inactiva" | "pase_revocado" | "sesion_cerrada";
 
 export interface EstadoDeLaCuenta {
   readonly estado: string;
   /** Desde cuándo valen sus pases, en segundos desde 1970, redondeado hacia arriba. Vacío si nunca se revocaron. */
   readonly pasesRevocadosEnS: number | null;
+  /** Si la sesión de este pase se cerró al salir. */
+  readonly sesionCerrada: boolean;
 }
 
 // El estado de control.cuenta con que se entra. Los demás (pendiente,
@@ -125,12 +128,13 @@ const CUENTA_ACTIVA = "activa";
 /**
  * Si la cuenta puede entrar con este pase: tiene que estar activa, y el pase no
  * puede ser anterior a la última revocación (cerrar todas las sesiones, cambiar
- * la contraseña). Un pase del mismo segundo que la revocación no entra: la hora
+ * la contraseña), ni de una sesión que la persona cerró al salir. Un pase del mismo segundo que la revocación no entra: la hora
  * de la revocación llega redondeada hacia arriba.
  */
 export function revisarCuenta(cuenta: EstadoDeLaCuenta | null, pase: AfirmacionesDelPase): Result<true, RechazoDeLaCuenta> {
   if (cuenta === null) return err("cuenta_desconocida");
   if (cuenta.estado !== CUENTA_ACTIVA) return err("cuenta_inactiva");
   if (cuenta.pasesRevocadosEnS !== null && pase.emitidoEnS < cuenta.pasesRevocadosEnS) return err("pase_revocado");
+  if (cuenta.sesionCerrada) return err("sesion_cerrada");
   return ok(true);
 }

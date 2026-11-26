@@ -96,7 +96,7 @@ mal('FR-07', ['import { x } from "./no_existe.ts"; export const a = x;', 'import
 bien(modulos.flatMap((f) => f.usa.filter((u) => u !== 'nucleo').map((u) => `import { nombre } from "#modulos/${u}"; export const a = nombre; // ${f.modulo}`)).slice(0, 0));
 for (const f of modulos) for (const u of f.usa) caso(null, `${f.modulo} usa a ${u}, como dice la tabla`, u === 'nucleo' ? 'import { cero } from "#nucleo"; export const a = cero;' : `import { nombre } from "#modulos/${u}"; export const a = nombre;`, { en: `modulos/${f.modulo}/datos` });
 bien(['import { cero } from "#nucleo"; export const a = cero;'], { en: 'contratos/caja' });
-bien(['import { abrir } from "#contratos/caja"; export const a = abrir;', 'import { readFileSync } from "node:fs"; export const a = readFileSync;', 'import { interno } from "./interno.ts"; export const a = interno;'], SERVIDOR);
+bien(['import { abrir } from "#contratos/caja"; export const a = abrir;', 'import { interno } from "./interno.ts"; export const a = interno;'], SERVIDOR);
 bien(['import { cero } from "#nucleo"; export const a = cero;'], { en: 'modulos/ventas/dominio' });
 
 // ---------- Aplicaciones ----------
@@ -106,7 +106,15 @@ mal('FR-01', ['import { prestar } from "#aplicaciones/servicio"; export const a 
 mal('FR-01', ['import { pais } from "#paquetes/pais"; export const a = pais;'], SERVICIO);
 mal('FR-02', ['import { LIMITES } from "../../modulos/identidad/limites.ts"; export const a = LIMITES;'], SERVICIO);
 mal('FR-03', ['import { cosa } from "../../herramientas/cosa.ts"; export const a = cosa;'], SERVICIO);
-bien(['import { verificarPase } from "#modulos/identidad"; export const a = verificarPase;', 'import { esUuid } from "#nucleo"; export const a = esUuid;', 'import { abrir } from "#contratos/caja"; export const a = abrir;', 'import { createHmac } from "node:crypto"; export const a = createHmac;'], SERVICIO);
+bien(['import { verificarPase } from "#modulos/identidad"; export const a = verificarPase;', 'import { esUuid } from "#nucleo"; export const a = esUuid;', 'import { abrir } from "#contratos/caja"; export const a = abrir;'], SERVICIO);
+
+// ---------- Portabilidad: lo mismo corre en Node y en Deno ----------
+// Hasta el 26-nov-2026 un módulo y el servicio podían usar node:fs y node:crypto. Desde
+// la parte 2 del tramo 3 de identidad corren también en una función de Supabase (Deno).
+mal('PO-01', ['import { readFileSync } from "node:fs"; export const a = readFileSync;', 'import { createHmac } from "node:crypto"; export const a = createHmac;', 'import type { KeyObject } from "node:crypto"; export type A = KeyObject;', 'export const a = Buffer.from("x");', 'export const a = process.env;', 'export const a = (x: Buffer): number => x.length;', 'export const a = { process };', 'export const a = setImmediate;', 'export const a = globalThis.process.env;', 'export const a = globalThis.Buffer.from("x");'], SERVIDOR);
+mal('PO-01', ['import { createServer } from "node:http"; export const a = createServer;', 'export const a = process.env["CODDVISOR_ORIGEN"];'], SERVICIO);
+bien(['export const a = crypto.subtle;', 'export const a = new TextEncoder().encode("x");', 'export const a = new Response("x");', 'export const a = async (u: string): Promise<number> => (await fetch(u)).status;', 'export const a = new Uint8Array(4);', 'export const a = btoa("x");', 'export const a = setTimeout;', 'export const a = { Buffer: 1, process: 2 };', 'export const f = (o: { process: number }): number => o.process;'], SERVIDOR);
+bien(['export const a = new Headers({ "x-a": "b" });', 'export const a = new URL("https://x.pe").origin;'], SERVICIO);
 
 // ---------- Servicio: el texto de una consulta ----------
 const CONSULTA = { en: 'modulos/ventas/datos', cabeza: 'import type { Transaccion } from "#nucleo";\n' };

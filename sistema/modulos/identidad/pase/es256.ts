@@ -1,6 +1,7 @@
 /**
- * Verificar un pase de Supabase firmado con ES256, sin librerías: con
- * node:crypto. Lo que el pase afirma lo revisa dominio/pase.ts.
+ * Verificar un pase de Supabase firmado con ES256, sin librerías: con WebCrypto
+ * (crypto.subtle), que traen igual Node y Deno. Lo que el pase afirma lo revisa
+ * dominio/pase.ts.
  *
  * Lo que se cuida aquí:
  *   - el pase tiene tres partes en base64url estricto (sin relleno y con una
@@ -8,33 +9,30 @@
  *   - el algoritmo se revisa antes de buscar la llave, y la llave se busca solo
  *     entre las llaves EC P-256 públicas del juego de Supabase: nunca se usa una
  *     llave que venga dentro del pase (jwk, jku, x5u se ignoran);
- *   - la firma mide exactamente 64 bytes (r y s, ieee-p1363): una firma DER u
- *     otro largo no se acepta;
+ *   - la firma mide exactamente 64 bytes (r y s, la forma que pide WebCrypto):
+ *     una firma DER u otro largo no se acepta;
  *   - el juego de llaves se guarda un tiempo con nombre y se vuelve a pedir ante
  *     un kid desconocido, con un freno para que un pase inventado no haga pedir
  *     el juego en cada intento;
  *   - si no se logra volver a leer el juego, las llaves viejas valen solo hasta
  *     una edad con nombre: después ningún pase entra (falla cerrado).
  */
-import { createPublicKey, verify, type KeyObject } from "node:crypto";
 import { err, type Result } from "#nucleo";
+import { deBase64url, deTexto, unir, type Bytes, type LlaveDeWebCrypto } from "../bytes.ts";
 import { esObjeto, revisarAfirmaciones, revisarEncabezado, type AfirmacionesDelPase, type EsperadoDelPase, type RechazoDelPase } from "../dominio/pase.ts";
 import { LIMITES } from "../limites.ts";
 
 // Lo que fija el formato ES256 sobre P-256, no un dato que pueda variar.
 const LARGO_DE_LA_FIRMA = 64;
 const LARGO_DE_UNA_COORDENADA = 32;
-const BASE64URL = /^[A-Za-z0-9_-]*$/;
+const ECDSA = { name: "ECDSA", namedCurve: "P-256" } as const;
+const ECDSA_SHA256 = { name: "ECDSA", hash: "SHA-256" } as const;
 const UTF8 = new TextDecoder("utf-8", { fatal: true });
 
 /** Los bytes de un texto en base64url, o null si no lo es con su única escritura posible. */
-export function desdeBase64url(texto: string): Buffer | null {
-  if (!BASE64URL.test(texto) || texto.length % 4 === 1) return null;
-  const bytes = Buffer.from(texto, "base64url");
-  return bytes.toString("base64url") === texto ? bytes : null;
-}
+export const desdeBase64url = (texto: string): Bytes | null => deBase64url(texto);
 
-function leerJson(bytes: Buffer): unknown {
+function leerJson(bytes: Uint8Array): unknown {
   try {
     const valor: unknown = JSON.parse(UTF8.decode(bytes));
     return valor;
@@ -45,7 +43,7 @@ function leerJson(bytes: Buffer): unknown {
 
 /** Dónde se buscan las llaves públicas de Supabase, por su kid. */
 export interface Llavero {
-  buscar(kid: string): Promise<KeyObject | null>;
+  buscar(kid: string): Promise<LlaveDeWebCrypto | null>;
 }
 
 /** Verifica la firma y lo que afirma el pase. `ahoraS` es la hora en segundos desde 1970. */
@@ -69,7 +67,8 @@ export async function verificarPase(texto: string, llavero: Llavero, esperado: E
 
   let cuadra = false;
   try {
-    cuadra = verify("sha256", Buffer.from(`${encabezadoB64}.${cuerpoB64}`, "ascii"), { key: llave, dsaEncoding: "ieee-p1363" }, firma);
+    // Las dos primeras partes, tal como llegaron: son base64url, así que ASCII.
+    cuadra = await crypto.subtle.verify(ECDSA_SHA256, llave, firma, deTexto(`${encabezadoB64}.${cuerpoB64}`));
   } catch {
     cuadra = false;
   }
@@ -83,7 +82,7 @@ export async function verificarPase(texto: string, llavero: Llavero, esperado: E
 // ---------------------------------------------------------------------------
 
 /** Una llave pública EC P-256 para verificar ES256, o null si el JWK no es eso. */
-function llaveDe(jwk: unknown): readonly [string, KeyObject] | null {
+async function llaveDe(jwk: unknown): Promise<readonly [string, LlaveDeWebCrypto] | null> {
   if (!esObjeto(jwk)) return null;
   const kid = jwk["kid"];
   const x = jwk["x"];
@@ -99,21 +98,22 @@ function llaveDe(jwk: unknown): readonly [string, KeyObject] | null {
   if (typeof x !== "string" || typeof y !== "string") return null;
   if (desdeBase64url(x)?.length !== LARGO_DE_UNA_COORDENADA || desdeBase64url(y)?.length !== LARGO_DE_UNA_COORDENADA) return null;
   try {
-    // createPublicKey comprueba además que el punto esté en la curva.
-    return [kid, createPublicKey({ key: { kty: "EC", crv: "P-256", x, y }, format: "jwk" })];
+    // Solo las coordenadas: nada más del JWK entra a la llave. WebCrypto
+    // comprueba además que el punto esté en la curva.
+    return [kid, await crypto.subtle.importKey("jwk", { kty: "EC", crv: "P-256", x, y }, ECDSA, false, ["verify"])];
   } catch {
     return null;
   }
 }
 
 /** Las llaves útiles de un juego, por kid, o null si el juego no tiene la forma de un JWKS. */
-export function llavesDelJuego(juego: unknown): ReadonlyMap<string, KeyObject> | null {
+export async function llavesDelJuego(juego: unknown): Promise<ReadonlyMap<string, LlaveDeWebCrypto> | null> {
   if (!esObjeto(juego)) return null;
-  const lista = juego["keys"];
+  const lista: unknown = juego["keys"];
   if (!Array.isArray(lista) || lista.length > LIMITES.maximoDeLlaves) return null;
-  const llaves = new Map<string, KeyObject>();
-  for (const jwk of lista) {
-    const llave = llaveDe(jwk);
+  const leidas = await Promise.all(lista.map(async (jwk: unknown) => await llaveDe(jwk)));
+  const llaves = new Map<string, LlaveDeWebCrypto>();
+  for (const llave of leidas) {
     // Si dos llaves dicen el mismo kid, vale la primera.
     if (llave !== null && !llaves.has(llave[0])) llaves.set(llave[0], llave[1]);
   }
@@ -135,7 +135,7 @@ export interface OpcionesDelLlavero {
  * devuelve ninguna. Mientras se pide, los demás esperan a ese mismo pedido.
  */
 export function crearLlavero(opciones: OpcionesDelLlavero): Llavero {
-  let llaves: ReadonlyMap<string, KeyObject> = new Map();
+  let llaves: ReadonlyMap<string, LlaveDeWebCrypto> = new Map();
   let frescasHasta = Number.NEGATIVE_INFINITY;
   let leidasEn = Number.NEGATIVE_INFINITY;
   let pedidoEn = Number.NEGATIVE_INFINITY;
@@ -152,7 +152,7 @@ export function crearLlavero(opciones: OpcionesDelLlavero): Llavero {
     pidiendo = true;
     pedidoEn = opciones.reloj();
     try {
-      const nuevas = llavesDelJuego(await opciones.pedir());
+      const nuevas = await llavesDelJuego(await opciones.pedir());
       if (nuevas !== null) {
         llaves = nuevas;
         leidasEn = opciones.reloj();
@@ -194,9 +194,9 @@ export async function pedirJuegoDeLlaves(direccion: string): Promise<unknown> {
 
 const DEMASIADO_LARGO = "El juego de llaves es más largo de lo admitido.";
 
-/** Lee el cuerpo de una respuesta por partes y corta apenas pasa el tope, sin guardar el resto. */
-export async function leerConTope(respuesta: Response, tope: number): Promise<Uint8Array> {
-  const lector = respuesta.body?.getReader();
+/** Lee el cuerpo de una respuesta (o de un pedido) por partes y corta apenas pasa el tope, sin guardar el resto. */
+export async function leerConTope(mensaje: { readonly body: ReadableStream<Uint8Array> | null }, tope: number, aviso = DEMASIADO_LARGO): Promise<Bytes> {
+  const lector = mensaje.body?.getReader();
   if (lector === undefined) return new Uint8Array();
   const partes: Uint8Array[] = [];
   let largo = 0;
@@ -206,9 +206,9 @@ export async function leerConTope(respuesta: Response, tope: number): Promise<Ui
     largo += value.byteLength;
     if (largo > tope) {
       await lector.cancel();
-      throw new Error(DEMASIADO_LARGO);
+      throw new Error(aviso);
     }
     partes.push(value);
   }
-  return Buffer.concat(partes);
+  return unir(partes);
 }

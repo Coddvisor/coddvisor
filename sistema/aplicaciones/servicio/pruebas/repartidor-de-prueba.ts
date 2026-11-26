@@ -18,8 +18,13 @@ export interface RepartidorDePrueba extends Repartidor {
   readonly ordenes: string[];
 }
 
-export function repartidorDePrueba(db: Base, { fallarAlLimpiar = false }: { fallarAlLimpiar?: boolean } = {}): RepartidorDePrueba {
+/**
+ * `enFila`: si la conexión está prestada, el siguiente espera su turno en vez de
+ * fallar. Es lo que usa el modo de prueba local, donde llegan pedidos a la vez.
+ */
+export function repartidorDePrueba(db: Base, { fallarAlLimpiar = false, enFila = false }: { fallarAlLimpiar?: boolean; enFila?: boolean } = {}): RepartidorDePrueba {
   let prestada = false;
+  const turnos: Array<() => void> = [];
   const devoluciones: boolean[] = [];
   const ordenes: string[] = [];
   const conexion: ConexionDeLaBase = {
@@ -33,15 +38,22 @@ export function repartidorDePrueba(db: Base, { fallarAlLimpiar = false }: { fall
     devoluciones,
     ordenes,
     async sacar() {
-      if (prestada) throw new Error("La conexión de prueba ya está prestada.");
+      if (prestada && enFila) {
+        await new Promise<void>((turno) => {
+          turnos.push(turno);
+        });
+      } else if (prestada) throw new Error("La conexión de prueba ya está prestada.");
       prestada = true;
       await db.exec(`set role ${ROL_DE_ENTRADA}`);
       return conexion;
     },
     async devolver(c, sana) {
       if (c !== conexion) throw new Error("Volvió una conexión que no es la prestada.");
-      prestada = false;
       devoluciones.push(sana);
+      // El turno pasa directo al siguiente en la fila: la conexión sigue prestada.
+      const siguiente = turnos.shift();
+      if (siguiente === undefined) prestada = false;
+      else siguiente();
       await Promise.resolve();
     },
   };

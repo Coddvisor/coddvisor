@@ -1,0 +1,12 @@
+/* El aviso del modo de prueba. Sus colores son los papeles de aviso de marca/colores.css. */
+.aviso-de-prueba {
+  background: var(--aviso-fondo);
+  color: var(--aviso);
+  border-bottom: var(--linea) solid var(--aviso);
+  padding: var(--espacio-2) var(--espacio-4);
+  font-size: var(--tamano-chico);
+}
+.aviso-de-prueba summary { min-height: var(--toque); display: flex; align-items: center; font-weight: var(--peso-fuerte); cursor: pointer; }
+.aviso-de-prueba p, .aviso-de-prueba ul { margin: 0 0 var(--espacio-2); }
+.aviso-de-prueba ul { padding-left: var(--espacio-5); }
+.aviso-de-prueba-codigo { font-family: var(--letra-cifras); font-size: var(--tamano-subtitulo); font-weight: var(--peso-fuerte); }

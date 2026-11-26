@@ -5,7 +5,7 @@
  */
 import { err, esUuid, ok, type Result, type Transaccion } from "#nucleo";
 import { revisarCuenta, type AfirmacionesDelPase, type Nivel, type RechazoDeLaCuenta } from "./dominio/pase.ts";
-import { abrirPersona, leerAcceso, leerCuenta as leerFilaDeCuenta, listarNegocios as listarFilas } from "./datos/puertas.ts";
+import { abrirPersona, cerrarSesion as anotarSesionCerrada, leerAcceso, leerCuentaDeSesion, listarNegocios as listarFilas } from "./datos/puertas.ts";
 import type { Firmador } from "./firma/mensaje.ts";
 import { LIMITES } from "./limites.ts";
 
@@ -14,13 +14,24 @@ export interface Cuenta {
   readonly id: string;
 }
 
-/** La cuenta del pase, si existe, está activa y el pase no es de antes de una revocación. */
+/**
+ * La cuenta del pase, si existe, está activa, el pase no es de antes de una
+ * revocación y su sesión no se cerró al salir. Un solo viaje a la base.
+ */
 export async function leerCuenta(t: Transaccion, firmar: Firmador, pase: AfirmacionesDelPase): Promise<Result<Cuenta, RechazoDeLaCuenta>> {
-  const fila = await leerFilaDeCuenta(t, firmar, pase.cuentaDelProveedor);
+  const fila = await leerCuentaDeSesion(t, firmar, pase.cuentaDelProveedor, pase.sesion);
   const revisada = revisarCuenta(fila, pase);
   if (!revisada.ok) return err(revisada.error);
   if (fila === null) return err("cuenta_desconocida");
   return ok({ id: fila.cuentaId });
+}
+
+/**
+ * Salir de verdad: anota la sesión del pase como cerrada, y desde ahí ningún
+ * pase de esa sesión entra, aunque alguien lo haya copiado (decisión 5).
+ */
+export async function cerrarSesion(t: Transaccion, firmar: Firmador, pase: AfirmacionesDelPase): Promise<void> {
+  await anotarSesionCerrada(t, firmar, pase.cuentaDelProveedor, pase.sesion);
 }
 
 /** Cómo está el acceso de la cuenta a un negocio: lo que la pantalla dice en palabras. */

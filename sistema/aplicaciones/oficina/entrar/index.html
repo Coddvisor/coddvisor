@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es-PE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <title data-texto="entrar.titulo-de-la-pagina"></title>
+  <link rel="icon" href="/marca/logo/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/marca/colores.css">
+  <link rel="stylesheet" href="/diseno/medidas.css">
+  <link rel="stylesheet" href="/comun/oficina.css">
+  <script type="module" src="/entrar/entrar.js"></script>
+</head>
+<body class="cargando">
+  <main class="marco">
+    <header class="cabecera">
+      <picture>
+        <source srcset="/marca/logo/coddvisor-logotipo-horizontal-fondo-oscuro.svg" media="(prefers-color-scheme: dark)">
+        <img class="logo" src="/marca/logo/coddvisor-logotipo-horizontal.svg" width="160" height="24" data-texto-alt="marca.nombre">
+      </picture>
+    </header>
+
+    <h1 data-texto="entrar.titulo"></h1>
+    <p class="ayuda" data-texto="entrar.bajada"></p>
+
+    <p class="aviso aviso-error" id="aviso" role="alert" hidden>
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>
+      <span id="aviso-texto"></span>
+    </p>
+
+    <a class="boton boton-secundario boton-ancho" id="google" href="/api/entrar/google">
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M12 12h8"/></svg>
+      <span data-texto="entrar.google"></span>
+    </a>
+    <p class="nota" data-texto="entrar.google-nota"></p>
+
+    <div class="separador"><span data-texto="entrar.separador"></span></div>
+
+    <form id="formulario" novalidate>
+      <div class="campo">
+        <label for="correo" data-texto="entrar.correo"></label>
+        <input id="correo" name="correo" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="254" required>
+      </div>
+      <div class="campo">
+        <label for="contrasena" data-texto="entrar.contrasena"></label>
+        <input id="contrasena" name="contrasena" type="password" autocomplete="current-password" maxlength="1024" required>
+      </div>
+      <button class="boton boton-principal boton-ancho" id="entrar" type="submit" data-texto="entrar.boton"></button>
+    </form>
+
+    <p><a class="enlace" href="/entrar/pronto?tema=recuperar" data-texto="entrar.olvide"></a></p>
+    <p class="pie"><span data-texto="entrar.sin-cuenta"></span><a class="enlace" href="/entrar/pronto?tema=abrir" data-texto="entrar.abrir"></a></p>
+  </main>
+</body>
+</html>
