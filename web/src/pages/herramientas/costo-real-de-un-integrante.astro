@@ -4,6 +4,7 @@
 // por norma en src/datos/laboral.ts. Guía del borrador aprobado (web/borradores/costo-real-integrante.md).
 // Diseño: el mismo de las herramientas nuevas (herramienta.css).
 import Base from '../../layouts/Base.astro';
+import PreguntasGuia from '../../components/PreguntasGuia.astro';
 import { llamado } from '../../datos/navegacion';
 import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
 import { minimas, pensiones, costo, minimaVigente, asignacionFamiliar, solesCortos } from '../../datos/laboral';
@@ -311,6 +312,9 @@ const datosCosto = { pensiones, costo };
     </section>
   </div>
 </article>
+
+<!-- «¿Le sirvió?» y las preguntas de otros dueños: src/components/PreguntasGuia.astro. -->
+<PreguntasGuia variante="herramienta" />
 
 <section class="contacto osc" aria-labelledby="hcr-cta-t">
   <div class="brillo brillo--contacto" aria-hidden="true"></div>

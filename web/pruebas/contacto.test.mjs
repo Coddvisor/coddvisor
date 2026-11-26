@@ -66,7 +66,7 @@ test('el pedido se guarda en Supabase con lo que leyó, y el aviso sale una sola
   assert.equal(filas.length, 1);
   assert.equal(filas[0].whatsapp, '51987654321');
   assert.deepEqual(filas[0].recorrido, ['/blog/liquidacion/', '/']);
-  assert.equal(filas[0].aviso_version, '2026-11-24');
+  assert.equal(filas[0].aviso_version, '2026-11-26');
   assert.ok(filas[0].aviso_enviado_en, 'queda anotado que el aviso salió');
 });
 

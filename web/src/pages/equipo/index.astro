@@ -7,6 +7,7 @@
 import Equipo from '../../layouts/Equipo.astro';
 import { herramientas } from '../../datos/herramientas';
 import { pie } from '../../datos/navegacion';
+import { listas } from '../../../servidor/firma.js';
 
 // Nombre de cada página para mostrarlo en vez de su dirección. Sale de las mismas listas que el
 // menú y el blog: una página nueva aparece con su nombre sin tocar el panel.
@@ -24,8 +25,12 @@ for (const [ruta, md] of Object.entries(archivos)) {
 }
 ---
 <Equipo titulo="Visitas y pedidos | Coddvisor">
+<!-- preguntas.js arma la firma de cada pregunta con la misma regla que el sitio. -->
+<script slot="cabeza" is:inline src="/preguntas.js" defer></script>
 <script slot="cabeza" is:inline src="/equipo/panel.js" defer></script>
 <script type="application/json" id="titulos" set:html={JSON.stringify(titulos).replace(/</g, '\\u003c')}></script>
+<!-- Cómo firma quien pregunta en una guía: las mismas listas del sitio (servidor/firma.js). -->
+<script type="application/json" data-firma-listas set:html={JSON.stringify(listas).replace(/</g, '\\u003c')}></script>
 
 <header class="eq-cab">
   <div>
@@ -42,6 +47,7 @@ for (const [ruta, md] of Object.entries(archivos)) {
 <nav class="pestanas" role="tablist" aria-label="Secciones del panel" data-pestanas>
   <button type="button" role="tab" aria-selected="true" data-pestana="analisis" hidden>Análisis</button>
   <button type="button" role="tab" aria-selected="false" data-pestana="pedidos" hidden>Pedidos</button>
+  <button type="button" role="tab" aria-selected="false" data-pestana="preguntas" hidden>Preguntas</button>
   <button type="button" role="tab" aria-selected="false" data-pestana="equipo" hidden>Equipo</button>
   <button type="button" role="tab" aria-selected="false" data-pestana="configuracion" hidden>Configuración</button>
 </nav>
@@ -126,6 +132,34 @@ for (const [ruta, md] of Object.entries(archivos)) {
     <ol class="pedidos" data-pedidos></ol>
   </section>
 </div>
+</div>
+
+<!-- Preguntas de las guías: responder (y así publicar), corregir o archivar, y «¿Le sirvió?».
+     Pide el permiso responder_preguntas. El correo de quien pidió aviso nunca llega aquí. -->
+<div data-panel="preguntas" class="eq-panel" hidden>
+  <p class="estado" data-preg-estado role="status" aria-live="polite"></p>
+  <section class="tarjeta" aria-labelledby="pr-n-t">
+    <h2 id="pr-n-t">Por responder <span class="pr-cuenta" data-preg-cuenta></span></h2>
+    <p class="nota">Nada se publica hasta que alguien la responda. Las más antiguas van primero: la meta es responder en menos de 24 horas. Si la pregunta trae un DNI, un celular u otro dato personal, corríjala antes de responder.</p>
+    <p class="nota" data-preg-sin-correo hidden>El aviso por correo a quien preguntó está apagado: falta la clave de Resend en la bóveda de Supabase (resend_api_key). Esas personas ven la respuesta con su enlace.</p>
+    <ol class="pedidos" data-preg-nuevas></ol>
+  </section>
+  <section class="tarjeta" aria-labelledby="pr-o-t">
+    <h2 id="pr-o-t">¿Le sirvió la guía? <small>(últimos 30 días)</small></h2>
+    <div class="tabla-envoltura"><table class="tabla" data-preg-opiniones>
+      <thead><tr><th scope="col">Guía</th><th scope="col">Sí</th><th scope="col">No</th></tr></thead><tbody></tbody>
+    </table></div>
+    <h3 class="pr-sub">Lo que les faltó</h3>
+    <ol class="historial" data-preg-faltantes></ol>
+  </section>
+  <section class="tarjeta" aria-labelledby="pr-p-t">
+    <h2 id="pr-p-t">Publicadas</h2>
+    <ol class="pedidos" data-preg-publicadas></ol>
+  </section>
+  <section class="tarjeta" aria-labelledby="pr-a-t">
+    <h2 id="pr-a-t">Archivadas</h2>
+    <ol class="pedidos" data-preg-archivadas></ol>
+  </section>
 </div>
 
 <!-- Equipo: quién puede entrar y con qué rol. Invitar, cambiar rol y quitar acceso: solo administración. -->

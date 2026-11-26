@@ -12,8 +12,10 @@ interface Props {
   titulo: string;
   /** El texto gris bajo el título en Google. Máximo unos 155 caracteres. */
   descripcion: string;
+  /** true: los buscadores no la guardan (por ejemplo, /pregunta/, que es de cada persona). */
+  sinIndice?: boolean;
 }
-const { titulo, descripcion } = Astro.props;
+const { titulo, descripcion, sinIndice = false } = Astro.props;
 // Dirección completa de esta página: Google y las redes no entienden direcciones relativas.
 const url = new URL(Astro.url.pathname, Astro.site).href;
 // El contador solo suma en la dirección oficial (no en la computadora de quien programa ni en las
@@ -30,6 +32,7 @@ const hostOficial = new URL(Astro.site!).host;
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{titulo}</title>
+{sinIndice && <meta name="robots" content="noindex, nofollow">}
 <meta name="description" content={descripcion}>
 <link rel="canonical" href={url}>
 <meta name="theme-color" content="#0B1841">
@@ -72,6 +75,9 @@ const hostOficial = new URL(Astro.site!).host;
 <script is:inline src="/sitio.js" defer></script>
 <!-- Contador de puerta: suma la visita en la base, sin cookies ni datos de la persona. Ver contador.js. -->
 <script is:inline src="/contador.js" defer></script>
+<!-- Preguntas de las guías y el aviso «Su pregunta ya tiene respuesta». Sin guía ni preguntas
+     guardadas en este navegador, no hace nada. Ver preguntas.js. -->
+<script is:inline src="/preguntas.js" defer></script>
 <!-- El gato del logo siente: parpadea, sonríe, se concentra, se duerme. Ver gato-vivo.js. -->
 <script is:inline src="/gato-vivo.js" defer></script>
 <!-- Lo que una página agrega a su <head> (por ejemplo, los estilos de las herramientas). -->

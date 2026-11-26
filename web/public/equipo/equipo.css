@@ -177,3 +177,10 @@ thead th { color:var(--texto-2); font-weight:600; font-size:13px; }
 .ajuste label { display:block; font-size:14px; color:var(--texto-2); margin-bottom:6px; }
 .ajuste-fila { display:flex; gap:8px; }
 .ajuste-fila input { min-height:40px; padding:0 12px; border:1px solid var(--borde-fuerte); border-radius:10px; background:var(--tarjeta); color:var(--tinta); font:inherit; flex:1; min-width:0; max-width:320px; }
+
+/* Pestaña Preguntas (panel.js, «Preguntas de las guías»). */
+.pr-cuenta { font-weight:400; color:var(--texto-2); }
+.pr-sub { margin:24px 0 8px; font-size:16px; }
+.pr-texto, .pr-respuesta { width:100%; margin:8px 0; border:2px solid var(--borde-fuerte); border-radius:12px; padding:10px 12px; font:inherit; font-size:15px; line-height:1.5; background:var(--tarjeta); color:inherit; resize:vertical; }
+.pr-texto[readonly] { border-style:dashed; color:var(--texto-2); }
+.pr-motivo { min-height:40px; border:1px solid var(--borde-fuerte); border-radius:10px; padding:0 10px; font:inherit; font-size:14px; background:var(--tarjeta); color:inherit; }

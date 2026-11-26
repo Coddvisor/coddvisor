@@ -89,6 +89,7 @@
     if (document.visibilityState === 'visible' && ultimaCarga && Date.now() - ultimaCarga >= CADA) {
       cargar(true);
       if (estado.pestana === 'equipo') cargarEquipo();
+      if (estado.pestana === 'preguntas') cargarPreguntas(true);
     }
   }, 30000);
   document.addEventListener('visibilitychange', function () {
@@ -430,7 +431,7 @@
   });
 
   // ---------- Pestañas (según los permisos del rol) ----------
-  var PESTANAS = { analisis: 'ver_analisis', pedidos: 'ver_pedidos', equipo: 'ver_equipo', configuracion: 'configurar' };
+  var PESTANAS = { analisis: 'ver_analisis', pedidos: 'ver_pedidos', preguntas: 'responder_preguntas', equipo: 'ver_equipo', configuracion: 'configurar' };
   function puede(p) { return estado.permisos.indexOf(p) !== -1; }
   function abrir(nombre) {
     if (!puede(PESTANAS[nombre])) nombre = Object.keys(PESTANAS).filter(function (k) { return puede(PESTANAS[k]); })[0];
@@ -443,6 +444,7 @@
     if (!conCifras) decir('');
     if (nombre === 'equipo') cargarEquipo();
     if (nombre === 'configuracion') cargarConfig();
+    if (nombre === 'preguntas') cargarPreguntas();
     try { history.replaceState(null, '', '#' + nombre); } catch (e) {}
   }
   $$('[data-pestana]').forEach(function (b) { b.addEventListener('click', function () { abrir(b.dataset.pestana); }); });
@@ -599,6 +601,165 @@
       })(r);
     });
   });
+
+  // ---------- Preguntas de las guías ----------
+  // Responder publica. Corregir cambia el texto de la pregunta (para quitar un dato personal).
+  // Archivar la oculta con su motivo; «Devolver» la trae de vuelta. Nada se borra.
+  var listasFirma = { roles: [], rubros: [], regiones: [], tamanos: [] };
+  try { listasFirma = JSON.parse($('[data-firma-listas]').textContent); } catch (e) {}
+  var MOTIVOS = [['spam', 'Publicidad o spam'], ['ofensiva', 'Ofensiva'], ['fuera_de_tema', 'No es del tema'],
+    ['datos_personales', 'Trae datos personales'], ['repetida', 'Repetida'], ['otro', 'Otro motivo']];
+  var estadoPreg = $('[data-preg-estado]');
+  function firmaDe(q) {
+    var f = window.CoddvisorPreguntas ? window.CoddvisorPreguntas.firmaTexto(q, listasFirma) : { nombre: '', detalle: '' };
+    var tam = listasFirma.tamanos.filter(function (t) { return t.codigo === q.tamano; })[0];
+    // El equipo ve también el tamaño que no se publica.
+    var extra = tam && !tam.muestra ? ' (' + tam.frase + ', no se publica)' : '';
+    return [f.nombre, f.detalle].filter(Boolean).join(', ') + extra;
+  }
+  function itemPregunta(q, tipo) {
+    var li = el('li', 'pedido');
+    var cab = el('div', 'pedido-cab');
+    cab.appendChild(el('h3', null, firmaDe(q) || 'Sin firma'));
+    cab.appendChild(el('time', 'pedido-fecha', cuando(q.recibida_en)));
+    li.appendChild(cab);
+    var donde = el('p', 'pedido-leyo');
+    donde.appendChild(el('span', 'pedido-leyo-t', 'En: '));
+    var a = el('a', null, titulo(q.ruta));
+    a.href = q.ruta + (tipo === 'publicada' ? '#pregunta-' + q.id : '');
+    a.target = '_blank';
+    a.rel = 'noopener';
+    donde.appendChild(a);
+    if (q.tambien) donde.appendChild(document.createTextNode('. Le pasa a ' + q.tambien + (q.tambien === 1 ? ' persona más.' : ' personas más.')));
+    li.appendChild(donde);
+
+    var texto = el('textarea', 'pr-texto');
+    texto.value = q.texto;
+    texto.rows = 3;
+    texto.maxLength = 600;
+    texto.setAttribute('aria-label', 'Texto de la pregunta');
+    texto.readOnly = tipo === 'archivada';
+    li.appendChild(texto);
+
+    var aviso = el('p', 'pedido-aviso');
+    aviso.setAttribute('role', 'status');
+    var acc = el('div', 'pedido-acc');
+    var chip = el('p', 'chip-estado ' + (tipo === 'nueva' ? 'pendiente' : 'hecho'));
+    chip.textContent = tipo === 'nueva' ? (q.pidio_aviso ? '● Pidió aviso por correo' : '● Sin responder')
+      : tipo === 'publicada' ? '✓ Publicada' + (q.respondida_por ? ' (' + q.respondida_por + ')' : '')
+      : 'Archivada: ' + ((MOTIVOS.filter(function (m) { return m[0] === q.motivo; })[0] || [0, q.motivo])[1]);
+    acc.appendChild(chip);
+
+    function enviar(funcion, args, exito) {
+      aviso.textContent = '';
+      $$('button, select', li).forEach(function (x) { x.disabled = true; });
+      window.CoddvisorSesion.llamar(funcion, args).then(function (r) {
+        if (r.estado === 401) { location.replace('/equipo/entrar/'); return; }
+        $$('button, select', li).forEach(function (x) { x.disabled = false; });
+        if (r.estado !== 200) {
+          aviso.textContent = r.estado === 0 ? 'No hay conexión. No se guardó.' : ((r.cuerpo && r.cuerpo.message) || 'No pudimos guardar. Intente otra vez.');
+          return;
+        }
+        estadoPreg.textContent = typeof exito === 'function' ? exito(r.cuerpo) : exito;
+        cargarPreguntas(true);
+      });
+    }
+
+    if (tipo !== 'archivada') {
+      var corregir = el('button', 'boton-2', 'Guardar la pregunta corregida');
+      corregir.type = 'button';
+      corregir.hidden = true;
+      texto.addEventListener('input', function () { corregir.hidden = texto.value.trim() === q.texto; });
+      corregir.addEventListener('click', function () { enviar('sitio_corregir_pregunta', { p_id: q.id, p_texto: texto.value }, 'Pregunta corregida.'); });
+      acc.appendChild(corregir);
+
+      var resp = el('textarea', 'pr-respuesta');
+      resp.value = q.respuesta || '';
+      resp.rows = 5;
+      resp.maxLength = 3000;
+      resp.placeholder = 'Su respuesta. Trate de usted, en palabras simples, y cite la norma si habla de leyes o impuestos.';
+      resp.setAttribute('aria-label', 'Respuesta');
+      li.appendChild(resp);
+      var responder = el('button', 'boton', tipo === 'nueva' ? 'Responder y publicar' : 'Guardar la respuesta');
+      responder.type = 'button';
+      responder.addEventListener('click', function () {
+        if (!resp.value.trim()) { aviso.textContent = 'Escriba la respuesta.'; resp.focus(); return; }
+        enviar('sitio_responder_pregunta', { p_id: q.id, p_respuesta: resp.value }, function (c) {
+          return 'Publicada.' + (c.avisado ? ' Le avisamos por correo.' : c.aviso_pendiente ? ' El aviso por correo queda pendiente: falta la clave de Resend.' : '');
+        });
+      });
+      acc.appendChild(responder);
+
+      var motivo = el('select', 'pr-motivo');
+      motivo.setAttribute('aria-label', 'Motivo para archivar');
+      var o0 = el('option', null, 'Archivar por…');
+      o0.value = '';
+      motivo.appendChild(o0);
+      MOTIVOS.forEach(function (m) { var o = el('option', null, m[1]); o.value = m[0]; motivo.appendChild(o); });
+      motivo.addEventListener('change', function () {
+        if (!motivo.value) return;
+        enviar('sitio_archivar_pregunta', { p_id: q.id, p_motivo: motivo.value }, 'Archivada. Ya no se ve en el sitio.');
+      });
+      acc.appendChild(motivo);
+    } else {
+      var devolver = el('button', 'boton-2', 'Devolver');
+      devolver.type = 'button';
+      devolver.addEventListener('click', function () { enviar('sitio_archivar_pregunta', { p_id: q.id, p_motivo: null }, 'Devuelta.'); });
+      acc.appendChild(devolver);
+    }
+    li.appendChild(acc);
+    li.appendChild(aviso);
+    return li;
+  }
+  function dibujarPreguntas(d) {
+    $('[data-preg-sin-correo]').hidden = d.aviso_correo;
+    $('[data-preg-cuenta]').textContent = d.nuevas.length ? '(' + d.nuevas.length + ')' : '';
+    [['[data-preg-nuevas]', d.nuevas, 'nueva', 'No hay preguntas por responder.'],
+     ['[data-preg-publicadas]', d.publicadas, 'publicada', 'Todavía no se publicó ninguna.'],
+     ['[data-preg-archivadas]', d.archivadas, 'archivada', 'No hay preguntas archivadas.']].forEach(function (x) {
+      var lista = $(x[0]);
+      // La actualización automática no borra lo que alguien está escribiendo.
+      if (lista.contains(document.activeElement) && document.activeElement.tagName === 'TEXTAREA') return;
+      lista.textContent = '';
+      if (!x[1].length) lista.appendChild(el('li', 'vacio', x[3]));
+      x[1].forEach(function (q) { lista.appendChild(itemPregunta(q, x[2])); });
+    });
+    var cuerpo = $('[data-preg-opiniones] tbody');
+    cuerpo.textContent = '';
+    if (!d.opiniones.length) {
+      var tr0 = el('tr');
+      var td0 = el('td', null, 'Nadie respondió «¿Le sirvió?» en estos 30 días.');
+      td0.colSpan = 3;
+      tr0.appendChild(td0);
+      cuerpo.appendChild(tr0);
+    }
+    d.opiniones.forEach(function (o) {
+      var tr = el('tr');
+      tr.appendChild(el('th', null, titulo(o.ruta))).setAttribute('scope', 'row');
+      tr.appendChild(el('td', null, numero.format(o.si)));
+      tr.appendChild(el('td', null, numero.format(o.no)));
+      cuerpo.appendChild(tr);
+    });
+    var faltan = $('[data-preg-faltantes]');
+    faltan.textContent = '';
+    if (!d.faltantes.length) faltan.appendChild(el('li', 'vacio', 'Nadie escribió qué le faltó.'));
+    d.faltantes.forEach(function (f) {
+      var li = el('li');
+      li.appendChild(el('time', null, cuando(f.recibido_en) + ' '));
+      li.appendChild(el('b', null, titulo(f.ruta) + ': '));
+      li.appendChild(document.createTextNode(f.texto));
+      faltan.appendChild(li);
+    });
+  }
+  function cargarPreguntas(silencioso) {
+    if (!silencioso) estadoPreg.textContent = 'Cargando las preguntas…';
+    return window.CoddvisorSesion.llamar('sitio_preguntas_equipo', {}).then(function (r) {
+      if (r.estado === 401) { location.replace('/equipo/entrar/'); return; }
+      if (r.estado !== 200) { estadoPreg.textContent = 'No pudimos leer las preguntas. Recargue la página.'; return; }
+      if (!silencioso) estadoPreg.textContent = '';
+      dibujarPreguntas(r.cuerpo);
+    });
+  }
 
   // ---------- Configuración ----------
   var estadoConfig = $('[data-config-estado]');
