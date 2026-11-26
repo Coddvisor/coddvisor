@@ -210,7 +210,8 @@ Dueña de una bodega en Arequipa, 2 a 5 personas
 Si hay pocas bodegas de 2 a 5 personas en Arequipa en la comunidad, decir «Rosa,
 dueña de una bodega en Arequipa, 2 a 5 personas» es casi decir quién es. Por
 eso la descripción sube de escalón hasta que la comparten al menos *k*
-perfiles vivos. *k* es el ajuste `descripcion_minimo`.
+perfiles vivos. *k* es el ajuste `descripcion_minimo`, que nace en 10
+(decisión de la fundadora, abajo).
 
 | Escalón | Qué muestra | Ejemplo |
 |---|---|---|
@@ -314,10 +315,9 @@ recibe los avisos. El enlace viejo sigue mostrando la respuesta.
    aviso por correo. Mientras quede una, no se cambia nada: así ningún correo
    tiene que viajar de un proyecto a otro.
 2. **El trabajo copia** lo publicado, por última vez.
-3. **El formulario «Haga su pregunta» de las guías** pasa a escribir en la
-   comunidad, por la misma puerta, con la firma del servicio del sitio. Cómo
-   sigue el formulario (sin cuenta, o pidiendo entrar) es una de las preguntas
-   a la fundadora.
+3. **El formulario «Haga su pregunta» de las guías** sigue sin cuenta y pasa
+   a escribir en la comunidad, por la misma puerta, con la firma del servicio
+   del sitio (decisión de la fundadora, abajo).
 4. **Cada guía muestra las preguntas de su tema** leyéndolas de la comunidad,
    en el HTML para Google, como hoy.
 5. **La pestaña «Preguntas» de `/equipo/`** queda para leer la historia, y lleva
@@ -356,20 +356,22 @@ recibe los avisos. El enlace viejo sigue mostrando la respuesta.
 propuesta.
 
 1. Aprobar o corregir esta propuesta en su solicitud de revisión.
-2. Responder las cuatro preguntas que se le enviaron por el diálogo (abajo,
-   con lo que respondió).
+2. Las cuatro preguntas del diálogo ya están respondidas (abajo).
 
-## Preguntas a la fundadora
+## Lo que decidió la fundadora (26 de noviembre de 2026)
 
-Se enviaron el 26 de noviembre de 2026. Cada una con sus opciones y una
-recomendación. Las respuestas se anotan aquí cuando lleguen.
+Se le preguntó por el diálogo, con tres opciones explicadas para cada pregunta.
+Eligió las cuatro recomendaciones:
 
-1. **¿Cuántos perfiles tienen que compartir una descripción para mostrarla
-   completa?** Recomendado: 10 para empezar, confirmado con el abogado.
-2. **¿Cómo sigue «Haga su pregunta» en las guías cuando abra la comunidad?**
-   Recomendado: sigue sin cuenta, llega a la comunidad y ofrece entrar con
-   Google para seguirla.
-3. **¿Cuándo se abre la comunidad al público?** Recomendado: al terminar la
-   etapa 4, con la moderación lista.
-4. **¿Cómo se ve lo publicado sin firma?** Recomendado: «Alguien de la
-   comunidad», como ya lo muestra el sitio.
+| Pregunta | Decisión | Qué descartó |
+|---|---|---|
+| ¿Cuántos perfiles tienen que compartir una descripción para mostrarla completa? | **10**. Es el valor con que nace el ajuste `descripcion_minimo`, y se confirma con el abogado | 5 (un vecino puede adivinar quién es) y 20 (casi todos saldrían como «Dueña de un negocio» durante meses) |
+| ¿Cómo sigue «Haga su pregunta» en las guías cuando abra la comunidad? | **Sigue sin cuenta y llega a la comunidad**, en revisión, y ofrece «Entre con Google para seguirla» | Pedir entrar con Google (se pierden las preguntas de quien no quiere cuenta) y quitar el formulario (la persona sale de la guía justo cuando tiene la duda) |
+| ¿Cuándo se abre la comunidad al público? | **Al terminar la etapa 4**, con la moderación y los reportes listos | Abrir con la etapa 2 (sin avisos y con moderación a mano) y esperar las ocho (meses sin que nadie la use) |
+| ¿Cómo se ve lo publicado sin firma? | **«Alguien de la comunidad»**, como ya lo muestra el sitio | «Un dueño de la comunidad» (no vale para vendedores ni contadores) y solo el rol (ayuda a adivinar en temas delicados) |
+
+Una pregunta que llega sin cuenta desde una guía entra como las de hoy: en
+revisión, y se muestra cuando el equipo la responde. Lleva la firma que la
+persona escribió en el formulario, que pasa por la misma regla de los
+escalones. Los frenos de la etapa 4 la cuentan por guía y por día, como hace
+hoy el sitio, porque no tiene una cuenta.
