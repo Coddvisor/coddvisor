@@ -10,10 +10,10 @@ propio, de un foro o de una búsqueda se marcan como tales.
 
 ## En corto
 
-- **Todo el ERP vive en una sola dirección, `app.coddvisor.com`.** Vender es
-  una función más, en `app.coddvisor.com/vender`. Cloudflare recibe todo y
+- **Todo el ERP vive en una sola dirección, `app.coddvisor.com`.** Ventas es
+  una función más, en `app.coddvisor.com/ventas`. Cloudflare recibe todo y
   manda cada parte a su lugar.
-- **La pantalla de vender (la caja) la sirve Cloudflare**, para que abra aunque
+- **La pantalla de ventas (la caja) la sirve Cloudflare**, para que abra aunque
   no haya internet.
 - **El panel, la ventanilla y los procesos de fondo van en Fly.io, en São
   Paulo**, por unos 33 a 38 USD al mes al empezar, contando la dirección
@@ -49,7 +49,7 @@ está el sitio.
 
 | Pieza | Qué hace | Qué necesita |
 |---|---|---|
-| **La caja** | La pantalla de vender, una función del ERP. Funciona sin internet | Una página que el celular guarda la primera vez. No habla con la base: todo pasa por la ventanilla y la sincronización |
+| **La caja** | La pantalla de ventas, una función del ERP. Funciona sin internet | Una página que el celular guarda la primera vez. No habla con la base: todo pasa por la ventanilla y la sincronización |
 | **El panel** | Reportes, inventario, configuración. Se programa con Next.js, que arma las páginas en el servidor | Correr cerca de la base, porque cada pantalla hace varias consultas |
 | **La ventanilla** | Recibe los comandos de la caja. Se programa con Hono o Fastify | Correr cerca de la base y contestar siempre: una caja que vuelve a tener internet sube sus ventas de golpe |
 | **Los procesos de fondo** | Envíos a SUNAT, PDFs, planillas, cierres. Toman tareas de una lista guardada en la misma base (pg-boss) | Estar **siempre encendidos** y aguantar trabajos de más de 15 minutos |
@@ -130,7 +130,7 @@ Cada decisión dice qué se descartó y en qué caso deja de valer («Se rompe s
 **1. Todo el ERP vive en una sola dirección, `app.coddvisor.com`.** Coddvisor
 es un sistema de gestión completo, no una caja con extras: el cliente entra
 por una sola puerta y desde ahí vende, compra, ve su inventario, su plata y su
-contabilidad. Vender es una función más, en `app.coddvisor.com/vender`. La web
+contabilidad. Ventas es una función más, en `app.coddvisor.com/ventas`. La web
 pública sigue en `www.coddvisor.com`, que tiene un botón «Entrar». (Decisión
 del fundador del 25 de noviembre de 2026.)
 
@@ -140,7 +140,7 @@ reparte.
 
 | Lo que se pide | Quién lo atiende |
 |---|---|
-| `/vender` (la caja) | El mismo Worker, con los archivos de la caja guardados en Cloudflare. Es una página que el celular guarda la primera vez (con un service worker, un pequeño programa del navegador), así que sigue abriendo sin internet |
+| `/ventas` (la caja) | El mismo Worker, con los archivos de la caja guardados en Cloudflare. Es una página que el celular guarda la primera vez (con un service worker, un pequeño programa del navegador), así que sigue abriendo sin internet |
 | `/api` (la ventanilla) | Se la pasa a la ventanilla, en Fly.io São Paulo |
 | Todo lo demás (el panel) | Se lo pasa al panel, en Fly.io São Paulo |
 
@@ -181,7 +181,7 @@ publica nada y suma una revisión en rojo a cada solicitud. Ese día:
 
 4. **Dominio:** en el Worker, Dominios personalizados, agregar
    `app.coddvisor.com`.
-5. **Se comprueba** abriendo `app.coddvisor.com/vender` en un celular,
+5. **Se comprueba** abriendo `app.coddvisor.com/ventas` en un celular,
    cortando internet y recargando: tiene que seguir abriendo.
 
 Mientras el panel y la ventanilla no existan, el Worker responde a lo demás con
