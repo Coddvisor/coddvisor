@@ -1,343 +1,350 @@
 # Propuesta: la comunidad de Coddvisor
 
 Estado: **propuesta para aprobar**. No es código, migración ni contratación.
-Responde la pregunta de la fundadora del 26 de noviembre de 2026: «en la web,
-¿cómo hacemos que las personas comenten o interactúen?», y su pedido de que la
-respuesta no quede en el vacío y de que haya una comunidad donde los dueños de
-negocio debatan y se ayuden entre ellos.
+Reemplaza a la primera versión, que ordenaba un foro por etapas.
 
-Lo que se cita de leyes y servicios se revisó el 26 de noviembre de 2026. Lo
-que es una interpretación o no se pudo confirmar se marca como tal.
+Responde tres pedidos de la fundadora del 26 de noviembre de 2026:
+
+1. «En la web, ¿cómo hacemos que las personas comenten o interactúen?»
+2. «¿Cómo creamos valor?, ¿cómo le aportamos valor a la comunidad de
+   emprendedores, comerciantes y negocios?»
+3. Que sea «lo más dinámico posible, tipo Reddit o X».
+
+La evidencia, con sus fuentes, está en
+[comunidad-evidencia.md](comunidad-evidencia.md). Lo que no se pudo confirmar
+está marcado allí.
+
+## Lo que ya decidió la fundadora (26 de noviembre de 2026)
+
+| Decisión | Qué quiere decir |
+|---|---|
+| **Una comunidad dinámica, tipo Reddit o X** | Se publica y se responde al momento, hay votos, se sigue a personas y temas, y lo nuevo aparece arriba |
+| **Cada persona se presenta con su nombre y su rol, y con el negocio descrito** | «Rosa», y debajo «Dueña de una bodega en Arequipa». El nombre real del negocio solo se ve si ella lo pide |
+| **Abierta a todos desde el primer día** | Cualquiera entra con Google, sin lista de espera |
+| **Las cuentas viven en `coddvisor-sistema`** | Son las cuentas de Coddvisor, una por persona, las mismas del sistema |
+| **Las dos cosas a la vez** | Las preguntas en las guías del sitio empiezan ya; la comunidad se construye en paralelo, sobre las cuentas del sistema |
 
 ## En corto
 
-- **Sí a una comunidad**, pero no se abre vacía. Una comunidad sin gente
-  enseña que nadie viene, y esa primera impresión no se borra. Se arma en tres
-  etapas, y cada una se gana con cifras de la anterior.
-- **Etapa 1, ahora, sin cuentas:** al final de cada guía, «¿Le sirvió?» y
-  «Haga su pregunta». El equipo responde y la respuesta se publica debajo de
-  la guía. **La respuesta llega a quien preguntó**: por un enlace propio que
-  guarda su navegador y, si lo pide, por un correo que se borra al avisarle.
-- **Etapa 2, con cuenta de Coddvisor:** la comunidad, en `/comunidad/`. Los
-  dueños preguntan, responden y votan entre ellos. Se entra con Google, la
-  misma cuenta que usará el sistema.
-- **Etapa 3, dentro del sistema:** se pregunta desde la pantalla donde nace la
-  duda, y la comunidad enseña cómo lo hacen negocios parecidos.
-- **Lo que la hace distinta:** cada persona publica como su negocio («Bodega
-  en Arequipa»), no con su nombre; las preguntas traen el caso armado (rubro,
-  tamaño, régimen); las respuestas pueden llevar la cuenta hecha en una
-  herramienta gratis; los contadores colegiados llevan su sello; y lo mejor de
-  la comunidad vuelve a la guía.
+- **La comunidad es dinámica, pero premia lo que sirve.** Los experimentos
+  dicen que a un negocio pequeño le sube las ventas aprender de alguien que ya
+  pasó por lo mismo, con información concreta, en una relación que dura. Una
+  red que premia lo más ruidoso no hace eso. Por eso lo primero que se muestra
+  es lo que a otros dueños **les sirvió**, no lo que más clics tuvo.
+- **Nadie se queda sin respuesta.** Como abre a todos el primer día, el equipo
+  garantiza una respuesta a toda pregunta en menos de 24 horas, y la comunidad
+  abre con las preguntas de las guías ya respondidas.
+- **Dentro hay grupos chicos.** Además del muro, los dueños pueden armar grupos
+  de 8 a 12 que no compiten entre sí, que es lo que más mueve las ventas en los
+  estudios.
+- **Es para todos**, también para el negocio sin RUC: casi nueve de cada diez
+  no lo tienen.
 
-## El problema
+## A quién le servimos
 
-El sitio hoy habla y no escucha. Las guías del blog explican, pero quien lee
-no puede decir «a mí me pasa esto otro», y el equipo no sabe qué faltó. Lo
-único que recibe el sitio es el formulario «Quiero ser de los primeros», que
-sirve para vender, no para conversar.
+La dueña típica de una micro empresa peruana tiene unos 45 años y secundaria
+completa. Empezó por necesidad, con sus ahorros, y de su negocio vive su casa.
+Trabaja con un familiar y no lleva cuentas: el 76,5 % no anota nada. Usa
+WhatsApp todos los días y cobra con Yape. No tiene RUC y no tiene un préstamo
+del banco. Le preocupa la inseguridad.
 
-Una comunidad resuelve eso y algo más: a los dueños de micro y pequeñas
-empresas les falta con quién comparar. ¿Cuánto paga de movilidad una bodega
-como la mía? ¿Qué hizo otro cuando SUNAT le mandó una esquela? Hoy eso se
-pregunta en grupos de WhatsApp sin orden, donde la respuesta se pierde en un
-día y nadie revisa si es correcta.
+De ahí salen cinco cosas que la comunidad debe cumplir:
 
-## Lo que se comparó
+1. **Hablarle de su negocio**: bodega, ropa, comida o servicios, no
+   «startups».
+2. **Empezar por lo básico**: anotar las ventas y saber cuánto gana, antes del
+   IGV.
+3. **Convivir con WhatsApp**: todo se comparte por WhatsApp con un toque, y los
+   avisos pueden llegarle ahí.
+4. **No dejar fuera al informal**: el paso a la formalidad es un tema, no un
+   requisito de entrada.
+5. **Funcionar en un celular sencillo y con poca señal.**
 
-| Camino | Experiencia | Spam y moderación | Datos personales (Ley 29733) | Costo | Mantenimiento |
-|---|---|---|---|---|---|
-| **A. Preguntas con respuesta del equipo** (etapa 1) | Pregunta sin registrarse; ve la respuesta debajo de la guía | Nada se publica sin revisión; campo trampa, solo desde el sitio y tope por día | Mínimos: nombre de pila opcional; correo solo si pide aviso, y se borra al avisar | S/ 0 | Alguien responde cada pregunta |
-| **B. Solo «¿Le sirvió?»** | Un toque, sin escribir | Casi no hay | Ninguno: se suma por día y página | S/ 0 | Casi nulo |
-| **C. Botón de WhatsApp por guía** | Familiar, pero privado | El equipo filtra a mano | El número queda en el teléfono del equipo | S/ 0 | Una charla por duda; no ayuda a otros lectores ni a Google. Hoy el sitio no tiene número cargado |
-| **D. Herramienta externa de comentarios** | Rápida de poner | La de la herramienta | Casi todas ponen cookies o publicidad y mandan datos a otra empresa: choca con «no usamos cookies para seguirle» de `/privacidad/` | Las sin publicidad son de pago | Fuera del panel `/equipo/` |
-| **E. Comunidad propia con cuentas** (etapa 2) | Debate entre dueños, votos, avisos | Niveles de confianza, reportes, revisión de los nuevos | Cuenta, seudónimo y lo publicado; pide normas, consentimiento y borrado | S/ 0 al empezar; ver «Lo que cuesta» | El más alto: moderar todos los días |
+## Cómo es la comunidad
 
-**Recomendación:** A y B juntos ahora (etapa 1), y E cuando las cifras de la
-etapa 1 digan que hay con quién conversar. C y D se descartan: C no deja nada
-a la vista de otros y D entrega los datos de los lectores a un tercero.
+En `www.coddvisor.com/comunidad/`. Se lee sin cuenta; para publicar, votar o
+seguir se entra con Google.
 
-## Por qué por etapas y no la comunidad de una vez
+### Lo que se ve al entrar
 
-1. **El arranque en frío.** Un foro necesita que haya respuestas antes de que
-   la gente pregunte. La etapa 1 llena ese vacío: cada guía ya es un tema, y
-   cada pregunta respondida es una conversación que la etapa 2 hereda.
-2. **Las cuentas aún no existen.** La propuesta
-   [identidad-y-membresia.md](identidad-y-membresia.md) decide cómo se entra a
-   Coddvisor (con Google o con correo, una cuenta por persona). Si la
-   comunidad crea sus propias cuentas antes, después habrá dos cuentas por
-   persona y habrá que juntarlas.
-3. **Moderar cuesta horas.** La etapa 1 mide cuántas preguntas llegan y
-   cuánto tarda el equipo en responder, antes de comprometerse a moderar un
-   foro todos los días.
-4. **Es reversible.** Si la etapa 1 no trae preguntas, se aprende barato y no
-   queda un foro abandonado a la vista.
+- **«Lo que más sirvió»**, la vista por defecto: lo que más dueños marcaron
+  «Me sirvió» en los últimos días, con más peso para lo nuevo.
+- **«Lo nuevo»**: todo, en orden de llegada, como en X.
+- **«Sin responder»**: lo que nadie ha contestado. Quien quiera ayudar empieza
+  por ahí.
+- **«Lo que sigo»**: las personas, los temas y los grupos que la persona eligió
+  seguir.
+- **Filtro «negocios como el mío»**: mismo rubro, misma región o mismo tamaño.
 
-## Etapa 1: preguntas y respuestas en cada guía
+### Los espacios
 
-### Lo que ve quien lee
+Como en Reddit, cada publicación va a un espacio:
 
-Al final de cada guía (las de herramientas y las de `src/articulos/`):
+- **Los 9 temas del blog** (planilla, caja, SUNAT, inventario, abrir su
+  negocio y los demás, de `src/datos/temas.ts`).
+- **Un espacio por rubro**: bodegas, ropa, comida, belleza, ferretería, y los
+  demás. Los rubros son datos, no programa.
+- **Un espacio por región.**
+- Una publicación puede ir a un tema y a un rubro a la vez.
 
-1. **«¿Le sirvió esta guía?» Sí / No.** Si dice No, aparece «¿Qué le
-   faltó?», una línea sin nombre. No guarda nada de la persona: suma por día y
-   página, igual que el contador.
-2. **«Preguntas de otros dueños»:** las preguntas ya respondidas, con la
-   respuesta del equipo marcada «Respondida por Coddvisor» y la fecha. Cada
-   una tiene «A mí también me pasa» (un toque, sin cuenta), que le dice al
-   equipo qué duda se repite.
-3. **«Haga su pregunta»**, con:
-   - **El caso, en botones de un toque** (los mismos `.seg` de las
-     herramientas): rubro, cuántas personas trabajan, régimen si lo sabe
-     («No sé» es una opción). Así la respuesta sirve para su caso y otro
-     negocio parecido se reconoce.
-   - **La pregunta**, hasta 600 letras.
-   - **Cómo firmar:** «Como mi negocio» (por ejemplo, «Bodega en Arequipa»,
-     armado con el rubro y una ciudad que elige) o su nombre de pila. Nunca
-     el apellido.
-   - **Aviso antes de enviar**, si el texto trae algo que parece un DNI, un
-     RUC, un celular o un correo: «Su pregunta se publicará. ¿Quiere quitar
-     este número?».
+### Lo que se puede publicar
 
-### Cómo le llega la respuesta (que no quede en el vacío)
+- **Una pregunta**, con el caso armado: rubro, tamaño y región se toman del
+  perfil, y se puede cambiar.
+- **Algo corto**, como en X: un dato, una alerta («SUNAT está mandando esta
+  esquela»), algo que le funcionó. Hasta 500 letras.
+- **Una encuesta**: «¿Cuánto le paga de movilidad a un ayudante?». El
+  resultado se muestra cuando responden al menos 20 negocios. El número se
+  ajusta en Configuración.
+- **Una respuesta con la cuenta hecha**: se adjunta una herramienta gratis con
+  los números puestos. Los números viajan después del `#` de la dirección, que
+  el navegador no le manda a nadie.
 
-Tres caminos, del que no pide nada al que pide un dato:
+### Cómo se conversa
 
-1. **El enlace de su pregunta.** Al enviar, la persona recibe un enlace
-   propio, por ejemplo `coddvisor.com/pregunta/k7Qm…`, con «Copiar» y
-   «Enviármelo por WhatsApp» (se lo manda a sí misma: el sitio no ve su
-   número). Su navegador lo guarda; al volver a cualquier página del sitio,
-   la cabecera dice «Su pregunta ya tiene respuesta». No necesita cuenta.
-2. **«Avíseme por correo cuando respondan»**, opcional y desmarcado. El
-   correo se usa para eso y nada más, y **se borra al mandar el aviso** (o a
-   los 60 días si nadie respondió). Lo manda Resend, que el sitio ya usa.
-3. **Si la pregunta es de todos**, la respuesta se suma también a la guía
-   (ver «Lo mejor vuelve a la guía»), así que quien llegue por Google la
-   encuentra aunque nunca haya preguntado.
+- **Respuestas en hilo** y **«Me sirvió»** en lugar de «me gusta». Lo que sirve
+  sube.
+- **Quien preguntó elige la respuesta que le resolvió**, y queda arriba.
+- **Seguir** a una persona, un espacio o una pregunta.
+- **Compartir por WhatsApp** con un toque, con imagen de vista previa.
+- **Avisos** cuando le responden: dentro de la comunidad, por correo si lo
+  pide y, más adelante, por WhatsApp. Se apagan con un botón.
 
-Se descartó el aviso en el navegador (Web Push) para esta etapa: en iPhone
-solo funciona si la persona agregó el sitio a su pantalla de inicio, y la
-mayoría lee las guías en una pestaña de Safari o desde un enlace de WhatsApp.
+### Grupos chicos
 
-### Lo que ve el equipo en `/equipo/`
+Cualquier persona puede crear un grupo de 8 a 12 dueños, abierto o por
+invitación, con una conversación propia y una reunión al mes por videollamada,
+con fecha y aviso. Cada reunión deja un compromiso por persona («este mes
+anoto todas mis ventas») que se revisa en la siguiente.
 
-Una pestaña nueva, **«Preguntas»**, con un permiso nuevo («Responder
-preguntas») que se da por rol desde Configuración, como los demás:
+**Por qué:** es lo que más se parece a lo que subió las ventas un 8 % en un
+experimento, con un efecto que siguió un año después. Se comparte más entre
+quienes no compiten, así que al armar un grupo la comunidad sugiere mezclar
+rubros. El equipo arma los primeros grupos con quienes ya preguntaron en las
+guías.
 
-- La cola de preguntas por responder, las más antiguas y las más «a mí
-  también» primero.
-- Para cada una: **Responder y publicar**, **Publicar sin responder** (no se
-  ofrece al principio: ver «Reglas»), **Archivar** (spam, ofensiva o fuera de
-  tema; no se borra) y **Corregir la pregunta** (para quitar un dato
-  personal; queda registro de qué cambió y quién).
-- Las respuestas citan la norma cuando hablan de leyes o tributos, con el
-  mismo «Revíselo con su contador» de las guías.
-- En «Análisis», por guía: cuántos dijeron Sí y No, qué les faltó, cuántas
-  preguntas llegaron y en cuánto tiempo se respondieron.
+### Un dueño con experiencia
 
-### Reglas
+**«Pídale consejo a alguien de su rubro»**: quien recién empieza puede pedir
+tres conversaciones, una al mes, con un dueño con años en su mismo rubro que se
+ofreció a ayudar. **Por qué:** una mentora del mismo rubro subió las ganancias
+un 20 % en un experimento, más que las clases. El efecto se apaga si la
+relación se corta, así que al final la comunidad pregunta «¿quieren seguir?».
 
-- **Nada se publica sin respuesta del equipo.** En una guía de planilla, una
-  pregunta sin respuesta a la vista invita a que otro conteste mal. Esto
-  cambia en la etapa 2.
-- **Spam:** campo trampa, solo desde el propio sitio (como el formulario de
-  contacto), tope de preguntas por día y página, y los enlaces en la pregunta
-  no se publican.
-- **Cada pregunta lleva un número único** puesto por el navegador: si se
-  envía dos veces, queda una.
+### Lo que se reconoce
 
-### Por dentro
+- **Una insignia por ayudar**: «Ayudó a 50 dueños» (respuestas marcadas «Me
+  sirvió»). Las insignias empujan a la gente hacia lo que premian, así que
+  premian responder bien, no publicar mucho.
+- **Contador o abogado verificado**: firma con su nombre real y lleva su sello,
+  junto a su historial. El equipo comprueba su colegiatura en el padrón de su
+  colegio. Es la puerta para conocer a los contadores, que recomiendan un
+  sistema a sus clientes.
+- **Lo mejor vuelve a la guía**: una duda que se repite se suma a «Casos que
+  generan dudas» de su guía, con enlace a la conversación.
 
-- **Tablas nuevas en el esquema `sitio`** de `coddvisor-web`, con
-  comentarios en cada columna: preguntas, respuestas, reacciones por día y
-  página, y los avisos por correo pendientes. Se crean con una migración
-  nueva; las de antes no se tocan.
-- **Solo por funciones `public.sitio_*`**, como hoy: el navegador puede
-  enviar una pregunta, reaccionar y leer las publicadas; responder, archivar
-  y corregir piden sesión y el permiso nuevo.
-- **Las preguntas publicadas salen en el HTML de la página**, no solo con un
-  programa en el navegador, para que Google las lea. Se arman al publicar el
-  sitio (Cloudflare permite volver a publicar con un enlace, gratis) y el
-  navegador suma las que se respondieron después.
-- **El enlace privado** es un código largo al azar; la base guarda solo su
-  huella, como hoy con las invitaciones.
-- **No se guarda** la IP, cookies de seguimiento ni de qué páginas vino la
-  persona.
+### Lo que no se hace
 
-### Cuándo se pasa a la etapa 2
+- No se ordena por clics ni por tiempo en pantalla.
+- No hay publicidad ni se venden datos.
+- No se muestra «alguien acaba de unirse» ni contadores inflados.
 
-Se propone, para ajustar en Configuración y no en el programa:
+## Cómo se presenta cada persona
 
-- 30 preguntas o más al mes, dos meses seguidos;
-- el equipo responde en menos de 48 horas;
-- la identidad de Coddvisor (propuesta de identidad) ya está construida.
+Decidido por la fundadora: **el nombre y el rol, con el negocio descrito.**
 
-Si en tres meses no llegan 10 preguntas al mes, la etapa 2 no se construye y
-se revisa por qué.
+```
+Rosa
+Dueña de una bodega en Arequipa, 2 a 5 personas
+```
 
-## Etapa 2: la comunidad
+- **El nombre lo elige la persona.** Lo normal es su nombre de pila; nunca se
+  pide ni se muestra el apellido.
+- **El rol**: dueña, administrador, vendedor, contador u otro. Es una lista de
+  datos.
+- **El negocio descrito**: el rubro amplio, la región o el departamento
+  (nunca el distrito) y el tamaño en rangos. **Nunca** el régimen tributario,
+  el RUC ni la dirección.
+- **El sistema achica la descripción solo.** Si hay pocos negocios con esa
+  combinación en la comunidad, deja de mostrar el detalle: «bodega» pasa a
+  «comercio», o la región desaparece. El mínimo es un dato en Configuración y
+  se acuerda con el abogado.
+- **El nombre real del negocio, solo si ella lo pide**, con el sello «Negocio
+  verificado» (se comprueba con su RUC). Sirve a quien quiere darse a conocer,
+  y evita que alguien se haga pasar por otro negocio.
+- **«Publicar sin firma»** para temas como SUNAT, deudas, un trabajador o la
+  extorsión. Sale como «Un dueño de la comunidad», queda ligado a su cuenta y
+  el equipo lo revisa antes de mostrarlo.
 
-### Lo que es
+**Por qué no el nombre real del negocio por defecto.** El nombre de pila más el
+nombre del negocio identifica a la persona. Los gremios dicen que casi todos los
+bodegueros han sufrido extorsión: publicar quién es, cuánto vende o qué
+problema tiene con SUNAT la vuelve un blanco. Además, la gente cuenta más sus
+problemas cuando su nombre completo no queda pegado al tema, y la ley trata
+como dato personal todo lo que permita reconocerla.
 
-`www.coddvisor.com/comunidad/`, ordenada con **los mismos 9 temas del blog**
-(`src/datos/temas.ts`). No es un muro como el de una red social: el muro
-premia lo más ruidoso, y aquí se premia lo que sirve.
+## Abierta desde el primer día, sin que se vea vacía
 
-- **Preguntar y debatir:** cualquier persona con cuenta abre un tema; otros
-  responden y votan «Me sirvió».
-- **Quien pregunta elige la respuesta que le resolvió** y queda arriba.
-- **Avisos dentro de Coddvisor y por correo** cuando le responden, con su
-  acuerdo y con un botón para apagarlos.
-- **Las preguntas de la etapa 1 ya están ahí**, con sus respuestas: la
-  comunidad no abre vacía.
+Abrir a todos el primer día tiene un riesgo conocido: si llegan muchos y pocos
+reciben respuesta, no vuelven (vuelve el 56 % de los que reciben respuesta a su
+primer mensaje y el 44 % de los que no). Se cuida así:
 
-### Lo que la hace distinta
+1. **Abre con contenido.** Las preguntas de las guías, ya respondidas, pasan a
+   la comunidad. El equipo publica antes del lanzamiento las dudas más comunes
+   de cada tema.
+2. **Respuesta garantizada en menos de 24 horas.** «Sin responder» es la cola
+   de trabajo del equipo. Si una pregunta cumple 12 horas sin respuesta, le
+   avisa al equipo.
+3. **Contadores invitados antes de abrir**, para que las dudas de impuestos
+   tengan quien las conteste bien.
+4. **Los primeros grupos chicos, armados por el equipo**, con quienes ya
+   preguntaron en las guías.
+5. **Pocos escriben casi todo**: en redes de salud, unos pocos escribieron el
+   74,7 %. Esas personas se cuidan con reconocimiento, voz en las reglas y
+   acceso temprano a lo nuevo.
 
-1. **Se publica como su negocio, no con su nombre.** «Bodega en Arequipa,
-   3 personas, RUS». Los dueños no hablan de plata, de un trabajador que
-   faltó o de una deuda con SUNAT con su nombre a la vista. Detrás hay una
-   cuenta verificada (eso frena el spam), pero el público ve el negocio. Es
-   también lo que pide la ley: usar el mínimo de datos personales.
-2. **El caso viene armado.** Rubro, tamaño, sedes y régimen salen de botones,
-   así se puede filtrar «solo negocios como el mío».
-3. **La respuesta con la cuenta hecha.** Quien responde puede adjuntar una
-   herramienta gratis con los números puestos («así queda su gratificación
-   con S/ 1,130 y 4 meses»). Los números viajan en la dirección después del
-   `#`, que el navegador no le manda a nadie: la cuenta se hace en la
-   computadora de quien la abre, como hoy.
-4. **Sello de contador colegiado.** Un contador muestra su número de
-   colegiatura; el equipo lo comprueba en el padrón de su colegio y su
-   respuesta lleva el sello. El sitio ya espera un revisor colegiado para las
-   guías, y el informe de referencia dice que el contador es quien recomienda
-   el sistema a sus clientes: la comunidad es la puerta para conocerlos.
-5. **Lo mejor vuelve a la guía.** Cuando una pregunta se repite, el equipo
-   la suma a «Casos que generan dudas» de su guía, con un enlace a la
-   conversación. La comunidad mejora las guías y las guías traen gente a la
-   comunidad.
-6. **Encuestas entre dueños.** «¿Cuánto paga de movilidad a un ayudante?»
-   Solo se muestra el resultado cuando hay al menos 20 respuestas, para que
-   nadie quede reconocido.
+## Los riesgos y cómo se cuidan
 
-### Moderación
+Como se publica al momento, la moderación va después y no antes, pero con
+frenos automáticos:
 
-- **Normas de la comunidad cortas**, que se aceptan al entrar: respeto, nada
-  de vender, nada de datos de otras personas, nada de pedir o dar números de
-  documentos.
-- **Niveles de confianza:** lo primero que publica una cuenta nueva lo
-  revisa el equipo; después de 3 publicaciones aprobadas, publica directo.
-  Las cuentas con buen historial pueden ocultar algo reportado hasta que el
-  equipo lo vea.
-- **Reportar** en cada publicación. Tres reportes de cuentas distintas la
-  ocultan hasta que el equipo decida.
-- **El aviso de datos personales** de la etapa 1 sigue antes de publicar.
-- **Las respuestas sobre leyes y tributos** que no son del equipo ni de un
-  contador con sello llevan: «Respuesta de otro dueño, no revisada. Revísela
+- **Cuentas nuevas**: pocas publicaciones por día la primera semana, sin
+  enlaces ni imágenes hasta tener alguna respuesta marcada «Me sirvió».
+- **Datos personales en el texto**: antes de publicar, el sistema avisa si
+  aparece algo que parece un DNI, un RUC, un celular o un correo, y no publica
+  números de documento.
+- **Reportes**: tres reportes de cuentas distintas ocultan una publicación hasta
+  que el equipo la revise. Las personas con buen historial pesan más.
+- **Mal consejo de impuestos o leyes**: lo que no responde el equipo ni un
+  profesional verificado lleva «Respuesta de otro dueño, no revisada. Revísela
   con su contador».
-- **Nada se borra:** lo que rompe las normas se archiva y deja de verse.
-  **Excepción, la de la ley:** si la persona pide borrar sus datos, se
-  borran su cuenta y su firma, y lo que publicó queda como «Negocio que dejó
-  la comunidad» o se borra si trae datos suyos.
-- **Tiempo del equipo:** se calcula 30 minutos al día al empezar. Si no hay
-  quien los tenga, la etapa 2 no se abre.
+- **Venta disfrazada**: un espacio propio, «Ofrezco», para quien quiere
+  ofrecer algo; fuera de él, se archiva.
+- **Normas de convivencia** cortas, que se aceptan al entrar y se ven siempre.
+  Lo que más frena las agresiones es la costumbre del grupo, no el nombre real.
+- **Difamación**: en el Perú no se encontró una norma que proteja al sitio por
+  lo que escriben otros. Lo revisa un abogado antes de abrir.
+- **Menores**: las normas dicen que la comunidad es para mayores de edad.
+- **Nada se borra, salvo lo que pide la ley.** Lo que rompe las normas se
+  archiva y deja de verse. Si la persona pide borrar sus datos, se borran su
+  cuenta y su firma en el plazo de la ley, y lo que publicó queda como «Un
+  dueño que dejó la comunidad», o se borra si trae datos suyos.
+- **El tiempo del equipo**: unos 30 a 60 minutos al día para responder y
+  moderar. Si no hay quien los tenga, la apertura se posterga.
 
-### Dónde vive
+## Cómo se construye: dos caminos a la vez
 
-Las cuentas deben ser las de Coddvisor (una por persona, propuesta de
-identidad), y Supabase ya no da más proyectos gratis en esta cuenta. Hay dos
-caminos, y se decide al llegar a la etapa 2:
+### Ya: preguntas en las guías del sitio
 
-- **En el proyecto del sistema (`coddvisor-sistema`), en un esquema propio
-  `comunidad`.** La misma cuenta sirve para la comunidad y para el sistema, y
-  la etapa 3 sale sola. Es lo recomendado.
-- **En el proyecto del sitio (`coddvisor-web`).** Habría que encender el
-  registro, hoy apagado porque solo entra el equipo, y después juntar las
-  cuentas con las del sistema. Se descarta salvo que el sistema tarde mucho.
+En `coddvisor-web`, sin cuentas:
 
-Las páginas de la comunidad se arman en el servidor (Cloudflare Pages
-Functions, que el sitio ya usa) para que Google las lea al momento.
+- Al final de cada guía, **«¿Le sirvió?»** (Sí / No, y «¿Qué le faltó?») y
+  **«Haga su pregunta»**.
+- La persona firma con su nombre de pila y su rol con el negocio descrito, como
+  en la comunidad, o «sin firma».
+- El equipo responde desde una pestaña nueva de `/equipo/`, «Preguntas», con
+  un permiso nuevo («Responder preguntas») que se da por rol desde
+  Configuración.
+- Se publica cuando el equipo responde, debajo de la guía y en el HTML de la
+  página, para que Google la lea.
+- **La respuesta le llega a quien preguntó**: por el enlace de su pregunta, que
+  su navegador guarda y que puede mandarse por WhatsApp, y, si lo pide, por un
+  correo que se borra al mandar el aviso.
+- Se suma a `/privacidad/` qué se guarda y cuándo se borra.
+- Cuando abra la comunidad, estas preguntas pasan a ella y cada guía muestra
+  las de su tema.
 
-### Para crecer
+### En paralelo: la comunidad
 
-- Las conversaciones no son de un negocio sino de todos: la clave es
-  `(tema, id)` y no lleva `tenant_id`; lo que sí lleva negocio (el seudónimo)
-  apunta a la cuenta, no al negocio del sistema, para no mezclar lo público
-  con lo privado.
-- Los votos y respuestas se suman en la misma operación que los registra,
-  para no contar filas al mostrar.
-- Las listas se recorren por fecha y número, no por página 1, 2, 3, para que
-  no se pongan lentas con un millón de filas.
-- La búsqueda usa la búsqueda en español de PostgreSQL, sin servicio aparte.
-- Un segundo país: los temas y los regímenes salen de datos, no del programa.
+En `coddvisor-sistema`, en un esquema propio `comunidad`:
 
-## Etapa 3: dentro del sistema
+- **Va después de las cuentas de Coddvisor**, que se están construyendo por
+  tramos ([identidad-y-membresia.md](identidad-y-membresia.md)). La comunidad
+  usa la cuenta y nada más: **no ve ningún dato de los negocios del sistema**.
+- **Las conversaciones son de todos, no de un negocio**: el esquema
+  `comunidad` es una de las tablas de afuera, la lista cerrada de la decisión
+  14 de identidad, y hay que sumarla ahí con su propia solicitud.
+- **Para crecer**: los votos y respuestas se suman al registrarlos, no al
+  mostrarlos; las listas se recorren por fecha y número, no por página; la
+  búsqueda usa la búsqueda en español de PostgreSQL; los rubros, regiones y
+  temas son datos, así que un segundo país no cambia el programa.
+- **Las páginas se arman en el servidor** para que Google lea las
+  conversaciones.
+- **Se construye por tramos**, cada uno en su solicitud: perfiles y espacios;
+  publicar, responder y «Me sirvió»; seguir y avisos; moderación y reportes;
+  encuestas; grupos chicos; consejo de alguien del rubro; profesionales
+  verificados.
 
-Cuando el sistema funcione, en cada pantalla con duda (la planilla, el cierre
-de caja) aparece «Pregúntele a la comunidad», con el caso armado desde los
-datos del negocio, **solo si la persona lo elige y viendo exactamente qué se
-publica**. Nada del sistema sale a la comunidad sin ese paso. Se detalla en su
-propia propuesta.
+## Lo que tiene que hacer la fundadora en Supabase
 
-## Datos personales (Ley 29733)
+**Hoy, nada.** Ninguna de las dos piezas está construida todavía, y nada se
+cambia a mano en una base real.
 
-Lo que sigue es una interpretación y debe revisarlo el abogado que revisará
-`/privacidad/`:
+**Para las preguntas en las guías (`coddvisor-web`):**
 
-- **Etapa 1:** se suma a `/privacidad/` qué se guarda de una pregunta (el
-  texto, la firma elegida, el caso), el correo del aviso y cuándo se borra.
-  Sube la versión del aviso (`AVISO_VERSION`).
-- **Etapa 2:** las cuentas de la comunidad forman un banco de datos de
-  usuarios. El reglamento vigente (D.S. 016-2024-JUS, rige desde el 31 de
-  marzo de 2025) mantiene el registro de bancos de datos ante la Autoridad
-  Nacional, gratis y en línea. **No se confirmó** si hace falta uno nuevo o
-  basta modificar el del sitio: lo decide el abogado.
-- **Menores:** las normas dicen que la comunidad es para personas con
-  negocio y mayores de edad.
-- **Cada persona puede** ver, corregir, descargar y borrar lo suyo desde su
-  cuenta, sin escribir un correo.
+1. Aprobar su solicitud de revisión. La migración nueva se aplica después de
+   aprobarla, con el conector «Supabase Coddvisor», como se hizo el 24 de
+   noviembre. Usted no escribe SQL.
+2. Nada más, si los avisos del formulario de contacto ya le llegan al correo:
+   el aviso de «Su pregunta tiene respuesta» usa el mismo servicio (Resend).
+
+**Para la comunidad (`coddvisor-sistema`), cuando lleguen las cuentas.** Lo pide
+la propuesta de identidad y lo hace usted, porque son sus cuentas:
+
+1. En Google Cloud, crear la pantalla de permiso y el cliente para «Continuar
+   con Google». Google revisa la marca: pide la página de inicio, la política de
+   privacidad en `coddvisor.com` y el dominio verificado.
+2. En Supabase, proyecto `coddvisor-sistema` → **Authentication → Sign In /
+   Providers → Google**: pegar el identificador y la clave de ese cliente. La
+   sesión que construya ese tramo le dará los valores exactos.
+3. Elegir el servicio de correo con dominio de Coddvisor que pide la decisión
+   4 de identidad.
+4. **Una decisión de pago, antes de abrir la comunidad:** el plan gratis de
+   Supabase no hace copias de seguridad, y la comunidad guarda lo que escriben
+   otros. Se recomienda el plan pagado con copias diarias. No se contrata sin su
+   orden.
+
+## Qué se mide
+
+Se mide lo que le importa a la dueña, no solo la actividad:
+
+- **Lo que importa**: si dice que le sirvió, si empezó a anotar sus ventas, si
+  cambió de proveedor, si se formalizó. En los grupos chicos, las ventas y
+  ganancias que informa al entrar, a los 6 meses y a los 12.
+- **Para manejar la comunidad**: horas hasta la primera respuesta, cuántos
+  vuelven en 30 días, qué parte de las respuestas son de dueños y no del
+  equipo, reportes por cada 100 publicaciones.
+- **Lo que le sirve a Coddvisor**: cuántos piden probar el sistema después. Se
+  mira al final.
+
+Como nadie ha medido dónde buscan ayuda hoy los dueños peruanos, la comunidad
+hace esa encuesta al entrar: «¿A quién le pregunta hoy cuando tiene una duda
+del negocio?».
 
 ## Lo que cuesta
 
-- **Etapa 1:** S/ 0. Usa Supabase gratis, Cloudflare Pages gratis y Resend
-  gratis (3 000 correos al mes y 100 al día; cada aviso de respuesta es un
-  correo, igual que cada pedido de contacto).
-- **Etapa 2:** S/ 0 al empezar. Pero la comunidad guarda lo que escriben
-  otros, y el plan gratis de Supabase **no hace copias de seguridad**: perder
-  las conversaciones de la gente no tiene arreglo. Cuando se abra, se
-  recomienda el plan pagado de Supabase con copias diarias. No se contrata sin
-  la orden de la fundadora.
-- **El costo real es el tiempo** de quien responde y modera.
+- **Preguntas en las guías:** S/ 0. Usan los planes gratis que el sitio ya
+  tiene (Supabase, Cloudflare Pages y Resend, que manda 3 000 correos al mes).
+- **La comunidad:** S/ 0 en programas al construirla. Al abrir, el plan pagado
+  de Supabase para las copias de seguridad, si la fundadora lo ordena.
+- **El costo real es el tiempo** del equipo para responder y moderar.
 
-## Lo que se mide
+## Datos personales (Ley 29733)
 
-- Etapa 1: Sí / No por guía, preguntas al mes, horas hasta la respuesta,
-  cuántos vuelven por su enlace, y cuántos dejan sus datos en «Quiero ser de
-  los primeros» después de preguntar.
-- Etapa 2: personas que publican al mes, preguntas con respuesta elegida,
-  respuestas de otros dueños frente a las del equipo (la meta es que la
-  comunidad se responda sola) y reportes por cada 100 publicaciones.
+Lo revisa el abogado que revisará `/privacidad/`. Esto es una interpretación:
 
-## Lo que esta propuesta no decide
+- Las preguntas en las guías se suman a `/privacidad/`, y sube la versión del
+  aviso.
+- La comunidad es un banco de datos de usuarios: hay que inscribirlo o
+  actualizar el registro ante la autoridad (es gratis y en línea), y conviene la
+  evaluación de impacto que recomienda el reglamento.
+- Hay que confirmar si las deudas o los problemas con SUNAT cuentan como datos
+  sensibles.
+- Cada persona puede ver, corregir, descargar y borrar lo suyo desde su cuenta.
 
-- El diseño de las pantallas: va en la solicitud que construya cada etapa,
-  con capturas para revisar, como se hizo con las herramientas.
-- Los textos exactos de las normas de la comunidad.
-- La etapa 3: tendrá su propia propuesta.
+## Lo que queda por decidir
 
-## Lo que le toca decidir a la fundadora
-
-1. Aprobar las tres etapas, o pedir la comunidad completa desde ya.
-2. Cómo firma la gente por defecto: como su negocio (recomendado) o con su
-   nombre de pila.
-3. Dónde viven las cuentas de la comunidad cuando llegue la etapa 2: en el
-   proyecto del sistema (recomendado) o en el del sitio.
-
-## Fuentes
-
-- Reglamento de la Ley 29733:
-  [D.S. 016-2024-JUS](https://www.gob.pe/institucion/minjus/normas-legales/6426760-016-2024-jus)
-  y [entrada en vigor](https://www.elperuano.pe/noticia/266995-minjusdh-el-lunes-31-regira-nuevo-reglamento-de-ley).
-- Registro de bancos de datos:
-  [gob.pe](https://www.gob.pe/8060-inscribir-banco-de-datos-en-el-registro-nacional-de-proteccion-de-datos-personales).
-- Avisos del navegador en iPhone, solo desde la pantalla de inicio:
-  [WebKit](https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/).
-- Lo que ya tiene el sitio: `web/LEEME.md` (formulario, contador, panel,
-  costos) y `web/supabase/migraciones/`.
+1. Quién guía los primeros grupos chicos: la fundadora, alguien del equipo o
+   dueños con experiencia. Puede esperar hasta que la comunidad esté por abrir.
+2. Quién del equipo tiene los 30 a 60 minutos diarios para responder y moderar.
+3. El plan pagado de Supabase, antes de abrir.
