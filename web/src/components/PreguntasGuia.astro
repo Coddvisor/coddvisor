@@ -1,0 +1,201 @@
+---
+// Al final de cada guía del blog: «¿Le sirvió?», las preguntas ya respondidas y «Haga su pregunta».
+// Decisión de la fundadora del 26-nov-2026 (arquitectura/propuestas/comunidad.md).
+//
+// Promete:
+//   - Las preguntas respondidas salen en el HTML al publicar el sitio, para que Google las lea. El
+//     navegador suma después las que se respondieron desde entonces (public/preguntas.js).
+//   - Si la base no responde al publicar, la guía sale igual, sin preguntas: nunca se cae el sitio.
+//   - Nada se publica sin respuesta del equipo. La firma sale de servidor/firma.js.
+// Asume: la base del sitio (servidor/supabase.js) y la función sitio_preguntas_publicadas.
+import { supabaseDe } from '../../servidor/supabase.js';
+import { listas, firmaTexto } from '../../servidor/firma.js';
+import { fechaLarga } from '../datos/herramientas';
+
+interface Props {
+  /** «herramienta»: alineado con la guía de las herramientas (columna de 860 px a la izquierda).
+   *  Sin nada: como los artículos del blog (columna centrada). */
+  variante?: 'herramienta';
+}
+const { variante } = Astro.props;
+const ruta = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : Astro.url.pathname + '/';
+
+let publicadas: any[] = [];
+try {
+  const { url, llave } = supabaseDe(null);
+  const r = await fetch(url + '/rest/v1/rpc/sitio_preguntas_publicadas', {
+    method: 'POST',
+    headers: { apikey: llave, 'content-type': 'application/json' },
+    body: JSON.stringify({ p_ruta: ruta }),
+    signal: AbortSignal.timeout(4000),
+  });
+  if (r.ok) {
+    const j = await r.json();
+    if (Array.isArray(j)) publicadas = j;
+  }
+} catch (e) {
+  // Sin base al publicar: la guía sale sin preguntas y el navegador las trae después.
+}
+const dia = (t: string) => String(t || '').slice(0, 10);
+---
+<section class="pq" id="preguntas" aria-labelledby="pq-t" data-preguntas data-ruta={ruta}>
+  <div class={variante === 'herramienta' ? 'col pq-in--herramienta' : 'col guia-in'}>
+
+    <div class="pq-sirvio" data-sirvio>
+      <p class="pq-sirvio-t" id="pq-sirvio-t">¿Le sirvió esta guía?</p>
+      <div class="pq-sirvio-b" role="group" aria-labelledby="pq-sirvio-t">
+        <button type="button" class="btn-2 btn-2--claro" data-sirvio-voto="si">Sí</button>
+        <button type="button" class="btn-2 btn-2--claro" data-sirvio-voto="no">No</button>
+      </div>
+      <form class="pq-falto" data-falto hidden>
+        <label for="pq-falto-t">¿Qué le faltó? <small>Sin su nombre. Lo lee el equipo para mejorar la guía.</small></label>
+        <textarea id="pq-falto-t" name="falto" rows="2" maxlength="300"></textarea>
+        <button type="submit" class="btn-2 btn-2--claro">Enviar</button>
+      </form>
+      <p class="pq-gracias" data-sirvio-gracias role="status" hidden></p>
+    </div>
+
+    <h2 class="titular guia-t pq-t" id="pq-t">Preguntas de otros dueños</h2>
+    <p class="pq-nota">Las responde el equipo de Coddvisor. Cada negocio es distinto: revise su caso con su contador.</p>
+
+    <ol class="pq-lista" data-lista>
+      {publicadas.map((q) => {
+        const f = firmaTexto(q);
+        return (
+          <li class="pq-item" id={'pregunta-' + q.id} data-id={q.id}>
+            <p class="pq-firma"><b>{f.nombre || f.detalle}</b>{f.nombre && f.detalle && <span>{f.detalle}</span>}</p>
+            <p class="pq-texto">{q.texto}</p>
+            <div class="pq-resp">
+              <p class="pq-resp-de">Respondida por Coddvisor <time datetime={dia(q.respondida_en)}>el {fechaLarga(dia(q.respondida_en))}</time></p>
+              <p class="pq-resp-t">{q.respuesta}</p>
+            </div>
+            <button type="button" class="pq-tambien" data-tambien aria-pressed="false">
+              A mí también me pasa{q.tambien > 0 && <span class="pq-tambien-n"> ({q.tambien})</span>}
+            </button>
+          </li>
+        );
+      })}
+    </ol>
+    <p class="pq-vacio" data-vacio hidden={publicadas.length > 0}>Todavía no hay preguntas respondidas en esta guía. Puede ser la primera persona en preguntar.</p>
+
+    <h3 class="pq-sub" id="pq-haga-t">Haga su pregunta</h3>
+    <form class="form pq-form" data-pregunta novalidate aria-labelledby="pq-haga-t">
+      <div class="campo campo--ancho">
+        <label for="pq-texto">Su pregunta <small>(entre 10 y 600 letras)</small></label>
+        <textarea id="pq-texto" name="texto" rows="4" maxlength="600" required placeholder="Por ejemplo: mi ayudante entró en setiembre, ¿le toca gratificación en diciembre?"></textarea>
+        <p class="pq-cuenta" data-cuenta aria-live="polite"></p>
+        <p class="pq-aviso-datos" data-aviso-datos role="alert" hidden>Su pregunta se va a publicar. Parece que trae un número de documento, un celular o un correo: quítelo para cuidar sus datos.</p>
+      </div>
+
+      <fieldset class="campo campo--ancho pq-como" data-como>
+        <legend>Cómo se presenta <small>Así aparece si la publicamos. Nunca su apellido, su distrito ni su RUC.</small></legend>
+        <div class="campo">
+          <label for="pq-nombre">Su nombre de pila <small>(opcional)</small></label>
+          <input id="pq-nombre" name="firma_nombre" type="text" maxlength="30" autocomplete="given-name" placeholder="Rosa">
+        </div>
+        <div class="campo">
+          <label for="pq-rol">Usted</label>
+          <select id="pq-rol" name="firma_rol">
+            <option value="">Prefiero no decir</option>
+            {listas.roles.map((x) => <option value={x.codigo}>{x.texto}</option>)}
+          </select>
+        </div>
+        <div class="campo">
+          <label for="pq-rubro">Su negocio</label>
+          <select id="pq-rubro" name="rubro">
+            <option value="">Prefiero no decir</option>
+            {listas.rubros.map((x) => <option value={x.codigo}>{x.texto}</option>)}
+          </select>
+        </div>
+        <div class="campo">
+          <label for="pq-region">Región</label>
+          <select id="pq-region" name="region">
+            <option value="">Prefiero no decir</option>
+            {listas.regiones.map((x) => <option value={x.codigo}>{x.texto}</option>)}
+          </select>
+        </div>
+        <fieldset class="campo campo--fichas campo--ancho">
+          <legend>¿Cuántas personas trabajan, contándose usted?</legend>
+          <div class="fichas pq-fichas">
+            {listas.tamanos.map((x) => <label class="ficha"><input type="radio" name="tamano" value={x.codigo}><span>{x.texto}</span></label>)}
+          </div>
+        </fieldset>
+        <p class="pq-muestra campo--ancho" aria-live="polite">Se verá así: <b data-muestra-nombre></b> <span data-muestra-detalle></span></p>
+      </fieldset>
+
+      <label class="pq-check campo--ancho"><input type="checkbox" name="sin_firma" data-sin-firma> Publicar sin firma <small>Aparece como «Alguien de la comunidad». Útil para temas como SUNAT, deudas o un trabajador.</small></label>
+
+      <label class="pq-check campo--ancho"><input type="checkbox" name="quiere_aviso" data-quiere-aviso> Avíseme por correo cuando respondan</label>
+      <div class="campo campo--ancho" data-correo-caja hidden>
+        <label for="pq-correo">Su correo <small>Solo para avisarle. Lo borramos al mandar el aviso, y no se publica.</small></label>
+        <input id="pq-correo" name="correo" type="email" maxlength="120" autocomplete="email" inputmode="email">
+      </div>
+
+      <div class="trampa" aria-hidden="true"><label>Sitio web <input type="text" name="sitio_web" tabindex="-1" autocomplete="off"></label></div>
+
+      <button type="submit" class="btn form-btn">Enviar mi pregunta</button>
+      <p class="form-nota">Se publica solo cuando el equipo la responda. <a href="/privacidad/">Qué guardamos y por cuánto tiempo</a>.</p>
+      <p class="form-estado" data-pregunta-estado role="status" aria-live="polite"></p>
+    </form>
+
+    <div class="pq-listo" data-listo hidden tabindex="-1">
+      <p class="pq-listo-t"><b>Recibimos su pregunta.</b> La publicamos cuando el equipo la responda.</p>
+      <p>Guarde este enlace: ahí verá la respuesta. Este navegador también lo recuerda y le avisará al volver al sitio.</p>
+      <input type="text" readonly data-listo-enlace aria-label="Enlace de su pregunta">
+      <div class="portada-acc">
+        <button type="button" class="btn-2 btn-2--claro" data-listo-copiar>Copiar enlace</button>
+        <a class="btn-2 btn-2--claro" data-listo-whatsapp target="_blank" rel="noopener">Enviármelo por WhatsApp</a>
+        <button type="button" class="btn-2 btn-2--claro" data-listo-otra>Hacer otra pregunta</button>
+      </div>
+    </div>
+  </div>
+  <script type="application/json" data-firma-listas set:html={JSON.stringify(listas)}></script>
+</section>
+
+<style is:global>
+  .pq { padding:0 0 var(--pad-sec); }
+  .pq-in--herramienta > * { max-width:860px; }
+  .pq-sirvio { display:flex; flex-wrap:wrap; align-items:center; gap:12px 16px; padding:20px 24px; border-radius:20px; background:var(--superficie); border:1px solid var(--borde); margin-bottom:48px; }
+  .pq-sirvio-t { margin:0; font-weight:600; font-size:17px; }
+  .pq-sirvio-b { display:flex; gap:8px; }
+  .pq-sirvio-b .btn-2 { width:auto; min-height:44px; padding:0 22px; }
+  .pq-falto { flex-basis:100%; display:grid; gap:8px; }
+  .pq-falto label { font-weight:600; font-size:15px; }
+  .pq-falto small, .pq-como > legend small, .pq-check small { display:block; font-weight:400; color:var(--texto-2); font-size:13px; }
+  .pq-falto textarea, .pq-form textarea { width:100%; border:2px solid var(--borde-fuerte); border-bottom-color:var(--texto-3); border-radius:14px; padding:12px 14px; font:inherit; font-size:16px; line-height:1.5; background:var(--tarjeta); color:var(--cobalto); resize:vertical; }
+  .pq-falto .btn-2 { width:auto; justify-self:start; min-height:44px; }
+  .pq-gracias { flex-basis:100%; margin:0; color:var(--texto-2); }
+  .pq-t { margin-bottom:8px; }
+  .pq-nota { color:var(--texto-2); margin:0 0 24px; }
+  .pq-lista { list-style:none; margin:0; padding:0; display:grid; gap:16px; }
+  .pq-item { padding:22px 24px; border-radius:20px; background:var(--tarjeta); border:1px solid var(--borde); scroll-margin-top:calc(var(--cab-h) + 24px); }
+  .pq-item:target { box-shadow:inset 0 0 0 2px var(--azul-real); }
+  .pq-firma { margin:0 0 8px; font-size:14px; color:var(--texto-2); display:flex; flex-direction:column; gap:2px; }
+  .pq-firma b { color:var(--cobalto); font-size:15px; }
+  .pq-texto { margin:0 0 16px; font-size:17px; font-weight:600; line-height:1.45; white-space:pre-line; }
+  .pq-resp { padding:14px 16px; border-radius:14px; background:var(--superficie); border-left:4px solid var(--azul-real); }
+  .pq-resp-de { margin:0 0 6px; font-size:13px; font-weight:600; color:var(--azul-real); }
+  .pq-resp-t { margin:0; white-space:pre-line; line-height:1.55; }
+  .pq-tambien { margin-top:14px; min-height:40px; padding:0 14px; border-radius:12px; border:1px solid var(--borde-fuerte); background:transparent; color:var(--cobalto); font:600 14px/1 var(--sans); cursor:pointer; }
+  .pq-tambien[aria-pressed="true"] { background:var(--hielo); border-color:var(--azul-real); color:var(--azul-real); cursor:default; }
+  .pq-vacio { color:var(--texto-2); padding:18px 20px; border-radius:16px; border:1px dashed var(--borde-fuerte); }
+  .pq-sub { margin:48px 0 16px; font-size:clamp(22px, 3vw, 28px); }
+  .pq-form { box-shadow:none; border:1px solid var(--borde); }
+  .pq-cuenta { margin:0; font-size:13px; color:var(--texto-2); text-align:right; }
+  .pq-aviso-datos { margin:0; padding:10px 12px; border-radius:12px; background:var(--ambar-claro); color:var(--cobalto); font-size:14px; }
+  .pq-como { margin:0; padding:0; border:0; min-width:0; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; }
+  .pq-como > legend { padding:0; margin-bottom:6px; font-size:14px; font-weight:600; }
+  .pq-fichas { grid-template-columns:repeat(4, minmax(0, 1fr)); }
+  .pq-muestra { margin:0; padding:12px 14px; border-radius:12px; background:var(--superficie); font-size:14px; color:var(--texto-2); }
+  .pq-muestra b { color:var(--cobalto); }
+  .pq-como[disabled] .pq-muestra { opacity:.6; }
+  .pq-check { display:grid; grid-template-columns:auto 1fr; gap:2px 10px; align-items:start; font-size:15px; font-weight:600; cursor:pointer; }
+  .pq-check input { width:20px; height:20px; margin:2px 0 0; accent-color:var(--azul-real); }
+  .pq-check small { grid-column:2; }
+  .trampa { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+  .pq-listo { padding:24px; border-radius:20px; background:var(--hielo); border:1px solid var(--azul-real); display:grid; gap:12px; }
+  .pq-listo p { margin:0; }
+  .pq-listo input { width:100%; min-height:48px; border:2px solid var(--borde-fuerte); border-radius:14px; padding:0 14px; font:14px var(--mono); background:var(--tarjeta); color:var(--cobalto); }
+  .pq-listo .btn-2 { width:auto; background:var(--tarjeta); border-color:var(--borde-fuerte); }
+  @media (max-width:560px) { .pq-fichas { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+</style>

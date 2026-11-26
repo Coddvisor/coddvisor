@@ -20,7 +20,10 @@ cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar
 | `public/estilos.css`     | Tonos de apoyo, qué color usa cada pieza, letras, espacios, celular |
 | `public/sitio.js`        | El movimiento: panel de la portada, pestañas, formularios y aparición al bajar |
 | `public/fluido.css`, `public/fluido.js` | La capa «fluida»: acabado (vidrio, sombras suaves, degradados) y movimiento al estilo de las páginas de Apple. Solo agrega; ver «La capa fluida» |
-| `functions/api/contacto.js` | Lo único que corre en el servidor: recibe el formulario de contacto, lo guarda en Supabase y avisa por correo |
+| `functions/api/contacto.js` | Corre en el servidor: recibe el formulario de contacto, lo guarda en Supabase y avisa por correo |
+| `functions/api/pregunta.js` | Corre en el servidor: recibe «Haga su pregunta» de las guías y la guarda (ver «Preguntas en las guías») |
+| `servidor/firma.js`      | Cómo se presenta quien pregunta: roles, rubros, regiones y tamaños, en un solo lugar |
+| `src/components/PreguntasGuia.astro`, `public/preguntas.js` | «¿Le sirvió?» y las preguntas al final de cada guía; `src/pages/pregunta.astro` es `/pregunta/`, donde cada persona ve su respuesta |
 | `public/contador.js`     | El contador de puerta: suma cada página abierta (ver «Visitas y panel del equipo») |
 | `src/pages/equipo/`, `public/equipo/` | El panel `/equipo/` y su página de entrada. No salen en el menú ni en Google |
 | `servidor/supabase.js`   | Dónde está la base del sitio (Supabase) y su llave pública, en un solo lugar |
@@ -259,6 +262,67 @@ borra»: lo exige la ley.
 Cloudflare D1, base `coddvisor-contacto`. Esos pocos pedidos se copian una vez a Supabase: en la
 consola de D1, `SELECT * FROM pedidos_contacto;`, se exporta el resultado y se pasa a quien
 mantiene el sitio para insertarlo. Hecho eso, la base D1 y su conexión en Pages ya no se usan.
+
+## Preguntas en las guías
+
+Decisión de la fundadora del 26-nov-2026. La propuesta completa, y cómo sigue hacia la comunidad,
+está en `arquitectura/propuestas/comunidad.md`.
+
+Al final de cada guía (las seis herramientas con guía y todos los artículos de `src/articulos/`):
+
+1. **«¿Le sirvió esta guía?»** Sí o No. Si dice No, puede escribir «¿Qué le faltó?», sin nombre. Se
+   suma por día y página (`sitio.opiniones_dia`), como el contador. Desde fuera de
+   `www.coddvisor.com` no suma.
+2. **«Preguntas de otros dueños»**: las ya respondidas, con «A mí también me pasa». Salen en el HTML
+   al publicar el sitio (para Google) y el navegador suma las que se respondieron después. Si la base
+   no responde al publicar, la guía sale igual, sin preguntas.
+3. **«Haga su pregunta»**: la pregunta y cómo se presenta la persona: su nombre de pila y su rol con
+   el negocio descrito («Rosa», y debajo «Dueña de una bodega en Arequipa, 2 a 5 personas»). Nunca
+   el apellido, el distrito, el RUC ni el régimen. Puede elegir «Publicar sin firma». Los tamaños
+   grandes se guardan pero no se publican (`muestra: false` en `servidor/firma.js`).
+
+**Nada se publica sin respuesta del equipo.** La pregunta llega a `/api/pregunta`, que la revisa y
+la guarda con `sitio_registrar_pregunta`. Si hay `RESEND_API_KEY` en Cloudflare, avisa al equipo por
+correo.
+
+**Que la respuesta no quede en el vacío:**
+- El navegador crea un **enlace propio** (`/pregunta/#…`) y lo guarda. La persona puede copiarlo o
+  mandárselo por WhatsApp. La base guarda solo su huella, como las invitaciones.
+- Al volver al sitio desde ese navegador, una franja abajo dice «Su pregunta ya tiene respuesta»
+  (pregunta a la base como mucho cada 30 minutos).
+- Si pidió **aviso por correo**, al responder la base manda el correo por Resend (pg_net y la clave
+  `resend_api_key` de la bóveda de Supabase, la misma de antes) y **borra el correo**. Sin esa clave
+  no sale el aviso y el panel lo dice; el correo se borra igual a los 60 días
+  (`dias_aviso_respuesta`). El panel nunca ve el correo, solo «Pidió aviso».
+
+### Responder en el panel
+
+Pestaña **Preguntas** de `/equipo/`, con el permiso nuevo **«Responder preguntas»** (al empezar:
+Líder y Administrador; se cambia en Configuración):
+
+- **Por responder**, las más antiguas primero. La meta es responder en menos de 24 horas.
+- **Responder y publicar**. Se puede editar la respuesta después.
+- **Guardar la pregunta corregida**, para quitar un DNI, un celular u otro dato personal. El
+  historial (`sitio.preguntas_cambios`) dice quién y cuándo, sin guardar el texto anterior.
+- **Archivar por…** (spam, ofensiva, no es del tema, datos personales, repetida, otro): deja de
+  verse y se borra el correo de aviso. **Devolver** la trae de vuelta. Nada se borra.
+- **¿Le sirvió la guía?** de los últimos 30 días y **lo que les faltó**.
+
+### Topes y ajustes
+
+En la pestaña Configuración, sin tocar el programa: preguntas por día en una guía (30) y en todo el
+sitio (300), «¿Qué le faltó?» por día y guía (50), preguntas que se muestran por guía (20) y días que
+se guarda el correo de aviso (60). Cada ajuste con número tiene su rango en `sitio.ajustes`
+(`minimo` y `maximo`).
+
+### Para encenderlo
+
+1. Aprobar la solicitud de revisión.
+2. Aplicar la migración `supabase/migraciones/20261126120000_sitio_preguntas.sql` en el proyecto del
+   sitio con el conector de Supabase, como el 24-nov. Hasta entonces, las guías se ven igual y la
+   pregunta responde «No pudimos enviar su pregunta».
+3. Volver a publicar el sitio cuando haya respuestas, para que entren al HTML (el navegador ya las
+   muestra antes).
 
 ## Visitas y panel del equipo
 
@@ -671,7 +735,7 @@ Lo que falta, una sola vez:
 - **Cuándo revisar:** cuando llegue el sistema de Coddvisor al mismo proyecto (excepción D30, ver
   «Visitas y panel del equipo») o si el sitio pasa de unas 100 000 páginas vistas al día.
 - **Resend:** gratis hasta 3 000 correos al mes y 100 al día. Cada pedido es un
-  correo.
+  correo; cada pregunta, uno al equipo, y otro a quien preguntó si pidió aviso.
 
 Cuándo revisar esta decisión: cuando exista la aplicación de Coddvisor (no esta
 página). Si se construye con Next.js, Vercel Pro puede convenir para la

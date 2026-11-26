@@ -10,6 +10,7 @@
 // lista para firmar (es lo que sale al imprimir). La guía de abajo conserva TODO su texto: el paso
 // a paso se arma al bajar y «Si no cuadra» va en tarjetas, con las mismas palabras.
 import Base from '../../layouts/Base.astro';
+import PreguntasGuia from '../../components/PreguntasGuia.astro';
 import { llamado } from '../../datos/navegacion';
 import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
 
@@ -287,6 +288,9 @@ const nombre = (c: number) => (c >= 100 ? 'S/ ' + c / 100 : c + ' céntimos');
     </section>
   </div>
 </article>
+
+<!-- «¿Le sirvió?» y las preguntas de otros dueños: src/components/PreguntasGuia.astro. -->
+<PreguntasGuia variante="herramienta" />
 
 <section class="contacto osc" aria-labelledby="hc-cta-t">
   <div class="brillo brillo--contacto" aria-hidden="true"></div>

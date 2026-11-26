@@ -1,0 +1,37 @@
+---
+// /pregunta/#<enlace>: la pregunta que una persona hizo en una guía, y su respuesta cuando llega.
+// El enlace va después de «#», así que no viaja al servidor del sitio; public/preguntas.js se lo
+// pasa a la base (sitio_mis_preguntas), que lo compara con la huella guardada.
+// No va en los buscadores: es de cada persona.
+import Base from '../layouts/Base.astro';
+---
+<Base titulo="Su pregunta | Coddvisor" descripcion="La pregunta que hizo en una guía de Coddvisor y su respuesta." sinIndice>
+
+<section class="portada portada--interior osc" aria-labelledby="mp-t">
+  <div class="brillo brillo--ambar" aria-hidden="true"></div>
+  <div class="enmarcado interior-in">
+    <span class="franja-sello" aria-hidden="true"></span>
+    <p class="rotulo portada-rot">Su pregunta</p>
+    <h1 class="portada-t interior-t" id="mp-t">Lo que nos preguntó, <span class="cel">y nuestra respuesta.</span></h1>
+  </div>
+</section>
+
+<article class="guia" aria-labelledby="mp-t">
+  <div class="col guia-in mi-pregunta" data-mi-pregunta>
+    <p class="estado" data-mi-estado role="status" aria-live="polite">Buscando su pregunta…</p>
+    <div class="mi-pregunta" data-mi-contenido hidden>
+      <p class="mi-pregunta-texto" data-mi-texto></p>
+      <p data-mi-espera>Todavía no la respondemos. Cuando lo hagamos, la verá aquí y debajo de la guía. Si vuelve al sitio desde este navegador, le avisaremos.</p>
+      <div class="mi-pregunta-resp" data-mi-respuesta hidden>
+        <p class="mi-pregunta-de" data-mi-respuesta-de></p>
+        <p data-mi-respuesta-t></p>
+      </div>
+      <p class="pq-nota">Cada negocio es distinto: revise su caso con su contador.</p>
+      <a class="btn-2 btn-2--claro" data-mi-guia href="/blog/">Volver a la guía</a>
+      <button type="button" class="btn-2 btn-2--claro" data-mi-quitar hidden>No me avisen por correo</button>
+      <p data-mi-quitado hidden role="status">Listo. Borramos su correo: no le escribiremos por esta pregunta.</p>
+    </div>
+  </div>
+</article>
+
+</Base>

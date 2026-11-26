@@ -4,6 +4,7 @@
 // esta página las usa desde public/herramientas/gratificacion.js.
 // Diseño: el mismo de las herramientas nuevas (herramienta.css). La guía conserva TODO su texto.
 import Base from '../../layouts/Base.astro';
+import PreguntasGuia from '../../components/PreguntasGuia.astro';
 import { llamado } from '../../datos/navegacion';
 import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
 import { minimas, minimaVigente, asignacionFamiliar, solesCortos } from '../../datos/laboral';
@@ -251,6 +252,9 @@ const ico = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke=
     </section>
   </div>
 </article>
+
+<!-- «¿Le sirvió?» y las preguntas de otros dueños: src/components/PreguntasGuia.astro. -->
+<PreguntasGuia variante="herramienta" />
 
 <section class="contacto osc" aria-labelledby="hg-cta-t">
   <div class="brillo brillo--contacto" aria-hidden="true"></div>
