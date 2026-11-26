@@ -7,5 +7,6 @@
   "20261126180200_identidad.sql": "901024152415e036daf546ef10204a8ed136623b8c5c61d1ed969fb9a8b405ad",
   "20261126180300_registro_solo_se_anexa.sql": "9acdaa251465d3af3f0d7a4012f59f7d0c0222d572c9de4be3e20f4ade87f864",
   "20261126190000_rol_en_todo_el_negocio.sql": "4e8d93887346a0de1fb97d06f2d24ba52154ef37a90710bdbfa85531bbbc16ff",
-  "20261126190100_puertas_de_identidad.sql": "8eb8a81593b655114cb6cf96a5845fca752af9fcbec7fff1a3fec55d689b2ee1"
+  "20261126190100_puertas_de_identidad.sql": "8eb8a81593b655114cb6cf96a5845fca752af9fcbec7fff1a3fec55d689b2ee1",
+  "20261126200000_portero_comprueba_la_membresia.sql": "1e5201cd6b5587f5d8135effa542c8f2e48e54f47a9fe5f1c12a1e52982e4456"
 }

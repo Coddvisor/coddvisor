@@ -75,14 +75,75 @@ reemplazar, y que se vacía sola al terminar la transacción.
 - El servicio entra a la base con `coddvisor_entrada`. Hereda los permisos de
   `coddvisor_app`, no puede cambiarse a ningún otro rol y no es dueño de nada.
   Nunca entra con el rol que aplica las migraciones.
-- Para trabajar en un negocio se llama a `portero.abrir`, con una persona o con
-  una caja. Una transacción trabaja en un solo negocio.
+- Para trabajar en un negocio se llama a una de las formas del portero (abajo).
+  Una transacción trabaja en un solo negocio.
 - Las políticas y los sellos leen de `nucleo.tenant_actual()`,
   `nucleo.actor_actual()` y `nucleo.dispositivo_actual()`. Un módulo nunca recibe
-  el cliente como dato.
-- Hasta el tramo del portero de la identidad (2b), el portero comprueba que el
-  servicio firmó, no que la persona sea miembro: eso lo comprueba el servicio
-  antes de firmar.
+  el cliente como dato. `actor_actual()` es la membresía que actúa: la persona,
+  el vendedor de la caja o la membresía automática; vacío con una caja sola.
+- Desde el tramo 2b de la identidad, el portero comprueba la firma, abre el
+  negocio y **recién ahí comprueba la membresía**, porque antes la seguridad por
+  fila no se la deja ver. Si algo no cuadra, lanza un error que deshace la
+  apertura. Para eso lee la membresía, la asignación, los roles y sus permisos
+  (su lista cerrada, BD-05).
+
+| Forma | Función | Propósito firmado | Campos firmados | Qué comprueba después de abrir |
+|---|---|---|---|---|
+| Persona | `portero.abrir_persona` | `abrir_persona` | negocio, cuenta, membresía, nivel del pase (`aal1` o `aal2`) | Que la membresía sea de esa cuenta y de ese negocio, esté activa, ya valga, no haya vencido y tenga al menos un rol vigente (si no, CV025), y que el nivel sea `aal2` si algún rol vigente pide dos pasos. Una membresía del soporte entra siempre con `aal2` y en solo lectura, salvo que un rol vigente suyo dé `identidad.soporte_puede_escribir` |
+| Caja sola | `portero.abrir` | `abrir_caja` | negocio, caja | Nada más que la firma, igual que antes |
+| Caja con vendedor | `portero.abrir_caja_con_vendedor` | `abrir_caja_vendedor` | negocio, caja, membresía del vendedor | Que la membresía exista en el negocio y sea de una persona, aunque esté de baja. Que estuviera activa a la hora de la venta lo comprueba el servicio. Una membresía con un rol de soporte, vigente o archivado, no abre: el soporte no vende en una caja (CV020) |
+| Trabajo automático | `portero.abrir_trabajo` | `abrir_trabajo` | negocio, membresía | Que sea la membresía automática, activa y vigente. Solo con una llave de uso `trabajos` |
+
+- **La persona ya no entra por `portero.abrir`.** Su propósito se versionó
+  (`abrir` pasó a `abrir_persona`, con la cuenta y el nivel), y `portero.abrir`
+  con una persona falla (CV016). Así la caja sola sigue byte por byte igual.
+- **Cada llave dice para qué programa es** (`portero.llave.uso`): `servicio`
+  (el que atiende personas y cajas) o `trabajos` (el de los trabajos de fondo).
+  Una firma de un uso no vale para las formas del otro. Las puertas de
+  identidad solo aceptan las del servicio, salvo el registro de entradas: las
+  entradas `automatico` las firma el programa de los trabajos con su llave, y
+  las demás el servicio con la suya. Hay a lo más dos llaves activas de cada uso.
+- **Quien fue soporte sigue siendo soporte.** Es del soporte toda membresía que
+  tiene o tuvo un rol con `es_de_soporte`, vigente o archivado. Si contaran solo
+  los vigentes, el dueño podría archivarle el rol de soporte con
+  `identidad.archivar_asignacion`, dejarle otro, y la membresía, todavía activa,
+  entraría con `aal1` y con escritura. El registro de entradas usa la misma
+  regla: la entrada de esa membresía es `soporte`. Si esa persona trabaja después
+  en el negocio, entra con otra membresía.
+- **Sin un rol vigente, la persona no entra.** Una membresía activa cuyos roles
+  están todos archivados (o que nunca tuvo uno) no abre la forma persona
+  (CV025, `sin_rol_vigente`): no tiene nada que hacer en el negocio, y así el
+  portero no decide nada a partir de roles que ya no valen.
+- **El soporte en solo lectura no recupera la escritura.** Si se abre dentro de
+  un punto de guardado y ese punto se confirma, Postgres devuelve la escritura a
+  la transacción. Por eso el contexto guarda la marca de solo lectura y
+  `portero.contexto()` se niega a dar el negocio si la transacción ya no lo es
+  (CV018).
+- **Un solo negocio por transacción, aunque se borre la tabla del contexto.**
+  La aplicación puede borrar la tabla temporal del portero con `DISCARD TEMP`.
+  Por eso `portero.poner` traba también la tabla `portero.marca` (de control,
+  sin filas) en modo `access share` hasta el final de la transacción. Ese
+  candado no se suelta con `DISCARD` ni con `pg_advisory_unlock`. Si falta la
+  tabla del contexto y el candado está, alguien la borró en esta transacción y
+  no se abre nada más (CV014). Sin la tabla, el negocio activo queda vacío y la
+  seguridad por fila no deja ver ni escribir. No es un candado consultivo: esos
+  los toma cualquier rol, y la aplicación podía tomar el de otra conexión y
+  dejarla sin abrir ningún negocio. Sobre `portero.marca` nadie más que el
+  portero tiene permisos, y el portero solo `SELECT`, lo justo para el modo
+  más suave, que no choca con el de otra conexión.
+- **Un solo negocio por transacción no limpia la conexión.** La regla cubre el
+  contexto del portero, no el resto del estado de la sesión. Un cursor
+  `WITH HOLD`, un ajuste de sesión (`set`, `set_config(..., false)`) o una
+  sentencia preparada sobreviven al fin de la transacción, y pueden llevar
+  datos de un negocio a la transacción siguiente, que quizá es de otro negocio,
+  en la misma conexión. Por eso:
+  - el servicio, o el administrador de conexiones, ejecuta `DISCARD ALL` cada
+    vez que devuelve una conexión, antes de que la use otro pedido;
+  - el servicio manda las firmas como parámetros de la consulta, nunca dentro
+    del texto: otra conexión con el mismo rol ve el texto de cada consulta en
+    `pg_stat_activity`, pero no sus parámetros.
+
+  La base no lo puede exigir: es parte del contrato del servicio.
 
 ## Las puertas de identidad
 
@@ -119,6 +180,7 @@ La aplicación llega a esas tablas solo por sus puertas, en el esquema
 | `aceptar_invitacion` | La cuenta invitada activa su propia membresía | `identidad_aceptar` | No: lo abre mientras escribe y lo cierra |
 | `cambiar_estado` | Suspender, reactivar o dar de baja. La firma lleva la versión de la membresía | `identidad_cambiar_estado` | Sí, `identidad.administrar` en todo el negocio |
 | `dar_asignacion`, `archivar_asignacion` | Dar o quitar un rol. La firma de archivar lleva la versión de la asignación | `identidad_dar_asignacion`, `identidad_archivar_asignacion` | Sí, `identidad.administrar` en ese lugar |
+| `registrar_entrada` | Anota en el libro `identidad.entrada` quién entró, cuándo, desde qué caja o dirección de internet y cómo (`contrasena`, `google`, `pin`, `soporte`, `automatico`). Una vez por sesión y negocio, aparte del pedido. Se puede repetir. Las entradas `automatico` las firma el programa de los trabajos con su llave; las demás, el servicio | `identidad_registrar_entrada` | No: lo abre mientras anota y lo cierra. Si ya hay un negocio abierto, no anota (CV014). Que vaya en su propia transacción, y no antes del pedido en la misma, lo cumple el servicio |
 
 Dos reglas valen en todas: **un negocio nunca se queda sin dueño**, es decir,
 sin una membresía activa con `identidad.administrar` en todo el negocio; y **la
@@ -138,10 +200,10 @@ membresía automática no se toca** por estas puertas.
   existe, y una membresía pendiente no podrá abrirlo cuando el portero
   compruebe la membresía) y lo cierran con `portero.quitar` antes de terminar.
   Las dos las ejecuta solo el rol de identidad. Para trabajar después en ese
-  negocio, el servicio lo abre con `portero.abrir`, la única entrada: así el
-  tramo 2b, que agrega a `portero.abrir` la revisión de la membresía y del
-  nivel de los dos pasos, cubre también al dueño que acaba de fundar y al
-  invitado que acaba de aceptar. La propuesta decía que fundar sería una forma
+  negocio, el servicio lo abre con `portero.abrir_persona`, que revisa la
+  membresía y el nivel de los dos pasos: así cubre también al dueño que acaba
+  de fundar y al invitado que acaba de aceptar. Lo mismo hace el registro de
+  entradas, que abre solo mientras anota. La propuesta decía que fundar sería una forma
   propia del portero; queda como puerta de identidad porque escribe tablas de
   identidad, y el portero solo pone y quita el negocio.
 - **Un reintento no choca con el primer intento.** Fundar, invitar y dar una
@@ -214,7 +276,12 @@ no pueden saltarse la seguridad por fila. Además:
   Ningún rol puede volverse otro, y nadie puede volverse portero.
 - El portero y el dueño de las puertas de identidad (`coddvisor_identidad`)
   tocan solo las tablas de su lista cerrada, una por una. Por clase no tienen
-  nada. Ninguno inicia sesión ni se salta la seguridad por fila.
+  nada. Ninguno inicia sesión ni se salta la seguridad por fila. La lista del
+  portero es la llave, `portero.marca` (solo `SELECT`, para trabarla en el modo
+  más suave) y, para comprobar quién entra, la membresía, la
+  asignación, los roles y sus permisos, solo para leer y solo en el negocio
+  que acaba de abrir; la de identidad incluye anexar al registro de entradas.
+  (Cambio del 26-nov-2026, tramo 2b de la identidad.)
 - Una tabla de custodia, la aplicación y el rol de los libros solo la leen. La
   escribe una puerta, y nadie por su clase. Las de identidad las escriben las
   puertas de `coddvisor_identidad`, que la aplicación ejecuta con la firma del
@@ -303,7 +370,8 @@ huella de cada archivo. Nadie ejecuta SQL a mano en producción.
 
 **BD-16. Afuera de los negocios viven solo las tablas de una lista cerrada.**
 El plano de control (las tablas de clase `control`) es lo único que no es de
-ningún negocio: las cuentas, el índice de accesos y la llave del portero. Lo
+ningún negocio: las cuentas, el índice de accesos, la llave del portero y la
+marca que el portero traba al abrir un negocio (`portero.marca`, sin filas). Lo
 que es de un negocio vive dentro del negocio, donde lo cuidan el aislamiento y
 los sellos. La lista está en la configuración del verificador
 (`tablasDeControl`). Una tabla de control que no figura en ella es una falta, y
@@ -349,9 +417,14 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 
 | Pieza | Depende de |
 |---|---|
-| Que el portero compruebe la membresía además de la firma, y cómo abre un negocio un trabajo automático | Tramo del portero de la identidad, 2b (propuesta de identidad, decisiones 4, 6 y 7) |
 | Invitar a un correo que todavía no tiene cuenta, con su enlace de un solo uso | Tramo 3 de la identidad (decisión 10) |
+| El acceso de emergencia: otra forma del portero, de un solo negocio, de solo lectura, de 4 horas como máximo y aprobada por dos personas de Coddvisor con segundo paso | Que Coddvisor tenga dos personas para aprobarlo (decisión 12). Hasta entonces no existe |
+| La puerta con que el dueño aprueba un pedido de soporte, su membresía temporal y el permiso de escribir (`identidad.soporte_puede_escribir`, que hoy no tiene ningún rol) | Panel del soporte (decisión 12) |
+| La tarea anotada de la que nace cada trabajo automático, y que el portero compruebe que el negocio firmado es el de esa tarea. Trae un propósito nuevo, con el id de la tarea en la firma, y el programa de los trabajos cambia su firma | Primer trabajo de fondo (decisión 7) |
+| La tabla de cajas, a la que apunten la caja del contexto y la de cada entrada. Y si el sello guarda también la caja (hoy guarda solo `actor_actual()`, así que una fila escrita desde la caja no se distingue de una escrita desde el panel): se decide antes de crear la primera tabla de la caja, porque un libro no se corrige hacia atrás | Contrato de la caja, al publicarse (decisiones 6 y 11) |
+| Cuánto se guardan las entradas (al menos dos años, como dato) y los intentos fallidos (`control.intento`) | Conservación de datos y propuesta de identidad, decisiones 13 y 14 |
 | Copiar el índice de accesos con un trabajo que se puede repetir, en vez de en la misma transacción | Enrutador de celdas, cuando haya más de una |
+| Que el estado de la sesión no cruce de un negocio a otro: `DISCARD ALL` al devolver cada conexión (cursores `WITH HOLD`, ajustes de sesión, sentencias preparadas) y las firmas siempre como parámetros, nunca en el texto de la consulta, que otra conexión del mismo rol ve en `pg_stat_activity`. La regla de un solo negocio por transacción cubre el contexto del portero, no esto | Primer servicio que se conecte a la base, y su administrador de conexiones |
 | Enrutador de celdas, intentos fallidos y códigos de respaldo en el esquema `control` | Propuesta de identidad, decisiones 13 y 14 |
 | Auditoría por disparador y su partición por fecha | Primer módulo de negocio |
 | Una clase de tabla para los saldos: los lee la aplicación y solo los escriben las funciones de los libros | Primer libro (tesorería o inventario) |

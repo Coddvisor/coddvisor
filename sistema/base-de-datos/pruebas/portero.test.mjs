@@ -6,7 +6,7 @@ import { after, before, describe, test } from 'node:test';
 import { crearBase } from '../verificador/base.mjs';
 import { abrir, actuarComo, codigoDeError, enTransaccion, firmar, instalarLlaveDePrueba, LLAVE_DE_PRUEBA, mensajeDeFirma, ROL_DE_ENTRADA, uuid7 } from './apoyo.mjs';
 
-const A = uuid7(); const B = uuid7(); const PERSONA = uuid7(); const CAJA = uuid7();
+const A = uuid7(); const B = uuid7(); const PERSONA = uuid7(); const CUENTA = uuid7(); const CAJA = uuid7();
 const deUuid = (u) => Buffer.from(u.replaceAll('-', ''), 'hex');
 let db;
 
@@ -15,6 +15,10 @@ before(async () => {
   for (const [t, n] of [[A, 'A'], [B, 'B']]) {
     await db.query('insert into nucleo.tenant (id, nombre) values ($1, $2)', [t, `Cliente ${n}`]);
     await db.query(`insert into nucleo.empresa (tenant_id, id, nombre, pais_codigo, moneda_funcional_codigo) values ($1, $2, $3, 'PE', 'PEN')`, [t, uuid7(), `Empresa de ${n}`]);
+    // Desde el tramo 2b el portero exige que quien entra sea miembro: la misma
+    // persona tiene una membresía activa en cada negocio, con el mismo id.
+    await db.query(`insert into identidad.membresia (tenant_id, id, cuenta_id, es_automatica, estado, vigente_desde_en, motivo) values ($1, $2, $3, false, 'activa', now(), 'prueba')`, [t, PERSONA, CUENTA]);
+    await db.query(`insert into identidad.asignacion (tenant_id, id, membresia_id, rol_codigo) values ($1, $2, $3, 'vendedor')`, [t, uuid7(), PERSONA]);
   }
   await instalarLlaveDePrueba(db);
 });
@@ -56,6 +60,13 @@ describe('abrir un negocio', () => {
       for (const [t, a, d] of [[A, null, null], [A, PERSONA, CAJA], [null, PERSONA, null]]) {
         assert.equal(await falla(() => db.query('select portero.abrir($1, $2, $3, $4, $5, $6)', [t, a, d, ...f])), 'CV010');
       }
+    });
+  });
+  test('ataque: portero.abrir ya no abre con una persona, ni con una firma buena de «abrir»', async () => {
+    await como(async () => {
+      const f = firmar('abrir', [deUuid(A), deUuid(PERSONA)]);
+      assert.equal(await falla(() => db.query('select portero.abrir($1, $2, $3, $4, $5, $6)', [A, PERSONA, null, ...f])), 'CV016');
+      assert.deepEqual(await veo(), []);
     });
   });
 });
@@ -102,7 +113,7 @@ describe('ataques con SQL colado', () => {
         grant all on pg_temp.contexto_activo to public;
         insert into pg_temp.contexto_activo values ('${B}', null, null, now() + interval '1 day')`);
       assert.equal(await codigoDeError(limpia, () => limpia.query('select * from nucleo.tenant')), 'CV015');
-      assert.equal(await codigoDeError(limpia, () => abrir(limpia, { tenant: B, actor: PERSONA })), 'CV015');
+      assert.equal(await codigoDeError(limpia, () => abrir(limpia, { tenant: B, actor: PERSONA, cuenta: CUENTA })), 'CV015');
     } finally {
       await limpia.close();
     }
@@ -114,17 +125,20 @@ describe('ataques con SQL colado', () => {
 });
 
 describe('la firma', () => {
-  const campos = [deUuid(A), deUuid(PERSONA)];
-  const conFirma = (f, { tenant = A, actor = PERSONA, dispositivo = null } = {}) => falla(() => db.query('select portero.abrir($1, $2, $3, $4, $5, $6)', [tenant, actor, dispositivo, ...f]));
-  test('no vale para otro negocio, otra persona, una caja ni otro propósito', () => como(async () => {
-    const f = firmar('abrir', campos);
+  const campos = [deUuid(A), deUuid(CUENTA), deUuid(PERSONA), Buffer.from('aal2')];
+  const conFirma = (f, { tenant = A, cuenta = CUENTA, actor = PERSONA, nivel = 'aal2' } = {}) => falla(() => db.query('select portero.abrir_persona($1, $2, $3, $4, $5, $6, $7)', [tenant, cuenta, actor, nivel, ...f]));
+  test('no vale para otro negocio, otra cuenta, otra persona, otro nivel ni otro propósito', () => como(async () => {
+    const f = firmar('abrir_persona', campos);
     assert.equal(await conFirma(f, { tenant: B }), 'CV104');
+    assert.equal(await conFirma(f, { cuenta: uuid7() }), 'CV104');
     assert.equal(await conFirma(f, { actor: uuid7() }), 'CV104');
-    assert.equal(await conFirma(f, { actor: null, dispositivo: PERSONA }), 'CV104');
+    assert.equal(await conFirma(f, { nivel: 'aal1' }), 'CV104');
+    assert.equal(await falla(() => db.query('select portero.abrir($1, $2, $3, $4, $5, $6)', [A, null, PERSONA, ...f])), 'CV104');
+    assert.equal(await conFirma(firmar('abrir', campos)), 'CV104');
     assert.equal(await conFirma(firmar('abrir_caja', campos)), 'CV104');
     assert.equal(await conFirma(firmar('comprobar', campos)), 'CV104');
-    assert.equal(await conFirma(firmar('abrir', campos, { llave: { numero: 900, secreto: Buffer.alloc(32, 7) } })), 'CV104');
-    assert.equal(await conFirma(firmar('abrir', campos, { llave: { ...LLAVE_DE_PRUEBA, numero: 901 } })), 'CV104');
+    assert.equal(await conFirma(firmar('abrir_persona', campos, { llave: { numero: 900, secreto: Buffer.alloc(32, 7) } })), 'CV104');
+    assert.equal(await conFirma(firmar('abrir_persona', campos, { llave: { ...LLAVE_DE_PRUEBA, numero: 901 } })), 'CV104');
     const [vence, numero, firma] = f;
     assert.equal(await conFirma([vence + 1, numero, firma]), 'CV104');
     assert.equal(await conFirma([vence, numero, firma.subarray(1)]), 'CV101');
@@ -132,9 +146,9 @@ describe('la firma', () => {
     assert.equal(await conFirma(f), null);
   }));
   test('vence, y no se acepta una que dure de más', () => como(async () => {
-    assert.equal(await conFirma(firmar('abrir', campos, { segundos: -1 })), 'CV102');
-    assert.equal(await conFirma(firmar('abrir', campos, { segundos: 0 })), 'CV102');
-    assert.equal(await conFirma(firmar('abrir', campos, { segundos: 300 })), 'CV103');
+    assert.equal(await conFirma(firmar('abrir_persona', campos, { segundos: -1 })), 'CV102');
+    assert.equal(await conFirma(firmar('abrir_persona', campos, { segundos: 0 })), 'CV102');
+    assert.equal(await conFirma(firmar('abrir_persona', campos, { segundos: 300 })), 'CV103');
   }));
   test('cuando vence, el negocio se cierra con un error y no con tablas vacías', () => como(async () => {
     await abrir(db, { tenant: A, actor: PERSONA, segundos: 2 });
@@ -182,7 +196,7 @@ describe('las llaves', () => {
     await entrar();
     assert.equal(await falla(() => abrir(db, { tenant: A, actor: PERSONA })), 'CV104');
     const llave = { numero: 901, secreto: Buffer.from(nueva.llave_secreto) };
-    assert.equal(await falla(() => abrir(db, { tenant: A, actor: PERSONA, firma: firmar('abrir', [deUuid(A), deUuid(PERSONA)], { llave }) })), null);
+    assert.equal(await falla(() => abrir(db, { tenant: A, actor: PERSONA, llave })), null);
   }));
 });
 

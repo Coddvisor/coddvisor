@@ -360,6 +360,12 @@ pedidos no la tiene.
   > tablas de identidad. Abre el negocio solo mientras escribe y lo cierra; el
   > servicio entra después por `portero.abrir`, que en el tramo 2b comprueba la
   > membresía y el nivel de los dos pasos.
+  >
+  > **Nota del 26-nov-2026 (tramo 2b):** la persona entra por
+  > `portero.abrir_persona`, con un propósito nuevo que firma también la cuenta
+  > y el nivel del pase; `portero.abrir` quedó solo para la caja sola. Está en
+  > la migración `20261126200000_portero_comprueba_la_membresia.sql` y en
+  > `arquitectura/bases/02-base-de-datos.md`.
 - **Aceptar una invitación**: el dueño invita desde el panel. La membresía
   queda pendiente hasta que el invitado la acepte con su sesión abierta y con el
   mismo correo. El enlace es de un solo uso y vence. El panel responde igual
