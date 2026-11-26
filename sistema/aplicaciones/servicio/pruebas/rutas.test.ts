@@ -179,12 +179,14 @@ describe("el segundo paso", () => {
 });
 
 describe("¿a qué negocio entra?", () => {
-  it("el contador ve sus dos negocios, con su nombre y su estado", async () => {
+  it("el contador ve sus dos negocios, con su nombre, su estado y su rol", async () => {
     const r = await pedir(RUTAS.negocios, { jarro: await entrar(m.ejemplo.cuentas.contador) });
     assert.equal(r.status, 200);
-    const { negocios, siguiente } = (await cuerpo(r)) as { negocios: Array<{ id: string; nombre: string; estado: string }>; siguiente: unknown };
+    const { negocios, siguiente } = (await cuerpo(r)) as { negocios: Array<{ id: string; nombre: string; estado: string; roles: Array<{ codigo: string }> }>; siguiente: unknown };
     assert.deepEqual(negocios.map((n) => n.nombre).toSorted(), [NOMBRES_DE_EJEMPLO.bodega, NOMBRES_DE_EJEMPLO.ferreteria].toSorted());
     assert.ok(negocios.every((n) => n.estado === "activa"));
+    // El código del rol, de la copia del índice: la pantalla pone su nombre del catálogo de textos.
+    assert.ok(negocios.every((n) => JSON.stringify(n.roles) === JSON.stringify([{ codigo: "contador" }])), JSON.stringify(negocios));
     assert.equal(siguiente, null);
   });
   it("sin cookie, o con un cursor que no es un negocio, no lista", async () => {

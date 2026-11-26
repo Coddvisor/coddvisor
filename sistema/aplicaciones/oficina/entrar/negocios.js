@@ -3,8 +3,13 @@
 // uno lleva al inicio de ese negocio, que se abre con el portero al llegar.
 // Un estado se dice con ícono y texto, nunca solo con color (EX-18). Un acceso
 // pendiente o suspendido se ve en la lista, pero no lleva a ninguna parte.
+// Debajo del nombre va su rol, con una frase según el estado (roles.js). Los
+// roles llegan de la copia del índice, solo para mostrar: lo que la persona
+// puede hacer lo decide el portero al abrir el negocio, y el inicio lo vuelve
+// a leer adentro.
 
-import { arrancar, avisarFallo, PAGINAS, pedir, salir, texto, volverAEntrar } from "../comun/oficina.js";
+import { arrancar, avisarFallo, hayTexto, PAGINAS, pedir, salir, texto, volverAEntrar } from "../comun/oficina.js";
+import { fraseDeLosRoles } from "./roles.js";
 
 /** El texto de cada estado del acceso que no es «activa». */
 const ESTADOS = { pendiente: "negocios.estado.pendiente", suspendida: "negocios.estado.suspendida" };
@@ -17,7 +22,8 @@ function claveDelEstado(estado) {
 }
 
 /**
- * @typedef {{ id: string, nombre: string | null, estado: string }} Negocio
+ * @typedef {import("./roles.js").Rol} Rol
+ * @typedef {{ id: string, nombre: string | null, estado: string, roles?: Rol[] }} Negocio
  */
 
 /**
@@ -29,6 +35,12 @@ function filaDe(plantilla, n) {
   const enlace = /** @type {HTMLAnchorElement} */ (fila.querySelector(".negocio"));
   const nombre = /** @type {HTMLElement} */ (fila.querySelector(".negocio-nombre"));
   nombre.textContent = n.nombre ?? texto("negocios.sin-nombre");
+  const frase = fraseDeLosRoles(n.roles, n.estado, { texto, hayTexto, idioma: document.documentElement.lang });
+  if (frase !== null) {
+    const rol = /** @type {HTMLElement} */ (fila.querySelector(".negocio-rol"));
+    rol.textContent = frase;
+    rol.hidden = false;
+  }
   const clave = claveDelEstado(n.estado);
   if (clave !== null) {
     const estado = /** @type {HTMLElement} */ (fila.querySelector(".estado"));

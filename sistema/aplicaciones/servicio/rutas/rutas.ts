@@ -168,7 +168,7 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     const r = await negociosDeLaPersona(piezas, sesion.pase, url.searchParams.get("despues"));
     if (!r.ok) return responderRechazo(r.error);
     return responder(200, {
-      negocios: r.value.pagina.negocios.map((n) => ({ id: n.tenantId, nombre: n.nombre, estado: n.estado })),
+      negocios: r.value.pagina.negocios.map((n) => ({ id: n.tenantId, nombre: n.nombre, estado: n.estado, roles: n.rolCodigos.map((codigo) => ({ codigo })) })),
       siguiente: r.value.pagina.siguiente,
     });
   }

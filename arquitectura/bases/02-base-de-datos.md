@@ -172,12 +172,29 @@ La aplicación llega a esas tablas solo por sus puertas, en el esquema
   transacción. Hoy hay una sola celda; con varias, esa copia pasa a ser un
   trabajo que se puede repetir sin duplicar.
 
+**La copia de los roles en el índice es solo para mostrar.** Desde el
+26-nov-2026 (decisión del fundador), `control.acceso.rol_codigos` guarda los
+códigos de los roles vigentes de cada membresía, sin repetir y ordenados, para
+que «¿A qué negocio entra?» diga con qué rol entra la persona sin abrir cada
+negocio. La escriben `copiar_al_indice` y, a través de ella, las puertas que dan
+o archivan una asignación y las que cambian el estado de una membresía, en la
+misma transacción. `copiar_al_indice` pone en fila a quienes copian la misma
+membresía antes de leer sus asignaciones, para que dos cambios a la vez no
+dejen una copia vieja. Esa copia **nunca decide nada y puede ir atrasada**: qué deja
+entrar y qué deja hacer lo deciden adentro `portero.abrir_persona` e
+`identidad.asignacion`, que no la leen. Ninguna puerta ni el portero pueden
+tomarla en cuenta para dar o negar algo; una prueba cambia la copia a mano y
+comprueba que el portero sigue igual. La pantalla pone el nombre de cada rol
+desde el catálogo de textos, nunca el código. Se descartó leer los roles
+adentro de cada negocio: costaría una consulta por negocio, y la lista de un
+contador con 40 negocios tiene que salir rápido en funciones con poco tiempo.
+
 | Puerta | Qué hace | Propósito firmado | Pide negocio abierto y permiso |
 |---|---|---|---|
 | `registrar_cuenta` | Crea la cuenta de quien ya probó su correo. Con el mismo id del proveedor devuelve la misma | `identidad_registrar_cuenta` | No |
 | `leer_cuenta` | La cuenta del id del proveedor (el `sub` del pase), su estado y desde cuándo valen sus pases. Sin correo ni nombre. Sin fila si no existe | `identidad_leer_cuenta` | No |
 | `leer_acceso` | La membresía viva de una cuenta en un negocio y su estado. Nunca listas ni correos | `identidad_leer_acceso` | No |
-| `listar_negocios` | Los negocios de una cuenta que no están de baja, con su membresía, su estado y su nombre (de `control.negocio`), ordenados por negocio y por cursor. El tamaño de la página va de 1 a un tope con nombre dentro de la puerta (50); fuera de eso falla (CV217). Nunca correos ni una lista sin límite. Una cuenta sin membresías recibe una lista vacía. Lista lo mismo que deja entrar `leer_acceso`: quién entra lo dice solo `control.acceso`, y la puerta que archive un negocio dará de baja sus accesos en la misma transacción | `identidad_listar_negocios`, sobre la cuenta, el cursor (vacío en la primera página) y el tamaño | No |
+| `listar_negocios` | Los negocios de una cuenta que no están de baja, con su membresía, su estado, su nombre (de `control.negocio`) y la copia de sus roles (`rol_codigos`, solo para mostrar), ordenados por negocio y por cursor. El tamaño de la página va de 1 a un tope con nombre dentro de la puerta (50); fuera de eso falla (CV217). Nunca correos ni una lista sin límite. Una cuenta sin membresías recibe una lista vacía. Lista lo mismo que deja entrar `leer_acceso`: quién entra lo dice solo `control.acceso`, y la puerta que archive un negocio dará de baja sus accesos en la misma transacción | `identidad_listar_negocios`, sobre la cuenta, el cursor (vacío en la primera página) y el tamaño | No |
 | `fundar_negocio` | El negocio, su dueño activo en todo el negocio, su membresía automática, el índice y su fila en `control.negocio`, juntos. Se puede repetir | `identidad_fundar` | No: lo abre mientras escribe y lo cierra |
 | `invitar` | Una membresía pendiente para una cuenta ya registrada, con un rol que puede dar el dueño | `identidad_invitar` | Sí, `identidad.invitar` |
 | `aceptar_invitacion` | La cuenta invitada activa su propia membresía | `identidad_aceptar` | No: lo abre mientras escribe y lo cierra |
@@ -434,7 +451,7 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 | El freno de intentos del servicio para la contraseña y el código del segundo paso: un tope con nombre en `LIMITES_DEL_SERVICIO`, contado por sesión y por cuenta en `control.intento` (no en memoria, para que valga con varias funciones), que al pasarse cierra la sesión aal1. Hasta entonces solo frena el proveedor de cuentas, y Supabase frena por IP | Proveedor de cuentas real y `control.intento` (decisiones 13 y 14) |
 | Revocar todos los pases de una cuenta (cambiar la contraseña, suspender a alguien) con una puerta que fije `control.cuenta.pases_revocados_en`. Cerrar una sesión al salir ya existe (`control.sesion_cerrada`, tramo 3, parte 2) | Recuperar la contraseña y suspender membresías (decisiones 5 y 9) |
 | Archivar las filas de `control.sesion_cerrada` cuyo pase ya venció: solo importan una hora, y la tabla crece con cada salida | Primer trabajo de fondo (decisión 7) |
-| Copiar el índice de accesos con un trabajo que se puede repetir, en vez de en la misma transacción | Enrutador de celdas, cuando haya más de una |
+| Copiar el índice de accesos (su estado y la copia de los roles) con un trabajo que se puede repetir, en vez de en la misma transacción, y el trabajo que revisa que coincida con lo de adentro | Enrutador de celdas, cuando haya más de una |
 | Que el estado de la sesión no cruce de un negocio a otro: `DISCARD ALL` al devolver cada conexión (cursores `WITH HOLD`, ajustes de sesión, sentencias preparadas) y las firmas siempre como parámetros, nunca en el texto de la consulta, que otra conexión del mismo rol ve en `pg_stat_activity`. La regla de un solo negocio por transacción cubre el contexto del portero, no esto. Desde el tramo 3 (parte 1) lo cumple `aplicaciones/servicio/base/conexion.ts`, con su prueba contra la base en memoria, y la guardia revisa que el texto de toda consulta sea un literal (SV-01). Falta el controlador de Postgres de verdad y que solo esa conexión lo importe (SV-02) | Tramo 3 de la identidad, parte 2 |
 | El enrutador de celdas para más de una celda, los intentos fallidos y los códigos de respaldo en el esquema `control`. La lista de en qué celda vive cada negocio ya existe (`control.negocio`, tramo 3, parte 1) | Propuesta de identidad, decisiones 13 y 14 |
 | Auditoría por disparador y su partición por fecha | Primer módulo de negocio |
