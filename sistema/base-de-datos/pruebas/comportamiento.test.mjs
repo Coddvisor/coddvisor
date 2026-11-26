@@ -264,4 +264,20 @@ describe('comportamiento de los cimientos', () => {
       assert.equal(codigo, TABLA_YA_REGISTRADA);
     });
   });
+
+  test('ni el dueño de la base puede cambiar la clase de una tabla, borrarla del registro o vaciarlo', async () => {
+    await enTransaccion(db, async () => {
+      assert.equal(await codigoDeError(db, () => db.query(
+        `update nucleo.tabla_registrada set clase = 'negocio' where esquema = 'identidad' and tabla = 'membresia'`)), LIBRO_SOLO_SE_ANEXA);
+      assert.equal(await codigoDeError(db, () => db.query(
+        `insert into nucleo.tabla_registrada (esquema, tabla, clase) values ('identidad', 'membresia', 'negocio')
+         on conflict (esquema, tabla) do update set clase = excluded.clase`)), LIBRO_SOLO_SE_ANEXA);
+      assert.equal(await codigoDeError(db, () => db.query(
+        `delete from nucleo.tabla_registrada where esquema = 'identidad' and tabla = 'membresia'`)), LIBRO_SOLO_SE_ANEXA);
+      assert.equal(await codigoDeError(db, () => db.exec('truncate nucleo.tabla_registrada')), LIBRO_SOLO_SE_ANEXA);
+      const { rows: [{ clase }] } = await db.query(
+        `select clase from nucleo.tabla_registrada where esquema = 'identidad' and tabla = 'membresia'`);
+      assert.equal(clase, 'custodia');
+    });
+  });
 });

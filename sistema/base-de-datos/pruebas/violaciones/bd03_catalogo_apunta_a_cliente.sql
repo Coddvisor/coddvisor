@@ -3,10 +3,10 @@
 create table prueba.rubro (
   codigo text primary key,
   nombre text not null,
-  tenant_id uuid references nucleo.tenant (id)
+  cliente_id uuid references nucleo.tenant (id)
 );
 comment on table prueba.rubro is 'Catálogo que apunta a un cliente.';
 comment on column prueba.rubro.codigo is 'Código del rubro.';
 comment on column prueba.rubro.nombre is 'Nombre del rubro.';
-comment on column prueba.rubro.tenant_id is 'Cliente al que apunta por error.';
+comment on column prueba.rubro.cliente_id is 'Cliente al que apunta por error.';
 select nucleo.preparar_tabla('prueba.rubro', 'catalogo');

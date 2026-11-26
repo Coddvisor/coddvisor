@@ -24,6 +24,13 @@ const DESTRUCTIVAS = [
   [/(^|;)\s*delete\s+from\b/im, 'DELETE'],
   [/\bdisable\s+(row\s+level\s+security|trigger)\b/i, 'DISABLE de seguridad por fila o de un disparador'],
   [/\bno\s+force\s+row\s+level\s+security\b/i, 'NO FORCE ROW LEVEL SECURITY'],
+  // De la clase registrada salen el aislamiento y los permisos de cada tabla.
+  // Cambiarla es cambiar qué reglas se le exigen: el registro solo se anexa.
+  [/\bupdate\s+(only\s+)?("?nucleo"?\s*\.\s*)?"?tabla_registrada"?\b/i, 'UPDATE de nucleo.tabla_registrada'],
+  [/\binsert\s+into\s+("?nucleo"?\s*\.\s*)?"?tabla_registrada"?\b[^;]*\bdo\s+update\b/i, 'INSERT ... ON CONFLICT DO UPDATE de nucleo.tabla_registrada'],
+  // Con session_replication_role = replica la base no corre los disparadores:
+  // ni los sellos ni los candados de los libros y del registro.
+  [/\bsession_replication_role\b/i, 'cambio de session_replication_role, que apaga los disparadores'],
 ];
 
 const MARCA_DE_CONTRACCION = /^--\s*contraer:\s*\S+/m;

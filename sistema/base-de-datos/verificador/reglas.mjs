@@ -80,6 +80,20 @@ export const reglas = [
         select 'public.' || p.proname || '()', 'El esquema public debe estar vacío: cada módulo usa su propio esquema.'
         from pg_proc p join pg_namespace n on n.oid = p.pronamespace
         where n.nspname = 'public'
+        union all
+        -- De la clase registrada sale todo lo que se le exige a una tabla. Si se
+        -- pudiera cambiar, una tabla de custodia pasaría por negocio y cumpliría
+        -- todas las reglas con permisos de escritura. El registro solo se anexa.
+        select 'nucleo.tabla_registrada', falta.detalle
+        from (values
+          (1 | 2 | 8 | 16, 'El registro debe solo anexarse: falta el disparador que impide editar o borrar sus filas (nucleo.rechazar_cambio_en_libro, antes de UPDATE y DELETE).'),
+          (2 | 32, 'El registro debe solo anexarse: falta el disparador que impide vaciarlo con TRUNCATE (nucleo.rechazar_cambio_en_libro).')
+        ) as falta(bits, detalle)
+        where not exists (
+          select 1 from pg_trigger g
+          where g.tgrelid = 'nucleo.tabla_registrada'::regclass and not g.tgisinternal and g.tgenabled in ('O', 'A')
+            and g.tgfoid = 'nucleo.rechazar_cambio_en_libro'::regproc and (g.tgtype & falta.bits) = falta.bits
+            and ((falta.bits & 1) = 1) = ((g.tgtype & 1) = 1))
         order by 1`);
     },
   },
@@ -101,7 +115,7 @@ export const reglas = [
         select t.esquema || '.' || t.tabla as objeto,
                'La clave primaria debe ser (tenant_id, id) y es (' || coalesce(pk.columnas, 'ninguna') || ').' as detalle
         from t left join pk on pk.conrelid = t.oid
-        where t.clase in ('negocio', 'libro') and pk.columnas is distinct from 'tenant_id, id'
+        where t.clase in ('negocio', 'libro', 'custodia') and pk.columnas is distinct from 'tenant_id, id'
         union all
         select t.esquema || '.' || t.tabla,
                'La clave primaria de la tabla raíz debe ser (id) y es (' || coalesce(pk.columnas, 'ninguna') || ').'
@@ -114,7 +128,7 @@ export const reglas = [
         cross join lateral (
           select unnest(case when t.clase = 'raiz' then array['id'] else array['tenant_id', 'id'] end) as columna
         ) requerida
-        where t.clase in ('raiz', 'negocio', 'libro')
+        where t.clase in ('raiz', 'negocio', 'libro', 'custodia')
           and not exists (
             select 1 from col
             where col.tabla_oid = t.oid and col.columna = requerida.columna
@@ -123,13 +137,21 @@ export const reglas = [
         select t.esquema || '.' || t.tabla,
                'Falta la clave foránea de tenant_id hacia nucleo.tenant (id).'
         from t
-        where t.clase in ('negocio', 'libro')
+        where t.clase in ('negocio', 'libro', 'custodia')
           and not exists (
             select 1 from pg_constraint k
             join pg_attribute a on a.attrelid = k.conrelid and a.attnum = k.conkey[1]
             where k.contype = 'f' and k.conrelid = t.oid
               and k.confrelid = 'nucleo.tenant'::regclass
               and cardinality(k.conkey) = 1 and a.attname = 'tenant_id')
+        union all
+        -- Un catálogo es igual para todos los clientes: no tiene seguridad por
+        -- fila y la aplicación lo lee entero. Con tenant_id guardaría filas de
+        -- un negocio a la vista de todos los demás.
+        select col.esquema || '.' || col.tabla || '.' || col.columna,
+               'Un catálogo es igual para todos los clientes y no lleva tenant_id: la aplicación lo lee sin filtro, desde cualquier negocio. Si los datos son de un cliente, la tabla es de clase negocio, libro o custodia.'
+        from col
+        where col.clase = 'catalogo' and col.columna = 'tenant_id'
         order by 1`);
     },
   },
@@ -160,13 +182,13 @@ export const reglas = [
                'La clave foránea hacia ' || d_esquema || '.' || d_tabla
                  || ' debe incluir tenant_id: sin eso, una fila podría apuntar a otro cliente.' as detalle
         from fk
-        where o_clase in ('negocio', 'libro') and d_clase in ('negocio', 'libro')
+        where o_clase in ('negocio', 'libro', 'custodia') and d_clase in ('negocio', 'libro', 'custodia')
           and not exists (select 1 from par where par.oid = fk.oid and par.origen = 'tenant_id' and par.destino = 'tenant_id')
         union all
         select o_esquema || '.' || o_tabla || ' (' || conname || ')',
                'Solo tenant_id puede apuntar a la tabla raíz del cliente.'
         from fk
-        where o_clase in ('negocio', 'libro') and d_clase = 'raiz'
+        where o_clase in ('negocio', 'libro', 'custodia') and d_clase = 'raiz'
           and not exists (select 1 from par where par.oid = fk.oid and par.origen = 'tenant_id' and par.destino = 'id')
         union all
         select o_esquema || '.' || o_tabla || ' (' || conname || ')',
@@ -175,7 +197,7 @@ export const reglas = [
         union all
         select o_esquema || '.' || o_tabla || ' (' || conname || ')',
                'Un catálogo o una tabla de control no puede apuntar a datos de un cliente (' || d_esquema || '.' || d_tabla || ').'
-        from fk where o_clase in ('catalogo', 'control') and d_clase in ('raiz', 'negocio', 'libro')
+        from fk where o_clase in ('catalogo', 'control') and d_clase in ('raiz', 'negocio', 'libro', 'custodia')
         union all
         select o_esquema || '.' || o_tabla || ' (' || conname || ')',
                'La clave foránea borra o cambia en cascada. Nada se borra: se archiva o se anula.'
@@ -192,24 +214,34 @@ export const reglas = [
         ${con(TABLAS)}
         select esquema || '.' || tabla as objeto,
                'La seguridad por fila debe estar activada y forzada (ENABLE y FORCE ROW LEVEL SECURITY).' as detalle
-        from t where clase in ('raiz', 'negocio', 'libro') and not (rls and rls_forzada)
+        from t where clase in ('raiz', 'negocio', 'libro', 'custodia') and not (rls and rls_forzada)
         union all
-        select esquema || '.' || tabla, 'No tiene ninguna política de aislamiento.'
+        select esquema || '.' || tabla, 'No tiene la política de aislamiento («' || $1::text || '») que pone nucleo.preparar_tabla.'
         from t
-        where clase in ('raiz', 'negocio', 'libro')
-          and not exists (select 1 from pg_policy p where p.polrelid = t.oid)
+        where clase in ('raiz', 'negocio', 'libro', 'custodia')
+          and not exists (select 1 from pg_policy p where p.polrelid = t.oid and p.polname::text = $1::text)
         union all
+        -- Una sola política, idéntica a la que pone nucleo.preparar_tabla. No basta
+        -- con que nombre a nucleo.tenant_actual(): «nucleo.tenant_actual() is not
+        -- null» lo nombra y deja ver todos los negocios.
         select t.esquema || '.' || t.tabla || ' (política ' || p.polname || ')',
-               'La política no filtra por nucleo.tenant_actual(). Una sola política abierta deja ver los datos de todos.'
-        from t join pg_policy p on p.polrelid = t.oid
-        where t.clase in ('raiz', 'negocio', 'libro')
+               case when p.polname::text <> $1::text
+                 then 'Sobra esta política. Una tabla de un cliente lleva una sola, la de aislamiento que pone nucleo.preparar_tabla: otra permisiva, aunque nombre a nucleo.tenant_actual(), puede abrir los datos de todos.'
+                 else 'La política de aislamiento no es la que pone nucleo.preparar_tabla: debe ser permisiva, para todas las órdenes y todos los roles, con USING y WITH CHECK exactamente «' || (filtro.valor #>> '{}') || '».'
+               end
+        from t
+        join pg_policy p on p.polrelid = t.oid
+        cross join lateral (select $2::jsonb -> t.clase as valor) filtro
+        where t.clase in ('raiz', 'negocio', 'libro', 'custodia')
           and (
-            (p.polqual is null and p.polwithcheck is null)
-            or (p.polqual is not null and pg_get_expr(p.polqual, p.polrelid) not like '%nucleo.tenant_actual()%')
-            or (p.polwithcheck is not null and pg_get_expr(p.polwithcheck, p.polrelid) not like '%nucleo.tenant_actual()%')
+            p.polname::text <> $1::text
+            or p.polcmd <> '*'
             or not p.polpermissive
+            or p.polroles <> '{0}'::oid[]
+            or pg_get_expr(p.polqual, p.polrelid) is distinct from (filtro.valor #>> '{}')
+            or pg_get_expr(p.polwithcheck, p.polrelid) is distinct from (filtro.valor #>> '{}')
           )
-        order by 1`);
+        order by 1`, [cfg.aislamiento.politica, JSON.stringify(cfg.aislamiento.filtroPorClase)]);
 
       // Una vista corre con los permisos de su dueño, que puede saltarse la seguridad
       // por fila: abriría todos los negocios de una vez.
@@ -534,7 +566,7 @@ export const reglas = [
                'Falta la columna ' || r.columna || ' (' || r.tipo
                  || case when r.obligatoria then ', obligatoria' else '' end || ').' as detalle
         from t cross join requerida r
-        where (t.clase in ('raiz', 'negocio') or t.oid in (select oid from control_editable))
+        where (t.clase in ('raiz', 'negocio', 'custodia') or t.oid in (select oid from control_editable))
           and not exists (
             select 1 from col
             where col.tabla_oid = t.oid and col.columna = r.columna and col.tipo_base = r.tipo
@@ -543,7 +575,7 @@ export const reglas = [
         select t.esquema || '.' || t.tabla,
                'Falta el disparador de sello (nucleo.sellar_fila, antes de insertar y de actualizar cada fila).'
         from t
-        where (t.clase in ('raiz', 'negocio') or t.oid in (select oid from control_editable))
+        where (t.clase in ('raiz', 'negocio', 'custodia') or t.oid in (select oid from control_editable))
           and not exists (
             select 1 from pg_trigger g
             where g.tgrelid = t.oid and not g.tgisinternal and g.tgenabled <> 'D'
@@ -553,7 +585,7 @@ export const reglas = [
         select t.esquema || '.' || t.tabla,
                'Falta el disparador que impide cambiar la identidad de la fila (nucleo.rechazar_cambio_de_identidad).'
         from t
-        where t.clase in ('raiz', 'negocio')
+        where t.clase in ('raiz', 'negocio', 'custodia')
           and not exists (
             select 1 from pg_trigger g
             where g.tgrelid = t.oid and not g.tgisinternal and g.tgenabled <> 'D'
@@ -623,7 +655,7 @@ export const reglas = [
         select t.esquema || '.' || ix.nombre as objeto,
                'El índice no empieza por tenant_id. Así no sirve al filtro de aislamiento ni permite repartir clientes entre bases.' as detalle
         from t join ix on ix.indrelid = t.oid
-        where t.clase in ('negocio', 'libro')
+        where t.clase in ('negocio', 'libro', 'custodia')
           and not exists (
             select 1 from pg_attribute a
             where a.attrelid = t.oid and a.attnum = ix.columnas[1] and a.attname = 'tenant_id')
@@ -638,7 +670,7 @@ export const reglas = [
         join t o on o.oid = k.conrelid
         join t d on d.oid = k.confrelid
         where k.contype = 'f'
-          and o.clase in ('negocio', 'libro') and d.clase in ('raiz', 'negocio', 'libro')
+          and o.clase in ('negocio', 'libro', 'custodia') and d.clase in ('raiz', 'negocio', 'libro', 'custodia')
           and not exists (
             select 1 from ix
             where ix.indrelid = k.conrelid
@@ -756,6 +788,73 @@ export const reglas = [
                'Lenguaje no admitido: ' || lenguaje || '.'
         from f where not (lenguaje = any($1))
         order by 1`, [cfg.lenguajes, cfg.portero.rutaDePuertas]);
+    },
+  },
+
+  {
+    id: 'BD-16',
+    titulo: 'Afuera de los negocios viven solo las tablas de la lista cerrada del plano de control',
+    async revisar(db, cfg) {
+      return filas(db, `
+        ${con(TABLAS)}
+        select esquema || '.' || tabla as objeto,
+               'Es una tabla de control y no está en la lista cerrada del plano de control (tablasDeControl en verificador/configuracion.mjs). Lo de un negocio vive dentro del negocio; si de verdad va afuera, entra a la lista con su porqué.' as detalle
+        from t where clase = 'control' and not (esquema || '.' || tabla = any($1))
+        union all
+        select esquema || '.' || tabla,
+               'Vive en el esquema control pero su clase es ' || coalesce(clase, 'ninguna') || '. El esquema control es solo para tablas de control.'
+        from t where esquema = 'control' and clase is distinct from 'control'
+        union all
+        select lista.nombre,
+               'Está en la lista cerrada del plano de control pero no existe como tabla de control. Si se quitó, sale también de la lista.'
+        from unnest($1::text[]) as lista(nombre)
+        where not exists (select 1 from t where t.esquema || '.' || t.tabla = lista.nombre and t.clase = 'control')
+        order by 1`, [cfg.tablasDeControl]);
+    },
+  },
+
+  {
+    id: 'BD-17',
+    titulo: 'Los datos personales no dejan rastro en los resúmenes de la base',
+    async revisar(db) {
+      // La base guarda resúmenes de cada columna (valores frecuentes, rangos)
+      // mezclando a todos los clientes. Una columna marcada [personal] o
+      // [sensible] se guarda sin ellos. En una tabla con datos personales,
+      // además, toda expresión de un índice va sin resúmenes y no hay
+      // estadísticas extendidas: el catálogo no dice qué columnas usa una
+      // expresión que toma la fila entera (refobjsubid = 0), así que no se
+      // pregunta cuál usa cuál.
+      return filas(db, `
+        ${con(TABLAS, COLUMNAS)},
+        personal as (
+          select col.tabla_oid, col.attnum, col.esquema, col.tabla, col.columna
+          from col where coalesce(col.comentario, '') ~ '^\\[(personal|sensible)\\]'
+        ),
+        tabla_personal as (
+          select tabla_oid, esquema, tabla, string_agg(columna, ', ' order by attnum) as columnas
+          from personal group by tabla_oid, esquema, tabla
+        )
+        select p.esquema || '.' || p.tabla || '.' || p.columna as objeto,
+               'Es un dato personal y la base guarda resúmenes de sus valores. Falta ALTER TABLE ... ALTER COLUMN ' || p.columna || ' SET STATISTICS 0.' as detalle
+        from personal p
+        join pg_attribute a on a.attrelid = p.tabla_oid and a.attnum = p.attnum
+        where coalesce(a.attstattarget, -1) <> 0
+        union all
+        select tp.esquema || '.' || ic.relname,
+               'Índice con una expresión en una tabla con datos personales (' || tp.columnas || '): la base guarda resúmenes de la expresión, y puede tomar la fila entera. Falta ALTER INDEX ... ALTER COLUMN ' || ia.attnum || ' SET STATISTICS 0.'
+        from tabla_personal tp
+        join pg_index i on i.indrelid = tp.tabla_oid
+        join pg_class ic on ic.oid = i.indexrelid
+        join pg_attribute ia on ia.attrelid = i.indexrelid and ia.attnum > 0
+        where (string_to_array(i.indkey::text, ' ')::int2[])[ia.attnum] = 0
+          and coalesce(ia.attstattarget, -1) <> 0
+        union all
+        select n.nspname || '.' || s.stxname,
+               'Estadísticas extendidas en una tabla con datos personales (' || tp.columnas || '). Guardan combinaciones de valores de todos los clientes y pueden tomar la fila entera: no se crean en estas tablas.'
+        from tabla_personal tp
+        join pg_statistic_ext s on s.stxrelid = tp.tabla_oid
+        join pg_namespace n on n.oid = s.stxnamespace
+        order by 1`);
     },
   },
 ];

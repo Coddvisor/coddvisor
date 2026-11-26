@@ -1,13 +1,13 @@
 # Reglas de la base de datos
 
-Quince reglas. Cada una tiene un código, un porqué y una revisión automática
+Diecisiete reglas. Cada una tiene un código, un porqué y una revisión automática
 que impide unir a `main` un cambio que la incumpla. La revisión vive en
 `sistema/base-de-datos/verificador/` y se corre con `npm run verificar`.
 
 Estas reglas son las más caras de cambiar del proyecto, porque se copian en
 cada fila de cada cliente. Por eso se fijan antes de la primera tabla de negocio.
 
-## Las cinco clases de tabla
+## Las seis clases de tabla
 
 Toda tabla declara qué clase es. De la clase salen su aislamiento y sus permisos.
 
@@ -16,8 +16,15 @@ Toda tabla declara qué clase es. De la clase salen su aislamiento y sus permiso
 | `raiz`     | El cliente mismo                                   | Leer                | `nucleo.tenant`           |
 | `negocio`  | Datos de un cliente que se editan                  | Leer, crear, editar | `nucleo.empresa`          |
 | `libro`    | Datos de un cliente que solo se anexan             | Leer                | movimientos de stock, de caja, asientos |
+| `custodia` | Datos de un cliente que solo cambia una puerta     | Leer                | `identidad.membresia`, `identidad.asignacion` |
 | `catalogo` | Datos iguales para todos los clientes              | Leer                | `nucleo.moneda`, `nucleo.parametro_legal` |
-| `control`  | Lo que vive fuera de las celdas (enrutador, identidad) | Nada            | `portero.llave`           |
+| `control`  | Lo que vive fuera de las celdas (enrutador, identidad) | Nada            | `portero.llave`, `control.cuenta` |
+
+Una tabla de `custodia` se aísla y se sella igual que una de `negocio`, pero la
+aplicación no la puede escribir: si pudiera, un error en el servicio
+reactivaría una membresía suspendida o le daría a alguien el rol de dueño. La
+escribe una sola puerta de su módulo, que se da con nombre en la lista de
+puertas.
 
 Nadie borra. Lo que deja de usarse se archiva (`archivado_en`) o se anula con
 un movimiento inverso.
@@ -86,9 +93,26 @@ Las herramientas que exportan, mueven o dan de baja a un cliente recorren el
 registro `nucleo.tabla_registrada`. No existe una lista de tablas escrita a
 mano en ningún programa.
 
+El registro solo se anexa, como un libro: una fila registrada no se edita, no
+se borra y la tabla no se vacía, ni siquiera por quien migra. De la clase
+registrada sale todo lo que se le exige a una tabla; si una migración pudiera
+pasar una tabla de custodia a negocio y después darle a la aplicación permiso de
+escribir, todas las reglas pasarían. La revisión exige los dos disparadores del
+registro encendidos, y una migración que actualice el registro (o que cambie
+`session_replication_role`, que apaga los disparadores) es destructiva para
+BD-15. Si una tabla tuviera que cambiar de clase, se crea otra y se mueven sus
+datos. (Cambio del 26-nov-2026, auditoría de seguridad de la identidad.)
+
 **BD-02. Toda tabla de un cliente lleva `tenant_id` e `id`, y su clave es `(tenant_id, id)`.**
 Con el cliente dentro de la clave, la tabla se puede repartir entre varias
 bases el día que una sola no alcance, sin rediseñar nada.
+
+Al revés, un catálogo no lleva `tenant_id`. El catálogo es igual para todos los
+clientes, no tiene seguridad por fila y la aplicación lo lee entero: con
+`tenant_id` guardaría filas de un negocio a la vista de todos los demás, y
+ninguna otra regla lo notaría. Si los datos son de un cliente, la tabla es de
+negocio, libro o custodia. (Cambio del 26-nov-2026, auditoría de seguridad de
+la identidad.)
 
 **BD-03. Una fila de un cliente nunca puede apuntar a otro cliente, y nada se borra en cascada.**
 Toda relación entre datos de un cliente incluye `tenant_id`. Así lo impide la
@@ -103,6 +127,17 @@ escrito en la configuración del verificador, y cambiarlo es cambiar esta regla.
 Una vista consulta con los permisos de quien la usa (`security_invoker`), y no
 hay vistas materializadas.
 
+Una tabla de un cliente (raíz, negocio, libro o custodia) lleva una sola
+política: la que pone `nucleo.preparar_tabla`. Se llama `aislamiento`, es
+permisiva, vale para todas las órdenes y todos los roles, y su `USING` y su
+`WITH CHECK` son exactamente `id = (select nucleo.tenant_actual())` en la raíz y
+`tenant_id = (select nucleo.tenant_actual())` en las demás, tal como los
+escribe Postgres (`configuracion.mjs`, `aislamiento`). Antes bastaba con que el
+texto de la política nombrara a `nucleo.tenant_actual()`, y una política de más
+como `using (nucleo.tenant_actual() is not null)` lo nombra y abre todos los
+negocios. Cualquier otra política es una falta. (Cambio del 26-nov-2026,
+auditoría de seguridad de la identidad.)
+
 **BD-05. Los permisos son los mínimos.**
 La aplicación no borra, no escribe directo en un libro, no cambia un catálogo
 y ningún objeto queda abierto a todos los roles. Los roles de la aplicación
@@ -111,6 +146,8 @@ no pueden saltarse la seguridad por fila. Además:
 - El servicio entra solo con un rol de entrada, que hereda de la aplicación.
   Ningún rol puede volverse otro, y nadie puede volverse portero.
 - El portero toca solo las tablas de su lista cerrada, una por una.
+- Una tabla de custodia, la aplicación y el rol de los libros solo la leen. La
+  escribe una puerta, y nadie por su clase.
 - Los permisos se dan por tabla, nunca por columna.
 - Ningún rol de la aplicación es dueño de una tabla ni crea objetos.
 - La aplicación no crea tablas temporales.
@@ -146,7 +183,8 @@ una vez, ahí. Una tabla con importes tiene una columna `moneda_codigo`.
 `creado_en`, `creado_por`, `actualizado_en`, `actualizado_por` y `version`.
 Los pone la base, no el programa, así que no se pueden falsear. `version`
 sube en cada cambio y permite avisar cuando dos personas editan lo mismo.
-Vale también para una tabla de control que alguien edita.
+Vale también para una tabla de custodia y para una tabla de control que
+alguien edita.
 
 **BD-10. Un libro solo se anexa.**
 No se edita, no se borra y no se vacía, ni siquiera por el dueño de la base.
@@ -187,6 +225,32 @@ empieza con `-- contraer: motivo`. Cambiar el cuerpo de algo que ya existe
 `-- reemplaza: qué y por qué`. `migraciones.candado.json` guarda la huella
 de cada archivo. Nadie ejecuta SQL a mano en producción.
 
+### Afuera de los negocios
+
+**BD-16. Afuera de los negocios viven solo las tablas de una lista cerrada.**
+El plano de control (las tablas de clase `control`) es lo único que no es de
+ningún negocio: las cuentas, el índice de accesos y la llave del portero. Lo
+que es de un negocio vive dentro del negocio, donde lo cuidan el aislamiento y
+los sellos. La lista está en la configuración del verificador
+(`tablasDeControl`). Una tabla de control que no figura en ella es una falta, y
+el esquema `control` no guarda tablas de otra clase. Para agregar una se cambia
+la lista con su porqué, y lo aprueba el fundador.
+
+**BD-17. Los datos personales no dejan rastro en los resúmenes de la base.**
+La base guarda resúmenes de cada columna (los valores más frecuentes, los
+rangos) para planear las consultas, y los guarda mezclando a todos los
+clientes. Por ahí se podrían ver correos o nombres de otro negocio. Toda
+columna marcada `[personal]` o `[sensible]` se crea con `SET STATISTICS 0`.
+En una tabla que tenga una de esas columnas, además, toda expresión de todo
+índice lleva `SET STATISTICS 0` (`ALTER INDEX ... ALTER COLUMN n SET STATISTICS 0`),
+y no se crean estadísticas extendidas. Antes se miraba solo lo que el catálogo
+liga a la columna personal, y una expresión que toma la fila entera
+(`create index ... ((cuenta))`) no queda ligada a ninguna columna: guardaba
+resúmenes del correo sin que la revisión lo viera. Ahora la revisión no intenta
+saber qué expresión usa qué columna. (Cambio del 26-nov-2026, auditoría de
+seguridad de la identidad.) Lo que esto no cierra, y se acepta: la base igual
+deja estimar cuántas filas tiene otro negocio.
+
 ## Reglas que revisa una persona
 
 No todo se puede revisar con un programa. Quien revisa un cambio pregunta:
@@ -211,8 +275,9 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 
 | Pieza | Depende de |
 |---|---|
-| Que el portero compruebe la membresía además de la firma, y cómo abre un negocio un trabajo automático | Documento de identidad y membresía (decisión D26) |
-| Enrutador de celdas y tablas de identidad en el esquema `control` | El mismo documento |
+| Que el portero compruebe la membresía además de la firma, y cómo abre un negocio un trabajo automático | Tramo del portero de la identidad (propuesta de identidad, decisiones 4, 6 y 7) |
+| Las puertas que escriben la membresía, la asignación, la cuenta y el índice de accesos | Tramo de las puertas de la identidad |
+| Enrutador de celdas, intentos fallidos y códigos de respaldo en el esquema `control` | Propuesta de identidad, decisiones 13 y 14 |
 | Auditoría por disparador y su partición por fecha | Primer módulo de negocio |
 | Una clase de tabla para los saldos: los lee la aplicación y solo los escriben las funciones de los libros | Primer libro (tesorería o inventario) |
 | Tablas de intercambio entre dos clientes, con regla de dos partes | Red entre negocios (después del primer alcance) |

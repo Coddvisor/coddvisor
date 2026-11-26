@@ -37,6 +37,7 @@ inventario, contabilidad. Cada módulo tiene:
 | Módulo          | Qué resuelve                                         | Usa a                                                   |
 |-----------------|------------------------------------------------------|---------------------------------------------------------|
 | `nucleo`        | Cliente, empresa, local, catálogos y parámetros      | Nadie                                                   |
+| `identidad`     | Membresías, roles y permisos: quién entra a cada negocio y qué puede hacer | nucleo                    |
 | `configuracion` | Derechos del plan, perfiles, plantillas y campos propios | nucleo                                              |
 | `terceros`      | Clientes y proveedores en una sola ficha             | nucleo                                                  |
 | `catalogo`      | Productos, servicios y precios                       | nucleo                                                  |
@@ -46,7 +47,9 @@ inventario, contabilidad. Cada módulo tiene:
 | `ventas`        | Cotizar, vender, cobrar                              | nucleo, terceros, catalogo, inventario, tesoreria, contabilidad |
 | `compras`       | Comprar, recibir, pagar                              | nucleo, terceros, catalogo, inventario, tesoreria, contabilidad |
 
-Nadie usa a ventas ni a compras: están arriba de todo. La contabilidad no
+Nadie usa a ventas ni a compras: están arriba de todo. La identidad hoy es solo
+tablas (su esquema `identidad` y la cuenta en el plano de control); su carpeta
+en `modulos/` nace con su primera puerta. La contabilidad no
 llama a ningún módulo de negocio: cada uno le entrega el hecho, y el motor
 decide el asiento con reglas de contabilización que son datos.
 
@@ -60,7 +63,7 @@ sistema/
   base-de-datos/
     migraciones/            Cada cambio de la base, con fecha. Solo se agregan.
     migraciones.candado.json  La huella de cada migración aceptada.
-    verificador/            Las quince reglas, escritas como revisiones.
+    verificador/            Las diecisiete reglas, escritas como revisiones.
     pruebas/                Pruebas de las reglas y del comportamiento.
   herramientas/             Guardias que corren en cada cambio.
   nucleo/                   Tipos compartidos: Dinero, monedas, identificadores.
