@@ -47,9 +47,10 @@ inventario, contabilidad. Cada módulo tiene:
 | `ventas`        | Cotizar, vender, cobrar                              | nucleo, terceros, catalogo, inventario, tesoreria, contabilidad |
 | `compras`       | Comprar, recibir, pagar                              | nucleo, terceros, catalogo, inventario, tesoreria, contabilidad |
 
-Nadie usa a ventas ni a compras: están arriba de todo. La identidad hoy es solo
-tablas (su esquema `identidad` y la cuenta en el plano de control); su carpeta
-en `modulos/` nace con su primera puerta. La contabilidad no
+Nadie usa a ventas ni a compras: están arriba de todo. La identidad hoy vive solo en
+la base: sus tablas (el esquema `identidad` y la cuenta en el plano de control)
+y sus puertas, que son funciones de la base; su carpeta en `modulos/` nace con
+el servicio que llama a esas puertas. La contabilidad no
 llama a ningún módulo de negocio: cada uno le entrega el hecho, y el motor
 decide el asiento con reglas de contabilización que son datos.
 

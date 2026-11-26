@@ -94,6 +94,14 @@ describe('archivos de migración', () => {
     assert.deepEqual(revisarArchivos([m], sellar(m)), []);
   });
 
+  test('acepta borrar de una tabla temporal de la transacción: no son datos', () => {
+    const m = migracion('20270102030405_contexto.sql',
+      'create function portero.f() returns void language plpgsql as $ begin\n  delete from pg_temp.contexto_activo c where c.tenant_id = null;\nend $;');
+    assert.deepEqual(revisarArchivos([m], sellar(m)), []);
+    const otra = migracion('20270102030405_contexto.sql', 'delete from pg_temporal.algo;');
+    assert.match(detalles(revisarArchivos([otra], sellar(otra))), /solo agregan/);
+  });
+
   test('no confunde un comentario ni un disparador con una sentencia que borra', () => {
     const m = migracion('20270102030405_disparador.sql',
       '-- aquí no hay ningún drop table\ncreate trigger t before update or delete on nucleo.algo for each row execute function nucleo.f();\ncreate trigger v before truncate on nucleo.algo for each statement execute function nucleo.f();');

@@ -80,9 +80,76 @@ reemplazar, y que se vacía sola al terminar la transacción.
 - Las políticas y los sellos leen de `nucleo.tenant_actual()`,
   `nucleo.actor_actual()` y `nucleo.dispositivo_actual()`. Un módulo nunca recibe
   el cliente como dato.
-- Hasta que llegue el documento de identidad, el portero comprueba que el
+- Hasta el tramo del portero de la identidad (2b), el portero comprueba que el
   servicio firmó, no que la persona sea miembro: eso lo comprueba el servicio
   antes de firmar.
+
+## Las puertas de identidad
+
+La membresía, la asignación, la cuenta y el índice de accesos no los escribe la
+aplicación ni el portero: los escribe `coddvisor_identidad`, un rol que no
+inicia sesión, no hereda, no se salta la seguridad por fila y solo es dueño de
+sus funciones. Toca solo las tablas de su lista cerrada (`permisosPorTabla` en
+la configuración del verificador): crear el negocio, crear y leer cuentas, y
+escribir membresías, asignaciones y el índice. Ninguna otra tabla de negocio.
+
+La aplicación llega a esas tablas solo por sus puertas, en el esquema
+`identidad`. Cada una:
+
+- exige una firma del servicio con la llave del portero, con un propósito
+  propio y sobre los datos que recibe. La verifica el portero
+  (`portero.exigir_firma_de_identidad`), que es el único que lee la llave. Un
+  SQL colado en la aplicación puede llamar a una puerta, pero sin la llave no
+  la puede firmar;
+- si trabaja dentro de un negocio, exige el negocio abierto por el portero, y
+  la firma lleva también ese negocio y la membresía que actúa;
+- comprueba el permiso de quien actúa (`nucleo.actor_actual()`, su membresía)
+  en `identidad.permiso_de_rol`, en el lugar donde vale el rol. Nunca pregunta
+  por el nombre de un rol;
+- copia el estado de la membresía al índice (`control.acceso`) en la misma
+  transacción. Hoy hay una sola celda; con varias, esa copia pasa a ser un
+  trabajo que se puede repetir sin duplicar.
+
+| Puerta | Qué hace | Propósito firmado | Pide negocio abierto y permiso |
+|---|---|---|---|
+| `registrar_cuenta` | Crea la cuenta de quien ya probó su correo. Con el mismo id del proveedor devuelve la misma | `identidad_registrar_cuenta` | No |
+| `leer_acceso` | La membresía viva de una cuenta en un negocio y su estado. Nunca listas ni correos | `identidad_leer_acceso` | No |
+| `fundar_negocio` | El negocio, su dueño activo en todo el negocio, su membresía automática y el índice, juntos. Se puede repetir | `identidad_fundar` | No: lo abre mientras escribe y lo cierra |
+| `invitar` | Una membresía pendiente para una cuenta ya registrada, con un rol que puede dar el dueño | `identidad_invitar` | Sí, `identidad.invitar` |
+| `aceptar_invitacion` | La cuenta invitada activa su propia membresía | `identidad_aceptar` | No: lo abre mientras escribe y lo cierra |
+| `cambiar_estado` | Suspender, reactivar o dar de baja. La firma lleva la versión de la membresía | `identidad_cambiar_estado` | Sí, `identidad.administrar` en todo el negocio |
+| `dar_asignacion`, `archivar_asignacion` | Dar o quitar un rol. La firma de archivar lleva la versión de la asignación | `identidad_dar_asignacion`, `identidad_archivar_asignacion` | Sí, `identidad.administrar` en ese lugar |
+
+Dos reglas valen en todas: **un negocio nunca se queda sin dueño**, es decir,
+sin una membresía activa con `identidad.administrar` en todo el negocio; y **la
+membresía automática no se toca** por estas puertas.
+
+- **Quitar un dueño va en fila y solo en «read committed».** Las dos puertas
+  que pueden dejar a alguien sin administrar (cambiar el estado y archivar una
+  asignación) toman un candado por negocio y, después de él, revisan el
+  permiso de quien actúa y cuántos dueños quedan. En «repeatable read» o
+  «serializable» la foto de la transacción es anterior al candado y dos dueños
+  podrían quitarse el uno al otro: ahí fallan cerradas (CV213).
+- **Una firma copiada no deshace un cambio posterior.** Cambiar el estado y
+  archivar firman la versión de la fila que vio el servicio; si la fila cambió,
+  fallan (CV214) y el servicio vuelve a leer.
+- **Fundar y aceptar no dejan el negocio abierto.** Lo abren con
+  `portero.poner` solo mientras escriben (el negocio que se funda todavía no
+  existe, y una membresía pendiente no podrá abrirlo cuando el portero
+  compruebe la membresía) y lo cierran con `portero.quitar` antes de terminar.
+  Las dos las ejecuta solo el rol de identidad. Para trabajar después en ese
+  negocio, el servicio lo abre con `portero.abrir`, la única entrada: así el
+  tramo 2b, que agrega a `portero.abrir` la revisión de la membresía y del
+  nivel de los dos pasos, cubre también al dueño que acaba de fundar y al
+  invitado que acaba de aceptar. La propuesta decía que fundar sería una forma
+  propia del portero; queda como puerta de identidad porque escribe tablas de
+  identidad, y el portero solo pone y quita el negocio.
+- **Un reintento no choca con el primer intento.** Fundar, invitar y dar una
+  asignación ponen en fila las llamadas con el mismo identificador: la segunda
+  espera a la primera y devuelve sin hacer nada.
+
+Lo que todavía no hacen: invitar a un correo que no tiene cuenta (tramo 3). Una
+invitación así no es una membresía sin cuenta.
 
 ## Las reglas
 
@@ -145,9 +212,13 @@ no pueden saltarse la seguridad por fila. Además:
 
 - El servicio entra solo con un rol de entrada, que hereda de la aplicación.
   Ningún rol puede volverse otro, y nadie puede volverse portero.
-- El portero toca solo las tablas de su lista cerrada, una por una.
+- El portero y el dueño de las puertas de identidad (`coddvisor_identidad`)
+  tocan solo las tablas de su lista cerrada, una por una. Por clase no tienen
+  nada. Ninguno inicia sesión ni se salta la seguridad por fila.
 - Una tabla de custodia, la aplicación y el rol de los libros solo la leen. La
-  escribe una puerta, y nadie por su clase.
+  escribe una puerta, y nadie por su clase. Las de identidad las escriben las
+  puertas de `coddvisor_identidad`, que la aplicación ejecuta con la firma del
+  servicio. (Cambio del 26-nov-2026, tramo 2a de la identidad.)
 - Los permisos se dan por tabla, nunca por columna.
 - Ningún rol de la aplicación es dueño de una tabla ni crea objetos.
 - La aplicación no crea tablas temporales.
@@ -222,8 +293,11 @@ El nombre es `AAAAMMDDHHMMSS_descripcion.sql`. Para quitar algo, primero deja
 de usarse en el programa y después se quita en una migración aparte que
 empieza con `-- contraer: motivo`. Cambiar el cuerpo de algo que ya existe
 (`CREATE OR REPLACE`) solo vale en una migración que lo declare con
-`-- reemplaza: qué y por qué`. `migraciones.candado.json` guarda la huella
-de cada archivo. Nadie ejecuta SQL a mano en producción.
+`-- reemplaza: qué y por qué`. Borrar filas de una tabla temporal de la
+transacción (`pg_temp`) no borra datos y no cuenta como quitar algo: así cierra
+el portero el negocio que abrió una puerta de identidad. (Cambio del
+26-nov-2026, tramo 2a de la identidad.) `migraciones.candado.json` guarda la
+huella de cada archivo. Nadie ejecuta SQL a mano en producción.
 
 ### Afuera de los negocios
 
@@ -275,8 +349,9 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 
 | Pieza | Depende de |
 |---|---|
-| Que el portero compruebe la membresía además de la firma, y cómo abre un negocio un trabajo automático | Tramo del portero de la identidad (propuesta de identidad, decisiones 4, 6 y 7) |
-| Las puertas que escriben la membresía, la asignación, la cuenta y el índice de accesos | Tramo de las puertas de la identidad |
+| Que el portero compruebe la membresía además de la firma, y cómo abre un negocio un trabajo automático | Tramo del portero de la identidad, 2b (propuesta de identidad, decisiones 4, 6 y 7) |
+| Invitar a un correo que todavía no tiene cuenta, con su enlace de un solo uso | Tramo 3 de la identidad (decisión 10) |
+| Copiar el índice de accesos con un trabajo que se puede repetir, en vez de en la misma transacción | Enrutador de celdas, cuando haya más de una |
 | Enrutador de celdas, intentos fallidos y códigos de respaldo en el esquema `control` | Propuesta de identidad, decisiones 13 y 14 |
 | Auditoría por disparador y su partición por fecha | Primer módulo de negocio |
 | Una clase de tabla para los saldos: los lee la aplicación y solo los escriben las funciones de los libros | Primer libro (tesorería o inventario) |

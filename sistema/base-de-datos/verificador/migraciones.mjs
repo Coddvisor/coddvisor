@@ -21,7 +21,10 @@ const DESTRUCTIVAS = [
   [/\balter\s+table\b[^;]*\brename\b/i, 'ALTER TABLE ... RENAME'],
   [/\balter\s+table\b[^;]*\balter\s+(column\s+)?\w+\s+(set\s+data\s+)?type\b/i, 'cambio de tipo de una columna'],
   [/(^|;)\s*truncate\b/im, 'TRUNCATE'],
-  [/(^|;)\s*delete\s+from\b/im, 'DELETE'],
+  // Borrar de una tabla temporal de la transacción (pg_temp) no borra datos: el
+  // portero cierra así el negocio que abrió una puerta de identidad. Cambio de
+  // BD-15 del 26-nov-2026, tramo 2a de identidad.
+  [/(^|;)\s*delete\s+from\s+(?!(only\s+)?"?pg_temp"?\s*\.)/im, 'DELETE'],
   [/\bdisable\s+(row\s+level\s+security|trigger)\b/i, 'DISABLE de seguridad por fila o de un disparador'],
   [/\bno\s+force\s+row\s+level\s+security\b/i, 'NO FORCE ROW LEVEL SECURITY'],
   // De la clase registrada salen el aislamiento y los permisos de cada tabla.
