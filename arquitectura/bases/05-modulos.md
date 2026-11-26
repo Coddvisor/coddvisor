@@ -47,10 +47,10 @@ inventario, contabilidad. Cada módulo tiene:
 | `ventas`        | Cotizar, vender, cobrar                              | nucleo, terceros, catalogo, inventario, tesoreria, contabilidad |
 | `compras`       | Comprar, recibir, pagar                              | nucleo, terceros, catalogo, inventario, tesoreria, contabilidad |
 
-Nadie usa a ventas ni a compras: están arriba de todo. La identidad hoy vive solo en
-la base: sus tablas (el esquema `identidad` y la cuenta en el plano de control)
-y sus puertas, que son funciones de la base; su carpeta en `modulos/` nace con
-el servicio que llama a esas puertas. La contabilidad no
+Nadie usa a ventas ni a compras: están arriba de todo. La identidad vive en la
+base (sus tablas, en el esquema `identidad` y en el plano de control, y sus
+puertas, que son funciones de la base) y en `modulos/identidad/`, que verifica
+el pase de Supabase, firma como el servicio y llama a esas puertas. La contabilidad no
 llama a ningún módulo de negocio: cada uno le entrega el hecho, y el motor
 decide el asiento con reglas de contabilización que son datos.
 
@@ -67,10 +67,16 @@ sistema/
     verificador/            Las diecisiete reglas, escritas como revisiones.
     pruebas/                Pruebas de las reglas y del comportamiento.
   herramientas/             Guardias que corren en cada cambio.
-  nucleo/                   Tipos compartidos: Dinero, monedas, identificadores.
+  nucleo/                   Tipos compartidos: Dinero, monedas, identificadores y la interfaz de una transacción (Transaccion).
   contratos/
     caja/                   Lo que la caja y el servidor se dicen: el sobre, su sello,
                             los verbos, las respuestas y sus vectores. En borrador.
+  modulos/
+    identidad/              Verificar el pase, leer la cuenta y sus negocios, abrir uno
+                            con el portero y firmar como el servicio.
+  aplicaciones/
+    servicio/               El programa del servidor. Hoy: la conexión con la base y
+                            cómo entra una persona, sin HTTP todavía.
 ```
 
 Esto es lo que existe hoy. Lo que sigue es la estructura de destino; cada
@@ -92,7 +98,8 @@ sistema/
   aplicaciones/
     oficina/                El sistema de gestión en el navegador.
     caja/                   El punto de venta, que funciona sin internet.
-    servicio/               La interfaz de comandos y los trabajos en segundo plano.
+    servicio/               El programa del servidor: la ventanilla, las páginas de entrar,
+                            la interfaz de comandos y los trabajos en segundo plano.
   diseno/                   Medidas, componentes y catálogo de textos compartidos.
 ```
 
@@ -116,7 +123,10 @@ módulo corren igual en la caja sin internet y en el servidor. Por eso:
 
 - **FR-01.** Cada capa usa solo a las que declara: el núcleo a nadie; los
   contratos y los países, al núcleo; los módulos, al núcleo, a los contratos y a
-  otros módulos. Un módulo no importa el paquete de un país por su nombre.
+  otros módulos; las aplicaciones, al núcleo, a los contratos y a los módulos.
+  Ni un módulo ni una aplicación importan el paquete de un país por su nombre, y
+  ninguna capa usa a las aplicaciones. (La capa de las aplicaciones entra el
+  26-nov-2026, con el servicio del tramo 3 de identidad.)
 - **FR-02.** A otra carpeta se entra solo por su puerta, `publico.ts`.
 - **FR-03.** Nadie importa pruebas, herramientas ni archivos de fuera del sistema.
 - **FR-04.** Las dependencias no hacen círculos.
@@ -139,6 +149,16 @@ otro negocio. Por eso:
   `Promise.allSettled`.
 - **PR-02.** Dentro de `try`, una promesa se devuelve con `await`.
 - **PR-03.** Una función asíncrona no se pasa donde nadie la espera.
+
+**Servicio.** Otra conexión con el mismo rol ve el texto de cada consulta en
+`pg_stat_activity`, pero no sus parámetros (02-base-de-datos.md, el portero). Por eso:
+
+- **SV-01.** El texto de una consulta es un literal, nunca se arma: el primer
+  argumento de todo método `consultar` del sistema es un texto o una plantilla sin
+  huecos, y ese método no se saca de su objeto. Los datos y las firmas viajan como
+  parámetros. Solo la conexión del servicio (`aplicaciones/servicio/base/conexion.ts`)
+  recibe el texto como dato, para pasárselo a la base. (Regla nueva del
+  26-nov-2026: antes era un acuerdo del servicio que la base no podía exigir.)
 
 Lo que estas reglas aceptan no ver está escrito al inicio de
 `sistema/herramientas/guardia/reglas.mjs`, y lo mira quien revisa.

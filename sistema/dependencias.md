@@ -22,6 +22,10 @@ Nada de esto viaja al negocio del cliente.
 - **Un revisor de estilo y uno de fronteras.** Sumaban más de cien paquetes y
   dejaban pasar `a < b` sobre la plata. La guardia propia mira los tipos, y su
   examen demuestra que cada regla atrapa su falta.
+- **Una librería de pases (`jose` y parecidas).** Verificar un pase ES256 de
+  Supabase y firmar con HMAC lo trae Node 24 (`node:crypto`, y `fetch` para el juego
+  de llaves). La verificación propia es corta, queda a la vista y tiene un vector
+  por cada ataque conocido (`modulos/identidad/pruebas/pase.test.ts`).
 - **Un validador de datos.** Lo que acepta un contrato publicado no debe depender
   de la versión de una librería en cada lado.
 - **TypeScript 7.** La guardia se apoya en la forma del compilador 6. Subir de

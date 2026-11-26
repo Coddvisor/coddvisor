@@ -19,7 +19,7 @@ const paquete = JSON.parse(readFileSync(new URL('../package.json', import.meta.u
 // después lo que ejecuta. La prueba de que cada regla atrapa su falta va con las pruebas.
 const PASOS = [
   ['verificar:tipos', 'Tipos: sin Node para el código puro, y todo con Node'],
-  ['verificar:codigo', 'Pureza, fronteras, plata y promesas'],
+  ['verificar:codigo', 'Pureza, fronteras, plata, promesas y consultas'],
   ['verificar:valores-fijos', 'Valores fijos en el código'],
   ['verificar:candados', 'Candados: contratos, y lo aceptado en main'],
   ['verificar:base', 'Las diecisiete reglas de la base de datos'],
