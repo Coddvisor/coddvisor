@@ -41,12 +41,21 @@ describe('el mapa de capas', () => {
   });
   it('en las capas solo hay TypeScript que la guardia lee, y cada unidad tiene su puerta', () => {
     for (const c of capas.capas) {
-      const codigo = archivosDe(c.nombre).filter((f) => !f.includes('/pruebas/') && /\.[cm]?[jt]sx?$/.test(f));
+      // El JavaScript de las páginas (capas.json, del_navegador) lo revisan tsconfig.navegador.json y sus pruebas.
+      const delNavegador = (c.del_navegador?.carpetas ?? []).map((d) => `${c.nombre}/${d}/`);
+      const codigo = archivosDe(c.nombre).filter((f) => !f.includes('/pruebas/') && /\.[cm]?[jt]sx?$/.test(f) && !(f.endsWith('.js') && delNavegador.some((d) => f.startsWith(d))));
       // Lo que la guardia no lee no entra: ni JavaScript ni otras extensiones.
       assert.deepEqual(codigo.filter((f) => !f.endsWith('.ts') || f.endsWith('.d.ts')), []);
       const unidades = new Set(codigo.map((f) => (c.unidades ? f.split('/').slice(0, 2).join('/') : c.nombre)));
       for (const u of unidades) assert.ok(existsSync(path.join(RAIZ, u, capas.puerta)), `${u} no tiene ${capas.puerta}`);
     }
+  });
+  it('el JavaScript del navegador vive solo donde capas.json lo declara, y lo revisa tsconfig.navegador.json', () => {
+    const navegador = json('tsconfig.navegador.json');
+    for (const c of capas.capas) for (const d of c.del_navegador?.carpetas ?? []) assert.ok(navegador.include.includes(`${c.nombre}/${d}/**/*.js`), `${c.nombre}/${d}`);
+    assert.deepEqual(navegador.compilerOptions.target, 'ES2020');
+    assert.equal(navegador.compilerOptions.checkJs, true);
+    assert.match(JSON.parse(readFileSync(path.join(RAIZ, 'package.json'), 'utf8')).scripts['verificar:tipos'], /tsc -p tsconfig\.navegador\.json/);
   });
   it('ninguna capa tiene un package.json propio: ahí dejarían de existir los nombres con #', () => {
     for (const c of capas.capas) assert.deepEqual(archivosDe(c.nombre).filter((f) => f.endsWith('package.json')), []);

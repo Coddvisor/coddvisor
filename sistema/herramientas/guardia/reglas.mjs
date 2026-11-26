@@ -2,7 +2,7 @@
 // cosa (el símbolo), no cómo se llama: un objeto propio con un método toFixed no es
 // el toFixed de los números.
 //
-// PU pureza, FR fronteras, PL plata, PR promesas, SV servicio. Cada regla tiene su caso en
+// PU pureza, PO portabilidad, FR fronteras, PL plata, PR promesas, SV servicio. Cada regla tiene su caso en
 // pruebas/guardia.test.mjs; una prueba exige que ninguna se quede sin caso.
 //
 // Lo que se acepta no ver (lo mira quien revisa):
@@ -14,7 +14,9 @@
 //   Promise.all cuando una falla: dentro de una transacción se usa una a la vez;
 // - una consulta escrita como literal que arma su propio texto en la base (format y
 //   execute dentro de una función): eso lo mira quien revisa la migración;
-// - un texto de consulta que llega por la conexión del servicio, la única que lo recibe como dato.
+// - un texto de consulta que llega por la conexión del servicio, la única que lo recibe como dato;
+// - una pieza de Node pedida por un nombre armado al correr (globalThis[nombre]) o una que
+//   Deno no trae y no está en la lista de PO-01: la prueba en Deno, cuando exista, la atrapa.
 
 import path from 'node:path';
 import ts from 'typescript';
@@ -29,6 +31,7 @@ export const REGLAS = {
   'PU-03': 'El código puro no usa Node, el navegador ni librerías',
   'PU-04': 'El código puro no apaga al compilador (any, declare, referencias, comentarios de TypeScript)',
   'PU-05': 'El código puro no usa expresiones regulares que no cargan en los celulares más viejos',
+  'PO-01': 'Los módulos y las aplicaciones no usan piezas que solo existen en Node (node:, Buffer, process, require): corren también en Deno',
   'FR-01': 'Cada capa usa solo a las que declara',
   'FR-02': 'A otra carpeta se entra solo por su puerta, publico.ts',
   'FR-03': 'Nadie importa pruebas, herramientas ni archivos de fuera del sistema',
@@ -87,10 +90,12 @@ export function revisarPrograma({ programa, archivos, tipos, options, host }, { 
       hallazgos.push({ regla, archivo, linea, detalle });
     };
     const pura = esPura(archivo);
+    const portatil = !pura && capaDe(archivo)?.portatil === true;
     if (pura) revisarComentarios(fuente, anotar);
-    revisarImportaciones({ fuente, archivo, anotar, capas, capaDe, esPrueba, filas, options, host, grafo, pura });
+    revisarImportaciones({ fuente, archivo, anotar, capas, capaDe, esPrueba, filas, options, host, grafo, pura, portatil });
     const mirar = (n) => {
       if (pura) pureza(n, anotar, tipos, programa);
+      if (portatil) portabilidad(n, anotar, tipos);
       plata(n, archivo, anotar, tipos);
       promesas(n, anotar, tipos);
       consultas(n, archivo, anotar, tipos);
@@ -184,7 +189,7 @@ function anyEscondido(n, anotar, tipos) {
 
 // ---------- FR ----------
 
-function revisarImportaciones({ fuente, archivo, anotar, capas, capaDe, esPrueba, filas, options, host, grafo, pura }) {
+function revisarImportaciones({ fuente, archivo, anotar, capas, capaDe, esPrueba, filas, options, host, grafo, pura, portatil }) {
   const capa = capaDe(archivo);
   const vecinos = new Set();
   grafo.set(archivo, vecinos);
@@ -192,7 +197,11 @@ function revisarImportaciones({ fuente, archivo, anotar, capas, capaDe, esPrueba
     if (literal === undefined || !ts.isStringLiteralLike(literal)) { anotar('FR-07', nodo, 'la ruta de una importación no se arma al vuelo'); return; }
     const texto = literal.text;
     if (capa !== null && NODE_PROHIBIDO.has(texto)) { anotar('FR-07', nodo, `${texto} permite importar sin que se vea`); return; }
-    if (texto.startsWith('node:')) { if (pura) anotar('PU-03', nodo, texto); return; }
+    if (texto.startsWith('node:')) {
+      if (pura) anotar('PU-03', nodo, texto);
+      else if (portatil) anotar('PO-01', nodo, texto);
+      return;
+    }
     const modo = ts.getModeForUsageLocation(fuente, literal, options);
     const resuelto = ts.resolveModuleName(texto, fuente.fileName, options, host, undefined, undefined, modo).resolvedModule;
     if (resuelto === undefined) { anotar('FR-07', nodo, `no se encuentra ${texto}`); return; }
@@ -252,6 +261,28 @@ export function circulos(grafo) {
   };
   for (const v of grafo.keys()) if (!indice.has(v)) visitar(v);
   return salida;
+}
+
+// ---------- PO ----------
+
+// Lo que solo existe en Node. Lo que traen igual Node y Deno (crypto, fetch, Request,
+// TextEncoder, setTimeout, URL) sí se usa.
+const SOLO_DE_NODE = new Set(['Buffer', 'process', 'require', 'module', '__dirname', '__filename', 'global', 'setImmediate', 'clearImmediate']);
+
+const GLOBALES = new Set(['globalThis', 'window', 'self']);
+
+function portabilidad(n, anotar, tipos) {
+  if (!ts.isIdentifier(n) || !SOLO_DE_NODE.has(n.text)) return;
+  const padre = n.parent;
+  // globalThis.process, window.Buffer o self.process son la misma pieza de Node
+  // pedida por otro camino: se revisan como si se nombraran solas.
+  const porLoGlobal = ts.isPropertyAccessExpression(padre) && padre.name === n && ts.isIdentifier(padre.expression) && GLOBALES.has(padre.expression.text);
+  const esNombre = !porLoGlobal && ((ts.isPropertyAccessExpression(padre) && padre.name === n) || (ts.isPropertyAssignment(padre) && padre.name === n) || (ts.isBindingElement(padre) && padre.propertyName === n));
+  if (esNombre) return;
+  // process.getBuiltinModule ya lo marca FR-07.
+  if (ts.isPropertyAccessExpression(padre) && padre.expression === n && padre.name.text === 'getBuiltinModule') return;
+  const simbolo = ts.isShorthandPropertyAssignment(padre) ? tipos.getShorthandAssignmentValueSymbol(padre) : tipos.getSymbolAtLocation(n);
+  if (simbolo?.declarations?.some((d) => d.getSourceFile().fileName.includes('/node_modules/@types/node/'))) anotar('PO-01', n, n.text);
 }
 
 // ---------- PL ----------

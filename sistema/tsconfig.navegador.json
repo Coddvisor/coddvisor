@@ -1,0 +1,18 @@
+{
+  // Revisa el JavaScript de las páginas de la oficina, que corre en el navegador
+  // tal cual, sin construir. TypeScript lee sus tipos (JSDoc) y no genera nada.
+  //
+  // ES2020 a propósito, como el código puro: es lo que entiende el celular más
+  // viejo que se admite (Chrome y WebView 80). Intl.ListFormat llegó antes
+  // (Chrome 72), así que se suma su parte. Lo demás de ES2021 no compila.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "ES2021.Intl", "DOM", "DOM.Iterable"],
+    "types": [],
+    "allowJs": true,
+    "checkJs": true
+  },
+  "include": ["aplicaciones/oficina/**/*.js", "herramientas/probar-entrar/navegador/**/*.js"],
+  "exclude": ["node_modules", "**/pruebas/**"]
+}

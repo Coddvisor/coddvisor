@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es-PE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <title data-texto="marca.nombre"></title>
+  <link rel="icon" href="/marca/logo/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/marca/colores.css">
+  <link rel="stylesheet" href="/diseno/medidas.css">
+  <link rel="stylesheet" href="/comun/oficina.css">
+  <script type="module" src="/inicio/inicio.js"></script>
+</head>
+<body class="cargando">
+  <main class="marco">
+    <header class="cabecera">
+      <picture>
+        <source srcset="/marca/logo/coddvisor-logotipo-horizontal-fondo-oscuro.svg" media="(prefers-color-scheme: dark)">
+        <img class="logo" src="/marca/logo/coddvisor-logotipo-horizontal.svg" width="160" height="24" data-texto-alt="marca.nombre">
+      </picture>
+      <button class="enlace boton-como-enlace" id="salir" type="button" data-texto="comun.salir"></button>
+    </header>
+
+    <p class="aviso aviso-error" id="aviso" role="alert" hidden>
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>
+      <span id="aviso-texto"></span>
+    </p>
+
+    <section id="negocio" hidden>
+      <h1 id="nombre"></h1>
+      <p class="ayuda" data-texto="inicio.saludo"></p>
+      <p id="rol"></p>
+
+      <section class="tarjeta">
+        <h2 data-texto="inicio.pronto.titulo"></h2>
+        <p data-texto="inicio.pronto.texto"></p>
+      </section>
+    </section>
+
+    <div class="acciones">
+      <a class="boton boton-secundario boton-ancho" href="/entrar/negocios" id="otro" data-texto="inicio.otro"></a>
+    </div>
+  </main>
+</body>
+</html>

@@ -37,6 +37,7 @@
       "nombre": "modulos",
       "unidades": true,
       "pura": false,
+      "portatil": true,
       "subcarpetas_puras": [
         "dominio"
       ],
@@ -53,13 +54,20 @@
       "nombre": "aplicaciones",
       "unidades": true,
       "pura": false,
+      "portatil": true,
       "usa": [
         "nucleo",
         "contratos",
         "modulos"
       ],
       "npm": [],
-      "porque": "Una aplicación es un programa que se arranca (el servicio, la oficina, la caja): arma los módulos, lee el entorno y habla con el exterior. Usa el núcleo, los contratos y los módulos por su puerta. No importa el paquete de un país por su nombre, por lo mismo que un módulo. Ninguna otra capa usa a las aplicaciones: un módulo que importara una quedaría atado a un programa (cambio de frontera del 26-nov-2026, tramo 3 de identidad)."
+      "porque": "Una aplicación es un programa que se arranca (el servicio, la oficina, la caja): arma los módulos, lee el entorno y habla con el exterior. Usa el núcleo, los contratos y los módulos por su puerta. No importa el paquete de un país por su nombre, por lo mismo que un módulo. Ninguna otra capa usa a las aplicaciones: un módulo que importara una quedaría atado a un programa (cambio de frontera del 26-nov-2026, tramo 3 de identidad).",
+      "del_navegador": {
+        "carpetas": [
+          "oficina"
+        ],
+        "porque": "Las páginas de la oficina corren en el navegador tal cual, sin construir: su JavaScript no pasa por esta guardia, que lee TypeScript. Lo revisan tsconfig.navegador.json (tipos y lo que entiende el celular más viejo) y aplicaciones/oficina/pruebas/paginas.test.ts (textos del catálogo, un solo botón ámbar, objetivos táctiles, contraste y peso). Fuera de esas carpetas, una capa sigue sin admitir JavaScript (cambio de frontera del 26-nov-2026, tramo 3 de identidad, parte 2)."
+      }
     }
   ],
   "fuera_del_producto": {
@@ -75,5 +83,6 @@
       "\\.test\\.(ts|mts|mjs)$"
     ],
     "porque": "Una prueba puede usar Node, datos inventados y atajos. Si el código de producción importara una, heredaría esos atajos."
-  }
+  },
+  "portatil_porque": "Los módulos y las aplicaciones corren en una función de Supabase (Deno) y en Node sin reescribirse (donde-corre-el-sistema.md, decisiones 3 y 6). Por eso no usan piezas que solo existen en Node: ni node:, ni Buffer, process, require, global o setImmediate. Usan lo que traen los dos: WebCrypto, fetch, Request, Response, TextEncoder (regla PO-01, 26-nov-2026). Lo propio de Node vive en un arranque fuera del producto, como herramientas/probar-entrar."
 }

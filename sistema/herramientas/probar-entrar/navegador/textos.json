@@ -1,0 +1,11 @@
+{
+  "aviso.titulo": "Modo de prueba: nada de esto es real",
+  "aviso.contrasena": "Contraseña de todas las cuentas: {contrasena}",
+  "aviso.codigo": "Código del segundo paso: {codigo}",
+  "aviso.google": "«Continuar con Google» entra como {correo}.",
+  "aviso.cuenta": "{correo}: {descripcion}",
+  "cuenta.duena": "dueña de la bodega, con segundo paso",
+  "cuenta.contador": "contador de los dos negocios, con segundo paso",
+  "cuenta.vendedor": "vendedor de la bodega, sin segundo paso",
+  "cuenta.sin-codigo": "dueño de la ferretería que no inscribió su app de códigos"
+}

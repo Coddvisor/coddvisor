@@ -95,10 +95,10 @@ describe("los pases que se rechazan", () => {
 });
 
 describe("el juego de llaves", () => {
-  it("usa solo llaves públicas EC P-256 para ES256", () => {
+  it("usa solo llaves públicas EC P-256 para ES256", async () => {
     const buena = nuevaLlaveDeSupabase("buena");
     const privada = { ...nuevaLlaveDeSupabase("privada").privada.export({ format: "jwk" }), kid: "privada" };
-    const llaves = llavesDelJuego({ keys: [
+    const llaves = await llavesDelJuego({ keys: [
       buena.jwk,
       privada,
       { ...nuevaLlaveDeSupabase("rs").jwk, kid: "rs", alg: "RS256" },
@@ -112,10 +112,10 @@ describe("el juego de llaves", () => {
     ] });
     assert.deepEqual([...(llaves?.keys() ?? [])], ["buena"]);
   });
-  it("no acepta un juego con más llaves que el tope, ni algo que no es un juego", () => {
-    assert.equal(llavesDelJuego({ keys: Array.from({ length: LIMITES_DE_IDENTIDAD.maximoDeLlaves + 1 }, (_, i) => nuevaLlaveDeSupabase(`k${String(i)}`).jwk) }), null);
-    assert.equal(llavesDelJuego([]), null);
-    assert.equal(llavesDelJuego({ keys: "no" }), null);
+  it("no acepta un juego con más llaves que el tope, ni algo que no es un juego", async () => {
+    assert.equal(await llavesDelJuego({ keys: Array.from({ length: LIMITES_DE_IDENTIDAD.maximoDeLlaves + 1 }, (_, i) => nuevaLlaveDeSupabase(`k${String(i)}`).jwk) }), null);
+    assert.equal(await llavesDelJuego([]), null);
+    assert.equal(await llavesDelJuego({ keys: "no" }), null);
   });
   it("guarda el juego, lo vuelve a pedir ante un kid desconocido con freno, y al vencer", async () => {
     let ahora = 1_000_000;
@@ -197,7 +197,7 @@ describe("el juego de llaves", () => {
 
 describe("las piezas puras", () => {
   it("base64url tiene una sola escritura", () => {
-    assert.deepEqual(desdeBase64url("AQ"), Buffer.from([1]));
+    assert.deepEqual(desdeBase64url("AQ"), new Uint8Array([1]));
     assert.equal(desdeBase64url("AR"), null);
     assert.equal(desdeBase64url("AQ=="), null);
     assert.equal(desdeBase64url("A"), null);
@@ -210,9 +210,10 @@ describe("las piezas puras", () => {
   it("la cuenta tiene que existir, estar activa y no haber revocado sus pases después del pase", () => {
     const pase = { cuentaDelProveedor: sub, sesion: uuid7(), nivel: "aal1" as const, emitidoEnS: 1000, venceEnS: 4600 };
     assert.deepEqual(revisarCuenta(null, pase), { ok: false, error: "cuenta_desconocida" });
-    for (const estado of ["pendiente", "suspendida", "cerrada"]) assert.deepEqual(revisarCuenta({ estado, pasesRevocadosEnS: null }, pase), { ok: false, error: "cuenta_inactiva" });
-    assert.deepEqual(revisarCuenta({ estado: "activa", pasesRevocadosEnS: 1001 }, pase), { ok: false, error: "pase_revocado" });
-    assert.deepEqual(revisarCuenta({ estado: "activa", pasesRevocadosEnS: 1000 }, pase), { ok: true, value: true });
-    assert.deepEqual(revisarCuenta({ estado: "activa", pasesRevocadosEnS: null }, pase), { ok: true, value: true });
+    for (const estado of ["pendiente", "suspendida", "cerrada"]) assert.deepEqual(revisarCuenta({ estado, pasesRevocadosEnS: null, sesionCerrada: false }, pase), { ok: false, error: "cuenta_inactiva" });
+    assert.deepEqual(revisarCuenta({ estado: "activa", pasesRevocadosEnS: 1001, sesionCerrada: false }, pase), { ok: false, error: "pase_revocado" });
+    assert.deepEqual(revisarCuenta({ estado: "activa", pasesRevocadosEnS: 1000, sesionCerrada: false }, pase), { ok: true, value: true });
+    assert.deepEqual(revisarCuenta({ estado: "activa", pasesRevocadosEnS: null, sesionCerrada: false }, pase), { ok: true, value: true });
+    assert.deepEqual(revisarCuenta({ estado: "activa", pasesRevocadosEnS: null, sesionCerrada: true }, pase), { ok: false, error: "sesion_cerrada" });
   });
 });

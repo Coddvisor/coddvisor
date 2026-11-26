@@ -14,7 +14,7 @@
   },
   "scripts": {
     "verificar": "node herramientas/verificar.mjs",
-    "verificar:tipos": "tsc -p tsconfig.puro.json && tsc -p tsconfig.json",
+    "verificar:tipos": "tsc -p tsconfig.puro.json && tsc -p tsconfig.json && tsc -p tsconfig.navegador.json",
     "verificar:codigo": "node herramientas/guardia/correr.mjs",
     "verificar:valores-fijos": "node herramientas/valores-fijos.mjs",
     "verificar:candados": "node herramientas/candados/contratos.mjs && node herramientas/candados/contra-main.mjs",
@@ -23,7 +23,8 @@
     "candado": "node base-de-datos/verificador/candado.mjs",
     "contratos:sellar": "node herramientas/candados/contratos.mjs sellar",
     "contratos:publicar": "node herramientas/candados/contratos.mjs publicar",
-    "revisor-ia": "node herramientas/revisor-ia.mjs"
+    "revisor-ia": "node herramientas/revisor-ia.mjs",
+    "probar:entrar": "node herramientas/probar-entrar/arrancar.ts --solo-en-esta-computadora"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.15",

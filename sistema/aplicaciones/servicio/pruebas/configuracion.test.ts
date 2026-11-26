@@ -9,6 +9,7 @@ import { leerConfiguracion, LIMITES_DEL_SERVICIO, VARIABLES, type Entorno } from
 
 const secreto = randomBytes(32).toString("base64");
 const bueno: Entorno = {
+  [VARIABLES.origenDelPanel]: "https://app.ejemplo.test",
   [VARIABLES.emisorDelPase]: "https://proyecto-de-prueba.supabase.test/auth/v1",
   [VARIABLES.audienciaDelPase]: "authenticated",
   [VARIABLES.llavesDelPase]: "https://proyecto-de-prueba.supabase.test/auth/v1/.well-known/jwks.json",
@@ -22,6 +23,7 @@ describe("la configuración del servicio", () => {
     assert.ok(r.ok);
     assert.equal(r.value.pase.audiencia, "authenticated");
     assert.equal(r.value.llaveDelPortero.numero, 3);
+    assert.equal(r.value.origen, "https://app.ejemplo.test");
     assert.deepEqual(Buffer.from(r.value.llaveDelPortero.secreto), Buffer.from(secreto, "base64"));
   });
   it("dice cada variable que falta", () => {
@@ -32,6 +34,9 @@ describe("la configuración del servicio", () => {
   it("rechaza direcciones sin https, con usuario, o llaves de otro origen", () => {
     for (const cambio of [
       { [VARIABLES.emisorDelPase]: "http://proyecto-de-prueba.supabase.test/auth/v1" },
+      { [VARIABLES.origenDelPanel]: "http://app.ejemplo.test" },
+      { [VARIABLES.origenDelPanel]: "https://app.ejemplo.test/" },
+      { [VARIABLES.origenDelPanel]: "https://app.ejemplo.test/panel" },
       { [VARIABLES.llavesDelPase]: "https://usuario:clave@proyecto-de-prueba.supabase.test/jwks" },
       { [VARIABLES.llavesDelPase]: "https://otro.test/.well-known/jwks.json" },
       { [VARIABLES.numeroDeLaLlaveDelPortero]: "-1" },

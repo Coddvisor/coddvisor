@@ -47,6 +47,10 @@ export const configuracion = {
     // cuál entrar, sin abrirlo (propuesta de identidad, decisión 14: «la lista
     // de en qué celda vive cada negocio»). Tramo 3 de identidad, parte 1.
     'control.negocio',
+    // Las sesiones que la persona cerró al salir, que el servicio consulta en
+    // cada pedido (propuesta de identidad, decisión 5: «una lista de sesiones
+    // cerradas»). Es de la cuenta, no de un negocio. Tramo 3 de identidad, parte 2.
+    'control.sesion_cerrada',
   ],
 
   // Lista cerrada, tabla por tabla, para un rol que no trabaja por clase. Si
@@ -75,6 +79,8 @@ export const configuracion = {
       'control.acceso': ['SELECT', 'INSERT', 'UPDATE'],
       // Fundar copia el nombre y la celda; listar los negocios los lee (tramo 3).
       'control.negocio': ['SELECT', 'INSERT'],
+      // Salir anota la sesión; cada pedido la lee. Solo se anexa (tramo 3, parte 2).
+      'control.sesion_cerrada': ['SELECT', 'INSERT'],
       'identidad.membresia': ['SELECT', 'INSERT', 'UPDATE'],
       'identidad.asignacion': ['SELECT', 'INSERT', 'UPDATE'],
       'identidad.rol': ['SELECT'],
@@ -120,6 +126,10 @@ export const configuracion = {
     // Para entrar (tramo 3, parte 1): la cuenta de un pase y sus negocios.
     'identidad.leer_cuenta': ['coddvisor_app'],
     'identidad.listar_negocios': ['coddvisor_app'],
+    // Salir de verdad (tramo 3, parte 2): anotar la sesión cerrada y leer la
+    // cuenta con su sesión en cada pedido.
+    'identidad.cerrar_sesion': ['coddvisor_app'],
+    'identidad.leer_cuenta_de_sesion': ['coddvisor_app'],
   },
 
   // Cómo entra el servicio a la base y de dónde sale el cliente activo.

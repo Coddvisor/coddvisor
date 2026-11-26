@@ -73,11 +73,25 @@ sistema/
                             los verbos, las respuestas y sus vectores. En borrador.
   modulos/
     identidad/              Verificar el pase, leer la cuenta y sus negocios, abrir uno
-                            con el portero y firmar como el servicio.
+                            con el portero, decir el negocio abierto en palabras y
+                            firmar como el servicio. Con WebCrypto: corre en Node y en Deno.
   aplicaciones/
-    servicio/               El programa del servidor. Hoy: la conexión con la base y
-                            cómo entra una persona, sin HTTP todavía.
+    servicio/               El programa del servidor. Hoy: la conexión con la base,
+                            cómo entra una persona y sus rutas bajo /api (rutas/),
+                            hechas con Request y Response para Node y para Deno.
+    oficina/                Las páginas del navegador. Hoy: entrar, el segundo paso,
+                            elegir negocio y un inicio provisional. HTML, CSS y poco
+                            JavaScript, sin construir; Cloudflare las servirá tal cual.
+  diseno/                   Las medidas (medidas.css) y el catálogo de textos
+                            (textos/es-PE.json). Los colores siguen en marca/colores.css.
+  herramientas/
+    probar-entrar/          El modo de prueba local de entrar. Solo para la computadora.
 ```
+
+Las páginas de entrar viven en `aplicaciones/oficina/` y no en el servicio
+(cambio del 26-nov-2026): desde que el panel se arma en el navegador
+(`donde-corre-el-sistema.md`, decisión 2), el servicio solo entrega datos y las
+pantallas son archivos fijos. Las rutas que ellas llaman sí son del servicio.
 
 Esto es lo que existe hoy. Lo que sigue es la estructura de destino; cada
 carpeta se crea cuando llega su primer código, no antes.
@@ -119,6 +133,16 @@ módulo corren igual en la caja sin internet y en el servidor. Por eso:
   referencias, comentarios).
 - **PU-05.** No usan expresiones regulares que no cargan en los celulares más viejos.
 
+**Portabilidad.** Los módulos y las aplicaciones corren en una función de
+Supabase (Deno) y en Node sin reescribirse (`donde-corre-el-sistema.md`). Por eso:
+
+- **PO-01.** No usan piezas que solo existen en Node: ni `node:`, ni `Buffer`,
+  `process`, `require`, `global` o `setImmediate`. Usan lo que traen los dos:
+  WebCrypto, `fetch`, `Request`, `Response`, `TextEncoder`. El entorno les llega
+  como parámetro. Lo propio de Node vive en un arranque fuera del producto, como
+  `herramientas/probar-entrar/`. (Regla nueva del 26-nov-2026: antes un módulo
+  podía usar `node:crypto`.)
+
 **Fronteras.**
 
 - **FR-01.** Cada capa usa solo a las que declara: el núcleo a nadie; los
@@ -129,6 +153,11 @@ módulo corren igual en la caja sin internet y en el servidor. Por eso:
   26-nov-2026, con el servicio del tramo 3 de identidad.)
 - **FR-02.** A otra carpeta se entra solo por su puerta, `publico.ts`.
 - **FR-03.** Nadie importa pruebas, herramientas ni archivos de fuera del sistema.
+- **JavaScript del navegador.** Una capa no admite JavaScript, salvo las carpetas
+  que `capas.json` declara del navegador (hoy, `aplicaciones/oficina/`). Ese
+  código no pasa por la guardia, que lee TypeScript: lo revisan
+  `tsconfig.navegador.json` (tipos, y nada más nuevo que lo que entiende el
+  celular más viejo) y las pruebas de sus páginas. (Cambio del 26-nov-2026.)
 - **FR-04.** Las dependencias no hacen círculos.
 - **FR-05.** Un módulo usa solo a los que dice la tabla de arriba.
 - **FR-06.** El `dominio/` de un módulo no conoce sus datos ni a otros módulos.

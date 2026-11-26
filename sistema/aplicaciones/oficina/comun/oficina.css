@@ -1,0 +1,142 @@
+/* La oficina: los componentes de las pantallas. Todo valor sale de una medida
+   con nombre: los colores de marca/colores.css (papeles, nunca el valor) y lo
+   demás de diseno/medidas.css. El modo oscuro no se escribe aquí: lo dan los
+   mismos papeles, que cambian de valor solos (EX-17, EX-18).
+   Celular primero: una columna y una decisión por pantalla. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Lo escondido queda escondido, aunque su componente diga otra forma de mostrarse. */
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--tinta);
+  font-family: var(--letra);
+  font-size: var(--tamano-texto);
+  font-weight: var(--peso-normal);
+  line-height: var(--interlineado);
+  /* Un nombre de negocio o un correo largo, sin espacios, se corta antes que
+     salirse de la columna: los escribe el cliente y no se pueden acotar. */
+  overflow-wrap: anywhere;
+}
+
+/* Hasta que llegan los textos del catálogo, la pantalla no se muestra a medias. */
+.cargando .marco { visibility: hidden; }
+
+.marco {
+  max-width: var(--ancho-de-la-columna);
+  margin: 0 auto;
+  padding: var(--espacio-5) var(--espacio-4) var(--espacio-7);
+}
+
+.cabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--espacio-3); margin-bottom: var(--espacio-6); }
+.logo { display: block; height: var(--espacio-5); width: auto; }
+
+h1, h2 { margin: 0 0 var(--espacio-2); line-height: var(--interlineado-titulo); font-weight: var(--peso-fuerte); }
+h1 { font-size: var(--tamano-titulo); }
+h2 { font-size: var(--tamano-subtitulo); }
+p { margin: 0 0 var(--espacio-4); }
+
+.ayuda { color: var(--texto-2); }
+.nota { color: var(--texto-2); font-size: var(--tamano-chico); margin-top: var(--espacio-2); }
+
+/* Lo que se toca: nada menos de 24 px; botones, campos y enlaces sueltos, 48 px. */
+a, button, input { min-height: var(--toque-minimo); }
+
+.enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--toque);
+  color: var(--enlace);
+  font-weight: var(--peso-medio);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* Un botón que se ve como enlace: hace algo en esta página (salir), no lleva a otra. */
+.boton-como-enlace { background: none; border: 0; padding: 0; font: inherit; font-weight: var(--peso-medio); cursor: pointer; }
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+  min-height: var(--toque);
+  padding: 0 var(--espacio-5);
+  border: var(--linea) solid transparent;
+  border-radius: var(--radio);
+  font: inherit;
+  font-weight: var(--peso-fuerte);
+  text-decoration: none;
+  cursor: pointer;
+}
+.boton-ancho { width: 100%; }
+.boton[disabled] { cursor: progress; opacity: 0.7; }
+
+/* El único ámbar de cada pantalla (EX-10). */
+.boton-principal { background: var(--boton); color: var(--boton-texto); }
+.boton-secundario { background: var(--boton-2); color: var(--boton-2-texto); border-color: var(--boton-2-texto); }
+
+:focus-visible { outline: var(--linea-del-foco) solid var(--enlace); outline-offset: var(--linea-del-foco); }
+
+.separador { display: flex; align-items: center; gap: var(--espacio-3); margin: var(--espacio-5) 0; color: var(--texto-2); font-size: var(--tamano-chico); }
+.separador::before, .separador::after { content: ""; flex: 1; border-top: var(--linea) solid var(--borde); }
+
+.campo { margin-bottom: var(--espacio-4); }
+.campo label { display: block; margin-bottom: var(--espacio-1); font-weight: var(--peso-medio); }
+.campo input {
+  display: block;
+  width: 100%;
+  min-height: var(--toque);
+  padding: 0 var(--espacio-3);
+  border: var(--linea) solid var(--texto-3);
+  border-radius: var(--radio-chico);
+  background: var(--tarjeta);
+  color: var(--tinta);
+  font: inherit;
+}
+.campo-codigo input { font-family: var(--letra-cifras); font-size: var(--tamano-subtitulo); letter-spacing: 0.3em; }
+
+/* Un aviso dice qué pasó y qué hacer (EX-04), con ícono y texto: nunca solo el color. */
+.aviso { display: flex; align-items: flex-start; gap: var(--espacio-2); padding: var(--espacio-3) var(--espacio-4); border-radius: var(--radio-chico); margin-bottom: var(--espacio-4); }
+.aviso-error { background: var(--error-fondo); color: var(--error); }
+.icono { flex: none; width: var(--icono); height: var(--icono); margin-top: var(--espacio-1); }
+
+.tarjeta { background: var(--tarjeta); color: var(--tinta); border: var(--linea) solid var(--borde); border-radius: var(--radio); padding: var(--espacio-5) var(--espacio-4); margin-bottom: var(--espacio-4); }
+.tarjeta p:last-child { margin-bottom: 0; }
+
+.negocios { list-style: none; margin: 0 0 var(--espacio-4); padding: 0; display: grid; gap: var(--espacio-3); }
+.negocio {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  min-height: var(--toque);
+  padding: var(--espacio-4);
+  /* El borde de lo que se toca se ve (3:1 sobre el fondo, WCAG 1.4.11); --borde queda para separadores. */
+  border: var(--linea) solid var(--texto-3);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  color: var(--tinta);
+  text-decoration: none;
+}
+a.negocio[href]:hover { border-color: var(--enlace); }
+/* Un acceso pendiente o suspendido se muestra, pero no lleva a ninguna parte. */
+.negocio-sin-accion { background: var(--fondo); }
+.negocio-texto { flex: 1; display: grid; gap: var(--espacio-1); }
+.negocio-nombre { font-weight: var(--peso-fuerte); }
+.negocio .icono { color: var(--texto-2); margin-top: 0; }
+
+.estado { display: inline-flex; align-items: center; gap: var(--espacio-1); justify-self: start; padding: 0 var(--espacio-2); border-radius: var(--radio-pildora); background: var(--aviso-fondo); color: var(--aviso); font-size: var(--tamano-chico); }
+.estado .icono { width: var(--espacio-4); height: var(--espacio-4); margin-top: 0; color: var(--aviso); }
+
+.acciones { display: grid; gap: var(--espacio-3); margin-top: var(--espacio-5); }
+.pie { color: var(--texto-2); margin-top: var(--espacio-5); }
+.pie .enlace { margin-left: var(--espacio-1); }
+
+@media (min-width: 40rem) {
+  .marco { padding-top: var(--espacio-7); }
+}

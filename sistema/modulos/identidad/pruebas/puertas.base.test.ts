@@ -1,11 +1,12 @@
-// Las puertas para entrar (leer_cuenta y listar_negocios), la firma del
+// Las puertas para entrar (leer_cuenta, listar_negocios, cerrar_sesion y
+// leer_cuenta_de_sesion), la firma del
 // servicio contra la de la base, y las piezas del módulo que las llaman. Contra
 // la base en memoria, como el servicio: con su rol de entrada y la firma.
 
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
-import { campoEntero, campoTexto, campoUuid, campoUuidOpcional, crearFirmador, LIMITES_DE_IDENTIDAD, listarNegocios, mensajeDeFirma, type Firmador } from "#modulos/identidad";
-import { leerCuenta as leerFilaDeCuenta, listarNegocios as listarFilas } from "../datos/puertas.ts";
+import { campoEntero, campoTexto, campoUuid, campoUuidOpcional, crearFirmador, LIMITES_DE_IDENTIDAD, listarNegocios, mensajeDeFirma, type FirmaDelServicio, type Firmador } from "#modulos/identidad";
+import { cerrarSesion, leerCuenta as leerFilaDeCuenta, leerCuentaDeSesion, listarNegocios as listarFilas } from "../datos/puertas.ts";
 import { codigoDeError, comoServicio, crearBase, fundar, llaveDelPortero, nuevaCuenta, registrar, transaccionDe, uuid7, type Base, type NegocioDePrueba } from "./apoyo.ts";
 
 const FIRMA_INCOMPLETA = "CV101";
@@ -37,17 +38,23 @@ after(async () => {
   await db.close();
 });
 
-function llamarLeerCuenta(proveedor: string, f = firmar("identidad_leer_cuenta", [campoUuid(proveedor)])) {
-  return async () => await db.query("select * from identidad.leer_cuenta($1, $2, $3, $4)", [proveedor, f.venceS, f.numero, f.firma]);
+function llamarLeerCuenta(proveedor: string, firma?: FirmaDelServicio | Promise<FirmaDelServicio>) {
+  return async () => {
+    const f = await (firma ?? firmar("identidad_leer_cuenta", [campoUuid(proveedor)]));
+    return await db.query("select * from identidad.leer_cuenta($1, $2, $3, $4)", [proveedor, f.venceS, f.numero, f.firma]);
+  };
 }
 
-function llamarListar(cuenta: string, despues: string | null, limite: number, f = firmar("identidad_listar_negocios", [campoUuid(cuenta), campoUuidOpcional(despues), campoEntero(limite)])) {
-  return async () => await db.query("select * from identidad.listar_negocios($1, $2, $3, $4, $5, $6)", [cuenta, despues, limite, f.venceS, f.numero, f.firma]);
+function llamarListar(cuenta: string, despues: string | null, limite: number, firma?: FirmaDelServicio | Promise<FirmaDelServicio>) {
+  return async () => {
+    const f = await (firma ?? firmar("identidad_listar_negocios", [campoUuid(cuenta), campoUuidOpcional(despues), campoEntero(limite)]));
+    return await db.query("select * from identidad.listar_negocios($1, $2, $3, $4, $5, $6)", [cuenta, despues, limite, f.venceS, f.numero, f.firma]);
+  };
 }
 
 describe("la firma del servicio y la de la base", () => {
   it("el mensaje es el mismo, byte por byte", async () => {
-    const casos: ReadonlyArray<readonly [string, number, number, readonly Buffer[]]> = [
+    const casos: ReadonlyArray<readonly [string, number, number, readonly Uint8Array[]]> = [
       ["identidad_leer_cuenta", 901, 1_800_000_000, [campoUuid(uuid7())]],
       ["identidad_listar_negocios", 7, 1, [campoUuid(uuid7()), campoUuidOpcional(null), campoEntero(20)]],
       ["abrir_persona", 2_147_483_647, 9_007_199_254, [campoUuid(uuid7()), campoTexto("aal2"), campoTexto("Ñandú y café ☕"), campoTexto("")]],
@@ -55,7 +62,7 @@ describe("la firma del servicio y la de la base", () => {
     ];
     for (const [proposito, numero, vence, campos] of casos) {
       const [fila] = await filas("select portero.mensaje_de_firma($1, $2, $3, $4::bytea[]) as m", [proposito, numero, vence, campos]);
-      assert.deepEqual(Buffer.from(fila?.["m"] as Uint8Array), mensajeDeFirma(proposito, numero, vence, campos), proposito);
+      assert.deepEqual(new Uint8Array(fila?.["m"] as Uint8Array), mensajeDeFirma(proposito, numero, vence, campos), proposito);
     }
   });
   it("lo que dura una firma más el margen del reloj es el horizonte de la base", async () => {
@@ -90,9 +97,9 @@ describe("identidad.leer_cuenta", () => {
   });
   it("falla sin firma, con una firma vencida, con la de otra puerta y con la llave de los trabajos", async () => {
     await comoServicio(db, async () => {
-      const buena = firmar("identidad_leer_cuenta", [campoUuid(ana.proveedor)]);
-      assert.equal(await codigoDeError(db, llamarLeerCuenta(ana.proveedor, { ...buena, firma: null as unknown as Buffer })), FIRMA_INCOMPLETA);
-      const vencida = crearFirmador({ numero: buena.numero, secreto: Buffer.alloc(32) }, () => Date.now() - 1_000_000)("identidad_leer_cuenta", [campoUuid(ana.proveedor)]);
+      const buena = await firmar("identidad_leer_cuenta", [campoUuid(ana.proveedor)]);
+      assert.equal(await codigoDeError(db, llamarLeerCuenta(ana.proveedor, { ...buena, firma: null as unknown as Uint8Array<ArrayBuffer> })), FIRMA_INCOMPLETA);
+      const vencida = await crearFirmador({ numero: buena.numero, secreto: Buffer.alloc(32) }, () => Date.now() - 1_000_000)("identidad_leer_cuenta", [campoUuid(ana.proveedor)]);
       assert.equal(await codigoDeError(db, llamarLeerCuenta(ana.proveedor, vencida)), FIRMA_VENCIDA);
       assert.equal(await codigoDeError(db, llamarLeerCuenta(ana.proveedor, firmar("identidad_leer_acceso", [campoUuid(ana.proveedor)]))), FIRMA_INVALIDA);
       assert.equal(await codigoDeError(db, llamarLeerCuenta(ana.proveedor, firmar("identidad_leer_cuenta", [campoUuid(beto.proveedor)]))), FIRMA_INVALIDA);
@@ -181,9 +188,9 @@ describe("identidad.listar_negocios", () => {
   it("falla sin firma, con una firma vencida, con la de otra puerta o sobre otro límite", async () => {
     await comoServicio(db, async () => {
       const cursor = campoUuidOpcional(null);
-      const buena = firmar("identidad_listar_negocios", [campoUuid(ana.id), cursor, campoEntero(10)]);
-      assert.equal(await codigoDeError(db, llamarListar(ana.id, null, 10, { ...buena, firma: null as unknown as Buffer })), FIRMA_INCOMPLETA);
-      const vencida = crearFirmador({ numero: buena.numero, secreto: Buffer.alloc(32) }, () => Date.now() - 1_000_000)("identidad_listar_negocios", [campoUuid(ana.id), cursor, campoEntero(10)]);
+      const buena = await firmar("identidad_listar_negocios", [campoUuid(ana.id), cursor, campoEntero(10)]);
+      assert.equal(await codigoDeError(db, llamarListar(ana.id, null, 10, { ...buena, firma: null as unknown as Uint8Array<ArrayBuffer> })), FIRMA_INCOMPLETA);
+      const vencida = await crearFirmador({ numero: buena.numero, secreto: Buffer.alloc(32) }, () => Date.now() - 1_000_000)("identidad_listar_negocios", [campoUuid(ana.id), cursor, campoEntero(10)]);
       assert.equal(await codigoDeError(db, llamarListar(ana.id, null, 10, vencida)), FIRMA_VENCIDA);
       assert.equal(await codigoDeError(db, llamarListar(ana.id, null, 10, firmar("identidad_leer_cuenta", [campoUuid(ana.id), cursor, campoEntero(10)]))), FIRMA_INVALIDA);
       // Una firma de diez negocios no sirve para pedir cincuenta, ni la de Beto para Ana.
@@ -212,3 +219,50 @@ describe("identidad.listar_negocios", () => {
   });
 });
 
+
+describe("identidad.cerrar_sesion y identidad.leer_cuenta_de_sesion", () => {
+  const llamarCerrar = (proveedor: string, sesion: string, firma?: Promise<FirmaDelServicio>) => async () => {
+    const f = await (firma ?? firmar("identidad_cerrar_sesion", [campoUuid(proveedor), campoUuid(sesion)]));
+    return await db.query("select identidad.cerrar_sesion($1, $2, $3, $4, $5)", [proveedor, sesion, f.venceS, f.numero, f.firma]);
+  };
+
+  it("una sesión cerrada se lee cerrada; otra sesión de la misma cuenta, no; cerrar dos veces no duplica", async () => {
+    await comoServicio(db, async (t) => {
+      const sesion = uuid7();
+      const otra = uuid7();
+      assert.deepEqual(await leerCuentaDeSesion(t, firmar, ana.proveedor, sesion), { cuentaId: ana.id, estado: "activa", pasesRevocadosEnS: null, sesionCerrada: false });
+      await cerrarSesion(t, firmar, ana.proveedor, sesion);
+      await cerrarSesion(t, firmar, ana.proveedor, sesion);
+      assert.equal((await leerCuentaDeSesion(t, firmar, ana.proveedor, sesion))?.sesionCerrada, true);
+      assert.equal((await leerCuentaDeSesion(t, firmar, ana.proveedor, otra))?.sesionCerrada, false);
+      // La sesión es de Ana: para Beto no cuenta como cerrada.
+      assert.equal((await leerCuentaDeSesion(t, firmar, beto.proveedor, sesion))?.sesionCerrada, false);
+      assert.equal(await leerCuentaDeSesion(t, firmar, uuid7(), sesion), null);
+    });
+  });
+  it("un id del proveedor sin cuenta no anota nada", async () => {
+    const sesion = uuid7();
+    await db.exec("begin");
+    try {
+      await llamarCerrar(uuid7(), sesion)();
+      assert.deepEqual(await filas("select * from control.sesion_cerrada where sesion_id = $1", [sesion]), []);
+    } finally {
+      await db.exec("rollback");
+    }
+  });
+  it("fallan sin la firma de su puerta, y la aplicación no lee ni edita la lista", async () => {
+    await comoServicio(db, async () => {
+      const sesion = uuid7();
+      assert.equal(await codigoDeError(db, llamarCerrar(ana.proveedor, sesion, firmar("identidad_leer_cuenta_de_sesion", [campoUuid(ana.proveedor), campoUuid(sesion)]))), FIRMA_INVALIDA);
+      assert.equal(await codigoDeError(db, llamarCerrar(ana.proveedor, sesion, firmar("identidad_cerrar_sesion", [campoUuid(ana.proveedor), campoUuid(uuid7())]))), FIRMA_INVALIDA);
+      assert.equal(await codigoDeError(db, llamarCerrar(ana.proveedor, sesion, firmarTrabajos("identidad_cerrar_sesion", [campoUuid(ana.proveedor), campoUuid(sesion)]))), FIRMA_INVALIDA);
+      const leerConOtra = async () => {
+        const f = await firmar("identidad_leer_cuenta", [campoUuid(ana.proveedor)]);
+        return await db.query("select * from identidad.leer_cuenta_de_sesion($1, $2, $3, $4, $5)", [ana.proveedor, sesion, f.venceS, f.numero, f.firma]);
+      };
+      assert.equal(await codigoDeError(db, leerConOtra), FIRMA_INVALIDA);
+      assert.equal(await codigoDeError(db, async () => await db.query("select * from control.sesion_cerrada")), "42501");
+      assert.equal(await codigoDeError(db, async () => await db.query("insert into control.sesion_cerrada (sesion_id, cuenta_id) values ($1, $2)", [sesion, ana.id])), "42501");
+    });
+  });
+});
