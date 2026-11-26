@@ -115,6 +115,13 @@ módulo nuevo, `identidad`:
 Así una persona puede ser dueña de una empresa y vendedora en un local de
 otra, dentro del mismo negocio.
 
+> **Nota del 26-nov-2026, decisión del fundador:** una asignación también puede
+> valer en **todo el negocio** (sin empresa ni local), incluidas las empresas y
+> los locales que se creen después. Así el dueño que funda un negocio, que nace
+> sin empresas, ya tiene su rol. Un local se nombra siempre con su empresa. Está
+> en la migración `20261126190000_rol_en_todo_el_negocio.sql` y en
+> `arquitectura/bases/02-base-de-datos.md`.
+
 - **La aplicación solo puede leer** la membresía y la asignación. Las escribe
   una sola puerta de identidad. Si no, un error en el servicio podría
   reactivar una membresía suspendida o darle a alguien el rol de dueño.
@@ -347,6 +354,12 @@ pedidos no la tiene.
   puerta propia del portero que funda el negocio con su dueño y su membresía
   automática. Hay captcha (una prueba de que no es un robot) y límites por día.
   El negocio nace en prueba y no emite ante SUNAT hasta validarse.
+
+  > **Nota del 26-nov-2026 (tramo 2a):** fundar quedó como puerta de identidad
+  > (`identidad.fundar_negocio`), no como forma del portero, porque escribe
+  > tablas de identidad. Abre el negocio solo mientras escribe y lo cierra; el
+  > servicio entra después por `portero.abrir`, que en el tramo 2b comprueba la
+  > membresía y el nivel de los dos pasos.
 - **Aceptar una invitación**: el dueño invita desde el panel. La membresía
   queda pendiente hasta que el invitado la acepte con su sesión abierta y con el
   mismo correo. El enlace es de un solo uso y vence. El panel responde igual

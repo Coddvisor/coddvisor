@@ -27,6 +27,9 @@ export const configuracion = {
     // El portero no trabaja por clase: por clase no tiene nada. Lo suyo es la
     // lista cerrada de abajo.
     coddvisor_portero: { raiz: [], negocio: [], libro: [], custodia: [], catalogo: [], control: [] },
+    // El dueño de las puertas de identidad, igual: por clase nada, y su lista
+    // cerrada abajo (cambio de BD-05 del 26-nov-2026, tramo 2a de identidad).
+    coddvisor_identidad: { raiz: [], negocio: [], libro: [], custodia: [], catalogo: [], control: [] },
   },
 
   // BD-16. Las únicas tablas que viven afuera de los negocios (clase control).
@@ -44,14 +47,43 @@ export const configuracion = {
     coddvisor_portero: {
       'portero.llave': ['SELECT'],
     },
+    // Lo justo para sus puertas: registrar cuentas, fundar un negocio (la raíz
+    // y sus membresías), escribir membresías y asignaciones, y copiar el estado
+    // al índice. Lee los roles y sus permisos para comprobar el de quien actúa.
+    // Ninguna otra tabla de negocio: fundar no crea empresas.
+    coddvisor_identidad: {
+      'nucleo.tenant': ['SELECT', 'INSERT'],
+      'control.cuenta': ['SELECT', 'INSERT'],
+      'control.acceso': ['SELECT', 'INSERT', 'UPDATE'],
+      'identidad.membresia': ['SELECT', 'INSERT', 'UPDATE'],
+      'identidad.asignacion': ['SELECT', 'INSERT', 'UPDATE'],
+      'identidad.rol': ['SELECT'],
+      'identidad.permiso_de_rol': ['SELECT'],
+    },
   },
 
   // Quién puede ejecutar cada función que corre con los permisos de su dueño
   // (SECURITY DEFINER). Cada una es una puerta: se abre con nombre y apellido.
   puertas: {
-    'portero.contexto': ['coddvisor_app', 'coddvisor_libros'],
+    'portero.contexto': ['coddvisor_app', 'coddvisor_libros', 'coddvisor_identidad'],
     'portero.abrir': ['coddvisor_app'],
     'portero.comprobar_firma': ['coddvisor_app'],
+    // Las puertas de identidad abren ellas mismas, mientras escriben, el negocio
+    // que fundan o cuya invitación se acepta, y le piden al portero que verifique
+    // su firma.
+    'portero.poner': ['coddvisor_identidad'],
+    // Y lo vuelven a cerrar antes de terminar: nunca dejan un negocio abierto.
+    'portero.quitar': ['coddvisor_identidad'],
+    'portero.exigir_firma_de_identidad': ['coddvisor_identidad'],
+    // Las puertas de identidad: solo el servicio, cada una con su firma.
+    'identidad.registrar_cuenta': ['coddvisor_app'],
+    'identidad.leer_acceso': ['coddvisor_app'],
+    'identidad.fundar_negocio': ['coddvisor_app'],
+    'identidad.invitar': ['coddvisor_app'],
+    'identidad.aceptar_invitacion': ['coddvisor_app'],
+    'identidad.cambiar_estado': ['coddvisor_app'],
+    'identidad.dar_asignacion': ['coddvisor_app'],
+    'identidad.archivar_asignacion': ['coddvisor_app'],
   },
 
   // Cómo entra el servicio a la base y de dónde sale el cliente activo.
