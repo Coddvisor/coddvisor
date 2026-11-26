@@ -42,8 +42,9 @@ una interpretación o no se pudo confirmar se marca como tal.
 - **Se entra con correo y contraseña, o con la cuenta de Google.** Dueños,
   contadores, soporte y el personal de Coddvisor hacen además la verificación
   en dos pasos, con una app gratuita del celular.
-- **Nadie abre un negocio sin probar que el correo es suyo**, y nadie entra a
-  un negocio sin aceptar la invitación con ese mismo correo.
+- **Cualquiera puede abrir su negocio solo**, con su cuenta de Google o con su
+  correo, pero nadie lo abre sin probar que el correo es suyo, y nadie entra a
+  un negocio ajeno sin aceptar la invitación con ese mismo correo.
 - **En la caja sin internet, cada vendedor usa un PIN de 6 dígitos** que marca
   una vez en cada caja. Sirve para separar a los compañeros de turno, no
   contra el robo de la caja: contra el robo protege el servidor.
@@ -279,11 +280,16 @@ negocio que se abre.
 
 Decisión del fundador del 26 de noviembre de 2026. Condiciones:
 
-- **Google no abre la puerta de afuera.** Con el registro apagado, entrar con
-  Google no crea cuentas: sirve a quien ya tiene cuenta, o a quien tiene una
-  invitación al mismo correo. Hay además una barrera propia en Supabase (el
-  hook que corre antes de crear una cuenta) que niega todo lo que no venga
-  del servicio.
+- **Cualquiera puede abrir su negocio con Google**, sin esperar invitación
+  (decisión del fundador del 26 de noviembre de 2026). Google ya comprobó que el
+  correo es de esa persona, así que nadie puede crear una cuenta con el correo
+  de otro. Para eso se enciende el registro de Supabase y se pone una barrera
+  propia: el hook que corre antes de crear una cuenta deja pasar solo las altas
+  con Google que vienen del botón «Abrir su negocio», y niega las demás. Las
+  altas con correo siguen yendo por el servicio, como dice la decisión 10.
+- **Las mismas protecciones que el alta con correo**: prueba de que no es un
+  robot, límites por día, y el negocio nace en prueba y no emite ante SUNAT
+  hasta validarse.
 - **No reemplaza el segundo paso.** Para Supabase, entrar con Google vale lo
   mismo que una contraseña (`aal1`): el dueño y el contador igual escriben el
   código de su app. El segundo paso que la persona tenga en su cuenta de
@@ -310,9 +316,9 @@ Decisión del fundador del 26 de noviembre de 2026. Condiciones:
   personales, como pide el art. 21.2 del reglamento de la Ley 29733. Ya hacía
   falta por Supabase; Google se suma al mismo aviso.
 
-- **Se rompe si** entrar con Google crea cuentas con el registro apagado, o si
-  una persona invitada no puede aceptar entrando con Google. Las dos cosas
-  salen del código de Supabase y no de su documentación: se prueban antes.
+- **Se rompe si** el hook deja pasar altas que no son con Google, o si una
+  persona invitada no puede aceptar entrando con Google. Las dos cosas se
+  prueban antes en el proyecto de pruebas.
 
 ### 9. Recuperar una cuenta
 
@@ -328,11 +334,12 @@ Es el camino más fácil para robar una cuenta, así que es lento a propósito:
 Cambiar el correo de una cuenta pide el segundo paso y avisa al correo
 anterior.
 
-### 10. Nadie se registra solo
+### 10. Nadie se registra sin probar su correo
 
-El registro público de Supabase queda apagado. Las cuentas las crea solo un
-programa aparte, el único que tiene la llave de administrador de Supabase. El
-programa que atiende pedidos no la tiene.
+El registro de Supabase queda encendido solo para Google, detrás del hook de
+la decisión 8 bis. Las cuentas con correo las crea solo un programa aparte, el
+único que tiene la llave de administrador de Supabase. El programa que atiende
+pedidos no la tiene.
 
 - **Abrir un negocio nuevo**, desde el botón de la web: la cuenta nace
   pendiente y sin contraseña. Le llega un enlace de un solo uso al correo, y
@@ -344,8 +351,10 @@ programa que atiende pedidos no la tiene.
   queda pendiente hasta que el invitado la acepte con su sesión abierta y con el
   mismo correo. El enlace es de un solo uso y vence. El panel responde igual
   exista o no la cuenta, y nunca muestra su nombre.
-- **Se descartó** dejar el registro abierto: alguien podría crear una cuenta
-  con el correo de otra persona y quedarse con las membresías que le lleguen.
+- **Se descartó** dejar abierto el registro con correo y contraseña: alguien
+  podría crear una cuenta con el correo de otra persona y quedarse con las
+  membresías que le lleguen. Con Google eso no pasa, porque Google ya verificó
+  el correo.
 - **Se rompe si** las funciones de administrador de Supabase no crean cuentas
   con el registro apagado. No está confirmado en su documentación: se prueba en
   un proyecto de pruebas, nunca en `coddvisor-sistema`, que es la base real.
@@ -539,7 +548,7 @@ y los demás) son datos: se cambian después sin tocar el código.
 | En un Galaxy A16 o A07: que la llave y los datos de la caja sobrevivan con la caja instalada | La venta sin internet se posterga y esta parte se vuelve a proponer |
 | La del portero detrás del repartidor de conexiones, que ya pidió [donde-corre-el-sistema.md](donde-corre-el-sistema.md) | El panel y la ventanilla se conectan por otro camino, como dice esa página |
 | En un proyecto de Supabase de pruebas: crear cuentas con el registro apagado, y que el segundo paso llegue como `aal2` en el pase | Se busca otro camino para crear cuentas y se vuelve a proponer la decisión 10 |
-| En el mismo proyecto: que entrar con Google no cree cuentas con el registro apagado, y que una persona invitada pueda aceptar entrando con Google | Google se activa solo para quien ya tiene cuenta, o se posterga y se vuelve a proponer la decisión 8 bis |
+| En el mismo proyecto: que el hook deje pasar solo las altas con Google, y que una persona invitada pueda aceptar entrando con Google | Las altas con Google se cierran y Google queda solo para quien ya tiene cuenta, hasta corregirlo |
 
 ## Fuentes
 
