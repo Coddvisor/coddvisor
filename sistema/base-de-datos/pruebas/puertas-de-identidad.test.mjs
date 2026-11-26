@@ -646,6 +646,104 @@ describe('el permiso vale solo donde vale el rol', () => {
 });
 
 // ---------------------------------------------------------------------------
+// La copia de los roles en el índice (migración 20261126230000_rol_en_el_indice):
+// solo para mostrar en «¿A qué negocio entra?». Nunca decide nada.
+describe('la copia de los roles en el índice', () => {
+  const FALTAN_DOS_PASOS = 'CV023';
+  const rolesDe = async (membresia) => (await mirar('select rol_codigos from control.acceso where membresia_id = $1', [membresia]))[0]?.rol_codigos;
+  // Lo que haría quien migra a mano: cambiar la copia sin pasar por ninguna puerta.
+  const tocarLaCopia = (membresia, roles) => cargar('update control.acceso set rol_codigos = $2 where membresia_id = $1', [membresia, roles]);
+
+  test('fundar, invitar y aceptar dejan en la copia los roles vigentes', async () => {
+    await como(async () => {
+      assert.deepEqual(await rolesDe(negocio.membresia), ['dueno']);
+      assert.deepEqual(await rolesDe(deBeto.membresia), ['vendedor']);
+      assert.deepEqual(await rolesDe(deCarla.membresia), ['contador']);
+      // La membresía automática no tiene cuenta: no va al índice.
+      assert.equal(await rolesDe(negocio.automatica), undefined);
+    });
+  });
+
+  test('dar un rol actualiza la copia, sin repetir y en orden; archivarlo también', async () => {
+    await como(async () => {
+      const quien = await comoAna();
+      const enUnaEmpresa = { asignacion: uuid7(), membresia: deBeto.membresia, rol: 'contador', empresa };
+      const enOtra = { asignacion: uuid7(), membresia: deBeto.membresia, rol: 'contador', empresa: otraEmpresa };
+      await darAsignacion(quien, enUnaEmpresa);
+      assert.deepEqual(await rolesDe(deBeto.membresia), ['contador', 'vendedor']);
+      // El mismo rol en otro lugar no se repite en la copia.
+      await darAsignacion(quien, enOtra);
+      assert.deepEqual(await rolesDe(deBeto.membresia), ['contador', 'vendedor']);
+      // Mientras quede uno vigente, el rol sigue en la copia.
+      await archivarAsignacion(quien, enUnaEmpresa.asignacion);
+      assert.deepEqual(await rolesDe(deBeto.membresia), ['contador', 'vendedor']);
+      await archivarAsignacion(quien, enOtra.asignacion);
+      assert.deepEqual(await rolesDe(deBeto.membresia), ['vendedor']);
+      // Sin ningún rol vigente, la copia queda vacía.
+      await archivarAsignacion(quien, deBeto.asignacion);
+      assert.deepEqual(await rolesDe(deBeto.membresia), []);
+    });
+  });
+
+  test('cambiar el estado no deja una copia vieja', async () => {
+    await como(async () => {
+      // La copia quedó atrasada (por ejemplo, la cambió quien migra).
+      await tocarLaCopia(deBeto.membresia, ['dueno']);
+      const quien = await comoAna();
+      await cambiarEstado(quien, deBeto.membresia, 'suspendida');
+      assert.deepEqual(await mirar('select estado, rol_codigos from control.acceso where membresia_id = $1', [deBeto.membresia]), [{ estado: 'suspendida', rol_codigos: ['vendedor'] }]);
+      // Un rol dado mientras está suspendido también llega a la copia, y el estado no cambia.
+      await darAsignacion(quien, { asignacion: uuid7(), membresia: deBeto.membresia, rol: 'contador', empresa });
+      assert.deepEqual(await mirar('select estado, rol_codigos from control.acceso where membresia_id = $1', [deBeto.membresia]), [{ estado: 'suspendida', rol_codigos: ['contador', 'vendedor'] }]);
+      await cambiarEstado(quien, deBeto.membresia, 'activa');
+      assert.deepEqual(await rolesDe(deBeto.membresia), ['contador', 'vendedor']);
+    });
+  });
+
+  test('la lista de negocios devuelve la copia de los roles', async () => {
+    await como(async () => {
+      const f = firmar('identidad_listar_negocios', [u(beto.id), u(null), n(10)]);
+      const { rows } = await db.query('select tenant_id, rol_codigos from identidad.listar_negocios($1, $2, $3, $4, $5, $6)', [beto.id, null, 10, ...f]);
+      assert.deepEqual(rows, [{ tenant_id: negocio.tenant, rol_codigos: ['vendedor'] }]);
+    });
+  });
+
+  test('ataque: la copia no deja entrar ni administrar, aunque diga «dueño»', async () => {
+    await como(async () => {
+      await tocarLaCopia(deBeto.membresia, ['dueno']);
+      // El rol de dueño pide dos pasos, pero el portero mira adentro: Beto es
+      // vendedor y entra sin ellos.
+      await abrir(db, { tenant: negocio.tenant, actor: deBeto.membresia, nivel: 'aal1' });
+      const quien = { tenant: negocio.tenant, actor: deBeto.membresia };
+      assert.equal(await falla(() => darAsignacion(quien, { asignacion: uuid7(), membresia: deBeto.membresia, rol: 'dueno' })), SIN_PERMISO);
+      assert.equal(await falla(() => cambiarEstado(quien, negocio.membresia, 'suspendida')), SIN_PERMISO);
+      assert.deepEqual(await rolesDe(deBeto.membresia), ['dueno']);
+    });
+  });
+
+  test('ataque: borrar los roles de la copia no le quita nada a quien los tiene', async () => {
+    await como(async () => {
+      await tocarLaCopia(negocio.membresia, []);
+      // Ana sigue siendo dueña: el portero le pide los dos pasos y la deja administrar.
+      assert.equal(await falla(() => abrir(db, { tenant: negocio.tenant, actor: negocio.membresia, nivel: 'aal1' })), FALTAN_DOS_PASOS);
+      const quien = await comoAna();
+      await cambiarEstado(quien, deBeto.membresia, 'suspendida');
+      assert.equal(await estadoDe(deBeto.membresia), 'suspendida');
+      // Y leer el índice para entrar no mira la copia.
+      assert.deepEqual((await leerAcceso(ana.id, negocio.tenant)).rows, [{ membresia_id: negocio.membresia, estado: 'activa' }]);
+    });
+  });
+
+  test('la base no guarda en la copia algo que no es una lista de códigos', async () => {
+    await enTransaccion(db, async () => {
+      for (const roles of [['Dueño'], [''], ['dueno', null], [['dueno']]]) {
+        assert.equal(await falla(() => db.query('update control.acceso set rol_codigos = $2 where membresia_id = $1', [deBeto.membresia, roles])), VIOLA_CHEQUEO, JSON.stringify(roles));
+      }
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
 describe('la aplicación sigue sin escribir en custodia ni leer el plano de control', () => {
   test('ni con el negocio abierto por el dueño', async () => {
     await como(async () => {

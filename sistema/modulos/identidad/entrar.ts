@@ -45,6 +45,12 @@ export interface NegocioDeLaCuenta {
   readonly estado: EstadoDelAcceso;
   /** Vacío solo si el negocio todavía no tiene su fila en control.negocio. */
   readonly nombre: string | null;
+  /**
+   * Los códigos de sus roles vigentes, de la copia del índice (control.acceso),
+   * para que la lista diga con qué rol entra sin abrir cada negocio. Solo para
+   * mostrar: puede ir atrasada, y lo que deja entrar lo decide el portero adentro.
+   */
+  readonly rolCodigos: readonly string[];
 }
 
 export interface PaginaDeNegocios {
@@ -64,7 +70,7 @@ export async function listarNegocios(t: Transaccion, firmar: Firmador, cuenta: s
   const filas = await listarFilas(t, firmar, cuenta, pagina.despues, pagina.porPagina);
   const negocios = filas.map((fila) => {
     if (!esEstado(fila.estado)) throw new TypeError("La base devolvió un acceso con un estado desconocido.");
-    return { tenantId: fila.tenantId, membresiaId: fila.membresiaId, estado: fila.estado, nombre: fila.nombre };
+    return { tenantId: fila.tenantId, membresiaId: fila.membresiaId, estado: fila.estado, nombre: fila.nombre, rolCodigos: fila.rolCodigos };
   });
   const ultimo = negocios.at(-1);
   return { negocios, siguiente: negocios.length === pagina.porPagina && ultimo !== undefined ? ultimo.tenantId : null };

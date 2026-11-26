@@ -129,6 +129,19 @@ otra, dentro del mismo negocio.
   las dos en una sola operación, porque el índice está afuera y algún día en
   otra base. La puerta deja anotado el cambio, un trabajo lo copia al índice,
   se puede repetir sin duplicar, y otro trabajo revisa que coincidan.
+
+  > **Nota del 26-nov-2026, decisión del fundador:** el índice guarda también
+  > una **copia de los roles**, solo para mostrar. La lista «¿A qué negocio
+  > entra?» dice con qué rol entra la persona a cada negocio, y leerlo adentro
+  > costaría abrir cada negocio: una consulta por negocio, en funciones con poco
+  > tiempo. Un contador con 40 negocios tiene que ver su lista rápido. Por eso
+  > `control.acceso.rol_codigos` guarda los códigos de los roles vigentes, que
+  > las puertas copian en la misma transacción igual que el estado. La copia
+  > **nunca decide nada y puede ir atrasada**: lo que deja entrar y lo que deja
+  > hacer sigue decidiéndose adentro, con el portero e `identidad.asignacion`.
+  > Está en la migración `20261126230000_rol_en_el_indice.sql` y en
+  > `arquitectura/bases/02-base-de-datos.md`.
+
 - **Se descartó** la membresía afuera: no se podría atar un rol a un local.
 - **Se rompe si** la aplicación puede escribir en estas tablas. Eso necesita
   una clase de tabla nueva, de solo lectura para la aplicación: es un cambio de

@@ -121,10 +121,10 @@ describe("identidad.leer_cuenta", () => {
 describe("identidad.listar_negocios", () => {
   const ordenados = () => negociosDeAna.toSorted((a, b) => (a.tenant < b.tenant ? -1 : 1));
 
-  it("lista los negocios de la cuenta con su membresía, su estado y su nombre, sin correos", async () => {
+  it("lista los negocios de la cuenta con su membresía, su estado, su nombre y la copia de sus roles, sin correos", async () => {
     await comoServicio(db, async () => {
       const { rows } = await llamarListar(ana.id, null, 10)();
-      assert.deepEqual(rows, ordenados().map((n) => ({ tenant_id: n.tenant, membresia_id: n.membresia, estado: "activa", nombre: n.nombre })));
+      assert.deepEqual(rows, ordenados().map((n) => ({ tenant_id: n.tenant, membresia_id: n.membresia, estado: "activa", nombre: n.nombre, rol_codigos: ["dueno"] })));
       assert.ok(!JSON.stringify(rows).includes(ana.correo));
     });
   });
@@ -215,6 +215,7 @@ describe("identidad.listar_negocios", () => {
     await comoServicio(db, async () => {
       const [fila] = await listarFilas(transaccionDe(db), firmar, beto.id, null, 1);
       assert.equal(fila?.nombre, "Panadería de Beto");
+      assert.deepEqual(fila?.rolCodigos, ["dueno"]);
     });
   });
 });

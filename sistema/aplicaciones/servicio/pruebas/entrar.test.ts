@@ -64,7 +64,7 @@ describe("entrar de punta a punta", () => {
     assert.ok(r.ok, JSON.stringify(r));
     assert.equal(r.value.cuenta.id, ana.id);
     const esperados = [bodega, ferreteria].toSorted((a, b) => (a.tenant < b.tenant ? -1 : 1));
-    assert.deepEqual(r.value.pagina, { negocios: esperados.map((n) => ({ tenantId: n.tenant, membresiaId: n.membresia, estado: "activa", nombre: n.nombre })), siguiente: null });
+    assert.deepEqual(r.value.pagina, { negocios: esperados.map((n) => ({ tenantId: n.tenant, membresiaId: n.membresia, estado: "activa", nombre: n.nombre, rolCodigos: ["dueno"] })), siguiente: null });
   });
 
   it("abre el negocio elegido: el portero queda con ese negocio y esa membresía, y no se ve otro", async () => {
@@ -183,7 +183,7 @@ describe("una invitación, de pendiente a vendedora", () => {
 
     const lista = await negociosDeLaPersona(piezas, pase(ana), null);
     assert.ok(lista.ok);
-    assert.deepEqual(lista.value.pagina.negocios.find((n) => n.tenantId === panaderia.tenant), { tenantId: panaderia.tenant, membresiaId: invitacion.membresia, estado: "pendiente", nombre: panaderia.nombre });
+    assert.deepEqual(lista.value.pagina.negocios.find((n) => n.tenantId === panaderia.tenant), { tenantId: panaderia.tenant, membresiaId: invitacion.membresia, estado: "pendiente", nombre: panaderia.nombre, rolCodigos: ["vendedor"] });
     assert.deepEqual(await trabajarEnNegocio(piezas, pase(ana, { aal: "aal1" }), panaderia.tenant, async () => await Promise.resolve(null)), { ok: false, error: "membresia_inactiva" });
 
     await prestar(repartidor, async (t) => {

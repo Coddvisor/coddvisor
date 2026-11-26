@@ -19,6 +19,12 @@ function textoOVacio(fila: Fila, columna: string): string | null {
   return fila[columna] === null ? null : texto(fila, columna);
 }
 
+function listaDeTextos(fila: Fila, columna: string): readonly string[] {
+  const valor = fila[columna];
+  if (!Array.isArray(valor) || !valor.every((v): v is string => typeof v === "string")) throw new TypeError(`La base devolvió ${columna} sin la forma esperada.`);
+  return valor;
+}
+
 function enteroOVacio(fila: Fila, columna: string): number | null {
   const valor = textoOVacio(fila, columna);
   if (valor === null) return null;
@@ -84,13 +90,15 @@ export interface FilaDeNegocio {
   readonly membresiaId: string;
   readonly estado: string;
   readonly nombre: string | null;
+  /** La copia de los códigos de sus roles vigentes en el índice: solo para mostrar, nunca para decidir. */
+  readonly rolCodigos: readonly string[];
 }
 
 /** identidad.listar_negocios: una página, después del negocio `despues` (null en la primera). */
 export async function listarNegocios(t: Transaccion, firmar: Firmador, cuenta: string, despues: string | null, limite: number): Promise<readonly FilaDeNegocio[]> {
   const f = await firmar("identidad_listar_negocios", [campoUuid(cuenta), campoUuidOpcional(despues), campoEntero(limite)]);
   const filas = await t.consultar(
-    `select n.tenant_id::text as tenant_id, n.membresia_id::text as membresia_id, n.estado, n.nombre
+    `select n.tenant_id::text as tenant_id, n.membresia_id::text as membresia_id, n.estado, n.nombre, n.rol_codigos
      from identidad.listar_negocios($1, $2, $3, $4, $5, $6) n`,
     [cuenta, despues, limite, f.venceS, f.numero, f.firma],
   );
@@ -99,6 +107,7 @@ export async function listarNegocios(t: Transaccion, firmar: Firmador, cuenta: s
     membresiaId: texto(fila, "membresia_id"),
     estado: texto(fila, "estado"),
     nombre: textoOVacio(fila, "nombre"),
+    rolCodigos: listaDeTextos(fila, "rol_codigos"),
   }));
 }
 

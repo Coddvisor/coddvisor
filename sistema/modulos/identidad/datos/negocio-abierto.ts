@@ -1,8 +1,9 @@
 /**
  * Lo que la persona ve al entrar a un negocio ya abierto por el portero: cómo se
  * llama y con qué roles entra. Se lee dentro del negocio, con la seguridad por
- * fila puesta: los roles viven en el negocio, no en el índice de afuera
- * (decisión 2 de identidad).
+ * fila puesta: los roles viven en el negocio (decisión 2 de identidad). El
+ * índice de afuera guarda una copia, solo para la lista de negocios; aquí se
+ * leen los de verdad.
  */
 import type { Fila, Transaccion } from "#nucleo";
 
