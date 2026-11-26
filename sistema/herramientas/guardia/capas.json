@@ -48,6 +48,18 @@
       "npm": [],
       "segun_la_tabla": true,
       "porque": "Un módulo usa el núcleo, los contratos y a los módulos que le permite la tabla de 05-modulos.md. No importa el paquete de un país por su nombre: el paquete se elige con el dato empresa.pais_codigo (03-nada-fijo-en-el-codigo.md), así que un segundo país no obliga a tocar el módulo. Tampoco una aplicación ni una herramienta: la capa de abajo quedaría atada a una pantalla."
+    },
+    {
+      "nombre": "aplicaciones",
+      "unidades": true,
+      "pura": false,
+      "usa": [
+        "nucleo",
+        "contratos",
+        "modulos"
+      ],
+      "npm": [],
+      "porque": "Una aplicación es un programa que se arranca (el servicio, la oficina, la caja): arma los módulos, lee el entorno y habla con el exterior. Usa el núcleo, los contratos y los módulos por su puerta. No importa el paquete de un país por su nombre, por lo mismo que un módulo. Ninguna otra capa usa a las aplicaciones: un módulo que importara una quedaría atado a un programa (cambio de frontera del 26-nov-2026, tramo 3 de identidad)."
     }
   ],
   "fuera_del_producto": {

@@ -151,8 +151,9 @@ La membresía, la asignación, la cuenta y el índice de accesos no los escribe 
 aplicación ni el portero: los escribe `coddvisor_identidad`, un rol que no
 inicia sesión, no hereda, no se salta la seguridad por fila y solo es dueño de
 sus funciones. Toca solo las tablas de su lista cerrada (`permisosPorTabla` en
-la configuración del verificador): crear el negocio, crear y leer cuentas, y
-escribir membresías, asignaciones y el índice. Ninguna otra tabla de negocio.
+la configuración del verificador): crear el negocio, crear y leer cuentas,
+escribir membresías, asignaciones y el índice, y copiar el nombre y la celda de
+cada negocio a `control.negocio`. Ninguna otra tabla de negocio.
 
 La aplicación llega a esas tablas solo por sus puertas, en el esquema
 `identidad`. Cada una:
@@ -174,8 +175,10 @@ La aplicación llega a esas tablas solo por sus puertas, en el esquema
 | Puerta | Qué hace | Propósito firmado | Pide negocio abierto y permiso |
 |---|---|---|---|
 | `registrar_cuenta` | Crea la cuenta de quien ya probó su correo. Con el mismo id del proveedor devuelve la misma | `identidad_registrar_cuenta` | No |
+| `leer_cuenta` | La cuenta del id del proveedor (el `sub` del pase), su estado y desde cuándo valen sus pases. Sin correo ni nombre. Sin fila si no existe | `identidad_leer_cuenta` | No |
 | `leer_acceso` | La membresía viva de una cuenta en un negocio y su estado. Nunca listas ni correos | `identidad_leer_acceso` | No |
-| `fundar_negocio` | El negocio, su dueño activo en todo el negocio, su membresía automática y el índice, juntos. Se puede repetir | `identidad_fundar` | No: lo abre mientras escribe y lo cierra |
+| `listar_negocios` | Los negocios de una cuenta que no están de baja, con su membresía, su estado y su nombre (de `control.negocio`), ordenados por negocio y por cursor. El tamaño de la página va de 1 a un tope con nombre dentro de la puerta (50); fuera de eso falla (CV217). Nunca correos ni una lista sin límite. Una cuenta sin membresías recibe una lista vacía. Lista lo mismo que deja entrar `leer_acceso`: quién entra lo dice solo `control.acceso`, y la puerta que archive un negocio dará de baja sus accesos en la misma transacción | `identidad_listar_negocios`, sobre la cuenta, el cursor (vacío en la primera página) y el tamaño | No |
+| `fundar_negocio` | El negocio, su dueño activo en todo el negocio, su membresía automática, el índice y su fila en `control.negocio`, juntos. Se puede repetir | `identidad_fundar` | No: lo abre mientras escribe y lo cierra |
 | `invitar` | Una membresía pendiente para una cuenta ya registrada, con un rol que puede dar el dueño | `identidad_invitar` | Sí, `identidad.invitar` |
 | `aceptar_invitacion` | La cuenta invitada activa su propia membresía | `identidad_aceptar` | No: lo abre mientras escribe y lo cierra |
 | `cambiar_estado` | Suspender, reactivar o dar de baja. La firma lleva la versión de la membresía | `identidad_cambiar_estado` | Sí, `identidad.administrar` en todo el negocio |
@@ -370,13 +373,18 @@ huella de cada archivo. Nadie ejecuta SQL a mano en producción.
 
 **BD-16. Afuera de los negocios viven solo las tablas de una lista cerrada.**
 El plano de control (las tablas de clase `control`) es lo único que no es de
-ningún negocio: las cuentas, el índice de accesos, la llave del portero y la
-marca que el portero traba al abrir un negocio (`portero.marca`, sin filas). Lo
+ningún negocio: las cuentas, el índice de accesos, la lista de en qué celda vive
+cada negocio y con qué nombre se muestra (`control.negocio`, decisión 14 de
+identidad: así la persona elige a qué negocio entra sin abrir ninguno; es una
+copia del nombre de `nucleo.tenant`, que `fundar_negocio` escribe en la misma
+transacción), la llave del portero y la marca que el portero traba al abrir
+un negocio (`portero.marca`, sin filas). Lo
 que es de un negocio vive dentro del negocio, donde lo cuidan el aislamiento y
 los sellos. La lista está en la configuración del verificador
 (`tablasDeControl`). Una tabla de control que no figura en ella es una falta, y
 el esquema `control` no guarda tablas de otra clase. Para agregar una se cambia
-la lista con su porqué, y lo aprueba el fundador.
+la lista con su porqué, y lo aprueba el fundador. (`control.negocio` entra el
+26-nov-2026, con el tramo 3 de la identidad.)
 
 **BD-17. Los datos personales no dejan rastro en los resúmenes de la base.**
 La base guarda resúmenes de cada columna (los valores más frecuentes, los
@@ -424,8 +432,8 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 | La tabla de cajas, a la que apunten la caja del contexto y la de cada entrada. Y si el sello guarda también la caja (hoy guarda solo `actor_actual()`, así que una fila escrita desde la caja no se distingue de una escrita desde el panel): se decide antes de crear la primera tabla de la caja, porque un libro no se corrige hacia atrás | Contrato de la caja, al publicarse (decisiones 6 y 11) |
 | Cuánto se guardan las entradas (al menos dos años, como dato) y los intentos fallidos (`control.intento`) | Conservación de datos y propuesta de identidad, decisiones 13 y 14 |
 | Copiar el índice de accesos con un trabajo que se puede repetir, en vez de en la misma transacción | Enrutador de celdas, cuando haya más de una |
-| Que el estado de la sesión no cruce de un negocio a otro: `DISCARD ALL` al devolver cada conexión (cursores `WITH HOLD`, ajustes de sesión, sentencias preparadas) y las firmas siempre como parámetros, nunca en el texto de la consulta, que otra conexión del mismo rol ve en `pg_stat_activity`. La regla de un solo negocio por transacción cubre el contexto del portero, no esto | Primer servicio que se conecte a la base, y su administrador de conexiones |
-| Enrutador de celdas, intentos fallidos y códigos de respaldo en el esquema `control` | Propuesta de identidad, decisiones 13 y 14 |
+| Que el estado de la sesión no cruce de un negocio a otro: `DISCARD ALL` al devolver cada conexión (cursores `WITH HOLD`, ajustes de sesión, sentencias preparadas) y las firmas siempre como parámetros, nunca en el texto de la consulta, que otra conexión del mismo rol ve en `pg_stat_activity`. La regla de un solo negocio por transacción cubre el contexto del portero, no esto. Desde el tramo 3 (parte 1) lo cumple `aplicaciones/servicio/base/conexion.ts`, con su prueba contra la base en memoria, y la guardia revisa que el texto de toda consulta sea un literal (SV-01). Falta el controlador de Postgres de verdad y que solo esa conexión lo importe (SV-02) | Tramo 3 de la identidad, parte 2 |
+| El enrutador de celdas para más de una celda, los intentos fallidos y los códigos de respaldo en el esquema `control`. La lista de en qué celda vive cada negocio ya existe (`control.negocio`, tramo 3, parte 1) | Propuesta de identidad, decisiones 13 y 14 |
 | Auditoría por disparador y su partición por fecha | Primer módulo de negocio |
 | Una clase de tabla para los saldos: los lee la aplicación y solo los escriben las funciones de los libros | Primer libro (tesorería o inventario) |
 | Tablas de intercambio entre dos clientes, con regla de dos partes | Red entre negocios (después del primer alcance) |

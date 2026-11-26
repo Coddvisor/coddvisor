@@ -9,7 +9,8 @@
     "#nucleo": "./nucleo/publico.ts",
     "#contratos/*": "./contratos/*/publico.ts",
     "#modulos/*": "./modulos/*/publico.ts",
-    "#paquetes/*": "./paquetes/*/publico.ts"
+    "#paquetes/*": "./paquetes/*/publico.ts",
+    "#aplicaciones/*": "./aplicaciones/*/publico.ts"
   },
   "scripts": {
     "verificar": "node herramientas/verificar.mjs",

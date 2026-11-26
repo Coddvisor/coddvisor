@@ -2,8 +2,9 @@
 
 Aquí vive el sistema de gestión de Coddvisor. Hoy contiene sus cimientos: la
 base de datos inicial, el núcleo (el dinero y las monedas), el contrato de la
-caja en borrador, y las revisiones automáticas que hacen cumplir las reglas de
-`arquitectura/bases/`.
+caja en borrador, el comienzo del servicio (entrar a un negocio con un pase de
+Supabase, todavía sin HTTP) y las revisiones automáticas que hacen cumplir las
+reglas de `arquitectura/bases/`.
 
 ## Cómo comprobar que todo está en orden
 
@@ -21,7 +22,7 @@ npm run verificar
 
 1. **Tipos.** El código puro se revisa sin Node y con lo que entiende el celular
    más viejo; después, todo con Node.
-2. **Código.** Pureza, fronteras, plata y promesas.
+2. **Código.** Pureza, fronteras, plata, promesas y consultas.
 3. **Valores fijos** en el código.
 4. **Candados.** Los vectores de los contratos, y que nada aceptado en `main` cambie.
 5. **Base.** Levanta un Postgres en memoria, le aplica las migraciones y revisa
@@ -35,9 +36,11 @@ dentro de Node (con PGlite) y desaparece al terminar.
 
 | Carpeta o archivo                         | Qué es                                                      |
 |-------------------------------------------|-------------------------------------------------------------|
-| `nucleo/`                                 | Dinero exacto con su moneda, identificadores y `Result`. Su puerta es `publico.ts` |
+| `nucleo/`                                 | Dinero exacto con su moneda, identificadores, `Result` y la interfaz de una transacción (`Transaccion`). Su puerta es `publico.ts` |
 | `contratos/caja/`                         | Lo que la caja y el servidor se dicen. Está en **borrador** |
 | `contratos/caja/vectores/` y `candado.json` | Los casos que fijan el contrato, y su huella              |
+| `modulos/identidad/`                      | Verificar el pase de Supabase (ES256, con `node:crypto`), firmar como el servicio y llamar a las puertas de identidad para entrar. Su puerta es `publico.ts` |
+| `aplicaciones/servicio/`                  | El programa del servidor: la conexión con la base (transacción por pedido y `DISCARD ALL` al devolverla), la configuración del entorno y cómo entra una persona. Sin HTTP todavía |
 | `base-de-datos/migraciones/`              | Cada cambio de la base, con fecha en el nombre. Solo se agregan archivos |
 | `base-de-datos/migraciones.candado.json`  | La huella de cada migración aceptada, para notar si alguien la edita |
 | `base-de-datos/verificador/reglas.mjs`    | Las reglas BD-01 a BD-14, BD-16 y BD-17, escritas como preguntas a la base |

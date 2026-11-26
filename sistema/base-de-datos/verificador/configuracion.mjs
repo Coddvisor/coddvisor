@@ -43,6 +43,10 @@ export const configuracion = {
     // abrió uno aunque se borre la tabla del contexto. Va afuera porque no es de
     // ningún negocio (tramo 2b de identidad, auditoría de seguridad).
     'portero.marca',
+    // En qué celda vive cada negocio y con qué nombre se muestra al elegir a
+    // cuál entrar, sin abrirlo (propuesta de identidad, decisión 14: «la lista
+    // de en qué celda vive cada negocio»). Tramo 3 de identidad, parte 1.
+    'control.negocio',
   ],
 
   // Lista cerrada, tabla por tabla, para un rol que no trabaja por clase. Si
@@ -69,6 +73,8 @@ export const configuracion = {
       'nucleo.tenant': ['SELECT', 'INSERT'],
       'control.cuenta': ['SELECT', 'INSERT'],
       'control.acceso': ['SELECT', 'INSERT', 'UPDATE'],
+      // Fundar copia el nombre y la celda; listar los negocios los lee (tramo 3).
+      'control.negocio': ['SELECT', 'INSERT'],
       'identidad.membresia': ['SELECT', 'INSERT', 'UPDATE'],
       'identidad.asignacion': ['SELECT', 'INSERT', 'UPDATE'],
       'identidad.rol': ['SELECT'],
@@ -111,6 +117,9 @@ export const configuracion = {
     'identidad.dar_asignacion': ['coddvisor_app'],
     'identidad.archivar_asignacion': ['coddvisor_app'],
     'identidad.registrar_entrada': ['coddvisor_app'],
+    // Para entrar (tramo 3, parte 1): la cuenta de un pase y sus negocios.
+    'identidad.leer_cuenta': ['coddvisor_app'],
+    'identidad.listar_negocios': ['coddvisor_app'],
   },
 
   // Cómo entra el servicio a la base y de dónde sale el cliente activo.

@@ -2,7 +2,7 @@
 // cosa (el símbolo), no cómo se llama: un objeto propio con un método toFixed no es
 // el toFixed de los números.
 //
-// PU pureza, FR fronteras, PL plata, PR promesas. Cada regla tiene su caso en
+// PU pureza, FR fronteras, PL plata, PR promesas, SV servicio. Cada regla tiene su caso en
 // pruebas/guardia.test.mjs; una prueba exige que ninguna se quede sin caso.
 //
 // Lo que se acepta no ver (lo mira quien revisa):
@@ -11,7 +11,10 @@
 // - una división o una cuenta entre enteros que da decimales (b * 18 / 100);
 // - una propiedad cuyo nombre se arma al correr (Math[k]);
 // - un método asíncrono que reemplaza a uno que no lo es, y el resto de las promesas de un
-//   Promise.all cuando una falla: dentro de una transacción se usa una a la vez.
+//   Promise.all cuando una falla: dentro de una transacción se usa una a la vez;
+// - una consulta escrita como literal que arma su propio texto en la base (format y
+//   execute dentro de una función): eso lo mira quien revisa la migración;
+// - un texto de consulta que llega por la conexión del servicio, la única que lo recibe como dato.
 
 import path from 'node:path';
 import ts from 'typescript';
@@ -40,7 +43,13 @@ export const REGLAS = {
   'PR-01': 'Toda promesa está bajo await, return, Promise.all o Promise.allSettled',
   'PR-02': 'Dentro de try, una promesa se devuelve con await',
   'PR-03': 'Una función asíncrona no se pasa donde nadie la espera',
+  'SV-01': 'El texto de una consulta es un literal, nunca se arma: los datos y las firmas viajan como parámetros',
 };
+
+// El único archivo que recibe el texto de una consulta como dato y se lo pasa al
+// controlador de la base: la conexión del servicio. Todos los demás escriben el suyo.
+const CASA_DE_LA_CONSULTA = 'aplicaciones/servicio/base/conexion.ts';
+const METODO_DE_CONSULTA = 'consultar';
 
 // Qué archivo puede fabricar cada tipo con marca.
 const CASA_DE_LA_MARCA = { MarcaDinero: 'nucleo/dinero.ts', MarcaMoneda: 'nucleo/moneda.ts', MarcaDatos: 'contratos/caja/verbos/verbo.ts' };
@@ -84,6 +93,7 @@ export function revisarPrograma({ programa, archivos, tipos, options, host }, { 
       if (pura) pureza(n, anotar, tipos, programa);
       plata(n, archivo, anotar, tipos);
       promesas(n, anotar, tipos);
+      consultas(n, archivo, anotar, tipos);
       ts.forEachChild(n, mirar);
     };
     mirar(fuente);
@@ -316,6 +326,58 @@ function plata(n, archivo, anotar, tipos) {
   }
   if (ts.isCallExpression(n) && n.expression.getText().split('.').at(-1) === 'monedaDesdeCatalogo' && n.arguments.some((a) => partesDe(tipos.getTypeAtLocation(a)).every((t) => t.isLiteral()))) anotar('PL-04', n, n.getText().slice(0, 60));
 }
+
+// ---------- SV ----------
+
+// SV-01. Otra conexión con el mismo rol ve el texto de cada consulta en
+// pg_stat_activity, pero no sus parámetros: una firma metida en el texto se
+// copiaría desde ahí (02-base-de-datos.md, el portero). Y un texto armado es la
+// puerta de una inyección. Por eso el primer argumento de todo método consultar del
+// sistema es un literal sin huecos, y ese método no se saca de su objeto (call,
+// apply, bind o una variable lo dejarían llamar sin que se vea el texto).
+const esDelSistema = (simbolo) => simbolo?.declarations?.some((d) => !d.getSourceFile().fileName.includes('/node_modules/')) ?? false;
+
+function consultas(n, archivo, anotar, tipos) {
+  if (archivo === CASA_DE_LA_CONSULTA) return;
+  if (ts.isCallExpression(n)) {
+    const declaracion = tipos.getResolvedSignature(n)?.declaration;
+    const nombre = declaracion?.name !== undefined && (ts.isIdentifier(declaracion.name) || ts.isStringLiteralLike(declaracion.name)) ? declaracion.name.text : undefined;
+    if (nombre === METODO_DE_CONSULTA && declaracion !== undefined && !declaracion.getSourceFile().fileName.includes('/node_modules/')) {
+      const texto = n.arguments[0] === undefined ? undefined : quitar(n.arguments[0]);
+      if (texto === undefined || !(ts.isStringLiteral(texto) || ts.isNoSubstitutionTemplateLiteral(texto))) anotar('SV-01', n, `el texto de ${n.getText().slice(0, 50)} no es un literal`);
+    }
+  }
+  const nombreDelAcceso = ts.isPropertyAccessExpression(n) ? n.name : ts.isElementAccessExpression(n) && ts.isStringLiteralLike(n.argumentExpression) ? n.argumentExpression : undefined;
+  if (nombreDelAcceso !== undefined && nombreDelAcceso.text === METODO_DE_CONSULTA) {
+    let afuera = n;
+    while (ENVOLTORIO(afuera.parent)) afuera = afuera.parent;
+    const llamado = ts.isCallExpression(afuera.parent) && afuera.parent.expression === afuera;
+    const simbolo = ts.isPropertyAccessExpression(n) ? tipos.getSymbolAtLocation(n.name) : tipos.getApparentType(tipos.getTypeAtLocation(n.expression)).getProperty(METODO_DE_CONSULTA);
+    if (!llamado && esDelSistema(simbolo)) anotar('SV-01', n, `${n.getText().slice(0, 50)} se saca de su objeto`);
+  }
+  if (ts.isBindingElement(n) && ts.isObjectBindingPattern(n.parent) && nombreDe(n.propertyName ?? n.name) === METODO_DE_CONSULTA) {
+    if (esDelSistema(tipos.getApparentType(tipos.getTypeAtLocation(n.parent)).getProperty(METODO_DE_CONSULTA))) anotar('SV-01', n, 'consultar se saca de su objeto');
+  }
+  // El objeto que tiene el consultar del sistema (una Transaccion) no pasa a algo
+  // que no lo ve como tal: Object.values, getOwnPropertyDescriptor, Reflect, un
+  // spread o un `as unknown` lo dejarían sacar el método sin nombrarlo.
+  const forzado = n.parent !== undefined && (ts.isAsExpression(n.parent) || ts.isTypeAssertionExpression(n.parent) || ts.isSatisfiesExpression(n.parent));
+  if (n.parent !== undefined && ts.isExpression(n) && (forzado || !ENVOLTORIO(n.parent)) && tieneConsultarDelSistema(tipos, tipos.getTypeAtLocation(n))) {
+    if (ts.isSpreadElement(n.parent) || ts.isSpreadAssignment(n.parent)) anotar('SV-01', n, `${n.getText().slice(0, 50)} se desarma con un spread`);
+    else if (forzado) {
+      if (!tieneConsultarDelSistema(tipos, tipos.getTypeFromTypeNode(n.parent.type))) anotar('SV-01', n, `${n.getText().slice(0, 50)} se fuerza a otro tipo`);
+    } else {
+      const destino = tipos.getContextualType(n);
+      if (destino !== undefined && !tieneConsultarDelSistema(tipos, destino)) anotar('SV-01', n, `${n.getText().slice(0, 50)} pasa a un lugar que no lo trata como transacción`);
+    }
+  }
+}
+
+const tieneConsultarDelSistema = (tipos, tipo) => {
+  const t = tipos.getNonNullableType(tipo);
+  if ((t.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.Never)) !== 0) return false;
+  return esDelSistema(tipos.getApparentType(t).getProperty(METODO_DE_CONSULTA));
+};
 
 // ---------- PR ----------
 

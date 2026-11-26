@@ -4,7 +4,9 @@
 
 import assert from 'node:assert/strict';
 import { describe, it, before } from 'node:test';
-import { leerModulos } from '../mapa.mjs';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { leerModulos, RAIZ } from '../mapa.mjs';
 import { crearPrograma } from '../programa.mjs';
 import { circulos, REGLAS, revisarPrograma } from '../reglas.mjs';
 
@@ -67,7 +69,10 @@ bien([as('return await g();'), as('return g();'), as('const r = await g(); retur
 // ---------- Fronteras ----------
 const filas = leerModulos();
 const modulos = filas.filter((f) => f.modulo !== 'nucleo');
-const andamio = Object.fromEntries(modulos.flatMap((f) => [[`modulos/${f.modulo}/publico.ts`, `export const nombre = "${f.modulo}";\n`], [`modulos/${f.modulo}/datos/interno.ts`, 'export const interno = 1;\n']]));
+// Un módulo que ya existe conserva su puerta de verdad: si el andamio la tapara,
+// el código que la importa perdería sus tipos y la guardia lo vería distinto.
+const existe = (ruta) => existsSync(path.join(RAIZ, ruta));
+const andamio = Object.fromEntries(modulos.flatMap((f) => [[`modulos/${f.modulo}/publico.ts`, `export const nombre = "${f.modulo}";\n`], [`modulos/${f.modulo}/datos/interno.ts`, 'export const interno = 1;\n']]).filter(([ruta]) => !existe(ruta)));
 andamio['paquetes/pais/publico.ts'] = 'export const pais = 1;\n';
 andamio['herramientas/cosa.ts'] = 'export const cosa = 1;\n';
 andamio['contratos/otro/publico.ts'] = 'export const otro = 1;\n';
@@ -94,6 +99,23 @@ bien(['import { cero } from "#nucleo"; export const a = cero;'], { en: 'contrato
 bien(['import { abrir } from "#contratos/caja"; export const a = abrir;', 'import { readFileSync } from "node:fs"; export const a = readFileSync;', 'import { interno } from "./interno.ts"; export const a = interno;'], SERVIDOR);
 bien(['import { cero } from "#nucleo"; export const a = cero;'], { en: 'modulos/ventas/dominio' });
 
+// ---------- Aplicaciones ----------
+const SERVICIO = { en: 'aplicaciones/servicio' };
+mal('FR-01', ['import { prestar } from "#aplicaciones/servicio"; export const a = prestar;'], SERVIDOR);
+mal('FR-01', ['import { prestar } from "#aplicaciones/servicio"; export const a = prestar;'], { en: 'contratos/caja' });
+mal('FR-01', ['import { pais } from "#paquetes/pais"; export const a = pais;'], SERVICIO);
+mal('FR-02', ['import { LIMITES } from "../../modulos/identidad/limites.ts"; export const a = LIMITES;'], SERVICIO);
+mal('FR-03', ['import { cosa } from "../../herramientas/cosa.ts"; export const a = cosa;'], SERVICIO);
+bien(['import { verificarPase } from "#modulos/identidad"; export const a = verificarPase;', 'import { esUuid } from "#nucleo"; export const a = esUuid;', 'import { abrir } from "#contratos/caja"; export const a = abrir;', 'import { createHmac } from "node:crypto"; export const a = createHmac;'], SERVICIO);
+
+// ---------- Servicio: el texto de una consulta ----------
+const CONSULTA = { en: 'modulos/ventas/datos', cabeza: 'import type { Transaccion } from "#nucleo";\n' };
+const q = (cuerpo, firma = 't: Transaccion, x: string') => `export const f = async (${firma}): Promise<unknown> => ${cuerpo};`;
+mal('SV-01', [q('await t.consultar(x, [])'), q('await t.consultar(`select ${x}`, [])'), q('await t.consultar("select " + x, [])'), q('await t["consultar"](x, [])'), q('await t.consultar(...[x, []] as [string, []])'), q('await (t.consultar)(x, [])'), q('await t.consultar.call(t, "select 1", [])'), q('await t.consultar.bind(t)("select 1", [])'), 'export const f = (t: Transaccion): unknown => t.consultar;', 'export const f = (t: Transaccion): unknown => { const { consultar } = t; return consultar; };', 'export const f = (t: Transaccion): unknown => { const { consultar: c } = t; return c; };', q('await Object.values(t)[0](`select ${x}`, [])'), q('await Object.getOwnPropertyDescriptor(t, "consultar")?.value(`select ${x}`, [])'), q('await Reflect.get(t, "consultar")(x, [])'), 'export const f = (t: Transaccion): unknown => ({ ...t });', 'export const f = (t: Transaccion): unknown => { const o: object = t; return o; };', 'export const f = (t: Transaccion): unknown => t as unknown;'], CONSULTA);
+mal('SV-01', ['interface Propia { consultar(texto: string): Promise<void> }\nexport const f = async (p: Propia, x: string): Promise<void> => { await p.consultar(x); };'], { en: 'modulos/ventas/datos' });
+mal('SV-01', [q('await t.consultar(x, [])')], { ...CONSULTA, en: 'aplicaciones/servicio' });
+bien([q('await t.consultar("select $1::text as v", [x])'), q('await t.consultar(`select $1::text as v\n  from nucleo.moneda`, [x])'), q('await (t.consultar("select 1", []))'), 'export const f = (consultar: string): string => consultar;'], CONSULTA);
+
 const CIRCULO = { 'nucleo/circulo_a.ts': 'import { b } from "./circulo_b.ts"; export const a = (): number => b();\n', 'nucleo/circulo_b.ts': 'import { c } from "./circulo_c.ts"; export const b = (): number => c();\n', 'nucleo/circulo_c.ts': 'import { a } from "./circulo_a.ts"; export const c = (): number => a();\n' };
 
 describe('la guardia de código', () => {
@@ -105,7 +127,7 @@ describe('la guardia de código', () => {
 
   it('el andamio y el código de verdad no tienen faltas', () => {
     const inventados = new Set([...casos.map((c) => c.archivo), ...Object.keys(CIRCULO)]);
-    assert.deepEqual([...porArchivo.keys()].filter((a) => !inventados.has(a)), []);
+    assert.deepEqual([...porArchivo.keys()].filter((a) => !inventados.has(a)), [], JSON.stringify([...porArchivo.entries()].filter(([a]) => !inventados.has(a))));
   });
   for (const c of casos) {
     it(`${c.regla ?? 'permite'}  ${c.archivo.split('/').slice(0, 2).join('/')}  ${c.nombre.replaceAll('\n', ' ').slice(0, 110)}`, () => {
