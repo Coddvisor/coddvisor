@@ -22,7 +22,7 @@ const PASOS = [
   ['verificar:codigo', 'Pureza, fronteras, plata y promesas'],
   ['verificar:valores-fijos', 'Valores fijos en el código'],
   ['verificar:candados', 'Candados: contratos, y lo aceptado en main'],
-  ['verificar:base', 'Las quince reglas de la base de datos'],
+  ['verificar:base', 'Las diecisiete reglas de la base de datos'],
   ['pruebas', 'Pruebas'],
 ];
 

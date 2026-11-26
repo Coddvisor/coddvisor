@@ -65,6 +65,10 @@ describe('archivos de migración', () => {
     ['vacía una tabla', 'truncate nucleo.algo;'],
     ['borra filas', "delete from nucleo.algo where nombre = 'x';"],
     ['apaga la seguridad por fila', 'alter table nucleo.algo disable row level security;'],
+    ['cambia la clase de una tabla registrada', "update nucleo.tabla_registrada set clase = 'negocio' where tabla = 'membresia';"],
+    ['cambia la clase de una tabla registrada con comillas', `update only "nucleo"."tabla_registrada" set clase = 'negocio';`],
+    ['cambia la clase de una tabla registrada al insertar', "insert into nucleo.tabla_registrada (esquema, tabla, clase) values ('identidad', 'membresia', 'negocio') on conflict (esquema, tabla) do update set clase = excluded.clase;"],
+    ['apaga los disparadores de la sesión', 'set session_replication_role = replica;'],
   ]) {
     test(`rechaza una migración que ${caso} sin declararlo`, () => {
       const m = migracion('20270102030405_cambio.sql', sql);

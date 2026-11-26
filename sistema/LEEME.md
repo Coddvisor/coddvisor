@@ -25,7 +25,7 @@ npm run verificar
 3. **Valores fijos** en el código.
 4. **Candados.** Los vectores de los contratos, y que nada aceptado en `main` cambie.
 5. **Base.** Levanta un Postgres en memoria, le aplica las migraciones y revisa
-   las quince reglas.
+   las diecisiete reglas.
 6. **Pruebas.** Incluye el examen de las reglas: cada una atrapa su falta.
 
 No hace falta instalar Postgres ni contratar nada: la base de prueba corre
@@ -40,9 +40,9 @@ dentro de Node (con PGlite) y desaparece al terminar.
 | `contratos/caja/vectores/` y `candado.json` | Los casos que fijan el contrato, y su huella              |
 | `base-de-datos/migraciones/`              | Cada cambio de la base, con fecha en el nombre. Solo se agregan archivos |
 | `base-de-datos/migraciones.candado.json`  | La huella de cada migración aceptada, para notar si alguien la edita |
-| `base-de-datos/verificador/reglas.mjs`    | Las reglas BD-01 a BD-14, escritas como preguntas a la base |
+| `base-de-datos/verificador/reglas.mjs`    | Las reglas BD-01 a BD-14, BD-16 y BD-17, escritas como preguntas a la base |
 | `base-de-datos/verificador/migraciones.mjs` | La regla BD-15, sobre los archivos de migración           |
-| `base-de-datos/verificador/configuracion.mjs` | Permisos por clase de tabla y convenciones de nombres   |
+| `base-de-datos/verificador/configuracion.mjs` | Permisos por clase de tabla, la lista cerrada del plano de control y convenciones de nombres |
 | `base-de-datos/pruebas/violaciones/`      | Un ejemplo de cada falta. Cada archivo dice qué regla debe atraparlo |
 | `base-de-datos/pruebas/*.test.mjs`        | Pruebas de las reglas y del comportamiento (aislamiento, sellos, libros) |
 | `herramientas/guardia/`                   | Las reglas del código, sobre el compilador de TypeScript, y su examen |
