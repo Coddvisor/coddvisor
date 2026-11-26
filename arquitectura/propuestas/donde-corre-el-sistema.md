@@ -134,6 +134,39 @@ necesita correr cerca de la base y no cuesta nada.
 - **Se rompe si** la caja empieza a pedir datos a la base sin pasar por la
   ventanilla o la sincronización.
 
+El proyecto de Cloudflare se crea **el mismo día que llega el primer código
+de la caja**, no antes (decisión del fundador del 25 de noviembre de 2026): un
+proyecto sin código no publica nada y suma una revisión en rojo a cada
+solicitud. Ese día:
+
+1. **El código llega primero.** La solicitud que crea
+   `sistema/aplicaciones/caja/` trae también su orden para construirla, por
+   ejemplo `npm run caja:construir` dentro de `sistema/`, y dice en qué
+   carpeta queda la página construida.
+2. **El fundador crea el proyecto** en el panel de Cloudflare: Workers &
+   Pages, Crear, Pages, conectar con Git, y elegir el repositorio
+   `Coddvisor/coddvisor`. Los nombres de los botones pueden cambiar:
+   Cloudflare hoy también ofrece crear el mismo sitio estático como Worker, y
+   cualquiera de los dos sirve para la caja.
+3. **Ajustes del proyecto:**
+
+   | Ajuste | Valor |
+   |---|---|
+   | Nombre | `coddvisor-caja` |
+   | Rama de producción | `main` |
+   | Carpeta raíz | `sistema` |
+   | Orden de construcción | La que trajo el paso 1 |
+   | Carpeta de salida | La que trajo el paso 1 |
+   | Rutas que disparan la construcción | Solo `sistema/**`, para que un cambio del sitio no construya la caja |
+
+4. **Dominio propio:** en el proyecto, Dominios personalizados, agregar
+   `caja.coddvisor.com`.
+5. **Se comprueba** abriendo la caja en un celular, cortando internet y
+   recargando: tiene que seguir abriendo.
+
+Cloudflare publica la caja solo desde `main`, como el sitio. Nadie la sube a
+mano.
+
 **2. El panel, la ventanilla y los procesos de fondo corren en Fly.io, en
 São Paulo**, como tres aplicaciones separadas, cada una en su contenedor.
 
