@@ -10,7 +10,11 @@ propio, de un foro o de una búsqueda se marcan como tales.
 
 ## En corto
 
-- **La caja va en Cloudflare**, como el sitio, sin costo.
+- **Todo el ERP vive en una sola dirección, `app.coddvisor.com`.** Vender es
+  una función más, en `app.coddvisor.com/vender`. Cloudflare recibe todo y
+  manda cada parte a su lugar.
+- **La pantalla de vender (la caja) la sirve Cloudflare**, para que abra aunque
+  no haya internet.
 - **El panel, la ventanilla y los procesos de fondo van en Fly.io, en São
   Paulo**, por unos 33 a 38 USD al mes al empezar, contando la dirección
   IPv4 de Supabase.
@@ -45,7 +49,7 @@ está el sitio.
 
 | Pieza | Qué hace | Qué necesita |
 |---|---|---|
-| **La caja** | La pantalla para vender. Funciona sin internet | Una página que el celular guarda la primera vez. No habla con la base: todo pasa por la ventanilla y la sincronización |
+| **La caja** | La pantalla de vender, una función del ERP. Funciona sin internet | Una página que el celular guarda la primera vez. No habla con la base: todo pasa por la ventanilla y la sincronización |
 | **El panel** | Reportes, inventario, configuración. Se programa con Next.js, que arma las páginas en el servidor | Correr cerca de la base, porque cada pantalla hace varias consultas |
 | **La ventanilla** | Recibe los comandos de la caja. Se programa con Hono o Fastify | Correr cerca de la base y contestar siempre: una caja que vuelve a tener internet sube sus ventas de golpe |
 | **Los procesos de fondo** | Envíos a SUNAT, PDFs, planillas, cierres. Toman tareas de una lista guardada en la misma base (pg-boss) | Estar **siempre encendidos** y aguantar trabajos de más de 15 minutos |
@@ -123,49 +127,66 @@ así que nunca queda una venta sin su envío.
 
 Cada decisión dice qué se descartó y en qué caso deja de valer («Se rompe si»).
 
-**1. La caja se publica en Cloudflare Pages, en un proyecto aparte del
-sitio**, en la misma cuenta. Es una página que el celular guarda la primera
-vez (con un service worker, un pequeño programa del navegador), así que no
-necesita correr cerca de la base y no cuesta nada.
+**1. Todo el ERP vive en una sola dirección, `app.coddvisor.com`.** Coddvisor
+es un sistema de gestión completo, no una caja con extras: el cliente entra
+por una sola puerta y desde ahí vende, compra, ve su inventario, su plata y su
+contabilidad. Vender es una función más, en `app.coddvisor.com/vender`. La web
+pública sigue en `www.coddvisor.com`, que tiene un botón «Entrar». (Decisión
+del fundador del 25 de noviembre de 2026.)
 
-- **Se descartó** servirla desde el servidor del panel: una caja que arranca
-  sin red necesita estar guardada en el celular de antes, y eso lo resuelve
-  mejor una página estática.
+Por dentro, Cloudflare atiende todo lo que llega a `app.coddvisor.com` con un
+Worker, un pequeño programa que hace de recepcionista: no consulta la base, solo
+reparte.
+
+| Lo que se pide | Quién lo atiende |
+|---|---|
+| `/vender` (la caja) | El mismo Worker, con los archivos de la caja guardados en Cloudflare. Es una página que el celular guarda la primera vez (con un service worker, un pequeño programa del navegador), así que sigue abriendo sin internet |
+| `/api` (la ventanilla) | Se la pasa a la ventanilla, en Fly.io São Paulo |
+| Todo lo demás (el panel) | Se lo pasa al panel, en Fly.io São Paulo |
+
+- **Se descartó** una dirección para cada parte, como `caja.coddvisor.com`:
+  presenta el ERP como si fueran productos sueltos.
+- **Se descartó** servir la caja desde el servidor del panel: si Fly.io se
+  cae, un celular nuevo no podría ni abrir la caja. Desde Cloudflare abre
+  siempre.
+- **Se rompe si** el Worker repartidor falla, porque todo entra por él. Por
+  eso solo reparte: no guarda nada, no consulta la base y tiene sus propias
+  pruebas.
 - **Se rompe si** la caja empieza a pedir datos a la base sin pasar por la
   ventanilla o la sincronización.
 
-El proyecto de Cloudflare se crea **el mismo día que llega el primer código
-de la caja**, no antes (decisión del fundador del 25 de noviembre de 2026): un
-proyecto sin código no publica nada y suma una revisión en rojo a cada
-solicitud. Ese día:
+El Worker funciona en el plan gratuito de Cloudflare (100.000 peticiones al
+día). Cuando haya clientes reales hará falta el plan de pago, de 5 USD al mes.
+
+El Worker se crea **el mismo día que llega el primer código de la caja**, no
+antes (decisión del fundador del 25 de noviembre de 2026): sin código no
+publica nada y suma una revisión en rojo a cada solicitud. Ese día:
 
 1. **El código llega primero.** La solicitud que crea
-   `sistema/aplicaciones/caja/` trae también su orden para construirla, por
-   ejemplo `npm run caja:construir` dentro de `sistema/`, y dice en qué
-   carpeta queda la página construida.
-2. **El fundador crea el proyecto** en el panel de Cloudflare: Workers &
-   Pages, Crear, Pages, conectar con Git, y elegir el repositorio
-   `Coddvisor/coddvisor`. Los nombres de los botones pueden cambiar:
-   Cloudflare hoy también ofrece crear el mismo sitio estático como Worker, y
-   cualquiera de los dos sirve para la caja.
-3. **Ajustes del proyecto:**
+   `sistema/aplicaciones/caja/` trae también el Worker repartidor, su orden
+   para construirlo (por ejemplo `npm run caja:construir` dentro de
+   `sistema/`) y sus pruebas.
+2. **El fundador lo crea** en el panel de Cloudflare: Workers & Pages, Crear,
+   importar un repositorio, y elegir `Coddvisor/coddvisor`. Los nombres de los
+   botones pueden cambiar.
+3. **Ajustes:**
 
    | Ajuste | Valor |
    |---|---|
-   | Nombre | `coddvisor-caja` |
+   | Nombre | `coddvisor-app` |
    | Rama de producción | `main` |
    | Carpeta raíz | `sistema` |
    | Orden de construcción | La que trajo el paso 1 |
-   | Carpeta de salida | La que trajo el paso 1 |
-   | Rutas que disparan la construcción | Solo `sistema/**`, para que un cambio del sitio no construya la caja |
+   | Rutas que disparan la construcción | Solo `sistema/**`, para que un cambio de la web no lo construya |
 
-4. **Dominio propio:** en el proyecto, Dominios personalizados, agregar
-   `caja.coddvisor.com`.
-5. **Se comprueba** abriendo la caja en un celular, cortando internet y
-   recargando: tiene que seguir abriendo.
+4. **Dominio:** en el Worker, Dominios personalizados, agregar
+   `app.coddvisor.com`.
+5. **Se comprueba** abriendo `app.coddvisor.com/vender` en un celular,
+   cortando internet y recargando: tiene que seguir abriendo.
 
-Cloudflare publica la caja solo desde `main`, como el sitio. Nadie la sube a
-mano.
+Mientras el panel y la ventanilla no existan, el Worker responde a lo demás con
+una página que dice que esa parte llega pronto. Cloudflare publica solo desde
+`main`, como la web. Nadie sube nada a mano.
 
 **2. El panel, la ventanilla y los procesos de fondo corren en Fly.io, en
 São Paulo**, como tres aplicaciones separadas, cada una en su contenedor.
