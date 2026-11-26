@@ -40,8 +40,10 @@ contador antes de darlo por bueno.
 **EX-02. Frases cortas, una idea por frase.** Ninguna pasa de veinticinco
 palabras. Un término técnico se explica la primera vez que aparece.
 
-**EX-03. Los menús se nombran con un verbo.** «Vender», «Comprar», «Cobrar y
-pagar». La persona busca qué puede hacer, no el nombre de un módulo.
+**EX-03. El menú usa la palabra del negocio; los botones, un verbo.** El menú
+dice «Ventas», «Compras», «Cobros y pagos»: son las palabras con que el dueño
+piensa su negocio, y ahí reconoce dónde está cada cosa. Cada botón dice lo que
+hace: «Cobrar», «Pagar», «Guardar». Nunca el nombre interno de un módulo.
 
 **EX-04. Un error dice qué pasó y qué hacer.** Nunca un código solo, nunca una
 culpa. «No hay internet. La venta quedó guardada y se enviará sola.»
