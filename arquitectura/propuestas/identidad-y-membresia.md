@@ -39,8 +39,9 @@ una interpretación o no se pudo confirmar se marca como tal.
   negocio**: su membresía y su rol. Afuera solo queda un índice de a qué
   negocios puede entrar.
 - **Cada cambio queda sellado con la membresía**, no con la cuenta.
-- **Dueños, contadores, soporte y el personal de Coddvisor entran con
-  verificación en dos pasos**, con una app gratuita del celular.
+- **Se entra con correo y contraseña, o con la cuenta de Google.** Dueños,
+  contadores, soporte y el personal de Coddvisor hacen además la verificación
+  en dos pasos, con una app gratuita del celular.
 - **Nadie abre un negocio sin probar que el correo es suyo**, y nadie entra a
   un negocio sin aceptar la invitación con ese mismo correo.
 - **En la caja sin internet, cada vendedor usa un PIN de 6 dígitos** que marca
@@ -231,6 +232,11 @@ Cada negocio nace con una **membresía automática**. En los sellos aparece como
   Supabase el mínimo es uno para todas las cuentas. No se piden combinaciones
   raras, se deja pegarla desde un gestor de contraseñas y se compara con las
   contraseñas filtradas conocidas, que Supabase hace en su plan Pro.
+- **O con la cuenta de Google** («Continuar con Google»), sin contraseña en
+  Coddvisor. Ocho de cada diez celulares en el Perú son Android, así que casi
+  todos los dueños ya tienen una. Es una forma más de entrar, no la única:
+  correo y contraseña quedan para quien no tiene Gmail o no quiere usarlo. Lo
+  que pide la decisión 8 bis está más abajo.
 - **El segundo paso lo exige el rol**: dueño, contador, soporte y personal de
   Coddvisor. Es un dato del catálogo de roles, no una regla en el código. Se hace
   con una app de códigos (TOTP), que Supabase incluye sin costo.
@@ -261,10 +267,52 @@ negocio que se abre.
   una cuenta existe: «El correo o la contraseña no coinciden».
 - **Se descartó** el segundo paso por SMS: cuesta unos 75 USD al mes más cada
   mensaje y es vulnerable al robo del chip.
-- **Se descartó**, por ahora, entrar con las llaves de acceso del celular
-  (passkeys): en Supabase siguen experimentales.
+- **Se descartó** entrar con las llaves de acceso del celular (passkeys),
+  aunque NIST pide ofrecer al menos una forma de entrar que no se pueda robar
+  con una página falsa, y el código de la app sí se puede. En Supabase siguen
+  experimentales y no dicen si cuentan como segundo paso. Decisión del
+  fundador del 26 de noviembre de 2026: no se comprometen por ahora.
 - **Se rompe si** la cookie del panel sirve para mandar ventas: la caja usa su
   propia llave, nunca la cookie.
+
+### 8 bis. Entrar con Google
+
+Decisión del fundador del 26 de noviembre de 2026. Condiciones:
+
+- **Google no abre la puerta de afuera.** Con el registro apagado, entrar con
+  Google no crea cuentas: sirve a quien ya tiene cuenta, o a quien tiene una
+  invitación al mismo correo. Hay además una barrera propia en Supabase (el
+  hook que corre antes de crear una cuenta) que niega todo lo que no venga
+  del servicio.
+- **No reemplaza el segundo paso.** Para Supabase, entrar con Google vale lo
+  mismo que una contraseña (`aal1`): el dueño y el contador igual escriben el
+  código de su app. El segundo paso que la persona tenga en su cuenta de
+  Google no se ve desde Coddvisor.
+- **La persona se reconoce por su identificador de Google** (`sub`), que no
+  cambia, y no por el correo, que sí puede cambiar.
+- **La confirmación de correo de Supabase queda encendida.** Si se apaga,
+  Supabase trata todo correo como verificado y alguien podría adueñarse de una
+  cuenta uniéndole una identidad ajena. La unión manual de identidades, que
+  Supabase tiene en prueba, queda apagada.
+- **Solo se pide nombre y correo** (`openid`, `email`, `profile`). Nunca su
+  Gmail ni su Drive. La pantalla dice, en trato de usted, qué recibe Coddvisor
+  y que Google no ve sus ventas.
+- **El canje se hace en el servidor** (el flujo PKCE), como el resto de la
+  sesión. El botón de un toque de Google, que corre en el navegador, queda para
+  después.
+- **Google revisa la marca antes de publicar**: pide la página de inicio y la
+  política de privacidad en `coddvisor.com` y el dominio verificado. No se
+  encontró un costo publicado.
+- **Si la persona pierde su cuenta de Google**, entra con su correo por la
+  recuperación de la decisión 9. Si su empresa la da de baja en Google, eso no
+  cierra su sesión en Coddvisor: la corta el dueño quitando la membresía.
+- **El envío de datos al extranjero se comunica** a la autoridad de datos
+  personales, como pide el art. 21.2 del reglamento de la Ley 29733. Ya hacía
+  falta por Supabase; Google se suma al mismo aviso.
+
+- **Se rompe si** entrar con Google crea cuentas con el registro apagado, o si
+  una persona invitada no puede aceptar entrando con Google. Las dos cosas
+  salen del código de Supabase y no de su documentación: se prueban antes.
 
 ### 9. Recuperar una cuenta
 
@@ -491,6 +539,7 @@ y los demás) son datos: se cambian después sin tocar el código.
 | En un Galaxy A16 o A07: que la llave y los datos de la caja sobrevivan con la caja instalada | La venta sin internet se posterga y esta parte se vuelve a proponer |
 | La del portero detrás del repartidor de conexiones, que ya pidió [donde-corre-el-sistema.md](donde-corre-el-sistema.md) | El panel y la ventanilla se conectan por otro camino, como dice esa página |
 | En un proyecto de Supabase de pruebas: crear cuentas con el registro apagado, y que el segundo paso llegue como `aal2` en el pase | Se busca otro camino para crear cuentas y se vuelve a proponer la decisión 10 |
+| En el mismo proyecto: que entrar con Google no cree cuentas con el registro apagado, y que una persona invitada pueda aceptar entrando con Google | Google se activa solo para quien ya tiene cuenta, o se posterga y se vuelve a proponer la decisión 8 bis |
 
 ## Fuentes
 
@@ -508,6 +557,11 @@ Revisadas el 26 de noviembre de 2026.
 - OWASP: [ASVS 5.0, autenticación](https://github.com/OWASP/ASVS/blob/master/5.0/en/0x15-V6-Authentication.md),
   [ASVS 5.0, sesiones](https://github.com/OWASP/ASVS/blob/master/5.0/en/0x16-V7-Session-Management.md),
   [guía de autenticación](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html).
+- Entrar con Google: [guía de Supabase](https://supabase.com/docs/guides/auth/social-login/auth-google),
+  [identidades unidas](https://supabase.com/docs/guides/auth/auth-identity-linking),
+  [hook antes de crear una cuenta](https://supabase.com/docs/guides/auth/auth-hooks/before-user-created-hook),
+  [datos que entrega Google](https://developers.google.com/identity/openid-connect/openid-connect).
+- Celulares en el Perú: [StatCounter, octubre de 2026](https://gs.statcounter.com/os-market-share/mobile/peru).
 - NIST: [SP 800-63B, revisión 4](https://pages.nist.gov/800-63-4/sp800-63b.html).
 - Navegador: [llaves que no se pueden copiar](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey),
   [cuándo el navegador borra datos](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria).
