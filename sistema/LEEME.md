@@ -112,6 +112,7 @@ dentro de Node (con PGlite) y desaparece al terminar.
 | `aplicaciones/servicio/proveedor/`        | El proveedor de cuentas real: Supabase Auth por su API HTTP, con `fetch` y sin librerías (contraseña, Google con PKCE, el segundo paso y su inscripción, renovar y salir). Se prueba contra un Supabase Auth falso (`pruebas/supabase-falso.ts`) |
 | `supabase/`                               | Lo que pide Supabase para desplegar: `config.toml` y el arranque del servicio como función (`functions/servicio/index.ts`, en Deno). Su guía, con los pasos del panel: `supabase/LEEME.md` |
 | `herramientas/probar-entrar/`             | El modo de prueba local de entrar (`npm run probar:entrar`): solo para esta computadora |
+| `herramientas/migrador/`                  | El migrador que lleva las migraciones nuevas a la base real, con su registro (`control.migracion_aplicada`), y la ceremonia de la llave del portero. Los corre GitHub Actions (`.github/workflows/migraciones.yml` y `llave-del-portero.yml`). Su guía: `LEEME.md` |
 | `base-de-datos/migraciones/`              | Cada cambio de la base, con fecha en el nombre. Solo se agregan archivos |
 | `base-de-datos/migraciones.candado.json`  | La huella de cada migración aceptada, para notar si alguien la edita |
 | `base-de-datos/verificador/reglas.mjs`    | Las reglas BD-01 a BD-14, BD-16 y BD-17, escritas como preguntas a la base |
@@ -168,10 +169,13 @@ exige que toda regla tenga al menos un caso.
 
 ## Lo que esto todavía no es
 
-No hay registro de que alguna migración de esta carpeta se haya aplicado a
-una base real. El proyecto de base de datos del sistema ya está creado en
-Supabase (`coddvisor-sistema`, región São Paulo), pero todavía no existe el
-camino para llevarle las migraciones, y nadie las aplica a mano. El contrato de
+Ninguna migración de esta carpeta se aplicó todavía a una base real. El
+proyecto de base de datos del sistema ya está creado en Supabase
+(`coddvisor-sistema`, región São Paulo) y el camino para llevarle las
+migraciones ya existe (`herramientas/migrador/`): GitHub Actions las aplica al
+unir a `main`, después de `npm run verificar` y con la aprobación del fundador.
+Nadie las aplica a mano. La primera corrida espera esa aprobación, y lo que el
+fundador prepara en GitHub y en Supabase está en `herramientas/migrador/LEEME.md`. El contrato de
 la caja es un borrador: ninguna caja real selló nada.
 
 El proveedor de cuentas real ya existe (`aplicaciones/servicio/proveedor/supabase.ts`)

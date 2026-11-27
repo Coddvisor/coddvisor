@@ -15,6 +15,36 @@ espera de siete días actúa al elegir una versión, no al instalar desde el can
 
 Nada de esto viaja al negocio del cliente.
 
+## Lo que usa GitHub Actions y no está en npm
+
+El camino de las migraciones (`herramientas/migrador/`) no suma librerías. Usa
+programas que corren solo en GitHub Actions:
+
+| Programa | Versión | Para qué | De dónde sale |
+|---|---|---|---|
+| `psql` | La que trae el runner `ubuntu-24.04` (cliente de PostgreSQL 16) | Habla con la base: el migrador y la ceremonia de la llave | El runner de GitHub. No se instala nada |
+| Postgres | Imagen `postgres:17.6` | El ensayo del migrador antes de tocar la base real. Vive solo durante esa corrida | Docker Hub, como servicio del flujo |
+| CLI de Supabase | 2.108.0, con `supabase/setup-cli` v3.2.0 fijada por su huella | `supabase secrets set` en la ceremonia de la llave del portero | La acción la descarga en cada corrida de la ceremonia |
+
+Fechas de publicación, comprobadas en GitHub el 26-nov-2026 para la regla de
+los siete días: `supabase/setup-cli` v3.2.0 salió el 2-nov-2026 y su etiqueta
+apunta a `689adcfb80d947100a1eab127289b97d1fb07b13`, la misma huella que fija el
+flujo. La CLI 2.108.0 salió el 25-jun-2026. Las dos cumplen la regla. La CLI ya
+va en 3.4.0 (24-nov-2026, todavía dentro de los siete días); pasar a una 3.x es
+un cambio aparte, que se prueba con una ceremonia.
+
+- **Se descartó un controlador de Postgres en Node (`pg`, `postgres` y
+  parecidos)** para el migrador: `psql` ya está en el runner, aplica un archivo
+  tal cual en una transacción y corta al primer error. El controlador del
+  servicio (SV-02) es otra pieza y se decide con ella.
+- **Se descartó `supabase db push`** y su registro propio
+  (`supabase_migrations.schema_migrations`): no compara las huellas de
+  `migraciones.candado.json` y aplicaría con su propio criterio. El registro de
+  Coddvisor es `control.migracion_aplicada`.
+- **Se descartó la API de administración de Supabase con `curl`** para los
+  secretos: hace lo mismo que la CLI, pero el pedido con la llave quedaría
+  escrito a mano en el flujo.
+
 ## Qué se descartó
 
 - **Un corredor de pruebas aparte.** El de Node ejecuta TypeScript y descubre solo

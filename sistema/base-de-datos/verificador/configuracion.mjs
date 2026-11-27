@@ -56,6 +56,10 @@ export const configuracion = {
     // identidad, decisión 8 bis). Son de una persona que todavía no tiene cuenta
     // ni negocio. Barrera de altas, 26-nov-2026.
     'control.alta_permitida',
+    // Las migraciones que el migrador aplicó a la base, con su huella (decisión
+    // D24: las migraciones solo desde la revisión automática). Es de la base
+    // entera, no de un negocio. Camino de las migraciones, 26-nov-2026.
+    'control.migracion_aplicada',
   ],
 
   // Lista cerrada, tabla por tabla, para un rol que no trabaja por clase. Si
