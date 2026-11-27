@@ -62,6 +62,41 @@ export const LIMITES_DEL_SERVICIO = {
   edadMaximaDeUnaOperacionMs: 604_800_000,
   /** Lo que la hora de una operación puede ir adelantada respecto del reloj del servicio: el reloj del teléfono puede estar mal. */
   adelantoMaximoDeUnaOperacionMs: 86_400_000,
+  /**
+   * Cuántas conexiones a la base abre cada copia del servicio, como mucho. Cada
+   * pedido usa una mientras dura su transacción; el resto espera su turno.
+   * Detrás del repartidor en modo transacción, una conexión no ocupa una sesión
+   * de Postgres mientras no hay transacción abierta.
+   */
+  conexionesALaBasePorCopia: 4,
+  /** Cuánto se espera a que la base acepte una conexión, en segundos. */
+  esperaAlConectarALaBaseS: 10,
+  /**
+   * Cuánto espera un pedido una conexión libre de su copia, en segundos, antes
+   * de fallar. Cubre también la conexión que el controlador pierde cuando se cae
+   * la red (base/postgres.ts).
+   */
+  esperaPorUnaConexionALaBaseS: 10,
+  /**
+   * Cuánto se espera la respuesta de cada orden a la base, en segundos. Si se
+   * vence, la conexión se da por cortada. Ninguna consulta del servicio debería
+   * acercarse: cada pedido es una transacción corta.
+   */
+  esperaPorUnaOrdenALaBaseS: 20,
+  /** Cada cuánto el sistema revisa que una conexión sin tráfico siga viva (keep-alive de TCP), en segundos. */
+  latidoDeUnaConexionS: 60,
+  /**
+   * Cuántas órdenes deja el controlador en camino por conexión sin esperar
+   * respuesta. El servicio manda una a la vez, así que no llega a usarse; se
+   * escribe para que no lo lea del entorno (el valor es el que trae postgres.js).
+   */
+  ordenesEnCaminoDelControlador: 100,
+  /** Una conexión sin uso se cierra después de esto, en segundos. */
+  inactividadDeUnaConexionS: 30,
+  /** Una conexión se cierra y se abre otra después de esto, en segundos, aunque se use. */
+  vidaDeUnaConexionS: 1800,
+  /** Al cerrar todas las conexiones de una copia, cuánto se espera a los pedidos en curso, en segundos. */
+  esperaAlDescartarConexionesS: 5,
 } as const;
 
 /** El nombre de cada variable de entorno que lee el servicio. */
@@ -74,6 +109,8 @@ export const VARIABLES = {
   secretoDeLaLlaveDelPortero: "CODDVISOR_PORTERO_LLAVE_SECRETO",
   direccionDeLasCuentas: "CODDVISOR_CUENTAS_DIRECCION",
   clavePublicaDeLasCuentas: "CODDVISOR_CUENTAS_CLAVE_PUBLICA",
+  direccionDeLaBase: "CODDVISOR_BASE_DIRECCION",
+  certificadoDeLaBase: "CODDVISOR_BASE_CERTIFICADO",
 } as const;
 
 export interface Configuracion {
@@ -209,6 +246,122 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
  */
 export function exigirConfiguracion(entorno: Entorno): Configuracion {
   const leida = leerConfiguracion(entorno);
+  if (!leida.ok) throw new Error(`El servicio no arranca. Revise su entorno:\n  - ${leida.error.join("\n  - ")}`);
+  return leida.value;
+}
+
+// ---------------------------------------------------------------------------
+// La base
+// ---------------------------------------------------------------------------
+
+/**
+ * El rol con que el servicio entra a la base (02-base-de-datos.md, el portero).
+ * Es parte del esquema, como el nombre de una tabla: no cambia por cliente ni
+ * por país. El repartidor de Supabase lo pide como «coddvisor_entrada.<proyecto>».
+ */
+export const ROL_DE_ENTRADA = "coddvisor_entrada";
+
+/** Cómo se cifra la conexión: «verify-full» revisa el certificado de la base; «require» cifra sin revisarlo. */
+export type CifradoDeLaBase = "verify-full" | "require" | "ninguno";
+
+/** La conexión a la base, ya revisada. La contraseña no sale de aquí en ningún mensaje. */
+export interface DireccionDeLaBase {
+  readonly servidor: string;
+  readonly puerto: number;
+  readonly base: string;
+  readonly usuario: string;
+  readonly contrasena: string;
+  readonly cifrado: CifradoDeLaBase;
+  /**
+   * El certificado raíz contra el que se revisa la base con verify-full (PEM), o
+   * null para revisarla contra los certificados del sistema. Supabase da el
+   * suyo en la configuración de la base del proyecto. No es un secreto.
+   */
+  readonly certificadoRaiz: string | null;
+}
+
+const PROTOCOLOS_DE_LA_BASE = new Set(["postgres:", "postgresql:"]);
+const PUERTO_DE_POSTGRES = 5432;
+const PUERTO_MAXIMO = 65_535;
+// Sin cifrar, solo dentro de la misma computadora: las pruebas, con la base en memoria detrás de un puerto.
+const SERVIDORES_LOCALES = new Set(["127.0.0.1", "localhost", "[::1]"]);
+const CIFRADOS: Readonly<Record<string, CifradoDeLaBase>> = { "verify-full": "verify-full", require: "require", disable: "ninguno" };
+
+// Uno o más certificados en PEM. Se aceptan los saltos de línea escritos como «\\n», por si el entorno no deja poner saltos de verdad.
+const CERTIFICADOS_PEM = /^(?:-----BEGIN CERTIFICATE-----\n[A-Za-z0-9+/=\n]+\n-----END CERTIFICATE-----\n*)+$/;
+
+/** CODDVISOR_BASE_CERTIFICADO, si se dio: el PEM con saltos de línea de verdad, o un error. */
+function leerElCertificado(entorno: Entorno): Result<string | null, string> {
+  const nombre = VARIABLES.certificadoDeLaBase;
+  const texto = (entorno[nombre]?.trim() ?? "").replaceAll("\\n", "\n").replaceAll("\r", "");
+  if (texto === "") return ok(null);
+  if (!CERTIFICADOS_PEM.test(`${texto}\n`)) return err(`${nombre} debe ser el certificado raíz de la base en PEM (-----BEGIN CERTIFICATE----- ...).`);
+  return ok(`${texto}\n`);
+}
+
+/** Un pedazo de la dirección sin los %: null si no se puede leer. */
+function sinPorcentajes(texto: string): string | null {
+  try {
+    return decodeURIComponent(texto);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Revisa CODDVISOR_BASE_DIRECCION: postgres://coddvisor_entrada[.<proyecto>]:<contraseña>@<servidor>:<puerto>/<base>?sslmode=...
+ *
+ * - El usuario es siempre el rol de entrada: nunca «postgres» ni otro rol. La
+ *   SUPABASE_DB_URL que Supabase pone sola en cada función entra con «postgres»
+ *   y por eso no sirve aquí.
+ * - La única opción que se acepta en la dirección es sslmode, y es obligatoria:
+ *   cualquier otra llegaría a la base como ajuste de la sesión.
+ * - sslmode=disable solo con un servidor de esta misma computadora.
+ * - CODDVISOR_BASE_CERTIFICADO, si se da, es el certificado raíz contra el que
+ *   se revisa la base, y exige sslmode=verify-full: dar un certificado y no
+ *   revisarlo sería engañoso.
+ */
+export function leerLaBase(entorno: Entorno): Result<DireccionDeLaBase, readonly string[]> {
+  const nombre = VARIABLES.direccionDeLaBase;
+  const texto = entorno[nombre]?.trim() ?? "";
+  if (texto === "") return err([`Falta ${nombre}.`]);
+  let url: URL;
+  try {
+    url = new URL(texto);
+  } catch {
+    return err([`${nombre} no es una dirección postgres://.`]);
+  }
+  const faltas: string[] = [];
+  if (!PROTOCOLOS_DE_LA_BASE.has(url.protocol)) faltas.push(`${nombre} debe empezar con postgres://.`);
+  const usuario = sinPorcentajes(url.username) ?? "";
+  if (usuario !== ROL_DE_ENTRADA && !usuario.startsWith(`${ROL_DE_ENTRADA}.`)) {
+    faltas.push(`${nombre} debe entrar con el rol ${ROL_DE_ENTRADA} (o ${ROL_DE_ENTRADA}.<proyecto> en el repartidor de Supabase), nunca con postgres ni con otro.`);
+  }
+  const contrasena = sinPorcentajes(url.password) ?? "";
+  if (contrasena === "") faltas.push(`${nombre} debe llevar la contraseña de ${ROL_DE_ENTRADA}.`);
+  if (url.hostname === "") faltas.push(`${nombre} debe decir el servidor de la base.`);
+  const puerto = url.port === "" ? PUERTO_DE_POSTGRES : Number.parseInt(url.port, 10);
+  if (!Number.isSafeInteger(puerto) || puerto < 1 || puerto > PUERTO_MAXIMO) faltas.push(`${nombre} tiene un puerto que no sirve.`);
+  const base = sinPorcentajes(url.pathname.replace(/^\//, "")) ?? "";
+  if (base === "" || base.includes("/")) faltas.push(`${nombre} debe terminar con el nombre de la base (/postgres).`);
+  if (url.hash !== "") faltas.push(`${nombre} no lleva #.`);
+  const opciones = [...url.searchParams.keys()];
+  if (opciones.some((o) => o !== "sslmode") || opciones.length > 1) faltas.push(`${nombre} acepta solo la opción sslmode.`);
+  const cifrado = CIFRADOS[url.searchParams.get("sslmode") ?? ""];
+  if (cifrado === undefined) faltas.push(`${nombre} debe terminar con ?sslmode=verify-full o ?sslmode=require.`);
+  if (cifrado === "ninguno" && !SERVIDORES_LOCALES.has(url.hostname)) faltas.push(`${nombre} sin cifrar (sslmode=disable) solo sirve con una base en esta misma computadora.`);
+  const certificado = leerElCertificado(entorno);
+  if (!certificado.ok) faltas.push(certificado.error);
+  if (certificado.ok && certificado.value !== null && cifrado !== "verify-full") {
+    faltas.push(`Con ${VARIABLES.certificadoDeLaBase}, ${nombre} debe terminar con ?sslmode=verify-full.`);
+  }
+  if (faltas.length > 0 || cifrado === undefined || !certificado.ok) return err(faltas);
+  return ok({ servidor: url.hostname, puerto, base, usuario, contrasena, cifrado, certificadoRaiz: certificado.value });
+}
+
+/** La conexión a la base, o un error que dice qué revisar: sin ella el servicio no arranca. */
+export function exigirLaBase(entorno: Entorno): DireccionDeLaBase {
+  const leida = leerLaBase(entorno);
   if (!leida.ok) throw new Error(`El servicio no arranca. Revise su entorno:\n  - ${leida.error.join("\n  - ")}`);
   return leida.value;
 }

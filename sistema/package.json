@@ -26,6 +26,9 @@
     "revisor-ia": "node herramientas/revisor-ia.mjs",
     "probar:entrar": "node herramientas/probar-entrar/arrancar.ts --solo-en-esta-computadora"
   },
+  "dependencies": {
+    "postgres": "3.4.9"
+  },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.15",
     "@types/node": "24.19.2",

@@ -13,7 +13,7 @@
  * por el encabezado x-region (sa-east-1), que pone delante el Worker de
  * Cloudflare (supabase.com/docs/guides/functions/regional-invocation).
  */
-import { arrancarElServicio, type Repartidor } from "../../../aplicaciones/servicio/publico.ts";
+import { arrancarElServicio, crearRepartidorDePostgres, exigirLaBase } from "../../../aplicaciones/servicio/publico.ts";
 import { paquetePeru } from "../../../paquetes/pe/publico.ts";
 
 /** Lo poco de Deno que se usa. Así el tipo se revisa también sin los tipos de Deno instalados. */
@@ -22,6 +22,17 @@ interface DenoQueSeUsa {
   serve(atender: (pedido: Request) => Promise<Response>): unknown;
 }
 declare const Deno: DenoQueSeUsa;
+
+/** Lo que trae un evento de error del entorno de Deno, del que se usa solo esto. */
+interface EventoDeUnFallo {
+  readonly reason?: unknown;
+  readonly error?: unknown;
+  preventDefault(): void;
+}
+/** Deno avisa en globalThis una promesa rechazada que nadie esperó o un error que nadie atrapó. */
+interface AvisosDeDeno {
+  addEventListener(tipo: "unhandledrejection" | "error", atender: (evento: EventoDeUnFallo) => void): void;
+}
 
 /**
  * El nombre de la función en supabase/config.toml. Supabase entrega el pedido
@@ -39,25 +50,38 @@ export function sinElNombreDeLaFuncion(pedido: Request): Request {
   return new Request(url, pedido);
 }
 
-/**
- * Las conexiones a la base. El controlador de Postgres de verdad todavía no
- * existe (02-base-de-datos.md, «Lo que todavía no existe»: SV-02). Hasta
- * entonces, todo pedido que necesita la base falla adentro y responde «interno»;
- * los que no la tocan (ir a Google, salir) funcionan.
- */
-const sinBaseTodavia: Repartidor = {
-  sacar: async () => {
-    await Promise.resolve();
-    throw new Error("Falta el controlador de Postgres del servicio (SV-02).");
-  },
-  devolver: async () => { await Promise.resolve(); },
-};
+const entorno = Deno.env.toObject();
+const anotarFallo = (error: unknown): void => { console.error(error); };
 
+/**
+ * Por defecto, en Deno, una promesa rechazada que nadie esperó o un error que
+ * nadie atrapó terminan el proceso: la copia de la función se caería con todos
+ * sus pedidos en curso. postgres.js 3.4.9 deja promesas así cuando una conexión
+ * se cae en su primer viaje (la consulta de los tipos), y no se pueden evitar sin
+ * romperle otra cosa (dependencias.md). Se anotan en el registro y la copia sigue.
+ */
+export function noCaerPorUnFallo(avisos: AvisosDeDeno, anotar: (error: unknown) => void): void {
+  avisos.addEventListener("unhandledrejection", (evento) => {
+    evento.preventDefault();
+    anotar(evento.reason);
+  });
+  avisos.addEventListener("error", (evento) => {
+    evento.preventDefault();
+    anotar(evento.error);
+  });
+}
+noCaerPorUnFallo(globalThis as unknown as AvisosDeDeno, anotarFallo);
+
+/**
+ * Las conexiones a la base, con el rol coddvisor_entrada, por la dirección de
+ * CODDVISOR_BASE_DIRECCION (nunca la SUPABASE_DB_URL que Supabase pone sola: esa
+ * entra como postgres). Sin ella, la función no arranca y dice qué revisar.
+ */
 const manejador = arrancarElServicio({
-  entorno: Deno.env.toObject(),
-  repartidor: sinBaseTodavia,
+  entorno,
+  repartidor: crearRepartidorDePostgres(exigirLaBase(entorno), { anotarFallo }),
   paquetes: [paquetePeru],
-  anotarFallo: (error) => { console.error(error); },
+  anotarFallo,
 });
 
 Deno.serve(async (pedido) => await manejador(sinElNombreDeLaFuncion(pedido)));

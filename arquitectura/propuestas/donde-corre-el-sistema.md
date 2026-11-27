@@ -31,7 +31,9 @@ no se pudieron confirmar dicen «por confirmar».
 - **Costo nuevo: 0 USD al mes.** Fly.io no se abre.
 - **Hay cuatro riesgos que se prueban antes de abrir la ventanilla**: el
   cambio de Node a Deno, el portero detrás del repartidor de conexiones,
-  `DISCARD ALL` detrás de ese repartidor y el Worker que reparte.
+  `DISCARD ALL` detrás de ese repartidor y el Worker que reparte. (26-nov-2026:
+  para `DISCARD ALL` se propone cambiar la regla, ver la decisión 7; lo que
+  falta probar está en `sistema/supabase/LEEME.md`.)
 - **La salida está escrita**: si las Edge Functions quedan chicas, el motor se
   muda a un servidor sin cambiar el código, porque es TypeScript común.
 
@@ -392,8 +394,9 @@ Si la dirección IPv4 hace falta o no:
 
 - **Se descartó** contratar la dirección IPv4 desde ya. Nada la necesita hoy,
   y sería un gasto nuevo fuera del tope.
-- **Se rompe si** la prueba del portero o la de `DISCARD ALL` fallan detrás
-  del repartidor compartido (decisión 7). Entonces el camino es el repartidor
+- **Se rompe si** la prueba del portero o la de la limpieza de la sesión
+  (la que reemplazaría a `DISCARD ALL`, decisión 7) fallan detrás del
+  repartidor compartido. Entonces el camino es el repartidor
   dedicado o la conexión directa, y los dos son solo IPv6 sin la dirección
   IPv4. Habría que contratarla, o probar si las Edge Functions llegan por IPv6.
 - **Se rompe si** se suman conexiones sin mirar el techo. El repartidor
@@ -441,7 +444,7 @@ conectar nada real. Si una falla, se corrige esta propuesta antes de seguir.
 |---|---|---|
 | **Deno en lugar de Node.** La verificación de identidad usa hoy `node:crypto`: el pase de Supabase (ES256) y las firmas del portero | Que la verificación del pase y las firmas pasen a WebCrypto y den lo mismo en Deno y en Node. El sello de la caja ya recibe su función de huella desde afuera, así que solo cambia quién la entrega | Se mantiene la versión de Node en el servidor de salida y se adelanta la mudanza |
 | **El portero detrás del repartidor.** Guarda su contexto en una tabla temporal de la conexión, y eso nunca se probó detrás del repartidor en modo transacción | Abrir, escribir en un libro y cerrar dentro de una transacción; dos transacciones seguidas de negocios distintos sobre la misma conexión real; y que una sentencia suelta, sin transacción, falle cerrada | Repartidor dedicado o conexión directa (decisión 5) |
-| **`DISCARD ALL` detrás del repartidor.** La base exige que el servicio limpie cada conexión antes de prestarla (ver abajo) | Si el repartidor limpia solo las conexiones entre un pedido y otro, o si el servicio puede hacerlo | Se propone cambiar esa obligación como dice `06-antes-de-unir.md`, no se salta |
+| **`DISCARD ALL` detrás del repartidor.** La base exige que el servicio limpie cada conexión antes de prestarla (ver abajo) | Si el repartidor limpia solo las conexiones entre un pedido y otro, o si el servicio puede hacerlo | Se propone cambiar esa obligación como dice `06-antes-de-unir.md`, no se salta. (26-nov-2026: la propuesta está abajo, y lo que falta probar, en `sistema/supabase/LEEME.md`) |
 | **El Worker que reparte.** Todo entra por él | Que `/ventas` y el panel salgan de los archivos de Cloudflare, que `/api` llegue a São Paulo con su encabezado, y que la respuesta diga `sa-east-1` (encabezado `x-sb-edge-region`) | No se publica hasta que pase |
 
 En la misma prueba se confirman los límites de la tabla de arriba: CPU,
@@ -464,7 +467,30 @@ nunca dentro del texto de la consulta.
 - Mientras tanto, el servicio no deja nada vivo fuera de la transacción: ni
   cursores `WITH HOLD`, ni ajustes de sesión, ni sentencias preparadas. Pero
   eso es una costumbre, no una garantía. Por eso la regla no se da por
-  cumplida hasta la prueba.
+  cumplida hasta la prueba. (26-nov-2026: ya no es solo costumbre. La limpieza
+  dentro de la transacción, de la propuesta que sigue, se lleva lo que un
+  pedido deje; falta probarla detrás de Supavisor, según
+  `sistema/supabase/LEEME.md`.)
+- **Propuesta de cambio de la regla (26 de noviembre de 2026, la función con
+  base; la aprueba el fundador, como dice `06-antes-de-unir.md`).** Qué regla:
+  «`DISCARD ALL` cada vez que se devuelve una conexión». Por qué ya no sirve:
+  detrás del modo transacción cae en otra sesión, y cerrar la conexión del
+  servicio tampoco limpia la del servidor. Qué la reemplaza: la limpieza **dentro
+  de la transacción** de cada pedido, con las partes de `DISCARD ALL` que Postgres
+  deja dar ahí (`close all`, `reset all`, `deallocate all`, `unlisten *`,
+  `pg_advisory_unlock_all()`, `discard sequences`), y si el pedido falló, primero
+  vuelve a un punto de guardado del comienzo. `DISCARD ALL` sigue cuando la
+  conexión es una sesión solo suya. Ya cambiaron el documento
+  (`02-base-de-datos.md`, el portero) y su revisión: `conexion.ts` y sus pruebas,
+  con y sin `DISCARD ALL`, y `postgres.test.ts`, que corre el controlador de
+  verdad contra la base en memoria detrás de un puerto que comparte una sola
+  sesión entre todas las conexiones, como el modo transacción. Lo que falta
+  probar en el proyecto real está en `sistema/supabase/LEEME.md`. Lo que esta
+  regla nueva no cubre todavía: si la limpieza falla, el servicio retira su
+  conexión, pero eso no limpia la sesión del servidor; qué hace Supavisor
+  entonces está en esa misma lista. Y, por la advertencia de Supabase sobre
+  postgres.js en modo transacción, el servicio manda una orden a la vez por
+  conexión, sin encadenarlas.
 
 **8. Se despliega solo desde `main`, y las migraciones van antes que el
 código.** (Actualizada el 26 de noviembre de 2026: antes desplegaba
@@ -526,7 +552,9 @@ con esta propuesta, y se aprueban junto con ella:
 
 Y una obligación de `02-base-de-datos.md`, `DISCARD ALL`, queda pendiente de
 la prueba de la decisión 7. Si no se puede cumplir, se propone su cambio como
-dice `06-antes-de-unir.md`.
+dice `06-antes-de-unir.md`. (26-nov-2026: el cambio ya se propuso, en la
+decisión 7, y espera la aprobación del fundador; lo que falta probar está en
+`sistema/supabase/LEEME.md`.)
 
 ## Lo que esta propuesta no decide
 

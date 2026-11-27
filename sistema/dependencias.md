@@ -12,8 +12,9 @@ espera de siete días actúa al elegir una versión, no al instalar desde el can
 | typescript | 6.0.3 | Revisa los tipos y es el motor de la guardia del código. No genera archivos: Node ejecuta el TypeScript tal cual | Solo en la revisión |
 | @types/node | 24.19.2 | Los tipos de la versión de Node que se usa | Solo en la revisión |
 | @electric-sql/pglite | 0.5.15 | Postgres en memoria para las reglas y las pruebas | Solo en la revisión |
+| postgres | 3.4.9 | El controlador de Postgres del servicio (postgres.js): lo importa solo `aplicaciones/servicio/base/postgres.ts` (regla SV-02). Sin dependencias propias y sin programas de instalación (su `prepare` corre solo al construirlo desde su código, no al instalarlo del registro). Publicado el 5-abr-2026 | En la función de Supabase, que lo trae por `npm:postgres@3.4.9` (`supabase/functions/servicio/deno.json`), y en las pruebas en Node |
 
-Nada de esto viaja al negocio del cliente.
+Nada de esto viaja al negocio del cliente: corre en la revisión o en el servidor.
 
 ## Lo que usa GitHub Actions y no está en npm
 
@@ -36,7 +37,8 @@ un cambio aparte, que se prueba con una ceremonia.
 - **Se descartó un controlador de Postgres en Node (`pg`, `postgres` y
   parecidos)** para el migrador: `psql` ya está en el runner, aplica un archivo
   tal cual en una transacción y corta al primer error. El controlador del
-  servicio (SV-02) es otra pieza y se decide con ella.
+  servicio (SV-02) es otra pieza: postgres.js, solo en el servicio (ver la
+  tabla de arriba y «Otro controlador de Postgres para la función de Supabase»).
 - **Se descartó `supabase db push`** y su registro propio
   (`supabase_migrations.schema_migrations`): no compara las huellas de
   `migraciones.candado.json` y aplicaría con su propio criterio. El registro de
@@ -71,6 +73,34 @@ un cambio aparte, que se prueba con una ceremonia.
   (en el navegador o en sus cookies) y la decisión 8 pide que solo la guarde el
   servicio, en su cookie `__Host-`. Se prueba contra un Supabase Auth falso en
   memoria (`aplicaciones/servicio/pruebas/supabase-falso.ts`). (26-nov-2026.)
+- **Otro controlador de Postgres para la función de Supabase.** La página de
+  Supabase para conectar una Edge Function a Postgres
+  (supabase.com/docs/guides/functions/connect-to-postgres, revisada el 26-nov-2026)
+  muestra supabase-js, Deno Postgres (deno.land/x/postgres) y Drizzle con
+  postgres.js. La de postgres.js (supabase.com/docs/guides/database/postgres-js) lo
+  conecta con `prepare: false` y advierte que postgres.js encadena las consultas
+  sin esperar respuesta, que con el repartidor en modo transacción eso «can hang
+  queries or return mismatched rows», y que apagarlo con `max_pipeline: 0` rompe
+  `sql.begin()`. Por eso el servicio no deja que encadene: manda una orden a la
+  vez por conexión (`aplicaciones/servicio/base/postgres.ts`), aunque cueste un
+  viaje por orden. Se eligió postgres.js porque corre igual en Node y en Deno: las
+  pruebas en Node usan el mismo controlador que la función, contra la base en
+  memoria detrás de un puerto (`aplicaciones/servicio/pruebas/servidor-de-la-base.ts`),
+  sin instalar Postgres ni sumar otra librería. Deno Postgres usa `Deno.connect` y
+  no corre en Node: sus pruebas quedarían para el proyecto real. Tampoco
+  `pg` (node-postgres): trae varias dependencias. Ni un ORM (Drizzle, Kysely): las
+  consultas son literales escritos a mano (SV-01). Se quedó en la línea 3.4 y no en
+  la 4 (4.0.0 del 29-oct-2026): la 3.4 es la que usan los ejemplos de Supabase, y
+  pasar a la 4 es un cambio aparte que vuelve a correr estas pruebas.
+  Dos fallas de la 3.4.9 que las pruebas encontraron, y cómo se cubren: (1) quien
+  espera una conexión se pierde si se cae la que iba a recibir, y nadie lo
+  resuelve; el repartidor del servicio lo pasa al juego nuevo y le pone tope de
+  espera. (2) Si una conexión se cae durante su consulta de tipos (la primera que
+  hace), esa promesa queda rechazada sin que nadie la espere; en Deno eso
+  terminaría el proceso, así que la función lo anota y sigue
+  (`supabase/functions/servicio/index.ts`). Apagar esa consulta
+  (`fetch_types: false`) no sirve: con eso, una conexión nueva nunca se entrega a
+  quien la pidió.
 - **Una librería de códigos QR, y el QR que da Supabase.** El código QR de la app
   de códigos se dibuja en el navegador de la persona, a partir del enlace
   `otpauth://`: `aplicaciones/oficina/comun/qr.js`, unos 14 KiB que siguen la
