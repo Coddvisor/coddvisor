@@ -9,7 +9,8 @@
 
 import { err, ok } from "#nucleo";
 import { aBase64url, crearLlavero, deTexto, igualesSinPrisa, verificarPase, type EsperadoDelPase, type Llavero, type Nivel } from "#modulos/identidad";
-import type { AltaDelProveedor, EntradaDelProveedor, ProveedorDeCuentas, SesionDelProveedor, VueltaDeGoogle } from "../rutas/cuentas.ts";
+import { PruebaDePersonaRechazada, type AltaDelProveedor, type EntradaDelProveedor, type ProveedorDeCuentas, type SesionDelProveedor, type VueltaDeGoogle } from "../rutas/cuentas.ts";
+import { TURNSTILE_DE_PRUEBA } from "./turnstile-falso.ts";
 import { uuid7 } from "../../../modulos/identidad/pruebas/apoyo.ts";
 
 export interface CuentaDeEjemplo {
@@ -141,7 +142,9 @@ export async function crearProveedorDePrueba(op: OpcionesDelProveedorDePrueba): 
       return salidas;
     },
 
-    async entrarConContrasena(correo, contrasena) {
+    async entrarConContrasena(correo, contrasena, captcha) {
+      // Como Supabase con la llave secreta de prueba de Turnstile: solo la prueba de mentira pasa.
+      if (captcha !== TURNSTILE_DE_PRUEBA.prueba) throw new PruebaDePersonaRechazada();
       const cuenta = porCorreo(correo);
       // Se compara igual exista o no la cuenta: la respuesta no lo delata.
       const cuadra = igualesSinPrisa(deTexto(contrasena), deTexto(cuenta?.contrasena ?? "\u0000"));

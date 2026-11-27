@@ -36,6 +36,20 @@ export class ProveedorOcupado extends Error {
 }
 
 /**
+ * El proveedor no aceptó la prueba de que es una persona (Turnstile) que trajo
+ * el pedido: falta, venció o ya se usó. No es un «no» a la contraseña: las rutas
+ * no cuentan un intento fallido y responden «captcha» para que la página pida
+ * otra prueba. Supabase Auth la responde con 400 y error_code «captcha_failed»
+ * (internal/api/middleware.go de supabase/auth, verifyCaptcha, leído el 27-nov-2026).
+ */
+export class PruebaDePersonaRechazada extends Error {
+  constructor() {
+    super("El proveedor de cuentas no aceptó la prueba de que es una persona.");
+    this.name = "PruebaDePersonaRechazada";
+  }
+}
+
+/**
  * Por qué no se pudo empezar a inscribir la app de códigos. `sin_sesion`: la
  * sesión ya no vale. `faltan_dos_pasos`: la cuenta ya tiene una app confirmada y
  * esta sesión todavía no hizo el segundo paso (aal1): para inscribir otra, antes
@@ -85,8 +99,12 @@ export interface InscripcionDelSegundoPaso {
 }
 
 export interface ProveedorDeCuentas {
-  /** null si el correo o la contraseña no coinciden. Nunca dice cuál de los dos, ni si la cuenta existe. */
-  entrarConContrasena(correo: string, contrasena: string): Promise<EntradaDelProveedor | null>;
+  /**
+   * null si el correo o la contraseña no coinciden. Nunca dice cuál de los dos,
+   * ni si la cuenta existe. `captcha` es la prueba de Turnstile que trajo la
+   * página: la revisa el proveedor, y si no la acepta lanza PruebaDePersonaRechazada.
+   */
+  entrarConContrasena(correo: string, contrasena: string, captcha: string): Promise<EntradaDelProveedor | null>;
   /** La dirección a la que se manda a la persona para entrar con Google. */
   direccionDeGoogle(vuelta: VueltaDeGoogle): string;
   /** Canjea el código que trajo la vuelta de Google, con el verificador PKCE. null si no vale. */
@@ -119,9 +137,8 @@ export interface ProveedorDeCuentas {
    * computadora, el proveedor de prueba crea una cuenta de ejemplo y vuelve
    * enseguida. Falta, y queda escrito en identidad-y-membresia.md: el alta con
    * correo y su enlace de un solo uso (la crea el programa aparte con la llave
-   * de administrador, que este servicio no tiene), la prueba de que no es un
-   * robot y el límite de altas por día compartido (hoy el servicio pone solo un
-   * límite propio en memoria, por IP).
+   * de administrador, que este servicio no tiene). La prueba de que es una
+   * persona y los cupos compartidos los pone antes el permiso de alta.
    */
   direccionParaAbrir(vuelta: VueltaDeGoogle): string;
   /** Canjea la vuelta del alta, con el verificador PKCE. null si no vale. */

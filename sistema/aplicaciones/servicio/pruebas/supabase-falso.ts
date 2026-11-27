@@ -46,6 +46,11 @@ export interface OpcionesDelFalso {
   readonly reloj: () => number;
   readonly cuentas: readonly CuentaDelFalso[];
   readonly antesDeCrearUnaCuenta: Gancho;
+  /**
+   * La prueba de Turnstile que acepta /token con contraseña, como Supabase con la
+   * protección CAPTCHA encendida. Otra, o ninguna, responde 400 «captcha_failed».
+   */
+  readonly captcha: string;
 }
 
 interface Factor {
@@ -188,6 +193,10 @@ export async function crearSupabaseFalso(op: OpcionesDelFalso): Promise<Supabase
   async function token(pedido: Request, tipo: string | null): Promise<Response> {
     const c = await cuerpoDe(pedido);
     if (tipo === "password") {
+      // GoTrue revisa la prueba antes que la contraseña (verifyCaptcha, en su middleware).
+      const seguridad = c["gotrue_meta_security"];
+      const prueba = typeof seguridad === "object" && seguridad !== null ? (seguridad as Record<string, unknown>)["captcha_token"] : undefined;
+      if (prueba !== op.captcha) return error(400, "captcha_failed");
       const cuenta = typeof c["email"] === "string" ? porCorreo(c["email"]) : undefined;
       if (cuenta === undefined || cuenta.contrasena === null || cuenta.contrasena !== c["password"]) return error(400, "invalid_credentials");
       if (!cuenta.confirmada) return error(400, "email_not_confirmed");

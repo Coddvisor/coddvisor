@@ -83,6 +83,9 @@ a, button, input { min-height: var(--toque-minimo); }
 
 :focus-visible { outline: var(--linea-del-foco) solid var(--enlace); outline-offset: var(--linea-del-foco); }
 
+/* El widget de Turnstile mide 65 px de alto (developers.cloudflare.com/turnstile):
+   se le guarda el lugar para que el botón no salte cuando aparece. */
+.captcha { min-height: 4.0625rem; margin: 0 0 var(--espacio-4); }
 .separador { display: flex; align-items: center; gap: var(--espacio-3); margin: var(--espacio-5) 0; color: var(--texto-2); font-size: var(--tamano-chico); }
 .separador::before, .separador::after { content: ""; flex: 1; border-top: var(--linea) solid var(--borde); }
 

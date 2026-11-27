@@ -16,3 +16,4 @@ export { abrirNegocio, cerrarSesion, leerCuenta, listarNegocios, type Cuenta, ty
 export { leerNegocioAbierto, type NegocioEnPalabras, type RolDeLaMembresia } from "./datos/negocio-abierto.ts";
 export { aBase64url, deBase64, deBase64url, deTexto, igualesSinPrisa, type Bytes, type LlaveDeWebCrypto } from "./bytes.ts";
 export { LIMITES as LIMITES_DE_IDENTIDAD } from "./limites.ts";
+export { CUPOS, devolverCupos, gastarCupos, PARES_POR_LLAMADA, quedanCupos, type Cupo, type UsoDeCupo } from "./cupos.ts";

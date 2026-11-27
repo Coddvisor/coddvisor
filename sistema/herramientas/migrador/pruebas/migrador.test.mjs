@@ -58,7 +58,9 @@ describe('el migrador en una base nueva', () => {
   test('la primera vez aplica todo en una sola transacción y anota cada archivo con su huella', async () => {
     const aplicadas = await migrar({ migraciones: reales, candado: candadoReal, ejecutor, informar: callado });
     assert.deepEqual(aplicadas, reales.map((m) => m.nombre));
-    assert.equal(ejecutor.guiones.length, 1, 'todo lo anterior al registro va en una transacción');
+    // Lo anterior al registro, con él, va en una transacción; cada migración posterior, en la suya.
+    const posteriores = reales.filter((m) => m.nombre > MIGRACION_DEL_REGISTRO).length;
+    assert.equal(ejecutor.guiones.length, 1 + posteriores, 'todo lo anterior al registro va en una transacción');
     assert.deepEqual(await anotadas(db), reales.map((m) => ({ nombre: m.nombre, huella: m.huella })));
   });
 

@@ -321,7 +321,33 @@ describe("qué tan liviano (EX-20)", () => {
       assert.ok(bytes > 0 && bytes < TOPE_DE_JAVASCRIPT, `${archivo}: ${String(bytes)} bytes`);
     }
   });
-  it("ninguna página carga nada de otro sitio", () => {
-    for (const { archivo, html } of paginas) assert.doesNotMatch(html, /(src|href)="(https?:)?\/\//, archivo);
+  // Lo único de otro sitio: el script de Turnstile, la prueba de que es una
+  // persona, que Cloudflare pide cargar de su dirección tal cual, sin copiarlo.
+  const TURNSTILE = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+  it("ninguna página carga nada de otro sitio: el script de Turnstile lo agrega comun/captcha.js", () => {
+    for (const { archivo, html } of paginas) {
+      const ajenos = [...html.matchAll(/(?:src|href)="((?:https?:)?\/\/[^"]*)"/g)].map((m) => m[1]);
+      assert.deepEqual(ajenos, [], archivo);
+    }
+  });
+  // Que la acción sea la que exige el servicio lo prueba aplicaciones/servicio/pruebas/turnstile.test.ts.
+  it("las páginas que piden la prueba de Turnstile le dan su lugar dentro del formulario", () => {
+    for (const nombre of ["index.html", "abrir-con-google.html"]) {
+      const html = paginas.find((p) => p.archivo === path.join("entrar", nombre))?.html ?? "";
+      assert.match(html, /<form id="formulario"[\s\S]*<div class="captcha" id="captcha" data-accion="[a-z_]+"><\/div>[\s\S]*<\/form>/, nombre);
+    }
+  });
+  it("el script de Turnstile lo agrega comun/captcha.js, con sus avisos puestos antes de que empiece a cargar y una espera máxima", () => {
+    const js = programas.find((p) => p.archivo === path.join("comun", "captcha.js"))?.js ?? "";
+    assert.ok(js.includes(`const SCRIPT_DE_TURNSTILE = "${TURNSTILE}";`));
+    const avisos = [js.indexOf('script.addEventListener("load"'), js.indexOf('script.addEventListener("error"')];
+    const direccion = js.indexOf("script.src = SCRIPT_DE_TURNSTILE");
+    assert.ok(avisos.every((i) => i > 0 && i < direccion), "los avisos van antes de la dirección");
+    assert.match(js, /window\.setTimeout\(\(\) => fallo\(/);
+    for (const nombre of ["entrar.js", "abrir-con-google.js"]) {
+      const js = programas.find((p) => p.archivo === path.join("entrar", nombre))?.js ?? "";
+      assert.match(js, /captcha: prueba \}/, nombre);
+      assert.match(js, /renovarCaptcha\(captcha\)/, nombre);
+    }
   });
 });

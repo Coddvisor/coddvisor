@@ -3,7 +3,7 @@
 // piezas, el manejador de las rutas y los datos de ejemplo. Lo usan las pruebas
 // de las rutas y el modo de prueba local, así que los dos prueban lo mismo.
 
-import { crearManejador, type Manejador } from "../rutas/rutas.ts";
+import { crearManejador, type Manejador, type OpcionesDeLasRutas } from "../rutas/rutas.ts";
 import { paquetesPorPais, type Piezas } from "../entrar.ts";
 import { paquetePeru } from "#paquetes/pe";
 import { LIMITES_DEL_SERVICIO } from "../configuracion.ts";
@@ -11,6 +11,8 @@ import { crearBase, llaveDelPortero, type Base } from "../../../modulos/identida
 import { CODIGO_DE_PRUEBA, cargarEjemplo, cuentasDeEjemplo, type Ejemplo } from "./ejemplo.ts";
 import { crearProveedorDePrueba, type ProveedorDePrueba } from "./proveedor-de-prueba.ts";
 import { repartidorDePrueba, type RepartidorDePrueba } from "./repartidor-de-prueba.ts";
+import { crearVerificadorDeTurnstile } from "../proveedor/turnstile.ts";
+import { crearCloudflareFalso, TURNSTILE_DE_PRUEBA } from "./turnstile-falso.ts";
 
 export interface Montaje {
   readonly db: Base;
@@ -18,6 +20,8 @@ export interface Montaje {
   readonly proveedor: ProveedorDePrueba;
   readonly piezas: Piezas;
   readonly manejador: Manejador;
+  /** La prueba de que es una persona que reciben las rutas, para armar otro manejador igual. */
+  readonly captcha: OpcionesDeLasRutas["captcha"];
   readonly ejemplo: Ejemplo;
   cerrar(): Promise<void>;
 }
@@ -28,6 +32,11 @@ export interface OpcionesDelMontaje {
   /** La hora en milisegundos. */
   readonly reloj?: () => number;
   readonly anotarFallo?: (error: unknown) => void;
+  /**
+   * Quien atiende siteverify de Turnstile. Por omisión, uno falso que responde
+   * como el de verdad; el modo de prueba local le pasa fetch, con las llaves de prueba.
+   */
+  readonly pedirAlCaptcha?: (pedido: Request) => Promise<Response>;
 }
 
 /** Cuánto dura un pase de prueba: lo mismo que uno de Supabase. */
@@ -51,6 +60,11 @@ export async function montarEntrar(opciones: OpcionesDelMontaje): Promise<Montaj
   });
   const piezas: Piezas = { repartidor, llavero: proveedor.llavero, esperado: proveedor.esperado, firmar, reloj, negociosPorPagina: LIMITES_DEL_SERVICIO.negociosPorPagina, paquetes: paquetesPorPais([paquetePeru]) };
   const ejemplo = await cargarEjemplo(db, firmar, piezas, proveedor, cuentas);
-  const manejador = crearManejador({ piezas, proveedor, origen: opciones.origen, ...(opciones.anotarFallo === undefined ? {} : { anotarFallo: opciones.anotarFallo }) });
-  return { db, repartidor, proveedor, piezas, manejador, ejemplo, cerrar: async () => { await db.close(); } };
+  const captcha = {
+    llaveDelSitio: TURNSTILE_DE_PRUEBA.llaveDelSitio,
+    // Con las llaves de prueba no se revisan el dominio ni la acción: Cloudflare responde «example.com».
+    verificar: crearVerificadorDeTurnstile({ secreto: TURNSTILE_DE_PRUEBA.secreto, dominio: null, pedir: opciones.pedirAlCaptcha ?? crearCloudflareFalso().pedir }),
+  };
+  const manejador = crearManejador({ piezas, proveedor, origen: opciones.origen, captcha, ...(opciones.anotarFallo === undefined ? {} : { anotarFallo: opciones.anotarFallo }) });
+  return { db, repartidor, proveedor, piezas, manejador, captcha, ejemplo, cerrar: async () => { await db.close(); } };
 }

@@ -14,8 +14,11 @@ import { deBase64, deBase64url, LIMITES_DE_IDENTIDAD, type LlaveDelPortero } fro
 export const LIMITES_DEL_SERVICIO = {
   /** Cuántos negocios muestra cada página de «¿A qué negocio entra?». Como mucho, el tope de la puerta. */
   negociosPorPagina: 20,
-  /** El cuerpo más largo que se lee de un pedido, en bytes. Entrar con correo mide unos cientos. */
-  largoMaximoDelPedido: 4096,
+  /**
+   * El cuerpo más largo que se lee de un pedido, en bytes. Entrar con correo
+   * mide unos cientos, más la prueba de Turnstile (hasta 2048 caracteres).
+   */
+  largoMaximoDelPedido: 8192,
   /** El correo más largo que se acepta (el tope de una dirección de correo). */
   largoMaximoDelCorreo: 254,
   /** La contraseña más larga que se acepta. La mínima la fija el proveedor de cuentas. */
@@ -27,22 +30,17 @@ export const LIMITES_DEL_SERVICIO = {
    * lo mismo que el ida y vuelta con Google, que es cuando Supabase Auth crea la cuenta.
    */
   duracionDelPermisoDeAltaS: 600,
-  /**
-   * El límite propio de intentos (rutas/limite.ts): cuántos fallos se admiten en
-   * cada ventana antes de responder «demasiados_intentos» sin llamar a Supabase.
-   * La ventana es la misma de los límites de Supabase Auth: cinco minutos.
+  /*
+   * Los topes de intentos fallidos y de permisos de alta ya no viven aquí: son
+   * datos de la base (identidad.tope_de_cupo), compartidos por todas las copias
+   * del servicio (cupos.ts).
    */
-  ventanaDeIntentosMs: 300_000,
-  /** Contraseñas y códigos fallidos desde una misma IP, sumados. */
-  intentosFallidosPorIp: 30,
-  /** Contraseñas fallidas para un mismo correo, vengan de donde vengan. */
-  intentosFallidosPorCorreo: 10,
-  /** Códigos de seis dígitos fallidos con una misma sesión. */
-  codigosFallidosPorSesion: 5,
-  /** Permisos de alta («Abra su negocio») pedidos desde una misma IP. Cuentan todos, no solo los fallidos. */
-  permisosDeAltaPorIp: 5,
-  /** Cuántas claves guarda cada límite como mucho: así su memoria tiene tope. */
-  clavesMaximasDelLimite: 10_000,
+  /** La prueba de Turnstile más larga que se acepta, en caracteres (developers.cloudflare.com/turnstile: hasta 2048). */
+  largoMaximoDeUnaPruebaDeCaptcha: 2048,
+  /** Cuánto se espera a Turnstile al revisar una prueba, en milisegundos. */
+  esperaAlVerificadorDeCaptchaMs: 10_000,
+  /** La respuesta más larga que se lee de Turnstile, en bytes. La suya mide unos cientos. */
+  largoMaximoDeLaRespuestaDelCaptcha: 8192,
   /** Cuánto se espera al proveedor de cuentas en cada pedido, en milisegundos. */
   esperaAlProveedorDeCuentasMs: 10_000,
   /** La respuesta más larga que se lee del proveedor de cuentas, en bytes. Una sesión de Supabase mide unos pocos KiB. */
@@ -111,6 +109,9 @@ export const VARIABLES = {
   clavePublicaDeLasCuentas: "CODDVISOR_CUENTAS_CLAVE_PUBLICA",
   direccionDeLaBase: "CODDVISOR_BASE_DIRECCION",
   certificadoDeLaBase: "CODDVISOR_BASE_CERTIFICADO",
+  // Cloudflare Turnstile: la llave del sitio es pública (la pide la página); la secreta, no.
+  llaveDelSitioDelCaptcha: "CODDVISOR_CAPTCHA_LLAVE_DEL_SITIO",
+  secretoDelCaptcha: "CODDVISOR_CAPTCHA_SECRETO",
 } as const;
 
 export interface Configuracion {
@@ -135,6 +136,16 @@ export interface Configuracion {
     readonly direccion: string;
     readonly clavePublica: string;
   };
+  /**
+   * Cloudflare Turnstile, la prueba de que es una persona. La llave del sitio es
+   * pública: el servicio se la da a las páginas (GET /api/entrar/captcha). La
+   * secreta revisa las pruebas que no pasan por Supabase Auth; la misma está
+   * también en el panel de Supabase, que revisa las de entrar con contraseña.
+   */
+  readonly captcha: {
+    readonly llaveDelSitio: string;
+    readonly secreto: string;
+  };
 }
 
 export type Entorno = Readonly<Record<string, string | undefined>>;
@@ -152,6 +163,11 @@ const CLAVE_DE_SERVICIO = /^sb_secret_/;
 const ROL_DE_SERVICIO = "service_role";
 const PARTES_DE_UN_JWT = 3;
 const UTF8 = new TextDecoder("utf-8", { fatal: true });
+// Las llaves de Turnstile: letras, números, guion y guion bajo.
+const LLAVE_DE_TURNSTILE = /^[A-Za-z0-9_-]{10,200}$/;
+// Las llaves de prueba de Turnstile (developers.cloudflare.com/turnstile/troubleshooting/testing):
+// dejan pasar o niegan a todos. Sirven en la computadora, nunca en el producto.
+const LLAVE_DE_PRUEBA_DE_TURNSTILE = /^[1-3]x0+[A-Z]{2}$/;
 
 /** Si la clave es un JWT de Supabase con el rol de servicio (la llave antigua «service_role»). */
 function esJwtDeServicio(clave: string): boolean {
@@ -193,6 +209,8 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
   const secreto = valor(VARIABLES.secretoDeLaLlaveDelPortero);
   const direccionDeLasCuentas = valor(VARIABLES.direccionDeLasCuentas);
   const clavePublica = valor(VARIABLES.clavePublicaDeLasCuentas);
+  const llaveDelSitio = valor(VARIABLES.llaveDelSitioDelCaptcha);
+  const secretoDelCaptcha = valor(VARIABLES.secretoDelCaptcha);
 
   const urlDelOrigen = origen === "" ? null : direccionSegura(origen);
   if (origen !== "" && (urlDelOrigen === null || urlDelOrigen.origin !== origen)) {
@@ -225,6 +243,18 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
   if (secreto !== "" && (bytes === null || bytes.length < BYTES_MINIMOS_DE_LA_LLAVE)) {
     faltas.push(`${VARIABLES.secretoDeLaLlaveDelPortero} debe ser base64 de al menos ${String(BYTES_MINIMOS_DE_LA_LLAVE)} bytes.`);
   }
+  for (const [nombre, llave] of [[VARIABLES.llaveDelSitioDelCaptcha, llaveDelSitio], [VARIABLES.secretoDelCaptcha, secretoDelCaptcha]] as const) {
+    if (llave === "") continue;
+    if (!LLAVE_DE_TURNSTILE.test(llave)) faltas.push(`${nombre} debe ser una llave de Cloudflare Turnstile, sin espacios.`);
+    else if (LLAVE_DE_PRUEBA_DE_TURNSTILE.test(llave)) faltas.push(`${nombre} es una llave de prueba de Turnstile: deja pasar o niega a todos. Use la del widget de Coddvisor.`);
+  }
+  if (llaveDelSitio !== "" && llaveDelSitio === secretoDelCaptcha) faltas.push(`${VARIABLES.secretoDelCaptcha} es igual a la llave del sitio: va la secreta del widget.`);
+  // La llave secreta de Turnstile es más larga que la del sitio (en las de prueba
+  // de Cloudflare, 35 y 24). Al revés, parecen cruzadas: el servicio le daría la
+  // secreta a cualquiera en GET /api/entrar/captcha.
+  else if (llaveDelSitio !== "" && secretoDelCaptcha !== "" && secretoDelCaptcha.length <= llaveDelSitio.length) {
+    faltas.push(`${VARIABLES.llaveDelSitioDelCaptcha} y ${VARIABLES.secretoDelCaptcha} parecen cruzadas: la secreta es la más larga de las dos.`);
+  }
   if (LIMITES_DEL_SERVICIO.negociosPorPagina > LIMITES_DE_IDENTIDAD.maximoDeNegociosPorPagina) {
     faltas.push("La página de negocios del servicio es más grande que el tope de la puerta.");
   }
@@ -235,6 +265,7 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
     pase: { emisor, audiencia, direccionDeLasLlaves: llaves },
     llaveDelPortero: { numero: Number.parseInt(numero, 10), secreto: bytes },
     cuentas: { direccion: direccionDeLasCuentas, clavePublica },
+    captcha: { llaveDelSitio, secreto: secretoDelCaptcha },
   });
 }
 

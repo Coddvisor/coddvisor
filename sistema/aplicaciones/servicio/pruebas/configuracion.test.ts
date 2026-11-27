@@ -21,6 +21,9 @@ const bueno: Entorno = {
   [VARIABLES.secretoDeLaLlaveDelPortero]: secreto,
   [VARIABLES.direccionDeLasCuentas]: "https://proyecto-de-prueba.supabase.test/auth/v1",
   [VARIABLES.clavePublicaDeLasCuentas]: "sb_publishable_clave-de-prueba-0123456789",
+  // Con la forma de las llaves de Turnstile, sin ser las de prueba (que el servicio no acepta).
+  [VARIABLES.llaveDelSitioDelCaptcha]: "0x4AAAAAAAsitio-de-ejemplo",
+  [VARIABLES.secretoDelCaptcha]: "0x4AAAAAAAsecreto-de-ejemplo-0123456789",
 };
 
 describe("la configuración del servicio", () => {
@@ -32,6 +35,24 @@ describe("la configuración del servicio", () => {
     assert.equal(r.value.origen, "https://app.ejemplo.test");
     assert.deepEqual(Buffer.from(r.value.llaveDelPortero.secreto), Buffer.from(secreto, "base64"));
     assert.deepEqual(r.value.cuentas, { direccion: "https://proyecto-de-prueba.supabase.test/auth/v1", clavePublica: "sb_publishable_clave-de-prueba-0123456789" });
+    assert.deepEqual(r.value.captcha, { llaveDelSitio: "0x4AAAAAAAsitio-de-ejemplo", secreto: "0x4AAAAAAAsecreto-de-ejemplo-0123456789" });
+  });
+  it("no arranca con las llaves de prueba de Turnstile, que dejan pasar o niegan a todos, ni con la del sitio como secreta, ni con las dos cruzadas", () => {
+    for (const cambio of [
+      { [VARIABLES.llaveDelSitioDelCaptcha]: "1x00000000000000000000AA" },
+      { [VARIABLES.llaveDelSitioDelCaptcha]: "3x00000000000000000000FF" },
+      { [VARIABLES.secretoDelCaptcha]: "1x0000000000000000000000000000000AA" },
+      { [VARIABLES.secretoDelCaptcha]: "2x0000000000000000000000000000000AA" },
+      { [VARIABLES.secretoDelCaptcha]: "0x4AAAAAAAsitio-de-ejemplo" },
+      { [VARIABLES.secretoDelCaptcha]: "una llave con espacios" },
+      // Cruzadas: la secreta en la variable de la llave del sitio, que el servicio da a cualquiera.
+      { [VARIABLES.llaveDelSitioDelCaptcha]: "0x4AAAAAAAsecreto-de-ejemplo-0123456789", [VARIABLES.secretoDelCaptcha]: "0x4AAAAAAAsitio-de-ejemplo" },
+    ]) {
+      const r = leerConfiguracion({ ...bueno, ...cambio });
+      assert.equal(r.ok, false, JSON.stringify(cambio));
+      // El valor nunca se repite en el mensaje.
+      if (!r.ok) for (const valor of Object.values(cambio)) assert.ok(!r.error.join(" ").includes(valor));
+    }
   });
   it("dice cada variable que falta", () => {
     const r = leerConfiguracion({});

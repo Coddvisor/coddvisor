@@ -17,7 +17,7 @@
  */
 import { err, esUuidV7, ok, type Result, type RechazoDelIdentificadorTributario } from "#nucleo";
 import { listarRegimenes, listarRubros } from "#modulos/configuracion";
-import { abrirNegocioNuevo, leerCuenta, permitirAlta, registrarCuenta, verificarPase, type IdsDelNegocioNuevo, type RechazoAlAbrirUnNegocio } from "#modulos/identidad";
+import { abrirNegocioNuevo, gastarCupos, leerCuenta, permitirAlta, registrarCuenta, verificarPase, type IdsDelNegocioNuevo, type RechazoAlAbrirUnNegocio, type UsoDeCupo } from "#modulos/identidad";
 import { prestar } from "./base/conexion.ts";
 import { LIMITES_DEL_SERVICIO } from "./configuracion.ts";
 import type { Piezas, RechazoAlEntrar } from "./entrar.ts";
@@ -78,10 +78,15 @@ export interface DatosDelAlta {
  * su negocio»: sin él, el gancho de Supabase Auth no deja crear la cuenta
  * (decisión 8 bis). Vale LIMITES_DEL_SERVICIO.duracionDelPermisoDeAltaS, lo
  * mismo que el ida y vuelta con Google.
+ *
+ * Antes gasta sus cupos compartidos (por IP y de todo el sistema), en la misma
+ * transacción: si alguno llegó a su tope, no anota nada y responde false.
  */
-export async function permitirLaAlta(piezas: Piezas, correo: string): Promise<void> {
-  await prestar(piezas.repartidor, async (t) => {
+export async function permitirLaAlta(piezas: Piezas, correo: string, cupos: readonly UsoDeCupo[]): Promise<boolean> {
+  return await prestar(piezas.repartidor, async (t) => {
+    if (!(await gastarCupos(t, piezas.firmar, cupos))) return false;
     await permitirAlta(t, piezas.firmar, { permiso: nuevoUuid7(piezas.reloj), correo, duracionS: LIMITES_DEL_SERVICIO.duracionDelPermisoDeAltaS });
+    return true;
   });
 }
 

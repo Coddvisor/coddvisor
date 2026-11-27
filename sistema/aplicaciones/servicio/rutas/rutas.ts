@@ -15,19 +15,28 @@
  *     catálogo (EX-19). Y ninguno dice si una cuenta existe: un correo que no
  *     existe y una contraseña equivocada responden lo mismo;
  *   - el negocio viaja en cada pedido y se comprueba cada vez (decisión 4);
- *   - las contraseñas, los códigos y los permisos de alta tienen un límite
- *     propio por IP y por lo que se intenta (rutas/limite.ts), que corta antes
- *     de llamar a Supabase: sus límites son por IP, y todo le llega desde la IP
- *     del servicio. Si Supabase igual pide esperar, se responde lo mismo
- *     («demasiados_intentos») y la sesión no se borra.
+ *   - las contraseñas, los códigos y los permisos de alta tienen sus cupos
+ *     compartidos por IP y por lo que se intenta (cupos.ts, en la base: valen
+ *     igual en todas las copias del servicio), que cortan antes de llamar a
+ *     Supabase: sus límites son por IP, y todo le llega desde la IP del
+ *     servicio. El cupo se gasta antes de intentar (así una ráfaga de pedidos a
+ *     la vez no pasa del tope) y se devuelve si el intento salió bien o no
+ *     llegó a contarse. Si Supabase igual pide esperar, se responde lo mismo
+ *     («demasiados_intentos») y la sesión no se borra;
+ *   - entrar con contraseña y pedir un permiso de alta traen la prueba de que
+ *     es una persona (Cloudflare Turnstile). La de la contraseña la revisa
+ *     Supabase Auth; la del permiso, el servicio (proveedor/turnstile.ts). Si
+ *     falta o no vale, se responde «captcha» y no se cuenta como un intento.
  */
 import { err, ok, type Result } from "#nucleo";
-import { aBase64url, deTexto, igualesSinPrisa, leerNegocioAbierto, type NegocioEnPalabras, type Nivel } from "#modulos/identidad";
+import { aBase64url, CUPOS, deTexto, igualesSinPrisa, leerNegocioAbierto, type NegocioEnPalabras, type Nivel, type UsoDeCupo } from "#modulos/identidad";
 import { LIMITES_DEL_SERVICIO } from "../configuracion.ts";
 import { cerrarLaSesion, negociosDeLaPersona, trabajarEnNegocio, type Piezas, type RechazoAlEntrar } from "../entrar.ts";
 import { abrirElNegocio, opcionesParaAbrir, permitirLaAlta, registrarLaCuentaNueva, revisarElRuc, type PedidoDeAbrir, type RechazoAlAbrirElNegocio } from "../abrir.ts";
-import { ProveedorOcupado, type EntradaDelProveedor, type ProveedorDeCuentas, type SesionDelProveedor, type VueltaDeGoogle } from "./cuentas.ts";
-import { crearLimite, type Limite } from "./limite.ts";
+import { devolver, gastar, quedan } from "../cupos.ts";
+import { ACCIONES_DEL_CAPTCHA, type VerificarCaptcha } from "../proveedor/turnstile.ts";
+import { ProveedorOcupado, PruebaDePersonaRechazada, type EntradaDelProveedor, type ProveedorDeCuentas, type SesionDelProveedor, type VueltaDeGoogle } from "./cuentas.ts";
+import { claveDeLaIp, ipDe } from "./ip.ts";
 import { borrarCookie, COOKIES, leerCookies, leerCuerpo, llevarA, llevarAfuera, ponerCookie, responder, vieneDelPanel } from "./http.ts";
 
 export interface OpcionesDeLasRutas {
@@ -35,6 +44,12 @@ export interface OpcionesDeLasRutas {
   readonly proveedor: ProveedorDeCuentas;
   /** El origen público del panel, sin barra final: https://app.coddvisor.com. */
   readonly origen: string;
+  /**
+   * La prueba de que es una persona (Cloudflare Turnstile): la llave pública del
+   * sitio, que se da a las páginas, y quien revisa las pruebas que no pasan por
+   * el proveedor de cuentas.
+   */
+  readonly captcha: { readonly llaveDelSitio: string; readonly verificar: VerificarCaptcha };
   /** Recibe lo que falló adentro, para el registro del servidor. A la persona solo le llega «interno». */
   readonly anotarFallo?: (error: unknown) => void;
 }
@@ -55,6 +70,8 @@ export const RUTAS = {
   negocios: "/api/negocios",
   negocio: "/api/negocio",
   salir: "/api/salir",
+  // La llave pública de Turnstile, para que la página dibuje la prueba de que es una persona.
+  captcha: "/api/entrar/captcha",
   // «Abra su negocio»: crear la cuenta, lo que se puede elegir, revisar el RUC y abrirlo.
   // El permiso de alta: el correo de Google con que la persona abrirá su negocio.
   // Sin él, el gancho de Supabase Auth no deja crear la cuenta (decisión 8 bis).
@@ -95,7 +112,7 @@ const VUELTAS_DEL_ALTA = {
 export type CodigoDeError =
   | "origen" | "pedido_invalido" | "credenciales" | "sin_sesion" | "codigo_incorrecto" | "sin_segundo_paso"
   | "faltan_dos_pasos" | "sin_acceso" | "no_existe" | "metodo" | "interno" | "ruc_invalido" | "ya_usado"
-  | "demasiados_negocios" | "demasiados_intentos" | "ya_inscrita";
+  | "demasiados_negocios" | "demasiados_intentos" | "ya_inscrita" | "captcha" | "altas_del_dia";
 
 type Siguiente = "segundo_paso" | "negocios" | "entrar" | "abrir_cuenta";
 
@@ -106,13 +123,12 @@ const CODIGO_DE_SEIS = /^[0-9]{6}$/;
 const PARECE_UN_CORREO = /^[^\s@]+@[^\s@]+$/;
 const LARGO_DE_UN_ID = 36;
 const SEPARADOR_DE_GOOGLE = ".";
-// La IP de la persona. La pone el Worker de Cloudflare que está delante del
-// servicio. Sin ella, todos los pedidos comparten una sola clave.
-const ENCABEZADO_DE_LA_IP = "cf-connecting-ip";
-const SIN_IP = "sin-ip";
 // De un pase, para contar sus códigos fallidos, basta su firma: es distinta en cada pase.
 const LARGO_DE_LA_CLAVE_DEL_PASE = 128;
 const PIDE_ESPERAR = 429;
+const PEDIDO_MALO = 400;
+// Lo que se cuenta por todas las personas juntas: una sola clave.
+const CLAVE_DE_TODOS = "todos";
 const PROVEEDOR_OCUPADO = 503;
 // Lo que Supabase Auth pone en la vuelta cuando no hay cuenta (getErrorQueryString,
 // internal/api/external.go de supabase/auth). Si el error vino de Google (la
@@ -189,28 +205,16 @@ function responderRechazoAlAbrir(r: RechazoAlAbrirElNegocio): Response {
   return fallo(400, "pedido_invalido");
 }
 
-const ipDe = (pedido: Request): string => pedido.headers.get(ENCABEZADO_DE_LA_IP)?.trim() || SIN_IP;
 const claveDelPase = (pase: string): string => pase.slice(pase.lastIndexOf(".") + 1).slice(0, LARGO_DE_LA_CLAVE_DEL_PASE);
 const claveDelCorreo = (correo: string): string => correo.trim().toLowerCase();
 const demasiados = (): Response => fallo(PIDE_ESPERAR, "demasiados_intentos");
 
-interface Limites {
-  readonly fallidosPorIp: Limite;
-  readonly fallidosPorCorreo: Limite;
-  readonly codigosPorSesion: Limite;
-  readonly permisosPorIp: Limite;
-}
-
-function crearLimites(): Limites {
-  const L = LIMITES_DEL_SERVICIO;
-  const limite = (maximo: number): Limite => crearLimite({ maximo, ventanaMs: L.ventanaDeIntentosMs, clavesMaximas: L.clavesMaximasDelLimite });
-  return {
-    fallidosPorIp: limite(L.intentosFallidosPorIp),
-    fallidosPorCorreo: limite(L.intentosFallidosPorCorreo),
-    codigosPorSesion: limite(L.codigosFallidosPorSesion),
-    permisosPorIp: limite(L.permisosDeAltaPorIp),
-  };
-}
+/** La prueba de Turnstile que trajo el pedido, o null si falta o no tiene forma. */
+const pruebaDe = (cuerpo: Readonly<Record<string, unknown>> | null): string | null => {
+  const prueba = cuerpo?.["captcha"];
+  return esTexto(prueba, LIMITES_DEL_SERVICIO.largoMaximoDeUnaPruebaDeCaptcha) ? prueba : null;
+};
+const sinPrueba = (): Response => fallo(PEDIDO_MALO, "captcha");
 
 export interface InicioDelNegocio {
   readonly negocio: { readonly id: string; readonly nombre: string };
@@ -220,33 +224,71 @@ export interface InicioDelNegocio {
 
 /** Crea el manejador de las rutas de entrar. */
 export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
-  const { piezas, proveedor, origen } = opciones;
-  const limites = crearLimites();
+  const { piezas, proveedor, origen, captcha } = opciones;
 
-  /** Si un código de seis dígitos todavía se puede intentar desde esta IP y con esta sesión. */
-  const quedaCodigo = (ip: string, sesion: SesionDelProveedor, ahora: number): boolean =>
-    limites.fallidosPorIp.queda(ip, ahora) && limites.codigosPorSesion.queda(claveDelPase(sesion.pase), ahora);
-  const contarCodigo = (ip: string, sesion: SesionDelProveedor, ahora: number): void => {
-    limites.fallidosPorIp.contar(ip, ahora);
-    limites.codigosPorSesion.contar(claveDelPase(sesion.pase), ahora);
-  };
+  // Los cupos de cada cosa que se intenta: por la IP y por lo que se intenta.
+  // Las claves llegan ya revisadas: ninguna vacía (la puerta las rechaza).
+  const cuposDeUnCodigo = (pedido: Request, claveDeLaSesion: string): readonly UsoDeCupo[] => [
+    { cupo: CUPOS.intentosFallidosPorIp, clave: claveDeLaIp(ipDe(pedido)) },
+    { cupo: CUPOS.codigosFallidosPorSesion, clave: claveDeLaSesion },
+  ];
+  const cuposDeUnaContrasena = (pedido: Request, correo: string): readonly UsoDeCupo[] => [
+    { cupo: CUPOS.intentosFallidosPorIp, clave: claveDeLaIp(ipDe(pedido)) },
+    { cupo: CUPOS.intentosFallidosPorCorreo, clave: claveDelCorreo(correo) },
+  ];
+  const cuposDeUnPermiso = (ip: string | null): readonly UsoDeCupo[] => [
+    { cupo: CUPOS.permisosDeAltaPorIp, clave: claveDeLaIp(ip) },
+    { cupo: CUPOS.permisosDeAltaDeTodos, clave: CLAVE_DE_TODOS },
+  ];
+
+  /** Devuelve lo gastado. Si la base falla, queda en el registro y la respuesta sigue: a lo más, cuenta uno de más. */
+  async function devolverSinCortar(cupos: readonly UsoDeCupo[]): Promise<void> {
+    try {
+      await devolver(piezas, cupos);
+    } catch (error) {
+      opciones.anotarFallo?.(error);
+    }
+  }
+
+  /**
+   * Gasta los cupos antes de intentar y los devuelve si el intento no fue un
+   * fallo de la persona: `cuenta` dice, del resultado, si cuenta. Si el intento
+   * lanza (Supabase pidió esperar, la prueba de que es una persona no valía,
+   * algo falló adentro), también se devuelve. null si no quedaba cupo.
+   */
+  async function intentarConCupos<R>(cupos: readonly UsoDeCupo[], intentar: () => Promise<R>, cuenta: (r: R) => boolean): Promise<{ readonly r: R } | null> {
+    if (!(await gastar(piezas, cupos))) return null;
+    let r: R;
+    try {
+      r = await intentar();
+    } catch (error) {
+      await devolverSinCortar(cupos);
+      throw error;
+    }
+    if (!cuenta(r)) await devolverSinCortar(cupos);
+    return { r };
+  }
+
+  /** La clave de una sesión para contar sus códigos: la firma del pase. null si el pase no tiene firma. */
+  function claveDeLaSesion(sesion: SesionDelProveedor): string | null {
+    const clave = claveDelPase(sesion.pase);
+    return clave === "" ? null : clave;
+  }
 
   async function entrarConCorreo(pedido: Request): Promise<Response> {
     const cuerpo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido));
     const correo = cuerpo?.["correo"];
     const contrasena = cuerpo?.["contrasena"];
-    if (!esTexto(correo, LIMITES_DEL_SERVICIO.largoMaximoDelCorreo) || !esTexto(contrasena, LIMITES_DEL_SERVICIO.largoMaximoDeLaContrasena)) {
+    if (!esTexto(correo, LIMITES_DEL_SERVICIO.largoMaximoDelCorreo) || !esTexto(contrasena, LIMITES_DEL_SERVICIO.largoMaximoDeLaContrasena) || claveDelCorreo(correo) === "") {
       return fallo(400, "pedido_invalido");
     }
-    const ip = ipDe(pedido);
-    const ahora = piezas.reloj();
-    if (!limites.fallidosPorIp.queda(ip, ahora) || !limites.fallidosPorCorreo.queda(claveDelCorreo(correo), ahora)) return demasiados();
-    const entrada = await proveedor.entrarConContrasena(correo.trim(), contrasena);
-    if (entrada === null) {
-      limites.fallidosPorIp.contar(ip, ahora);
-      limites.fallidosPorCorreo.contar(claveDelCorreo(correo), ahora);
-      return fallo(401, "credenciales", BORRAR_LA_SESION);
-    }
+    // La prueba la revisa Supabase Auth: aquí solo se exige que venga.
+    const prueba = pruebaDe(cuerpo);
+    if (prueba === null) return sinPrueba();
+    const intento = await intentarConCupos(cuposDeUnaContrasena(pedido, correo), async () => await proveedor.entrarConContrasena(correo.trim(), contrasena, prueba), (e) => e === null);
+    if (intento === null) return demasiados();
+    const entrada = intento.r;
+    if (entrada === null) return fallo(401, "credenciales", BORRAR_LA_SESION);
     return responder(200, { siguiente: siguienteDe(entrada) }, cookiesDeLaSesion(entrada.sesion));
   }
 
@@ -367,17 +409,30 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
 
   // El permiso de alta se anota igual con cualquier proveedor: el de prueba no lo
   // mira, y con Supabase lo mira el gancho. Responde igual sea cual sea el correo.
-  // Tiene su límite por IP, y la base no anota otro mientras ese correo tenga
-  // uno vigente: así no se llena control.alta_permitida.
+  // Pide la prueba de que es una persona, que revisa el servicio (este pedido no
+  // pasa por Supabase Auth), y gasta sus cupos por IP y de todo el sistema en la
+  // misma transacción que anota el permiso. La base no anota otro mientras ese
+  // correo tenga uno vigente: así no se llena control.alta_permitida.
+  // Si se llenó el tope de todo el sistema, la persona no hizo nada malo: se le
+  // dice que hoy no se abren más, con otro código que el de «muchos intentos».
   async function permisoDeAlta(pedido: Request): Promise<Response> {
-    const correo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido))?.["correo"];
+    const cuerpo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido));
+    const correo = cuerpo?.["correo"];
     if (!esTexto(correo, LIMITES_DEL_SERVICIO.largoMaximoDelCorreo) || !PARECE_UN_CORREO.test(correo.trim())) return fallo(400, "pedido_invalido");
+    const prueba = pruebaDe(cuerpo);
     const ip = ipDe(pedido);
-    const ahora = piezas.reloj();
-    if (!limites.permisosPorIp.queda(ip, ahora)) return demasiados();
-    limites.permisosPorIp.contar(ip, ahora);
-    await permitirLaAlta(piezas, correo.trim());
+    if (prueba === null || !(await captcha.verificar(prueba, ip, ACCIONES_DEL_CAPTCHA.abrirConGoogle))) return sinPrueba();
+    const cupos = cuposDeUnPermiso(ip);
+    if (!(await permitirLaAlta(piezas, correo.trim(), cupos))) {
+      const deTodos = cupos.filter((c) => c.cupo === CUPOS.permisosDeAltaDeTodos);
+      return (await quedan(piezas, deTodos)) ? demasiados() : fallo(PIDE_ESPERAR, "altas_del_dia");
+    }
     return responder(200, { siguiente: "abrir_cuenta" satisfies Siguiente });
+  }
+
+  // La llave pública de Turnstile: no es un secreto, pero tampoco se escribe en las páginas.
+  async function llaveDelCaptcha(): Promise<Response> {
+    return responder(200, { llave: captcha.llaveDelSitio });
   }
 
   async function inscribirSegundoPaso(pedido: Request): Promise<Response> {
@@ -405,14 +460,12 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     const factor = cuerpo?.["factor"];
     const codigo = cuerpo?.["codigo"];
     if (!esTexto(factor, LARGO_DE_UN_ID) || typeof codigo !== "string" || !CODIGO_DE_SEIS.test(codigo)) return fallo(401, "codigo_incorrecto");
-    const ip = ipDe(pedido);
-    const ahora = piezas.reloj();
-    if (!quedaCodigo(ip, sesion, ahora)) return demasiados();
-    const r = await proveedor.confirmarInscripcion(sesion, factor, codigo);
-    if (!r.ok) {
-      contarCodigo(ip, sesion, ahora);
-      return fallo(401, r.error);
-    }
+    const clave = claveDeLaSesion(sesion);
+    if (clave === null) return fallo(401, "sin_sesion", BORRAR_LA_SESION);
+    const intento = await intentarConCupos(cuposDeUnCodigo(pedido, clave), async () => await proveedor.confirmarInscripcion(sesion, factor, codigo), (x) => !x.ok);
+    if (intento === null) return demasiados();
+    const r = intento.r;
+    if (!r.ok) return fallo(401, r.error);
     return responder(200, { siguiente: "negocios" satisfies Siguiente }, cookiesDeLaSesion(r.value.sesion));
   }
 
@@ -429,14 +482,13 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     if (sesion === null) return fallo(401, "sin_sesion");
     const codigo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido))?.["codigo"];
     if (typeof codigo !== "string" || !CODIGO_DE_SEIS.test(codigo)) return fallo(401, "codigo_incorrecto");
-    const ip = ipDe(pedido);
-    const ahora = piezas.reloj();
-    if (!quedaCodigo(ip, sesion, ahora)) return demasiados();
-    const r = await proveedor.confirmarSegundoPaso(sesion, codigo);
-    if (!r.ok) {
-      if (r.error === "codigo_incorrecto") contarCodigo(ip, sesion, ahora);
-      return fallo(401, r.error);
-    }
+    const clave = claveDeLaSesion(sesion);
+    if (clave === null) return fallo(401, "sin_sesion", BORRAR_LA_SESION);
+    // Cuenta solo el código equivocado; lo demás (sin segundo paso, sesión vencida) se devuelve.
+    const intento = await intentarConCupos(cuposDeUnCodigo(pedido, clave), async () => await proveedor.confirmarSegundoPaso(sesion, codigo), (x) => !x.ok && x.error === "codigo_incorrecto");
+    if (intento === null) return demasiados();
+    const r = intento.r;
+    if (!r.ok) return fallo(401, r.error);
     return responder(200, { siguiente: "negocios" satisfies Siguiente }, cookiesDeLaSesion(r.value.sesion));
   }
 
@@ -505,6 +557,7 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     [RUTAS.abrirCuenta, abrirCuenta],
     [RUTAS.vueltaDelAlta, vueltaDelAlta],
     [RUTAS.opcionesParaAbrir, opcionesDeAbrir],
+    [RUTAS.captcha, llaveDelCaptcha],
   ]);
 
   return async (pedido) => {
@@ -527,6 +580,8 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
       opciones.anotarFallo?.(error);
       // Supabase pidió esperar: no es culpa de la persona, y su sesión sigue.
       if (error instanceof ProveedorOcupado) return fallo(PROVEEDOR_OCUPADO, "demasiados_intentos");
+      // El proveedor no aceptó la prueba de Turnstile: que la página pida otra.
+      if (error instanceof PruebaDePersonaRechazada) return sinPrueba();
       return fallo(500, "interno");
     }
   };

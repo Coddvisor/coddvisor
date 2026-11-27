@@ -14,6 +14,7 @@ import type { Repartidor } from "./base/conexion.ts";
 import { exigirConfiguracion, type Entorno } from "./configuracion.ts";
 import { armarPiezas } from "./entrar.ts";
 import { crearProveedorDeSupabase } from "./proveedor/supabase.ts";
+import { crearVerificadorDeTurnstile } from "./proveedor/turnstile.ts";
 import { crearManejador, type Manejador } from "./rutas/rutas.ts";
 
 export interface OpcionesDelArranque {
@@ -24,6 +25,8 @@ export interface OpcionesDelArranque {
   readonly reloj?: () => number;
   /** Quien le hace los pedidos a Supabase Auth. Por omisión, fetch. */
   readonly pedirAlProveedor?: (pedido: Request) => Promise<Response>;
+  /** Quien le hace los pedidos a Cloudflare Turnstile (siteverify). Por omisión, fetch. */
+  readonly pedirAlCaptcha?: (pedido: Request) => Promise<Response>;
   /** Recibe lo que falla adentro, para el registro del servidor. */
   readonly anotarFallo?: (error: unknown) => void;
 }
@@ -42,6 +45,14 @@ export function arrancarElServicio(opciones: OpcionesDelArranque): Manejador {
     piezas,
     proveedor,
     origen: configuracion.origen,
+    captcha: {
+      llaveDelSitio: configuracion.captcha.llaveDelSitio,
+      verificar: crearVerificadorDeTurnstile({
+        secreto: configuracion.captcha.secreto,
+        dominio: new URL(configuracion.origen).hostname,
+        ...(opciones.pedirAlCaptcha === undefined ? {} : { pedir: opciones.pedirAlCaptcha }),
+      }),
+    },
     ...(opciones.anotarFallo === undefined ? {} : { anotarFallo: opciones.anotarFallo }),
   });
 }

@@ -191,13 +191,10 @@ una cuenta solo con Google y solo si su correo pasó antes por «Abra su negocio
 (`POST /api/abrir/permiso`). Falta la pantalla que pide ese correo antes de ir a
 Google, la que inscribe la app de códigos (las rutas ya están), el alta con
 correo y su enlace de un solo uso (la hace el programa aparte con la llave de
-administrador, que el servicio no tiene), la prueba de que no es un robot y el
-límite de altas por día (decisiones 8 bis y 10). Lo que el fundador hace en el
+administrador, que el servicio no tiene; decisiones 8 bis y 10). Lo que el fundador hace en el
 panel de Supabase está en `supabase/LEEME.md`. El registro de Supabase, el
 botón público «Abra su negocio» y el despliegue de la función no se encienden
 antes de la prueba de que no es un robot y de un límite compartido de permisos y
-altas por día. El servicio frena los intentos de contraseña, de código y de
-permisos de alta con un límite propio por IP, por correo y por sesión, pero ese
-límite vive en la memoria de cada copia de la función: falta uno compartido
-(`supabase/LEEME.md`, «Los límites de Supabase y el servicio»). La lista de lo pendiente
+altas por día. Las dos ya están en el código: Cloudflare Turnstile y los cupos
+compartidos en la base (`supabase/turnstile.md`). La lista de lo pendiente
 está al final de `arquitectura/bases/02-base-de-datos.md`.
