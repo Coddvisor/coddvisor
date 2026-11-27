@@ -8,7 +8,9 @@ import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, before, describe, it } from "node:test";
-import { FRENOS, SEGURIDAD_DE_LAS_PAGINAS, SOLO_CON_CIFRADO, VARIABLES as DEL_WORKER } from "../../../aplicaciones/repartidor/publico.ts";
+import { ENCABEZADOS, FRENOS, SEGURIDAD_DE_LAS_PAGINAS, SOLO_CON_CIFRADO, VARIABLES as DEL_WORKER } from "../../../aplicaciones/repartidor/publico.ts";
+import { leerConfiguracion, VARIABLES as DE_LA_FUNCION } from "../../../aplicaciones/servicio/configuracion.ts";
+import { ENCABEZADOS_DEL_WORKER, puertaDelWorker } from "../../../aplicaciones/servicio/rutas/puerta.ts";
 import { armarElDespliegue, configuracionDeWrangler, DESPLIEGUE, publicar, revisarProyecto, secretoNuevo, SISTEMA, VARIABLES, type Programa } from "../despliegue.ts";
 
 const PROYECTO = "abcdefghijklmnopqrst";
@@ -183,6 +185,28 @@ describe("publicar", () => {
     const b = secretoNuevo();
     assert.match(a, /^[A-Za-z0-9_-]{43}$/);
     assert.notEqual(a, b);
+  });
+});
+
+// El contrato con la función «servicio» (aplicaciones/servicio/rutas/puerta.ts):
+// el mismo nombre en Supabase y en el Worker, los mismos encabezados, y un
+// secreto recién generado que la función acepta al arrancar y reconoce en un pedido.
+describe("el contrato con la función", () => {
+  it("el secreto se guarda en Supabase con el nombre que lee la función, y los encabezados son los que ella revisa", () => {
+    assert.equal(DEL_WORKER.secreto, DE_LA_FUNCION.secretoDelWorker);
+    assert.equal(ENCABEZADOS.secreto, ENCABEZADOS_DEL_WORKER.secreto);
+    assert.equal(ENCABEZADOS.ip, ENCABEZADOS_DEL_WORKER.ip);
+  });
+
+  it("la función arranca con un secreto nuevo y deja pasar el pedido que lo trae, con su IP", async () => {
+    const secreto = secretoNuevo();
+    const leida = leerConfiguracion({ [DE_LA_FUNCION.secretoDelWorker]: secreto });
+    assert.ok(!leida.ok);
+    assert.ok(!leida.error.some((f) => f.includes(DE_LA_FUNCION.secretoDelWorker)), leida.error.join("\n"));
+    const puerta = puertaDelWorker(secreto);
+    const entrada = await puerta(new Request("https://servicio.ejemplo.test/api/negocios", { headers: { [ENCABEZADOS.secreto]: secreto, [ENCABEZADOS.ip]: "203.0.113.7" } }));
+    assert.deepEqual(entrada, { ip: "203.0.113.7" });
+    assert.equal(await puerta(new Request("https://servicio.ejemplo.test/api/negocios", { headers: { [ENCABEZADOS.ip]: "203.0.113.7" } })), null);
   });
 });
 

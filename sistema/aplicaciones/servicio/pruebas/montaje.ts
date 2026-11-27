@@ -11,6 +11,7 @@ import { crearBase, llaveDelPortero, type Base } from "../../../modulos/identida
 import { CODIGO_DE_PRUEBA, cargarEjemplo, cuentasDeEjemplo, type Ejemplo } from "./ejemplo.ts";
 import { crearProveedorDePrueba, type ProveedorDePrueba } from "./proveedor-de-prueba.ts";
 import { repartidorDePrueba, type RepartidorDePrueba } from "./repartidor-de-prueba.ts";
+import { puertaSinWorker } from "./puerta-sin-worker.ts";
 
 export interface Montaje {
   readonly db: Base;
@@ -51,6 +52,6 @@ export async function montarEntrar(opciones: OpcionesDelMontaje): Promise<Montaj
   });
   const piezas: Piezas = { repartidor, llavero: proveedor.llavero, esperado: proveedor.esperado, firmar, reloj, negociosPorPagina: LIMITES_DEL_SERVICIO.negociosPorPagina, paquetes: paquetesPorPais([paquetePeru]) };
   const ejemplo = await cargarEjemplo(db, firmar, piezas, proveedor, cuentas);
-  const manejador = crearManejador({ piezas, proveedor, origen: opciones.origen, ...(opciones.anotarFallo === undefined ? {} : { anotarFallo: opciones.anotarFallo }) });
+  const manejador = crearManejador({ piezas, proveedor, origen: opciones.origen, puerta: puertaSinWorker, ...(opciones.anotarFallo === undefined ? {} : { anotarFallo: opciones.anotarFallo }) });
   return { db, repartidor, proveedor, piezas, manejador, ejemplo, cerrar: async () => { await db.close(); } };
 }

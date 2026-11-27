@@ -21,7 +21,8 @@ sentido de todos los días, y el abogado confirma cómo se llaman en la ley.
   sueldo: esas tablas todavía no existen.
 - **Dos empresas tratan esos datos por cuenta de Coddvisor**: Supabase, que
   los guarda en São Paulo (Brasil), y Cloudflare, por donde van a pasar todos
-  los pedidos de `app.coddvisor.com` cuando exista el Worker.
+  los pedidos de `app.coddvisor.com` cuando se publique el Worker (su código
+  ya está en `sistema/aplicaciones/repartidor/`).
 - **Google no guarda datos por Coddvisor**: es el proveedor con el que la
   persona elige entrar. Se anota porque le entrega a Coddvisor su correo y su
   nombre.

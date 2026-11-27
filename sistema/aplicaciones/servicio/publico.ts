@@ -14,4 +14,5 @@ export { abrirElNegocio, opcionesParaAbrir, revisarElRuc, type OpcionesParaAbrir
 export { armarPiezas, negociosDeLaPersona, paquetesPorPais, trabajarEnNegocio, type NegociosDeLaPersona, type Piezas, type RechazoAlEntrar } from "./entrar.ts";
 export { crearManejador, PAGINAS, RUTAS, type CodigoDeError, type InicioDelNegocio, type Manejador, type OpcionesDeLasRutas } from "./rutas/rutas.ts";
 export { COOKIES } from "./rutas/http.ts";
+export { ENCABEZADOS_DEL_WORKER, ipDelEncabezado, puertaDelWorker, SIN_IP, type EntradaPorLaPuerta, type Puerta } from "./rutas/puerta.ts";
 export type { AltaDelProveedor, EntradaDelProveedor, InscripcionDelSegundoPaso, ProveedorDeCuentas, RechazoDelSegundoPaso, SesionDelProveedor, VueltaDeGoogle } from "./rutas/cuentas.ts";

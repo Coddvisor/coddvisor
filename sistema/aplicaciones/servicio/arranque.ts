@@ -14,6 +14,7 @@ import type { Repartidor } from "./base/conexion.ts";
 import { exigirConfiguracion, type Entorno } from "./configuracion.ts";
 import { armarPiezas } from "./entrar.ts";
 import { crearProveedorDeSupabase } from "./proveedor/supabase.ts";
+import { puertaDelWorker } from "./rutas/puerta.ts";
 import { crearManejador, type Manejador } from "./rutas/rutas.ts";
 
 export interface OpcionesDelArranque {
@@ -42,6 +43,8 @@ export function arrancarElServicio(opciones: OpcionesDelArranque): Manejador {
     piezas,
     proveedor,
     origen: configuracion.origen,
+    // Solo lo que reenvía el Worker de Cloudflare, con su secreto: nunca otra puerta.
+    puerta: puertaDelWorker(configuracion.worker.secreto),
     ...(opciones.anotarFallo === undefined ? {} : { anotarFallo: opciones.anotarFallo }),
   });
 }
