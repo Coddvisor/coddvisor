@@ -6,7 +6,8 @@
  */
 export { prestar, type ConexionDeLaBase, type Repartidor } from "./base/conexion.ts";
 export { exigirConfiguracion, leerConfiguracion, LIMITES_DEL_SERVICIO, VARIABLES, type Configuracion, type Entorno } from "./configuracion.ts";
-export { armarPiezas, negociosDeLaPersona, trabajarEnNegocio, type NegociosDeLaPersona, type Piezas, type RechazoAlEntrar } from "./entrar.ts";
+export { abrirElNegocio, opcionesParaAbrir, revisarElRuc, type OpcionesParaAbrir, type PedidoDeAbrir, type RechazoAlAbrirElNegocio } from "./abrir.ts";
+export { armarPiezas, negociosDeLaPersona, paquetesPorPais, trabajarEnNegocio, type NegociosDeLaPersona, type Piezas, type RechazoAlEntrar } from "./entrar.ts";
 export { crearManejador, PAGINAS, RUTAS, type CodigoDeError, type InicioDelNegocio, type Manejador, type OpcionesDeLasRutas } from "./rutas/rutas.ts";
 export { COOKIES } from "./rutas/http.ts";
-export type { EntradaDelProveedor, ProveedorDeCuentas, RechazoDelSegundoPaso, SesionDelProveedor, VueltaDeGoogle } from "./rutas/cuentas.ts";
+export type { AltaDelProveedor, EntradaDelProveedor, ProveedorDeCuentas, RechazoDelSegundoPaso, SesionDelProveedor, VueltaDeGoogle } from "./rutas/cuentas.ts";

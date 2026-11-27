@@ -22,6 +22,21 @@ export const LIMITES_DEL_SERVICIO = {
   largoMaximoDeLaContrasena: 1024,
   /** Cuánto dura el ida y vuelta con Google, en segundos, antes de que su cookie venza. */
   duracionDeLaVueltaDeGoogleS: 600,
+  /** El nombre más largo que se acepta para un negocio, un local o su distrito, en caracteres. */
+  largoMaximoDeUnNombre: 120,
+  /** El RUC más largo que se lee del pedido, con los espacios y guiones que traiga al pegarlo. */
+  largoMaximoDelNumeroTributario: 40,
+  /** El código más largo que se lee del pedido para un país, un rubro o un régimen. */
+  largoMaximoDeUnCodigo: 40,
+  /**
+   * La operación de «Abra su negocio» lleva la hora en que la pantalla la creó, y
+   * esa hora pasa a todos los ids del negocio nuevo. Una más vieja que esto no se
+   * acepta: lo escrito vive en la pestaña (sessionStorage), y una semana alcanza
+   * de sobra para volver a la misma pestaña y tocar «Crear mi negocio».
+   */
+  edadMaximaDeUnaOperacionMs: 604_800_000,
+  /** Lo que la hora de una operación puede ir adelantada respecto del reloj del servicio: el reloj del teléfono puede estar mal. */
+  adelantoMaximoDeUnaOperacionMs: 86_400_000,
 } as const;
 
 /** El nombre de cada variable de entorno que lee el servicio. */

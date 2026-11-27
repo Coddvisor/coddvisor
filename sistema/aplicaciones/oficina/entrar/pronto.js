@@ -1,6 +1,6 @@
 // @ts-check
 // Lo que todavía no existe dice qué será y ofrece volver (EX-14): recuperar la
-// contraseña, abrir un negocio y los códigos de respaldo. El tema llega en la
+// contraseña y los códigos de respaldo. Abrir un negocio ya existe (abrir.js). El tema llega en la
 // dirección y solo vale uno de esta lista; de dónde se llegó elige a dónde volver.
 
 import { arrancar, PAGINAS, texto } from "../comun/oficina.js";
@@ -8,7 +8,6 @@ import { arrancar, PAGINAS, texto } from "../comun/oficina.js";
 /** Cada tema y sus dos textos del catálogo. */
 const TEMAS = {
   recuperar: { titulo: "pronto.recuperar.titulo", texto: "pronto.recuperar.texto" },
-  abrir: { titulo: "pronto.abrir.titulo", texto: "pronto.abrir.texto" },
   respaldo: { titulo: "pronto.respaldo.titulo", texto: "pronto.respaldo.texto" },
 };
 
@@ -31,7 +30,6 @@ function vueltaDe(desde) {
 
 /** @param {string | null} tema */
 function temaDe(tema) {
-  if (tema === "abrir") return TEMAS.abrir;
   if (tema === "respaldo") return TEMAS.respaldo;
   return TEMAS.recuperar;
 }

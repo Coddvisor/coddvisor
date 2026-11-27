@@ -37,8 +37,8 @@ inventario, contabilidad. Cada módulo tiene:
 | Módulo          | Qué resuelve                                         | Usa a                                                   |
 |-----------------|------------------------------------------------------|---------------------------------------------------------|
 | `nucleo`        | Cliente, empresa, local, catálogos y parámetros      | Nadie                                                   |
-| `identidad`     | Membresías, roles y permisos: quién entra a cada negocio y qué puede hacer | nucleo                    |
-| `configuracion` | Derechos del plan, perfiles, plantillas y campos propios | nucleo                                              |
+| `identidad`     | Membresías, roles y permisos: quién entra a cada negocio y qué puede hacer | nucleo, configuracion     |
+| `configuracion` | Derechos del plan, perfiles, rubros, plantillas y campos propios | nucleo                                      |
 | `terceros`      | Clientes y proveedores en una sola ficha             | nucleo                                                  |
 | `catalogo`      | Productos, servicios y precios                       | nucleo                                                  |
 | `contabilidad`  | Asientos y cuentas, con un motor único de posteo     | nucleo, configuracion                                   |
@@ -50,7 +50,10 @@ inventario, contabilidad. Cada módulo tiene:
 Nadie usa a ventas ni a compras: están arriba de todo. La identidad vive en la
 base (sus tablas, en el esquema `identidad` y en el plano de control, y sus
 puertas, que son funciones de la base) y en `modulos/identidad/`, que verifica
-el pase de Supabase, firma como el servicio y llama a esas puertas. La contabilidad no
+el pase de Supabase, firma como el servicio y llama a esas puertas. La puerta que abre un negocio (`identidad.abrir_negocio`)
+le pide a `configuracion` que anexe el rubro elegido (`configuracion.anotar_rubro`):
+por eso identidad usa a configuracion, y configuracion no usa a identidad
+(cambio del 26-nov-2026, abrir un negocio). La contabilidad no
 llama a ningún módulo de negocio: cada uno le entrega el hecho, y el motor
 decide el asiento con reglas de contabilización que son datos.
 
@@ -71,16 +74,23 @@ sistema/
   contratos/
     caja/                   Lo que la caja y el servidor se dicen: el sobre, su sello,
                             los verbos, las respuestas y sus vectores. En borrador.
+  paquetes/
+    pe/                     El Perú: revisar el RUC (forma y dígito verificador). Sus datos
+                            (regímenes, moneda, zona horaria) están en sus migraciones.
   modulos/
     identidad/              Verificar el pase, leer la cuenta y sus negocios, abrir uno
-                            con el portero, decir el negocio abierto en palabras y
-                            firmar como el servicio. Con WebCrypto: corre en Node y en Deno.
+                            con el portero, decir el negocio abierto en palabras, abrir
+                            un negocio nuevo y firmar como el servicio. Con WebCrypto:
+                            corre en Node y en Deno.
+    configuracion/          Lo que se elige al abrir un negocio: los rubros (suyos) y los
+                            regímenes, que lee del núcleo (nucleo.regimen_tributario) para
+                            ofrecerlos, sin ser su dueño.
   aplicaciones/
     servicio/               El programa del servidor. Hoy: la conexión con la base,
                             cómo entra una persona y sus rutas bajo /api (rutas/),
                             hechas con Request y Response para Node y para Deno.
     oficina/                Las páginas del navegador. Hoy: entrar, el segundo paso,
-                            elegir negocio y un inicio provisional. HTML, CSS y poco
+                            elegir negocio, abrir un negocio y un inicio provisional. HTML, CSS y poco
                             JavaScript, sin construir; Cloudflare las servirá tal cual.
   diseno/                   Las medidas (medidas.css) y el catálogo de textos
                             (textos/es-PE.json). Los colores siguen en marca/colores.css.
@@ -142,6 +152,13 @@ Supabase (Deno) y en Node sin reescribirse (`donde-corre-el-sistema.md`). Por es
   como parámetro. Lo propio de Node vive en un arranque fuera del producto, como
   `herramientas/probar-entrar/`. (Regla nueva del 26-nov-2026: antes un módulo
   podía usar `node:crypto`.)
+
+**Los paquetes de país llegan como dato.** Un módulo o una aplicación no
+importa `paquetes/pe` (FR-01): la forma de un paquete es `PaqueteDePais`, del
+núcleo, y quien arranca el programa le entrega al servicio los que hay
+(`Piezas.paquetes`). El servicio elige el del país que llega con el pedido o
+que tiene la empresa. Hoy los entregan el modo de prueba y las pruebas; la
+función de Supabase lo hará al arrancar.
 
 **Fronteras.**
 

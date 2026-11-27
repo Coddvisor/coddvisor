@@ -72,9 +72,15 @@ export const configuracion = {
     // Lo justo para sus puertas: registrar cuentas, fundar un negocio (la raíz
     // y sus membresías), escribir membresías y asignaciones, y copiar el estado
     // al índice. Lee los roles y sus permisos para comprobar el de quien actúa.
-    // Ninguna otra tabla de negocio: fundar no crea empresas.
+    // Desde el 26-nov-2026 (abrir un negocio, decisión 10 de identidad) crea y
+    // lee también la primera empresa y el primer local de un negocio que abre, y
+    // lee el país y sus regímenes. Nunca los edita. Ninguna otra tabla de negocio.
     coddvisor_identidad: {
       'nucleo.tenant': ['SELECT', 'INSERT'],
+      'nucleo.empresa': ['SELECT', 'INSERT'],
+      'nucleo.establecimiento': ['SELECT', 'INSERT'],
+      'nucleo.pais': ['SELECT'],
+      'nucleo.regimen_tributario': ['SELECT'],
       'control.cuenta': ['SELECT', 'INSERT'],
       'control.acceso': ['SELECT', 'INSERT', 'UPDATE'],
       // Fundar copia el nombre y la celda; listar los negocios los lee (tramo 3).
@@ -130,6 +136,11 @@ export const configuracion = {
     // cuenta con su sesión en cada pedido.
     'identidad.cerrar_sesion': ['coddvisor_app'],
     'identidad.leer_cuenta_de_sesion': ['coddvisor_app'],
+    // Abrir un negocio con su primera empresa, su local y su rubro (26-nov-2026).
+    'identidad.abrir_negocio': ['coddvisor_app'],
+    // La única que anexa el rubro elegido. Es del rol de los libros y solo la
+    // ejecuta la puerta que abre un negocio, dentro del negocio que abrió.
+    'configuracion.anotar_rubro': ['coddvisor_identidad'],
   },
 
   // Cómo entra el servicio a la base y de dónde sale el cliente activo.

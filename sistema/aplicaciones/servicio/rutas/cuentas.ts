@@ -35,6 +35,20 @@ export interface VueltaDeGoogle {
   readonly desafio: string;
 }
 
+/**
+ * Lo que vuelve de un alta: la sesión de la cuenta nueva y lo que el proveedor
+ * comprobó de ella. Con esto el servicio la registra en Coddvisor
+ * (identidad.registrar_cuenta) antes de dejarla abrir su negocio.
+ */
+export interface AltaDelProveedor {
+  readonly entrada: EntradaDelProveedor;
+  /** El id que el proveedor da a la cuenta (el «sub» de sus pases). */
+  readonly proveedorCuentaId: string;
+  /** El correo que el proveedor ya comprobó que es de esa persona. */
+  readonly correo: string;
+  readonly nombre: string;
+}
+
 export interface ProveedorDeCuentas {
   /** null si el correo o la contraseña no coinciden. Nunca dice cuál de los dos, ni si la cuenta existe. */
   entrarConContrasena(correo: string, contrasena: string): Promise<EntradaDelProveedor | null>;
@@ -46,4 +60,25 @@ export interface ProveedorDeCuentas {
   confirmarSegundoPaso(sesion: SesionDelProveedor, codigo: string): Promise<Result<EntradaDelProveedor, RechazoDelSegundoPaso>>;
   /** Cierra la sesión en el proveedor. Si falla, la cookie igual se borra. */
   salir(sesion: SesionDelProveedor): Promise<void>;
+
+  /**
+   * «Abra su negocio» con una cuenta nueva: la dirección a la que se manda a la
+   * persona para crearla (decisiones 8 bis y 10 de identidad). Vuelve igual que
+   * Google, con un código de un solo uso y el mismo desafío PKCE.
+   *
+   * En la computadora, el proveedor de prueba crea una cuenta de ejemplo y
+   * vuelve enseguida. Con Supabase falta (queda escrito en
+   * arquitectura/propuestas/identidad-y-membresia.md, decisión 10):
+   *   - con Google: la dirección de Google con la marca que reconoce el hook de
+   *     «antes de crear una cuenta», que deja pasar solo las altas que vienen de
+   *     este botón y niega las demás;
+   *   - con correo: la cuenta nace pendiente y sin contraseña, el programa aparte
+   *     con la llave de administrador manda el enlace de un solo uso, y recién al
+   *     volver por ese enlace la persona pone su contraseña;
+   *   - en los dos: la prueba de que no es un robot, el límite de altas por día
+   *     y la inscripción de la app de códigos antes de entrar al negocio.
+   */
+  direccionParaAbrir(vuelta: VueltaDeGoogle): string;
+  /** Canjea la vuelta del alta, con el verificador PKCE. null si no vale. */
+  canjearAlta(codigo: string, verificador: string): Promise<AltaDelProveedor | null>;
 }

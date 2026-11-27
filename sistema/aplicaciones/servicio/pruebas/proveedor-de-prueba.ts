@@ -9,7 +9,7 @@
 
 import { err, ok } from "#nucleo";
 import { aBase64url, crearLlavero, deTexto, igualesSinPrisa, verificarPase, type EsperadoDelPase, type Llavero, type Nivel } from "#modulos/identidad";
-import type { EntradaDelProveedor, ProveedorDeCuentas, SesionDelProveedor, VueltaDeGoogle } from "../rutas/cuentas.ts";
+import type { AltaDelProveedor, EntradaDelProveedor, ProveedorDeCuentas, SesionDelProveedor, VueltaDeGoogle } from "../rutas/cuentas.ts";
 import { uuid7 } from "../../../modulos/identidad/pruebas/apoyo.ts";
 
 export interface CuentaDeEjemplo {
@@ -49,12 +49,22 @@ export interface ProveedorDePrueba extends ProveedorDeCuentas {
    * del origen permitido.
    */
   simularGoogle(direccion: URL, origenPermitido: string): string | null;
+  /**
+   * Hace de proveedor al abrir un negocio: crea una cuenta nueva de ejemplo, con
+   * su app de códigos ya inscrita, y devuelve la vuelta con un código de un solo
+   * uso. null si la vuelta no es del origen permitido.
+   */
+  simularAlta(direccion: URL, origenPermitido: string): string | null;
+  /** Las cuentas que nacieron con «Abra su negocio», en orden. */
+  readonly altas: readonly CuentaDeEjemplo[];
   /** Cuántas sesiones cerró. */
   readonly salidas: number;
 }
 
 /** La ruta del modo de prueba que hace de Google. */
 export const RUTA_DE_GOOGLE_DE_PRUEBA = "/prueba/google";
+/** La ruta del modo de prueba que hace de proveedor al crear una cuenta para abrir un negocio. */
+export const RUTA_DEL_ALTA_DE_PRUEBA = "/prueba/abrir-cuenta";
 
 const ECDSA = { name: "ECDSA", namedCurve: "P-256" } as const;
 const ECDSA_SHA256 = { name: "ECDSA", hash: "SHA-256" } as const;
@@ -70,6 +80,10 @@ export async function crearProveedorDePrueba(op: OpcionesDelProveedorDePrueba): 
   const llavero = crearLlavero({ pedir: async () => await Promise.resolve(juego), reloj: op.reloj });
   const esperado: EsperadoDelPase = { emisor: op.emisor, audiencia: op.audiencia, toleranciaS: 30 };
   const codigosDeGoogle = new Map<string, string>();
+  // Las cuentas de ejemplo y las que nacen al abrir un negocio, que se suman al correr.
+  const cuentas: CuentaDeEjemplo[] = [...op.cuentas];
+  const altas: CuentaDeEjemplo[] = [];
+  const codigosDeAlta = new Map<string, { readonly desafio: string; readonly cuenta: CuentaDeEjemplo }>();
   let salidas = 0;
 
   async function emitirPase(cuenta: CuentaDeEjemplo, nivel: Nivel, cambios: Readonly<Record<string, unknown>> = {}): Promise<string> {
@@ -88,7 +102,35 @@ export async function crearProveedorDePrueba(op: OpcionesDelProveedorDePrueba): 
     faltaSegundoPaso: nivel === "aal1" && cuenta.segundoPaso,
   });
 
-  const porCorreo = (correo: string): CuentaDeEjemplo | undefined => op.cuentas.find((c) => c.correo === correo.toLowerCase());
+  const porCorreo = (correo: string): CuentaDeEjemplo | undefined => cuentas.find((c) => c.correo === correo.toLowerCase());
+
+  /** La vuelta a `direccion` con un código nuevo, o null si no vuelve al origen permitido. */
+  function volverCon(direccion: URL, origenPermitido: string, guardar: (codigo: string, desafio: string) => void): string | null {
+    const vuelta = direccion.searchParams.get("redirect_to") ?? "";
+    const estado = direccion.searchParams.get("state") ?? "";
+    const desafio = direccion.searchParams.get("code_challenge") ?? "";
+    let destino: URL;
+    try {
+      destino = new URL(vuelta);
+    } catch {
+      return null;
+    }
+    if (destino.origin !== origenPermitido || desafio === "") return null;
+    const codigo = uuid7();
+    guardar(codigo, desafio);
+    destino.searchParams.set("code", codigo);
+    destino.searchParams.set("state", estado);
+    return destino.href;
+  }
+
+  async function cuadraElDesafio(desafio: string, verificador: string): Promise<boolean> {
+    return aBase64url(new Uint8Array(await crypto.subtle.digest("SHA-256", deTexto(verificador)))) === desafio;
+  }
+
+  const direccionDelProveedor = (ruta: string, vuelta: VueltaDeGoogle): string => {
+    const consulta = new URLSearchParams({ redirect_to: vuelta.vuelta, state: vuelta.estado, code_challenge: vuelta.desafio, code_challenge_method: "s256" });
+    return `${ruta}?${consulta.toString()}`;
+  };
 
   return {
     esperado,
@@ -106,26 +148,11 @@ export async function crearProveedorDePrueba(op: OpcionesDelProveedorDePrueba): 
     },
 
     direccionDeGoogle(vuelta: VueltaDeGoogle) {
-      const consulta = new URLSearchParams({ redirect_to: vuelta.vuelta, state: vuelta.estado, code_challenge: vuelta.desafio, code_challenge_method: "s256" });
-      return `${RUTA_DE_GOOGLE_DE_PRUEBA}?${consulta.toString()}`;
+      return direccionDelProveedor(RUTA_DE_GOOGLE_DE_PRUEBA, vuelta);
     },
 
     simularGoogle(direccion, origenPermitido) {
-      const vuelta = direccion.searchParams.get("redirect_to") ?? "";
-      const estado = direccion.searchParams.get("state") ?? "";
-      const desafio = direccion.searchParams.get("code_challenge") ?? "";
-      let destino: URL;
-      try {
-        destino = new URL(vuelta);
-      } catch {
-        return null;
-      }
-      if (destino.origin !== origenPermitido || desafio === "") return null;
-      const codigo = uuid7();
-      codigosDeGoogle.set(codigo, desafio);
-      destino.searchParams.set("code", codigo);
-      destino.searchParams.set("state", estado);
-      return destino.href;
+      return volverCon(direccion, origenPermitido, (codigo, desafio) => codigosDeGoogle.set(codigo, desafio));
     },
 
     async canjearGoogle(codigo, verificador) {
@@ -133,13 +160,42 @@ export async function crearProveedorDePrueba(op: OpcionesDelProveedorDePrueba): 
       codigosDeGoogle.delete(codigo);
       const cuenta = porCorreo(op.correoDeGoogle);
       if (desafio === undefined || cuenta === undefined) return null;
-      const calculado = aBase64url(new Uint8Array(await crypto.subtle.digest("SHA-256", deTexto(verificador))));
-      return calculado === desafio ? await entrada(cuenta, "aal1") : null;
+      return (await cuadraElDesafio(desafio, verificador)) ? await entrada(cuenta, "aal1") : null;
+    },
+
+    get altas() {
+      return altas;
+    },
+
+    direccionParaAbrir(vuelta: VueltaDeGoogle) {
+      return direccionDelProveedor(RUTA_DEL_ALTA_DE_PRUEBA, vuelta);
+    },
+
+    simularAlta(direccion, origenPermitido) {
+      const numero = String(altas.length + 1);
+      const cuenta: CuentaDeEjemplo = {
+        id: uuid7(), proveedor: uuid7(), correo: `nueva.${numero}@ejemplo.test`, nombre: `Cuenta Nueva de Ejemplo ${numero}`,
+        contrasena: op.cuentas[0]?.contrasena ?? "", segundoPaso: true,
+      };
+      const vuelta = volverCon(direccion, origenPermitido, (codigo, desafio) => codigosDeAlta.set(codigo, { desafio, cuenta }));
+      if (vuelta !== null) {
+        cuentas.push(cuenta);
+        altas.push(cuenta);
+      }
+      return vuelta;
+    },
+
+    async canjearAlta(codigo, verificador): Promise<AltaDelProveedor | null> {
+      const guardado = codigosDeAlta.get(codigo);
+      codigosDeAlta.delete(codigo);
+      if (guardado === undefined || !(await cuadraElDesafio(guardado.desafio, verificador))) return null;
+      const { cuenta } = guardado;
+      return { entrada: await entrada(cuenta, "aal1"), proveedorCuentaId: cuenta.proveedor, correo: cuenta.correo, nombre: cuenta.nombre };
     },
 
     async confirmarSegundoPaso(sesion: SesionDelProveedor, codigo: string) {
       const pase = await verificarPase(sesion.pase, llavero, esperado, Math.floor(op.reloj() / MS));
-      const cuenta = pase.ok ? op.cuentas.find((c) => c.proveedor === pase.value.cuentaDelProveedor) : undefined;
+      const cuenta = pase.ok ? cuentas.find((c) => c.proveedor === pase.value.cuentaDelProveedor) : undefined;
       if (!pase.ok || cuenta === undefined) return err("codigo_incorrecto");
       if (!cuenta.segundoPaso) return err("sin_segundo_paso");
       if (!igualesSinPrisa(deTexto(codigo), deTexto(op.codigoDelSegundoPaso))) return err("codigo_incorrecto");

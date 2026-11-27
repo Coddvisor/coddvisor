@@ -3,6 +3,7 @@
   "aviso.contrasena": "Contraseña de todas las cuentas: {contrasena}",
   "aviso.codigo": "Código del segundo paso: {codigo}",
   "aviso.google": "«Continuar con Google» entra como {correo}.",
+  "aviso.abrir": "«Abra su negocio» crea una cuenta nueva de ejemplo, con el mismo código.",
   "aviso.cuenta": "{correo}: {descripcion}",
   "cuenta.duena": "dueña de la bodega, con segundo paso",
   "cuenta.contador": "contador de los dos negocios, con segundo paso",

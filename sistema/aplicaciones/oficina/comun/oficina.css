@@ -104,6 +104,7 @@ a, button, input { min-height: var(--toque-minimo); }
 /* Un aviso dice qué pasó y qué hacer (EX-04), con ícono y texto: nunca solo el color. */
 .aviso { display: flex; align-items: flex-start; gap: var(--espacio-2); padding: var(--espacio-3) var(--espacio-4); border-radius: var(--radio-chico); margin-bottom: var(--espacio-4); }
 .aviso-error { background: var(--error-fondo); color: var(--error); }
+.aviso-nota { background: var(--aviso-fondo); color: var(--aviso); }
 .icono { flex: none; width: var(--icono); height: var(--icono); margin-top: var(--espacio-1); }
 
 .tarjeta { background: var(--tarjeta); color: var(--tinta); border: var(--linea) solid var(--borde); border-radius: var(--radio); padding: var(--espacio-5) var(--espacio-4); margin-bottom: var(--espacio-4); }
@@ -133,6 +134,36 @@ a.negocio[href]:hover { border-color: var(--enlace); }
 
 .estado { display: inline-flex; align-items: center; gap: var(--espacio-1); justify-self: start; padding: 0 var(--espacio-2); border-radius: var(--radio-pildora); background: var(--aviso-fondo); color: var(--aviso); font-size: var(--tamano-chico); }
 .estado .icono { width: var(--espacio-4); height: var(--espacio-4); margin-top: 0; color: var(--aviso); }
+
+/* Abrir un negocio: una pregunta por pantalla, con su avance arriba. El avance
+   se dice con texto («Paso 2 de 4»); la barra solo lo acompaña. */
+.avance { margin-bottom: var(--espacio-5); }
+.avance-texto { margin: 0 0 var(--espacio-2); color: var(--texto-2); font-size: var(--tamano-chico); font-weight: var(--peso-medio); }
+.barra { height: var(--espacio-2); border-radius: var(--radio-pildora); background: var(--borde); overflow: hidden; }
+/* El relleno va en cobalto: el ámbar es solo del botón principal (EX-10). */
+.barra-relleno { display: block; height: 100%; width: 0; border-radius: var(--radio-pildora); background: var(--enlace); }
+
+.opciones { display: grid; gap: var(--espacio-3); margin: 0 0 var(--espacio-4); }
+/* Cada respuesta es una tarjeta que se toca entera; el círculo de la opción va dentro. */
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  min-height: var(--toque);
+  padding: var(--espacio-3) var(--espacio-4);
+  border: var(--linea) solid var(--texto-3);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  color: var(--tinta);
+  cursor: pointer;
+}
+.opcion input { flex: none; width: var(--icono); height: var(--icono); margin: 0; accent-color: var(--enlace); }
+.opcion-texto { display: grid; gap: var(--espacio-1); }
+.opcion-titulo { font-weight: var(--peso-fuerte); }
+.opcion-nota { color: var(--texto-2); font-size: var(--tamano-chico); }
+/* La elegida se ve por su borde y por su círculo marcado, no solo por el color. */
+.opcion input:checked + .opcion-texto .opcion-titulo { color: var(--enlace); }
+.opcion-elegida { border-color: var(--enlace); }
 
 .acciones { display: grid; gap: var(--espacio-3); margin-top: var(--espacio-5); }
 .pie { color: var(--texto-2); margin-top: var(--espacio-5); }

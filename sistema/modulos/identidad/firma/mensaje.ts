@@ -55,6 +55,16 @@ export function campoTexto(valor: string): Bytes {
   return deTexto(valor);
 }
 
+/**
+ * Un texto que puede venir vacío: su UTF-8, o nada (coalesce(convert_to(...), '')).
+ * Solo para campos donde un texto vacío no es un valor válido: así «vacío» y
+ * «nada» nunca se confunden.
+ */
+export function campoTextoOpcional(valor: string | null): Bytes {
+  if (valor === "") throw new TypeError("Un texto opcional va lleno o como null, nunca vacío.");
+  return valor === null ? new Uint8Array(0) : deTexto(valor);
+}
+
 /** Un entero de 32 bits con signo (int4send). */
 export function campoEntero(valor: number): Bytes {
   return entero32(valor);

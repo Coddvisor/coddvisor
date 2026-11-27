@@ -47,6 +47,7 @@ async function mostrar() {
   for (const c of d.cuentas) lista.append(elemento("li", texto(t, "aviso.cuenta", { correo: c.correo, descripcion: texto(t, `cuenta.${c.clave}`) })));
   caja.append(lista);
   caja.append(elemento("p", texto(t, "aviso.google", { correo: d.google })));
+  caja.append(elemento("p", texto(t, "aviso.abrir")));
   document.body.prepend(caja);
 }
 
