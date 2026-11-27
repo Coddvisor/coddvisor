@@ -1,18 +1,19 @@
 ---
 // Aviso de privacidad del sitio (Ley 29733 de Protección de Datos Personales y su reglamento).
 // BORRADOR: debe revisarlo alguien que conozca la norma antes de publicarlo.
-// Si cambia lo que se guarda o para qué, se sube AVISO_VERSION en functions/api/contacto.js
-// y la fecha de abajo: así cada pedido sabe qué versión de este texto vio la persona.
+// Si cambia lo que se guarda, para qué o quién más lo ve, se sube AVISO_VERSION en functions/api/contacto.js y en
+// functions/api/pregunta.js, y la fecha de abajo: así cada pedido y cada pregunta saben qué versión
+// de este texto vio la persona.
 import Base from '../layouts/Base.astro';
 import { fechaLarga } from '../datos/herramientas';
 
 // PENDIENTE antes de publicar: razón social y RUC de quien es responsable de los datos.
 const titular = { nombre: 'Coddvisor', ruc: '' };
-const vigente = '2026-11-21';
+const vigente = '2026-11-27';
 ---
 <Base
   titulo="Privacidad: qué datos guardamos y para qué | Coddvisor"
-  descripcion="Qué datos guarda Coddvisor cuando nos escribe desde el sitio, para qué los usa, cuánto tiempo los guarda y cómo pedir que los borremos.">
+  descripcion="Qué datos guarda Coddvisor cuando nos escribe o pregunta desde el sitio, para qué los usa, cuánto tiempo los guarda y cómo pedir que los borremos.">
 
 <section class="portada portada--interior osc" aria-labelledby="pr-t">
   <div class="brillo brillo--ambar" aria-hidden="true"></div>
@@ -20,7 +21,7 @@ const vigente = '2026-11-21';
     <span class="franja-sello" aria-hidden="true"></span>
     <p class="rotulo portada-rot">Privacidad</p>
     <h1 class="portada-t interior-t" id="pr-t">Sus datos, <span class="cel">solo para responderle.</span></h1>
-    <p class="portada-baj">Esto es lo que guardamos cuando nos escribe desde este sitio, para qué, por cuánto tiempo y cómo pedir que lo borremos.</p>
+    <p class="portada-baj">Esto es lo que guardamos cuando nos escribe o nos pregunta desde este sitio, para qué, por cuánto tiempo y cómo pedir que lo borremos.</p>
   </div>
 </section>
 
@@ -33,28 +34,45 @@ const vigente = '2026-11-21';
     </header>
 
     <div class="guia-cuerpo">
-      <p><b>Solo guardamos lo que usted escribe en el formulario «Quiero ser de los primeros».</b> Lo usamos para responderle. No lo vendemos, no lo prestamos y no le mandamos publicidad.</p>
+      <p><b>De usted, solo guardamos lo que escribe en el formulario «Quiero ser de los primeros»</b>, y qué páginas del sitio leyó antes de escribirnos. Lo usamos para responderle. No lo vendemos, no lo prestamos y no le mandamos publicidad.</p>
+      <p>Si hace una pregunta al final de una guía, guardamos la pregunta y cómo eligió presentarse, para responderla y publicarla con la respuesta.</p>
+      <p>Además contamos cuántas veces se abre cada página, sin saber quién la abrió.</p>
 
       <h3>Qué datos guardamos</h3>
-      <p>Su nombre, su número de WhatsApp, lo que vende, cuántas personas trabajan con usted y cuántas sedes tiene. Además, la fecha en que nos escribió y desde qué página del sitio.</p>
+      <p>Su nombre, su número de WhatsApp, lo que vende, cuántas personas trabajan con usted y cuántas sedes tiene. Además, la fecha en que nos escribió, desde qué página del sitio y qué páginas del sitio abrió antes de escribirnos en esa misma visita (por ejemplo, una guía del blog). Esa lista se anota solo en su navegador mientras navega y nos llega únicamente si envía el formulario.</p>
+
+      <h3>Si pregunta en una guía</h3>
+      <p>Guardamos su pregunta, la guía donde la hizo y cómo eligió presentarse: su nombre de pila, si lo escribe, lo que usted hace en el negocio, el rubro, la región y cuántas personas trabajan. Todo eso es opcional. <b>Nunca le pedimos su apellido, su distrito, su RUC ni su número de documento.</b></p>
+      <p><b>Su pregunta se publica</b> debajo de la guía, con la respuesta del equipo y con esa forma de presentarse. Si elige «Publicar sin firma», aparece como «Alguien de la comunidad». No mostramos cuántas personas trabajan cuando el negocio es grande, para que no se le pueda reconocer. Si su pregunta trae un dato personal, como un número de documento, lo quitamos antes de publicarla. Si la pregunta no es del tema, no se publica.</p>
+      <p>Al enviarla, su navegador crea un enlace solo para usted, donde verá la respuesta. Ese enlace queda en su navegador; nosotros guardamos solo una huella que no permite reconstruirlo.</p>
+      <p><b>Su correo, solo si pide que le avisemos.</b> Lo usamos una vez, para decirle que ya hay respuesta, y lo borramos al mandar ese aviso. Si nadie responde en 60 días, también lo borramos. No se publica nunca. Desde el enlace de su pregunta puede pedir que lo borremos antes.</p>
+      <p>Si nos dice si una guía le sirvió, o qué le faltó, solo sumamos su respuesta al conteo del día y guardamos lo que escribió, sin su nombre.</p>
+
+      <h3>Cuántas personas visitan el sitio</h3>
+      <p>Contamos cuántas veces se abre cada página, por día. Es como el contador de la puerta de una tienda: suma uno, pero no sabe quién entró.</p>
+      <p>Junto a cada número guardamos solo datos generales: si llegó desde un buscador, una red social u otro sitio (solo su nombre, como google.com), el nombre de la campaña si el enlace lo traía, si fue desde un celular o una computadora, y el país, cuando el servicio que guarda los datos lo informa. <b>No guardamos</b> su dirección IP, no usamos cookies para seguirle y no podemos saber quién es usted con estos números.</p>
       <p>Las herramientas gratis, como el <a href="/herramientas/cierre-de-caja/">cierre de caja</a>, no guardan nada: las cuentas se hacen en su computadora y lo que escribe no sale de ella.</p>
 
       <h3>Para qué los usamos</h3>
-      <p>Para escribirle por WhatsApp y conversar sobre si Coddvisor le sirve a su negocio. Para nada más.</p>
+      <p>Los datos del formulario, para escribirle por WhatsApp y conversar sobre si Coddvisor le sirve a su negocio. Las preguntas, para responderlas y publicarlas, y para mejorar las guías. Para nada más.</p>
 
       <h3>Quién más los ve</h3>
-      <p>Nadie fuera del equipo de Coddvisor. Dos empresas nos dan el servicio técnico y por eso pasan por sus servidores, que están fuera del Perú:</p>
+      <p>Nadie fuera del equipo de Coddvisor. Cuatro empresas nos dan el servicio técnico y por eso pasan por sus servidores, que están fuera del Perú:</p>
       <ul class="revisar">
-        <li><b>Cloudflare</b> publica este sitio y guarda los datos del formulario.</li>
-        <li><b>Resend</b> nos envía un correo de aviso cada vez que alguien escribe.</li>
+        <li><b>Cloudflare</b> publica este sitio.</li>
+        <li><b>Supabase</b> guarda los datos del formulario, las preguntas y el conteo de visitas.</li>
+        <li><b>Resend</b> nos envía un correo de aviso cada vez que alguien escribe o pregunta, y le manda a usted el aviso de respuesta si lo pidió.</li>
+        <li><b>Zoho</b> guarda nuestro buzón de correo, equipo@coddvisor.com. Ahí llegan esos avisos, con lo que usted escribió en el formulario o en su pregunta, y los correos que usted nos mande.</li>
       </ul>
-      <p>Ninguna de las dos puede usarlos para otra cosa.</p>
+      <p>Ninguna puede usarlos para otra cosa.</p>
 
       <h3>Cuánto tiempo los guardamos</h3>
-      <p>Doce meses desde que nos escribió. Si en ese tiempo no empezamos a trabajar juntos, los borramos.</p>
+      <p>Los datos del formulario, doce meses desde que nos escribió. Si en ese tiempo no empezamos a trabajar juntos, los borramos.</p>
+      <p>Las preguntas publicadas se quedan mientras la guía exista, porque ayudan a otras personas. Si quiere que quitemos la suya, escríbanos y la retiramos. Su correo de aviso, como se dice arriba, se borra al avisarle o a los 60 días.</p>
+      <p>El conteo de visitas no tiene datos de ninguna persona, así que lo guardamos para comparar un año con otro.</p>
 
       <h3>Cómo pedir que los veamos, corrijamos o borremos</h3>
-      <p>Escríbanos a <a href="mailto:equipo@coddvisor.com">equipo@coddvisor.com</a> desde cualquier correo, con su nombre y su número de WhatsApp para encontrarlos. Puede pedir verlos, corregirlos, borrarlos o que dejemos de usarlos. Le respondemos dentro de los plazos que fija la ley.</p>
+      <p>Escríbanos a <a href="mailto:equipo@coddvisor.com">equipo@coddvisor.com</a> desde cualquier correo, con su nombre y su número de WhatsApp para encontrarlos (si es una pregunta, con su enlace o el texto de la pregunta). Puede pedir verlos, corregirlos, borrarlos o que dejemos de usarlos. Le respondemos dentro de los plazos que fija la ley.</p>
       <p>Si no le respondemos o no está de acuerdo con la respuesta, puede reclamar ante la Autoridad Nacional de Protección de Datos Personales del Ministerio de Justicia.</p>
 
       <h3>Quién es responsable</h3>

@@ -1,0 +1,47 @@
+/* Coddvisor: las medidas del sistema de diseño (EX-17).
+   Los colores no están aquí: salen de marca/colores.css. Aquí van las letras,
+   los espacios, los radios y el tamaño de lo que se toca. Ningún componente
+   escribe un número a mano: pide la medida por su nombre.
+   Las comparten las pantallas de la oficina y, cuando llegue, la caja. */
+
+:root {
+  /* Letras. Space Grotesk si el equipo la tiene; si no, la del sistema (guía de marca). */
+  --letra: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --letra-cifras: "Space Mono", ui-monospace, Menlo, monospace;
+  --tamano-texto: 1.0625rem;      /* 17 px: se lee sin esfuerzo en un celular */
+  --tamano-chico: 0.9375rem;      /* 15 px: notas y estados */
+  --tamano-subtitulo: 1.25rem;
+  --tamano-titulo: 1.625rem;
+  --interlineado: 1.5;
+  --interlineado-titulo: 1.2;
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-fuerte: 700;
+
+  /* Espacios: una escala, no valores sueltos */
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 0.75rem;
+  --espacio-4: 1rem;
+  --espacio-5: 1.5rem;
+  --espacio-6: 2rem;
+  --espacio-7: 3rem;
+
+  /* Formas */
+  --radio: 0.75rem;
+  --radio-chico: 0.5rem;
+  --radio-pildora: 999px;
+  --linea: 1px;
+  --linea-del-foco: 3px;
+  --icono: 1.25rem;
+
+  /* Lo que se toca (EX-18): nada menos de 24 px, y las acciones 48 px */
+  --toque: 48px;
+  --toque-minimo: 24px;
+
+  /* El código QR de la app de códigos: grande para la cámara, sin salirse de la columna */
+  --tamano-del-qr: 15rem;
+
+  /* Celular primero: una columna que no pasa de este ancho */
+  --ancho-de-la-columna: 28rem;
+}

@@ -1,0 +1,126 @@
+# Lleva las migraciones nuevas a la base real coddvisor-sistema (decisión D24:
+# las migraciones solo desde la revisión automática, nadie las aplica a mano).
+#
+# Corre SOLO al unir a main un cambio que toque las migraciones, o a mano desde
+# la pestaña Actions. Nunca en una solicitud de revisión: ninguna solicitud llega
+# al secreto de la base.
+#
+# Dos pasos:
+#   1. «verificar», sin secretos: npm run verificar y un ensayo del migrador con
+#      psql contra un Postgres de prueba dentro del runner, dos veces (la segunda
+#      no debe aplicar nada).
+#   2. «migrar», en el entorno protegido «base-real», que exige la aprobación del
+#      fundador: el migrador contra la base real.
+#
+# La guía para el fundador (qué secretos se crean, dónde se saca cada valor y
+# cómo se aprueba una corrida) está en sistema/herramientas/migrador/LEEME.md.
+name: Migraciones a la base real
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sistema/base-de-datos/migraciones/**'
+      - 'sistema/base-de-datos/migraciones.candado.json'
+  workflow_dispatch:
+    inputs:
+      solo_mirar:
+        description: 'Solo mostrar qué se aplicaría, sin tocar la base'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Una corrida a la vez sobre la base real, y ninguna se cancela a la mitad. La
+# comparte con el flujo de la llave del portero. Con «queue: max» las que llegan
+# esperan en fila (hasta 100): una corrida nueva no cancela a otra que espera su
+# aprobación.
+concurrency:
+  group: base-real
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  verificar:
+    name: Verificar y ensayar
+    # A mano también se puede elegir otra rama: aquí no pasa.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      # Un Postgres de prueba que vive solo mientras dura este paso. Sin
+      # contraseña: solo se alcanza desde el mismo runner. Su versión mayor
+      # tiene que ser la de coddvisor-sistema: el migrador la escribe al
+      # empezar («La base es PostgreSQL ...»), y la guía dice dónde mirarla.
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: sistema
+    steps:
+      # Las acciones van fijadas a una versión exacta por su huella.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: sistema/.nvmrc
+          cache: npm
+          cache-dependency-path: sistema/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run verificar
+      # El ensayo usa un rol que no es superusuario, como el que migra en
+      # Supabase: crea roles y es dueño de su base, nada más.
+      - name: Ensayo del migrador en un Postgres de prueba
+        env:
+          PGHOST: localhost
+          PGUSER: postgres
+        run: |
+          psql --no-psqlrc --set ON_ERROR_STOP=1 \
+            --command "create role ensayo_migra login createrole" \
+            --command "create database ensayo owner ensayo_migra"
+          export CODDVISOR_MIGRAR_CONEXION="postgresql://ensayo_migra@localhost:5432/ensayo?sslmode=disable"
+          node herramientas/migrador/migrar.mjs
+          node herramientas/migrador/migrar.mjs | tee segunda.txt
+          grep -q "No hay migraciones nuevas" segunda.txt
+
+  migrar:
+    name: Migrar la base real
+    needs: verificar
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # El entorno protegido: exige la aprobación del fundador y guarda el secreto.
+    environment: base-real
+    defaults:
+      run:
+        working-directory: sistema
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: sistema/.nvmrc
+      # El migrador no usa librerías: no hace falta npm ci.
+      - name: Aplicar las migraciones nuevas
+        env:
+          CODDVISOR_MIGRAR_CONEXION: ${{ secrets.CODDVISOR_MIGRAR_CONEXION }}
+          SOLO_MIRAR: ${{ inputs.solo_mirar }}
+        run: |
+          if [ "$SOLO_MIRAR" = "true" ]; then
+            node herramientas/migrador/migrar.mjs --solo-mirar
+          else
+            node herramientas/migrador/migrar.mjs
+          fi

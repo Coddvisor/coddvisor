@@ -5,9 +5,11 @@ quien revisa la comprueba.
 
 ## Lo que revisa la máquina
 
-- [ ] `npm run verificar` pasa en `sistema/` (reglas de la base, guardia de
-      valores fijos y pruebas).
+- [ ] `npm run verificar` pasa en `sistema/` (tipos, reglas del código, valores
+      fijos, candados, reglas de la base y pruebas).
 - [ ] Si hay una migración nueva, está sellada con `npm run candado`.
+- [ ] Si cambió un vector de un contrato en borrador, está sellado con
+      `npm run contratos:sellar`. Publicar uno es un cambio aparte.
 
 ## Lo que responde una persona
 

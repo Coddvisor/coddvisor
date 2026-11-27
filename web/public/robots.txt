@@ -1,2 +1,6 @@
 User-agent: *
 Allow: /
+# El panel del equipo no es para el público ni para los buscadores.
+Disallow: /equipo/
+# La página de cada pregunta es de quien la hizo: no va en los buscadores.
+Disallow: /pregunta/

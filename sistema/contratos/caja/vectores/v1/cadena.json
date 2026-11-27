@@ -1,0 +1,21 @@
+{
+  "leame": "Una cadena real de cuatro sobres. Cada huella es el sha256 de los bytes UTF-8 del texto, y cada sobre apunta al anterior.",
+  "eslabones": [
+    {
+      "sobre": "{\"autor\":{\"usuario_id\":\"019a8f20-0000-7000-8000-00000000c0de\",\"via\":\"pin\"},\"contexto\":{\"app\":\"1.4.2\"},\"datos\":{\"nota\":\"uno\"},\"dispositivo_id\":\"019a8f20-1111-7000-8000-00000000ca1a\",\"huella_anterior\":null,\"ocurrido_en_ms\":1764000000001,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-000000000001\",\"protocolo\":1,\"secuencia\":1,\"tenant_id\":\"019a8f20-0000-7000-8000-0000000000a0\",\"verbo\":\"prueba\",\"verbo_version\":1}",
+      "huella": "4feabab6158f0067482708e1db0e165a5ebde87a08eda831ed8c9436cf133b8f"
+    },
+    {
+      "sobre": "{\"autor\":{\"usuario_id\":\"019a8f20-0000-7000-8000-00000000c0de\",\"via\":\"pin\"},\"contexto\":{\"app\":\"1.4.2\"},\"datos\":{\"nota\":\"ñandú € 😀   \\\"comillas\\\" \\\\ barra\"},\"dispositivo_id\":\"019a8f20-1111-7000-8000-00000000ca1a\",\"huella_anterior\":\"4feabab6158f0067482708e1db0e165a5ebde87a08eda831ed8c9436cf133b8f\",\"ocurrido_en_ms\":1764000000002,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-000000000002\",\"protocolo\":1,\"secuencia\":2,\"tenant_id\":\"019a8f20-0000-7000-8000-0000000000a0\",\"verbo\":\"prueba\",\"verbo_version\":1}",
+      "huella": "2b6a541afca804d7ef75e5a3a4a783d69daa29803b2245a950c34ece9005c4bf"
+    },
+    {
+      "sobre": "{\"autor\":null,\"contexto\":{\"app\":\"1.4.2\"},\"datos\":{\"nota\":\"\"},\"dispositivo_id\":\"019a8f20-1111-7000-8000-00000000ca1a\",\"huella_anterior\":\"2b6a541afca804d7ef75e5a3a4a783d69daa29803b2245a950c34ece9005c4bf\",\"ocurrido_en_ms\":1764000000003,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-000000000003\",\"protocolo\":1,\"secuencia\":3,\"tenant_id\":\"019a8f20-0000-7000-8000-0000000000a0\",\"verbo\":\"prueba\",\"verbo_version\":1}",
+      "huella": "5f505bdd2af56f44651906bb5f1087def2a6fc898833b38c1755dcfcf272ecaa"
+    },
+    {
+      "sobre": "{\"autor\":{\"usuario_id\":\"019a8f20-0000-7000-8000-00000000c0de\",\"via\":\"pin\"},\"contexto\":{\"app\":\"1.4.2\"},\"datos\":{\"nota\":\"cuatro\"},\"dispositivo_id\":\"019a8f20-1111-7000-8000-00000000ca1a\",\"huella_anterior\":\"5f505bdd2af56f44651906bb5f1087def2a6fc898833b38c1755dcfcf272ecaa\",\"ocurrido_en_ms\":1764000000004,\"op_id\":\"019a8f2c-7b41-7c3e-9a10-000000000004\",\"protocolo\":1,\"secuencia\":4,\"tenant_id\":\"019a8f20-0000-7000-8000-0000000000a0\",\"verbo\":\"prueba\",\"verbo_version\":1}",
+      "huella": "fc12173d526faddc61fdc0f96f92c5d2495416fd37820cc6fa0f6ffbf063da78"
+    }
+  ]
+}

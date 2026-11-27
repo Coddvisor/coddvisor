@@ -1,0 +1,435 @@
+{
+  "leame": "Cómo lee la caja lo que responde el servidor. La huella identifica la respuesta.",
+  "casos": [
+    {
+      "nombre": "todo aplicado",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {
+        "ahora_ms": 5,
+        "resultados": [
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+            "estado": "aplicado",
+            "recibido_en_ms": 4
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "marcar_subido",
+          "aplicado": true,
+          "recibido_en_ms": 4,
+          "motivo": null
+        }
+      ],
+      "ahora_ms": 5
+    },
+    {
+      "nombre": "recibido sin aplicar",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+            "estado": "recibido",
+            "motivo": "verbo_desconocido",
+            "recibido_en_ms": 4
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "marcar_subido",
+          "aplicado": false,
+          "recibido_en_ms": 4,
+          "motivo": "verbo_desconocido"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "aplicado con la huella de otro",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "huella": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+            "estado": "aplicado",
+            "recibido_en_ms": 4
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "reintentar",
+          "motivo": "sin_respuesta_propia"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "aplicado sin huella",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+            "estado": "aplicado",
+            "recibido_en_ms": 4
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "reintentar",
+          "motivo": "sin_respuesta_propia"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "dos respuestas para la misma huella",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": null,
+            "estado": "aplicado",
+            "recibido_en_ms": 4
+          },
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": null,
+            "estado": "conflicto"
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "reintentar",
+          "motivo": "sin_respuesta_propia"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "aplicado sin hora",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": null,
+            "estado": "aplicado"
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "reintentar",
+          "motivo": "respuesta_ilegible"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "un estado que no existe todavía",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": null,
+            "estado": "delegado",
+            "recibido_en_ms": 4
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "reintentar",
+          "motivo": "estado_desconocido"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "en espera",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": null,
+            "estado": "en_espera",
+            "motivo": "falta_anterior"
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "reintentar",
+          "motivo": "falta_anterior"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "conflicto",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": null,
+            "estado": "conflicto",
+            "motivo": "cadena_bifurcada"
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "detener_y_avisar",
+          "motivo": "cadena_bifurcada"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "dañado",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": null,
+            "estado": "no_aplicable",
+            "motivo": "huella_invalida"
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "detener_y_avisar",
+          "motivo": "huella_invalida"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "un motivo nuevo no cambia el estado",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": null,
+            "estado": "conflicto",
+            "motivo": "algo_nuevo"
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "detener_y_avisar",
+          "motivo": "algo_nuevo"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "después de uno en espera no se cree un subido",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": null,
+            "estado": "en_espera"
+          },
+          {
+            "huella": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "op_id": null,
+            "estado": "aplicado",
+            "recibido_en_ms": 4
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "reintentar",
+          "motivo": "sin_motivo"
+        },
+        {
+          "hacer": "reintentar",
+          "motivo": "respuesta_incoherente"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "en otro orden y con campos de más",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      ],
+      "cuerpo": {
+        "nuevo": 1,
+        "resultados": [
+          {
+            "huella": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "op_id": null,
+            "estado": "aplicado",
+            "recibido_en_ms": 4,
+            "extra": {}
+          },
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": null,
+            "estado": "aplicado",
+            "recibido_en_ms": 4
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "marcar_subido",
+          "aplicado": true,
+          "recibido_en_ms": 4,
+          "motivo": null
+        },
+        {
+          "hacer": "marcar_subido",
+          "aplicado": true,
+          "recibido_en_ms": 4,
+          "motivo": null
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "respuesta cortada",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": null,
+            "estado": "aplicado",
+            "recibido_en_ms": 4
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "marcar_subido",
+          "aplicado": true,
+          "recibido_en_ms": 4,
+          "motivo": null
+        },
+        {
+          "hacer": "reintentar",
+          "motivo": "sin_respuesta_propia"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "aplicado con una hora negativa",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {
+        "resultados": [
+          {
+            "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "op_id": null,
+            "estado": "aplicado",
+            "recibido_en_ms": -5
+          }
+        ]
+      },
+      "decisiones": [
+        {
+          "hacer": "reintentar",
+          "motivo": "respuesta_ilegible"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "vacía",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": {},
+      "decisiones": [
+        {
+          "hacer": "reintentar",
+          "motivo": "sin_respuesta_propia"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "texto",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": "<html>",
+      "decisiones": [
+        {
+          "hacer": "reintentar",
+          "motivo": "sin_respuesta_propia"
+        }
+      ],
+      "ahora_ms": null
+    },
+    {
+      "nombre": "nula",
+      "enviadas": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "cuerpo": null,
+      "decisiones": [
+        {
+          "hacer": "reintentar",
+          "motivo": "sin_respuesta_propia"
+        }
+      ],
+      "ahora_ms": null
+    }
+  ]
+}

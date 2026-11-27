@@ -1,6 +1,6 @@
 # Reglas de la base de datos
 
-Quince reglas. Cada una tiene un código, un porqué y una revisión automática
+Diecisiete reglas. Cada una tiene un código, un porqué y una revisión automática
 que impide unir a `main` un cambio que la incumpla. La revisión vive en
 `sistema/base-de-datos/verificador/` y se corre con `npm run verificar`.
 
@@ -21,12 +21,20 @@ lo que se publica es compartido. Por eso, con aprobación de la fundadora del
    cumplir la Ley 29733 sin perder el conocimiento. Los votos, las denuncias
    y la historia de moderación siguen siendo libros que solo se anexan.
 
-Todas las demás reglas valen igual para la comunidad. Su propio verificador
-nace con su primera migración. El detalle está en
+Las reglas que solo existen para separar a un cliente de otro caen con la
+primera excepción, porque en la comunidad no hay cliente que separar: BD-03
+(una fila no apunta a otro cliente), el filtro por cliente de BD-04, la
+primera columna `tenant_id` de BD-11 y la lista cerrada de BD-16. Lo demás de
+esas reglas sigue en pie: la seguridad por fila activa y forzada, nada se
+borra en cascada y toda relación tiene su índice.
+
+Todas las demás reglas valen igual para la comunidad, BD-17 incluida: sus
+datos personales tampoco dejan rastro en los resúmenes de la base. Su propio
+verificador nace con su primera migración. El detalle está en
 `arquitectura/comunidad/01-diseno-de-la-comunidad.md` (sección 14) y
 `arquitectura/comunidad/02-modelo-de-datos.md`.
 
-## Las cinco clases de tabla
+## Las seis clases de tabla
 
 Toda tabla declara qué clase es. De la clase salen su aislamiento y sus permisos.
 
@@ -35,8 +43,15 @@ Toda tabla declara qué clase es. De la clase salen su aislamiento y sus permiso
 | `raiz`     | El cliente mismo                                   | Leer                | `nucleo.tenant`           |
 | `negocio`  | Datos de un cliente que se editan                  | Leer, crear, editar | `nucleo.empresa`          |
 | `libro`    | Datos de un cliente que solo se anexan             | Leer                | movimientos de stock, de caja, asientos |
+| `custodia` | Datos de un cliente que solo cambia una puerta     | Leer                | `identidad.membresia`, `identidad.asignacion` |
 | `catalogo` | Datos iguales para todos los clientes              | Leer                | `nucleo.moneda`, `nucleo.parametro_legal` |
-| `control`  | Lo que vive fuera de las celdas (enrutador, identidad) | Nada            | reservado                 |
+| `control`  | Lo que vive fuera de las celdas (enrutador, identidad) | Nada            | `portero.llave`, `control.cuenta` |
+
+Una tabla de `custodia` se aísla y se sella igual que una de `negocio`, pero la
+aplicación no la puede escribir: si pudiera, un error en el servicio
+reactivaría una membresía suspendida o le daría a alguien el rol de dueño. La
+escribe una sola puerta de su módulo, que se da con nombre en la lista de
+puertas.
 
 Nadie borra. Lo que deja de usarse se archiva (`archivado_en`) o se anula con
 un movimiento inverso.
@@ -77,6 +92,211 @@ comment on table ventas.cotizacion is '...';
 select nucleo.preparar_tabla('ventas.cotizacion', 'negocio');
 ```
 
+## El portero
+
+El cliente activo de una transacción no lo fija el programa: lo abre el
+**portero**, un rol aparte, y solo con la firma del servicio. Lo guarda en una
+tabla temporal de la conexión que el programa no puede leer, escribir ni
+reemplazar, y que se vacía sola al terminar la transacción.
+
+- El servicio entra a la base con `coddvisor_entrada`. Hereda los permisos de
+  `coddvisor_app`, no puede cambiarse a ningún otro rol y no es dueño de nada.
+  Nunca entra con el rol que aplica las migraciones.
+- Para trabajar en un negocio se llama a una de las formas del portero (abajo).
+  Una transacción trabaja en un solo negocio.
+- Las políticas y los sellos leen de `nucleo.tenant_actual()`,
+  `nucleo.actor_actual()` y `nucleo.dispositivo_actual()`. Un módulo nunca recibe
+  el cliente como dato. `actor_actual()` es la membresía que actúa: la persona,
+  el vendedor de la caja o la membresía automática; vacío con una caja sola.
+- Desde el tramo 2b de la identidad, el portero comprueba la firma, abre el
+  negocio y **recién ahí comprueba la membresía**, porque antes la seguridad por
+  fila no se la deja ver. Si algo no cuadra, lanza un error que deshace la
+  apertura. Para eso lee la membresía, la asignación, los roles y sus permisos
+  (su lista cerrada, BD-05).
+
+| Forma | Función | Propósito firmado | Campos firmados | Qué comprueba después de abrir |
+|---|---|---|---|---|
+| Persona | `portero.abrir_persona` | `abrir_persona` | negocio, cuenta, membresía, nivel del pase (`aal1` o `aal2`) | Que la membresía sea de esa cuenta y de ese negocio, esté activa, ya valga, no haya vencido y tenga al menos un rol vigente (si no, CV025), y que el nivel sea `aal2` si algún rol vigente pide dos pasos. Una membresía del soporte entra siempre con `aal2` y en solo lectura, salvo que un rol vigente suyo dé `identidad.soporte_puede_escribir` |
+| Caja sola | `portero.abrir` | `abrir_caja` | negocio, caja | Nada más que la firma, igual que antes |
+| Caja con vendedor | `portero.abrir_caja_con_vendedor` | `abrir_caja_vendedor` | negocio, caja, membresía del vendedor | Que la membresía exista en el negocio y sea de una persona, aunque esté de baja. Que estuviera activa a la hora de la venta lo comprueba el servicio. Una membresía con un rol de soporte, vigente o archivado, no abre: el soporte no vende en una caja (CV020) |
+| Trabajo automático | `portero.abrir_trabajo` | `abrir_trabajo` | negocio, membresía | Que sea la membresía automática, activa y vigente. Solo con una llave de uso `trabajos` |
+
+- **La persona ya no entra por `portero.abrir`.** Su propósito se versionó
+  (`abrir` pasó a `abrir_persona`, con la cuenta y el nivel), y `portero.abrir`
+  con una persona falla (CV016). Así la caja sola sigue byte por byte igual.
+- **Cada llave dice para qué programa es** (`portero.llave.uso`): `servicio`
+  (el que atiende personas y cajas) o `trabajos` (el de los trabajos de fondo).
+  Una firma de un uso no vale para las formas del otro. Las puertas de
+  identidad solo aceptan las del servicio, salvo el registro de entradas: las
+  entradas `automatico` las firma el programa de los trabajos con su llave, y
+  las demás el servicio con la suya. Hay a lo más dos llaves activas de cada uso.
+- **Quien fue soporte sigue siendo soporte.** Es del soporte toda membresía que
+  tiene o tuvo un rol con `es_de_soporte`, vigente o archivado. Si contaran solo
+  los vigentes, el dueño podría archivarle el rol de soporte con
+  `identidad.archivar_asignacion`, dejarle otro, y la membresía, todavía activa,
+  entraría con `aal1` y con escritura. El registro de entradas usa la misma
+  regla: la entrada de esa membresía es `soporte`. Si esa persona trabaja después
+  en el negocio, entra con otra membresía.
+- **Sin un rol vigente, la persona no entra.** Una membresía activa cuyos roles
+  están todos archivados (o que nunca tuvo uno) no abre la forma persona
+  (CV025, `sin_rol_vigente`): no tiene nada que hacer en el negocio, y así el
+  portero no decide nada a partir de roles que ya no valen.
+- **El soporte en solo lectura no recupera la escritura.** Si se abre dentro de
+  un punto de guardado y ese punto se confirma, Postgres devuelve la escritura a
+  la transacción. Por eso el contexto guarda la marca de solo lectura y
+  `portero.contexto()` se niega a dar el negocio si la transacción ya no lo es
+  (CV018).
+- **Un solo negocio por transacción, aunque se borre la tabla del contexto.**
+  La aplicación puede borrar la tabla temporal del portero con `DISCARD TEMP`.
+  Por eso `portero.poner` traba también la tabla `portero.marca` (de control,
+  sin filas) en modo `access share` hasta el final de la transacción. Ese
+  candado no se suelta con `DISCARD` ni con `pg_advisory_unlock`. Si falta la
+  tabla del contexto y el candado está, alguien la borró en esta transacción y
+  no se abre nada más (CV014). Sin la tabla, el negocio activo queda vacío y la
+  seguridad por fila no deja ver ni escribir. No es un candado consultivo: esos
+  los toma cualquier rol, y la aplicación podía tomar el de otra conexión y
+  dejarla sin abrir ningún negocio. Sobre `portero.marca` nadie más que el
+  portero tiene permisos, y el portero solo `SELECT`, lo justo para el modo
+  más suave, que no choca con el de otra conexión.
+- **Un solo negocio por transacción no limpia la conexión.** La regla cubre el
+  contexto del portero, no el resto del estado de la sesión. Un cursor
+  `WITH HOLD`, un ajuste de sesión (`set`, `set_config(..., false)`) o una
+  sentencia preparada sobreviven al fin de la transacción, y pueden llevar
+  datos de un negocio a la transacción siguiente, que quizá es de otro negocio,
+  en la misma conexión. Por eso:
+  - el servicio limpia la sesión al final de cada pedido, **dentro de su
+    transacción**: `close all`, `reset all`, `deallocate all`, `unlisten *`,
+    `pg_advisory_unlock_all()` y `discard sequences`, las partes de
+    `DISCARD ALL` que se pueden dar ahí. Detrás del repartidor de Supabase en
+    modo transacción (Supavisor, puerto 6543) la sesión de Postgres no es de la
+    conexión del servicio: apenas termina la transacción, el repartidor se la
+    presta a otra, quizá de otra copia del servicio. `DISCARD ALL` no puede ir
+    dentro de una transacción, y fuera de ella cae en cualquier sesión. Si el
+    pedido falló, primero se vuelve a un punto de guardado del comienzo, se
+    limpia y recién se deshace, porque una sentencia preparada o un candado
+    consultivo no se deshacen con la transacción. Cuando la conexión es una
+    sesión solo suya (directa o en modo sesión), además ejecuta `DISCARD ALL`
+    al devolverla. Una conexión nueva por pedido no reemplaza esto: detrás del
+    modo transacción, cerrar la conexión no limpia la sesión del servidor. Por
+    lo mismo, si la limpieza falla, el pedido no se confirma y la conexión se
+    retira, pero eso protege solo al servicio: la sesión del servidor que usaba
+    puede volver al repartidor con lo que no se limpió. Qué hace Supavisor en
+    ese caso está entre lo que falta probar (`sistema/supabase/LEEME.md`);
+  - el servicio manda las firmas como parámetros de la consulta, nunca dentro
+    del texto: otra conexión con el mismo rol ve el texto de cada consulta en
+    `pg_stat_activity`, pero no sus parámetros. Y cada orden va sola, por el
+    protocolo extendido: dos órdenes en un mismo texto se rechazan. Por cada
+    conexión sale una orden a la vez, sin encadenarlas, como pide la
+    documentación de Supabase para el modo transacción.
+
+  La base no lo puede exigir: es parte del contrato del servicio. Lo cumplen
+  `aplicaciones/servicio/base/conexion.ts` y su repartidor de Postgres
+  (`base/postgres.ts`), el único archivo que importa el controlador (SV-02).
+  (Cambio del 26-nov-2026, la función con base: antes decía solo `DISCARD ALL`
+  al devolver la conexión.)
+
+## Las puertas de identidad
+
+La membresía, la asignación, la cuenta y el índice de accesos no los escribe la
+aplicación ni el portero: los escribe `coddvisor_identidad`, un rol que no
+inicia sesión, no hereda, no se salta la seguridad por fila y solo es dueño de
+sus funciones. Toca solo las tablas de su lista cerrada (`permisosPorTabla` en
+la configuración del verificador): crear el negocio, crear y leer cuentas,
+escribir membresías, asignaciones y el índice, copiar el nombre y la celda de
+cada negocio a `control.negocio` y, al abrir un negocio, crear y leer su primera
+empresa y su primer local y leer el país y sus regímenes. Ninguna otra tabla de
+negocio, y nunca edita la empresa ni el local. (La empresa y el local entran el
+26-nov-2026, con abrir un negocio: fundar y escribir la empresa en dos pedidos
+dejaría un negocio sin empresa que su dueño, sin los dos pasos todavía, no
+puede abrir para completar.)
+
+La aplicación llega a esas tablas solo por sus puertas, en el esquema
+`identidad`. Cada una:
+
+- exige una firma del servicio con la llave del portero, con un propósito
+  propio y sobre los datos que recibe. La verifica el portero
+  (`portero.exigir_firma_de_identidad`), que es el único que lee la llave. Un
+  SQL colado en la aplicación puede llamar a una puerta, pero sin la llave no
+  la puede firmar;
+- si trabaja dentro de un negocio, exige el negocio abierto por el portero, y
+  la firma lleva también ese negocio y la membresía que actúa;
+- comprueba el permiso de quien actúa (`nucleo.actor_actual()`, su membresía)
+  en `identidad.permiso_de_rol`, en el lugar donde vale el rol. Nunca pregunta
+  por el nombre de un rol;
+- copia el estado de la membresía al índice (`control.acceso`) en la misma
+  transacción. Hoy hay una sola celda; con varias, esa copia pasa a ser un
+  trabajo que se puede repetir sin duplicar.
+
+**La copia de los roles en el índice es solo para mostrar.** Desde el
+26-nov-2026 (decisión del fundador), `control.acceso.rol_codigos` guarda los
+códigos de los roles vigentes de cada membresía, sin repetir y ordenados, para
+que «¿A qué negocio entra?» diga con qué rol entra la persona sin abrir cada
+negocio. La escriben `copiar_al_indice` y, a través de ella, las puertas que dan
+o archivan una asignación y las que cambian el estado de una membresía, en la
+misma transacción. `copiar_al_indice` pone en fila a quienes copian la misma
+membresía antes de leer sus asignaciones, para que dos cambios a la vez no
+dejen una copia vieja. Esa copia **nunca decide nada y puede ir atrasada**: qué deja
+entrar y qué deja hacer lo deciden adentro `portero.abrir_persona` e
+`identidad.asignacion`, que no la leen. Ninguna puerta ni el portero pueden
+tomarla en cuenta para dar o negar algo; una prueba cambia la copia a mano y
+comprueba que el portero sigue igual. La pantalla pone el nombre de cada rol
+desde el catálogo de textos, nunca el código. Se descartó leer los roles
+adentro de cada negocio: costaría una consulta por negocio, y la lista de un
+contador con 40 negocios tiene que salir rápido en funciones con poco tiempo.
+
+| Puerta | Qué hace | Propósito firmado | Pide negocio abierto y permiso |
+|---|---|---|---|
+| `registrar_cuenta` | Crea la cuenta de quien ya probó su correo. Con el mismo id del proveedor devuelve la misma | `identidad_registrar_cuenta` | No |
+| `leer_cuenta` | La cuenta del id del proveedor (el `sub` del pase), su estado y desde cuándo valen sus pases. Sin correo ni nombre. Sin fila si no existe | `identidad_leer_cuenta` | No |
+| `leer_acceso` | La membresía viva de una cuenta en un negocio y su estado. Nunca listas ni correos | `identidad_leer_acceso` | No |
+| `listar_negocios` | Los negocios de una cuenta que no están de baja, con su membresía, su estado, su nombre (de `control.negocio`) y la copia de sus roles (`rol_codigos`, solo para mostrar), ordenados por negocio y por cursor. El tamaño de la página va de 1 a un tope con nombre dentro de la puerta (50); fuera de eso falla (CV217). Nunca correos ni una lista sin límite. Una cuenta sin membresías recibe una lista vacía. Lista lo mismo que deja entrar `leer_acceso`: quién entra lo dice solo `control.acceso`, y la puerta que archive un negocio dará de baja sus accesos en la misma transacción | `identidad_listar_negocios`, sobre la cuenta, el cursor (vacío en la primera página) y el tamaño | No |
+| `fundar_negocio` | El negocio, su dueño activo en todo el negocio, su membresía automática, el índice y su fila en `control.negocio`, juntos. Se puede repetir | `identidad_fundar` | No: lo abre mientras escribe y lo cierra |
+| `abrir_negocio` | Lo mismo que fundar y, en la misma transacción, la primera empresa (con o sin número tributario, con su régimen o sin régimen elegido, en la moneda del país), el primer local (con su localidad y la zona horaria del país) y el rubro elegido por esa empresa, que anexa `configuracion.anotar_rubro`. Se puede repetir con los mismos datos; si el negocio ya existe, solo acepta su propia repetición (el dueño firmado con el rol del fundador, su membresía automática y la empresa firmada ya creada), y con otra cuenta, otro miembro, otra empresa u otros datos falla (CV209). Una cuenta abre a lo más 5 negocios en 24 horas, un tope con nombre dentro de la puerta (CV220, que el servicio responde 429); la repetición no cuenta. El tope de altas de cuentas queda para el proveedor real. La forma del número la revisa antes el paquete del país | `identidad_abrir_negocio`, sobre todos los datos | No: lo abre mientras escribe y lo cierra |
+| `invitar` | Una membresía pendiente para una cuenta ya registrada, con un rol que puede dar el dueño | `identidad_invitar` | Sí, `identidad.invitar` |
+| `aceptar_invitacion` | La cuenta invitada activa su propia membresía | `identidad_aceptar` | No: lo abre mientras escribe y lo cierra |
+| `cambiar_estado` | Suspender, reactivar o dar de baja. La firma lleva la versión de la membresía | `identidad_cambiar_estado` | Sí, `identidad.administrar` en todo el negocio |
+| `dar_asignacion`, `archivar_asignacion` | Dar o quitar un rol. La firma de archivar lleva la versión de la asignación | `identidad_dar_asignacion`, `identidad_archivar_asignacion` | Sí, `identidad.administrar` en ese lugar |
+| `registrar_entrada` | Anota en el libro `identidad.entrada` quién entró, cuándo, desde qué caja o dirección de internet y cómo (`contrasena`, `google`, `pin`, `soporte`, `automatico`). Una vez por sesión y negocio, aparte del pedido. Se puede repetir. Las entradas `automatico` las firma el programa de los trabajos con su llave; las demás, el servicio | `identidad_registrar_entrada` | No: lo abre mientras anota y lo cierra. Si ya hay un negocio abierto, no anota (CV014). Que vaya en su propia transacción, y no antes del pedido en la misma, lo cumple el servicio |
+
+**El rubro lo anexa su módulo.** `configuracion.rubro_elegido` es un libro de
+`configuracion`, por empresa (`empresa_id`, como dice hoy 03; la decisión 1
+del molde de rubro, que lo llevaría a la cuenta, sigue sin aprobar). Lo
+escribe solo `configuracion.anotar_rubro`, del rol de los
+libros, que corre con sus permisos, anexa en el negocio abierto y se puede
+repetir con el mismo id. La ejecuta solo `coddvisor_identidad`, desde
+`abrir_negocio`: la aplicación no la puede llamar.
+
+Dos reglas valen en todas: **un negocio nunca se queda sin dueño**, es decir,
+sin una membresía activa con `identidad.administrar` en todo el negocio; y **la
+membresía automática no se toca** por estas puertas.
+
+- **Quitar un dueño va en fila y solo en «read committed».** Las dos puertas
+  que pueden dejar a alguien sin administrar (cambiar el estado y archivar una
+  asignación) toman un candado por negocio y, después de él, revisan el
+  permiso de quien actúa y cuántos dueños quedan. En «repeatable read» o
+  «serializable» la foto de la transacción es anterior al candado y dos dueños
+  podrían quitarse el uno al otro: ahí fallan cerradas (CV213).
+- **Una firma copiada no deshace un cambio posterior.** Cambiar el estado y
+  archivar firman la versión de la fila que vio el servicio; si la fila cambió,
+  fallan (CV214) y el servicio vuelve a leer.
+- **Fundar y aceptar no dejan el negocio abierto.** Lo abren con
+  `portero.poner` solo mientras escriben (el negocio que se funda todavía no
+  existe, y una membresía pendiente no podrá abrirlo cuando el portero
+  compruebe la membresía) y lo cierran con `portero.quitar` antes de terminar.
+  Las dos las ejecuta solo el rol de identidad. Para trabajar después en ese
+  negocio, el servicio lo abre con `portero.abrir_persona`, que revisa la
+  membresía y el nivel de los dos pasos: así cubre también al dueño que acaba
+  de fundar y al invitado que acaba de aceptar. Lo mismo hace el registro de
+  entradas, que abre solo mientras anota. La propuesta decía que fundar sería una forma
+  propia del portero; queda como puerta de identidad porque escribe tablas de
+  identidad, y el portero solo pone y quita el negocio.
+- **Un reintento no choca con el primer intento.** Fundar, invitar y dar una
+  asignación ponen en fila las llamadas con el mismo identificador: la segunda
+  espera a la primera y devuelve sin hacer nada.
+
+Lo que todavía no hacen: invitar a un correo que no tiene cuenta (tramo 3). Una
+invitación así no es una membresía sin cuenta.
+
 ## Las reglas
 
 ### Aislamiento
@@ -86,9 +306,26 @@ Las herramientas que exportan, mueven o dan de baja a un cliente recorren el
 registro `nucleo.tabla_registrada`. No existe una lista de tablas escrita a
 mano en ningún programa.
 
+El registro solo se anexa, como un libro: una fila registrada no se edita, no
+se borra y la tabla no se vacía, ni siquiera por quien migra. De la clase
+registrada sale todo lo que se le exige a una tabla; si una migración pudiera
+pasar una tabla de custodia a negocio y después darle a la aplicación permiso de
+escribir, todas las reglas pasarían. La revisión exige los dos disparadores del
+registro encendidos, y una migración que actualice el registro (o que cambie
+`session_replication_role`, que apaga los disparadores) es destructiva para
+BD-15. Si una tabla tuviera que cambiar de clase, se crea otra y se mueven sus
+datos. (Cambio del 26-nov-2026, auditoría de seguridad de la identidad.)
+
 **BD-02. Toda tabla de un cliente lleva `tenant_id` e `id`, y su clave es `(tenant_id, id)`.**
 Con el cliente dentro de la clave, la tabla se puede repartir entre varias
 bases el día que una sola no alcance, sin rediseñar nada.
+
+Al revés, un catálogo no lleva `tenant_id`. El catálogo es igual para todos los
+clientes, no tiene seguridad por fila y la aplicación lo lee entero: con
+`tenant_id` guardaría filas de un negocio a la vista de todos los demás, y
+ninguna otra regla lo notaría. Si los datos son de un cliente, la tabla es de
+negocio, libro o custodia. (Cambio del 26-nov-2026, auditoría de seguridad de
+la identidad.)
 
 **BD-03. Una fila de un cliente nunca puede apuntar a otro cliente, y nada se borra en cascada.**
 Toda relación entre datos de un cliente incluye `tenant_id`. Así lo impide la
@@ -97,12 +334,65 @@ apunta al plano de control, y ningún catálogo apunta a datos de un cliente.
 
 **BD-04. La seguridad por fila está activa y forzada, y toda política filtra por el cliente activo.**
 Es la segunda barrera: si el programa olvida filtrar, la base no devuelve
-nada. Sin cliente activo en la transacción, no se ve ninguna fila.
+nada. Sin cliente activo en la transacción, no se ve ninguna fila. El cliente
+activo sale de `nucleo.tenant_actual()`, que lee del portero: su cuerpo está
+escrito en la configuración del verificador, y cambiarlo es cambiar esta regla.
+Una vista consulta con los permisos de quien la usa (`security_invoker`), y no
+hay vistas materializadas.
+
+Una tabla de un cliente (raíz, negocio, libro o custodia) lleva una sola
+política: la que pone `nucleo.preparar_tabla`. Se llama `aislamiento`, es
+permisiva, vale para todas las órdenes y todos los roles, y su `USING` y su
+`WITH CHECK` son exactamente `id = (select nucleo.tenant_actual())` en la raíz y
+`tenant_id = (select nucleo.tenant_actual())` en las demás, tal como los
+escribe Postgres (`configuracion.mjs`, `aislamiento`). Antes bastaba con que el
+texto de la política nombrara a `nucleo.tenant_actual()`, y una política de más
+como `using (nucleo.tenant_actual() is not null)` lo nombra y abre todos los
+negocios. Cualquier otra política es una falta. (Cambio del 26-nov-2026,
+auditoría de seguridad de la identidad.)
 
 **BD-05. Los permisos son los mínimos.**
 La aplicación no borra, no escribe directo en un libro, no cambia un catálogo
 y ningún objeto queda abierto a todos los roles. Los roles de la aplicación
-no pueden saltarse la seguridad por fila.
+no pueden saltarse la seguridad por fila. Además:
+
+- El servicio entra solo con un rol de entrada, que hereda de la aplicación.
+  Ningún rol puede volverse otro, y nadie puede volverse portero.
+- El portero y el dueño de las puertas de identidad (`coddvisor_identidad`)
+  tocan solo las tablas de su lista cerrada, una por una. Por clase no tienen
+  nada. Ninguno inicia sesión ni se salta la seguridad por fila. La lista del
+  portero es la llave, `portero.marca` (solo `SELECT`, para trabarla en el modo
+  más suave) y, para comprobar quién entra, la membresía, la
+  asignación, los roles y sus permisos, solo para leer y solo en el negocio
+  que acaba de abrir; la de identidad incluye anexar al registro de entradas
+  y, desde abrir un negocio, crear y leer la primera empresa y el primer local
+  y leer el país y sus regímenes. (Cambios del 26-nov-2026, tramo 2b de la
+  identidad y abrir un negocio.) Desde los cupos compartidos, la de identidad
+  lee el catálogo `identidad.tope_de_cupo` y lee, anexa y actualiza
+  `control.cupo_usado`, solo por su puerta `identidad.usar_cupos`, que el
+  servicio ejecuta con su firma. (Cambio del 27-nov-2026, pendiente de la
+  aprobación del fundador.)
+- Una tabla de custodia, la aplicación y el rol de los libros solo la leen. La
+  escribe una puerta, y nadie por su clase. Las de identidad las escriben las
+  puertas de `coddvisor_identidad`, que la aplicación ejecuta con la firma del
+  servicio. (Cambio del 26-nov-2026, tramo 2a de la identidad.)
+- Los permisos se dan por tabla, nunca por columna.
+- Ningún rol de la aplicación es dueño de una tabla ni crea objetos.
+- La aplicación no crea tablas temporales.
+- Una función que corre con los permisos de su dueño es una puerta: quién puede
+  ejecutarla figura, con nombre, en la lista de puertas.
+- Un solo rol que no es de Coddvisor figura en esa lista: `supabase_auth_admin`,
+  con el que Supabase Auth ejecuta su gancho «antes de crear una cuenta»
+  (`ganchos.antes_de_crear_cuenta`). No recibe ninguna tabla: solo ejecutar esa
+  función y usar el esquema `ganchos`, que no guarda tablas. La función corre
+  como `coddvisor_identidad`, que suma a su lista cerrada leer y anexar
+  `control.alta_permitida`. (Cambio del 26-nov-2026, barrera de altas de la
+  decisión 8 bis de identidad; lo aprueba el fundador.) Aquí se aparta de la
+  guía de Auth Hooks de Supabase, que recomienda no usar `security definer` y
+  dar a `supabase_auth_admin` permiso directo sobre las tablas que lee el
+  gancho: se prefiere que un rol ajeno no reciba ninguna tabla, y que la
+  función corra con un dueño sin sesión que solo lee y anexa lo suyo, con
+  `search_path` fijo.
 
 ### Tipos
 
@@ -133,6 +423,8 @@ una vez, ahí. Una tabla con importes tiene una columna `moneda_codigo`.
 `creado_en`, `creado_por`, `actualizado_en`, `actualizado_por` y `version`.
 Los pone la base, no el programa, así que no se pueden falsear. `version`
 sube en cada cambio y permite avisar cuando dos personas editan lo mismo.
+Vale también para una tabla de custodia y para una tabla de control que
+alguien edita.
 
 **BD-10. Un libro solo se anexa.**
 No se edita, no se borra y no se vacía, ni siquiera por el dueño de la base.
@@ -161,13 +453,62 @@ personales que pide la ley sale de una consulta.
 **BD-14. Toda función fija su `search_path`, tiene una sola firma y no corre con permisos de más.**
 Al cambiar la firma de una función, la anterior se elimina en la misma
 migración. Una función que corre con los permisos de su dueño pertenece a un
-rol que no puede saltarse la seguridad por fila.
+rol que no puede saltarse la seguridad por fila, y fija
+`search_path = pg_catalog, pg_temp`: con el esquema temporal nombrado al final,
+ninguna tabla temporal se usa antes que la de verdad.
 
 **BD-15. Las migraciones llevan fecha, solo agregan y no se editan después de aceptadas.**
 El nombre es `AAAAMMDDHHMMSS_descripcion.sql`. Para quitar algo, primero deja
 de usarse en el programa y después se quita en una migración aparte que
-empieza con `-- contraer: motivo`. `migraciones.candado.json` guarda la huella
-de cada archivo. Nadie ejecuta SQL a mano en producción.
+empieza con `-- contraer: motivo`. Cambiar el cuerpo de algo que ya existe
+(`CREATE OR REPLACE`) solo vale en una migración que lo declare con
+`-- reemplaza: qué y por qué`. Borrar filas de una tabla temporal de la
+transacción (`pg_temp`) no borra datos y no cuenta como quitar algo: así cierra
+el portero el negocio que abrió una puerta de identidad. (Cambio del
+26-nov-2026, tramo 2a de la identidad.) `migraciones.candado.json` guarda la
+huella de cada archivo. Nadie ejecuta SQL a mano en producción.
+
+### Afuera de los negocios
+
+**BD-16. Afuera de los negocios viven solo las tablas de una lista cerrada.**
+El plano de control (las tablas de clase `control`) es lo único que no es de
+ningún negocio: las cuentas, el índice de accesos, la lista de en qué celda vive
+cada negocio y con qué nombre se muestra (`control.negocio`, decisión 14 de
+identidad: así la persona elige a qué negocio entra sin abrir ninguno; es una
+copia del nombre de `nucleo.tenant`, que `fundar_negocio` escribe en la misma
+transacción), la llave del portero y la marca que el portero traba al abrir
+un negocio (`portero.marca`, sin filas) y los permisos de alta que anota «Abra su negocio»
+para que el gancho de Supabase Auth deje crear la cuenta (`control.alta_permitida`,
+solo la huella del correo y su vencimiento) y el registro de las migraciones
+que el migrador aplicó a la base, con su huella (`control.migracion_aplicada`,
+que solo se anexa) y lo usado de cada cupo compartido de intentos y de permisos
+de alta, por la huella de su clave y por ventana (`control.cupo_usado`: la IP, el
+correo o la sesión que se cuentan no tienen negocio todavía). Lo
+que es de un negocio vive dentro del negocio, donde lo cuidan el aislamiento y
+los sellos. La lista está en la configuración del verificador
+(`tablasDeControl`). Una tabla de control que no figura en ella es una falta, y
+el esquema `control` no guarda tablas de otra clase. Para agregar una se cambia
+la lista con su porqué, y lo aprueba el fundador. (`control.negocio` entra el
+26-nov-2026, con el tramo 3 de la identidad; `control.alta_permitida`, el mismo
+día, con la barrera de altas, pendiente de la aprobación del fundador;
+`control.migracion_aplicada`, el mismo día, con el camino de las migraciones,
+también pendiente de su aprobación; `control.cupo_usado`, el 27-nov-2026, con
+los cupos compartidos, pendiente de su aprobación.)
+
+**BD-17. Los datos personales no dejan rastro en los resúmenes de la base.**
+La base guarda resúmenes de cada columna (los valores más frecuentes, los
+rangos) para planear las consultas, y los guarda mezclando a todos los
+clientes. Por ahí se podrían ver correos o nombres de otro negocio. Toda
+columna marcada `[personal]` o `[sensible]` se crea con `SET STATISTICS 0`.
+En una tabla que tenga una de esas columnas, además, toda expresión de todo
+índice lleva `SET STATISTICS 0` (`ALTER INDEX ... ALTER COLUMN n SET STATISTICS 0`),
+y no se crean estadísticas extendidas. Antes se miraba solo lo que el catálogo
+liga a la columna personal, y una expresión que toma la fila entera
+(`create index ... ((cuenta))`) no queda ligada a ninguna columna: guardaba
+resúmenes del correo sin que la revisión lo viera. Ahora la revisión no intenta
+saber qué expresión usa qué columna. (Cambio del 26-nov-2026, auditoría de
+seguridad de la identidad.) Lo que esto no cierra, y se acepta: la base igual
+deja estimar cuántas filas tiene otro negocio.
 
 ## Reglas que revisa una persona
 
@@ -193,14 +534,37 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 
 | Pieza | Depende de |
 |---|---|
-| Función que fija el cliente activo tras validar la membresía del usuario | Documento de identidad y membresía (decisión D26) |
-| Enrutador de celdas y tablas de identidad en el esquema `control` | El mismo documento |
+| Invitar a un correo que todavía no tiene cuenta, con su enlace de un solo uso | Tramo 3 de la identidad (decisión 10) |
+| El acceso de emergencia: otra forma del portero, de un solo negocio, de solo lectura, de 4 horas como máximo y aprobada por dos personas de Coddvisor con segundo paso | Que Coddvisor tenga dos personas para aprobarlo (decisión 12). Hasta entonces no existe |
+| La puerta con que el dueño aprueba un pedido de soporte, su membresía temporal y el permiso de escribir (`identidad.soporte_puede_escribir`, que hoy no tiene ningún rol) | Panel del soporte (decisión 12) |
+| La tarea anotada de la que nace cada trabajo automático, y que el portero compruebe que el negocio firmado es el de esa tarea. Trae un propósito nuevo, con el id de la tarea en la firma, y el programa de los trabajos cambia su firma | Primer trabajo de fondo (decisión 7) |
+| La tabla de cajas, a la que apunten la caja del contexto y la de cada entrada. Y si el sello guarda también la caja (hoy guarda solo `actor_actual()`, así que una fila escrita desde la caja no se distingue de una escrita desde el panel): se decide antes de crear la primera tabla de la caja, porque un libro no se corrige hacia atrás | Contrato de la caja, al publicarse (decisiones 6 y 11) |
+| Cuánto se guardan las entradas (al menos dos años, como dato) y los intentos fallidos (`control.intento`) | Conservación de datos y propuesta de identidad, decisiones 13 y 14 |
+| Que pasarse del cupo de códigos fallidos cierre la sesión aal1. Los cupos compartidos ya cuentan en la base, para todas las copias del servicio, por IP, por correo y por cuenta (`control.cupo_usado`, con sus topes como datos en `identidad.tope_de_cupo`; cupos compartidos, 27-nov-2026). Los códigos se cuentan por cuenta, en todas sus sesiones: renovar el pase o entrar otra vez no da intentos nuevos | Proveedor de cuentas real y `control.intento` (decisiones 13 y 14) |
+| Revocar todos los pases de una cuenta (cambiar la contraseña, suspender a alguien) con una puerta que fije `control.cuenta.pases_revocados_en`. Cerrar una sesión al salir ya existe (`control.sesion_cerrada`, tramo 3, parte 2) | Recuperar la contraseña y suspender membresías (decisiones 5 y 9) |
+| Archivar las filas de `control.sesion_cerrada` cuyo pase ya venció: solo importan una hora, y la tabla crece con cada salida | Primer trabajo de fondo (decisión 7) |
+| Copiar el índice de accesos (su estado y la copia de los roles) con un trabajo que se puede repetir, en vez de en la misma transacción, y el trabajo que revisa que coincida con lo de adentro | Enrutador de celdas, cuando haya más de una |
+| Confirmar en el proyecto real lo que la base en memoria no puede probar del controlador de Postgres: el portero y la limpieza detrás de Supavisor en modo transacción (la tabla temporal del contexto en una sesión que comparten varias conexiones), el cifrado con `sslmode=verify-full`, la contraseña de `coddvisor_entrada` y el usuario `coddvisor_entrada.<proyecto>`. La lista está en `sistema/supabase/LEEME.md`. El controlador ya existe (`aplicaciones/servicio/base/postgres.ts`, postgres.js), solo él lo importa (SV-02) y lo prueban `postgres.test.ts` y la prueba de la función contra la base en memoria detrás de un puerto que se comporta como el modo transacción | Primera base real (decisiones D27 y D30) y la contraseña de `coddvisor_entrada`, que pone el fundador |
+| El enrutador de celdas para más de una celda, los intentos fallidos y los códigos de respaldo en el esquema `control`. La lista de en qué celda vive cada negocio ya existe (`control.negocio`, tramo 3, parte 1) | Propuesta de identidad, decisiones 13 y 14 |
 | Auditoría por disparador y su partición por fecha | Primer módulo de negocio |
 | Una clase de tabla para los saldos: los lee la aplicación y solo los escriben las funciones de los libros | Primer libro (tesorería o inventario) |
 | Tablas de intercambio entre dos clientes, con regla de dos partes | Red entre negocios (después del primer alcance) |
-| Identificador de operación (`op_id`) y contrato de la caja | Protocolo de sincronización (D12) |
+| Identificador de operación (`op_id`) en las tablas. El contrato de la caja ya existe, en borrador, en `sistema/contratos/caja/` | Protocolo de sincronización (D12) |
 | Campos propios y su definición | Módulo de configuración (D16) |
-| Valores legales del Perú en `parametro_legal` | Confirmación del contador asesor, con norma y fecha |
+| Valores legales del Perú en `parametro_legal`, entre ellos los topes, categorías y tasas de cada régimen tributario, y la norma y la fecha legal de cada régimen (`nucleo.regimen_tributario.norma_fuente` está vacía, y su `vigente_desde`, 2017-01-01, es la fecha desde la que el sistema ofrece la opción, no el inicio legal), y la nota de la primera pregunta de «Abra su negocio» sobre qué comprobantes entrega cada régimen | Confirmación del contador asesor, con norma y fecha |
+| El historial del régimen de una empresa (el perfil fiscal con vigencia): hoy `nucleo.empresa.regimen_codigo` guarda el que eligió al abrir | La primera pantalla que deje cambiar de régimen |
+| Abrir un negocio con una cuenta real. Ya existen el proveedor real, el gancho que deja pasar solo las altas con Google cuyo correo pasó por «Abra su negocio» (`ganchos.antes_de_crear_cuenta` y `control.alta_permitida`) y las rutas y las pantallas para pedir el correo de Google antes de ir a Google y para inscribir la app de códigos (`aplicaciones/oficina/entrar/abrir-con-google.html` y `app-de-codigos.html`). Falta: el alta con correo y su enlace de un solo uso (el programa aparte con la llave de administrador, que usa `POST /admin/users` y nunca `/invite`: según el código de GoTrue, las invitaciones pasan por el gancho y las altas del administrador no; se confirma en el proyecto de pruebas), y que el programa de administrador revise él mismo la prueba de que no es un robot (Supabase no la pide a `POST /admin/users`). La prueba (Cloudflare Turnstile) y los cupos compartidos de permisos y de altas por día ya existen (`sistema/supabase/turnstile.md`); el de negocios abiertos por cuenta lo pone `abrir_negocio`. La pantalla que pide el correo dice que use exactamente el de su cuenta de Google: el permiso se compara con la huella exacta, y Google devuelve el correo principal (sin los puntos o el googlemail.com que la persona pueda escribir) | Pantallas de «Abra su negocio» y programa de administrador (decisiones 8 bis y 10) |
+| Aceptar una invitación entrando con Google, para alguien que todavía no tiene cuenta: el gancho la niega porque su correo no tiene un permiso de «Abra su negocio». La invitación tendrá que anotar su propio permiso (la huella del correo en `control.alta_permitida` o en una tabla hermana). La decisión 8 bis lo pone como condición: la barrera no está completa sin esto | Invitaciones (decisión 8 bis) |
+| Cómo pasar a Supabase la IP de la persona sin la llave secreta (decisión 10). Y el camino directo a Supabase Auth con la clave pública, que no pasa por los cupos del servicio: su segundo paso admite 15 códigos por minuto por IP, sin poder cambiarlo (`sistema/supabase/LEEME.md`, «Lo que los cupos del servicio no cubren»). Que la función acepte solo pedidos del Worker ya existe (`aplicaciones/servicio/rutas/puerta.ts`) | Fundador, antes de abrir al público (`sistema/supabase/LEEME.md`) |
+| Archivar los permisos de alta vencidos (`control.alta_permitida`): solo importan diez minutos | Primer trabajo de fondo (decisión 7) |
+| Archivar las filas de `control.cupo_usado` cuya ventana ya venció: solo importan cinco minutos o un día, y la tabla crece con cada clave y cada ventana | Primer trabajo de fondo (decisión 7) |
+| Que cada rubro proponga sus plantillas (la tabla que une `configuracion.rubro` con `plantilla`) | La primera plantilla publicada (`molde-de-rubro.md`) |
 
-Ninguna migración se aplicó a una base real. Antes de hacerlo hay que cerrar
-la región y el inventario de datos personales (decisiones D27 y D30).
+Ninguna migración se aplicó a una base real. El camino ya existe
+(`sistema/herramientas/migrador/`: GitHub Actions al unir a `main`, en el entorno
+protegido `base-real`, con la aprobación del fundador), pero antes de la primera
+corrida hay que cerrar la región y el inventario de datos personales
+(decisiones D27 y D30). La región ya está elegida; el inventario y la lista de
+quién más trata los datos están en
+[../propuestas/datos-personales.md](../propuestas/datos-personales.md), para
+que el fundador los apruebe.

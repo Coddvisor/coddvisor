@@ -21,12 +21,27 @@ const DESTRUCTIVAS = [
   [/\balter\s+table\b[^;]*\brename\b/i, 'ALTER TABLE ... RENAME'],
   [/\balter\s+table\b[^;]*\balter\s+(column\s+)?\w+\s+(set\s+data\s+)?type\b/i, 'cambio de tipo de una columna'],
   [/(^|;)\s*truncate\b/im, 'TRUNCATE'],
-  [/(^|;)\s*delete\s+from\b/im, 'DELETE'],
+  // Borrar de una tabla temporal de la transacción (pg_temp) no borra datos: el
+  // portero cierra así el negocio que abrió una puerta de identidad. Cambio de
+  // BD-15 del 26-nov-2026, tramo 2a de identidad.
+  [/(^|;)\s*delete\s+from\s+(?!(only\s+)?"?pg_temp"?\s*\.)/im, 'DELETE'],
   [/\bdisable\s+(row\s+level\s+security|trigger)\b/i, 'DISABLE de seguridad por fila o de un disparador'],
   [/\bno\s+force\s+row\s+level\s+security\b/i, 'NO FORCE ROW LEVEL SECURITY'],
+  // De la clase registrada salen el aislamiento y los permisos de cada tabla.
+  // Cambiarla es cambiar qué reglas se le exigen: el registro solo se anexa.
+  [/\bupdate\s+(only\s+)?("?nucleo"?\s*\.\s*)?"?tabla_registrada"?\b/i, 'UPDATE de nucleo.tabla_registrada'],
+  [/\binsert\s+into\s+("?nucleo"?\s*\.\s*)?"?tabla_registrada"?\b[^;]*\bdo\s+update\b/i, 'INSERT ... ON CONFLICT DO UPDATE de nucleo.tabla_registrada'],
+  // Con session_replication_role = replica la base no corre los disparadores:
+  // ni los sellos ni los candados de los libros y del registro.
+  [/\bsession_replication_role\b/i, 'cambio de session_replication_role, que apaga los disparadores'],
 ];
 
 const MARCA_DE_CONTRACCION = /^--\s*contraer:\s*\S+/m;
+
+// Reemplazar el cuerpo de algo que ya existe tampoco es agregar: quien revisa
+// ve una función entera y no qué cambió. Solo vale si la migración lo declara.
+const REEMPLAZO = /\bcreate\s+or\s+replace\b/i;
+const MARCA_DE_REEMPLAZO = /^--\s*reemplaza:\s*\S+/m;
 
 export function huella(contenido) {
   return createHash('sha256').update(contenido).digest('hex');
@@ -90,6 +105,13 @@ export function revisarArchivos(migraciones, candado) {
           });
         }
       }
+    }
+
+    if (REEMPLAZO.test(sql) && !MARCA_DE_REEMPLAZO.test(m.contenido)) {
+      violaciones.push({
+        objeto: m.nombre,
+        detalle: 'Contiene CREATE OR REPLACE. Lo nuevo se crea con CREATE a secas; para cambiar el cuerpo de algo que ya existe, el archivo lleva una línea «-- reemplaza: qué y por qué».',
+      });
     }
 
     const sellada = candado[m.nombre];

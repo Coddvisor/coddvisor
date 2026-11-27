@@ -12,7 +12,7 @@ difícil está **en el cobro y en el pago**: una parte del precio va a la cuenta
 de detracciones, otra puede quedar retenida, la venta al crédito lleva cuotas
 y la plata llega por Yape, por tarjeta o en efectivo, cada una a un lugar
 distinto. Por eso las pantallas que deciden si Coddvisor es mejor son
-«Cobrar» y «Pagar», y la pregunta que debe responder siempre es **cuánta
+«Cobros» y «Pagos», y la pregunta que debe responder siempre es **cuánta
 plata tiene de verdad el negocio**.
 
 Del referente se toma la forma: una sola manera de hacer listas y documentos,
@@ -24,10 +24,10 @@ regla de que la máquina propone y la persona aprueba.
 | Área       | Entra                                                                 | Queda para después                                   |
 |------------|-----------------------------------------------------------------------|------------------------------------------------------|
 | Lo esencial | Empresa con o sin RUC; dueño, vendedor y contador; ficha única de clientes y proveedores; productos y servicios; lugares de dinero; series; contabilidad oculta | Roles a medida, campos propios avanzados, constructor de reglas |
-| Vender     | Venta rápida con boleta, factura o nota de venta; cotización que se vuelve venta; factura al crédito con cuotas; nota de crédito; fiado con límite; envío por WhatsApp, correo o enlace | Pedidos, facturas recurrentes, varias listas de precios |
-| Cobrar     | Cobro repartido entre efectivo, Yape, Plin, tarjeta, transferencia, detracción y retención; cobros parciales y anticipos; estado de cuenta; recordatorio por WhatsApp con un toque | Recordatorios automáticos, letras, pasarela propia |
-| Comprar    | Bandeja de comprobantes por foto, archivo o correo; validación del comprobante; compra con detracción; recibo por honorarios; gasto sin comprobante | Órdenes de compra, aprobaciones en varios pasos |
-| Pagar      | Pago al proveedor por el neto; depósito de detracción aparte, con su fecha límite; pagos parciales; caja chica | Archivos de pago masivo por banco |
+| Ventas     | Venta rápida con boleta, factura o nota de venta; cotización que se vuelve venta; factura al crédito con cuotas; nota de crédito; fiado con límite; envío por WhatsApp, correo o enlace | Pedidos, facturas recurrentes, varias listas de precios |
+| Cobros     | Cobro repartido entre efectivo, Yape, Plin, tarjeta, transferencia, detracción y retención; cobros parciales y anticipos; estado de cuenta; recordatorio por WhatsApp con un toque | Recordatorios automáticos, letras, pasarela propia |
+| Compras    | Bandeja de comprobantes por foto, archivo o correo; validación del comprobante; compra con detracción; recibo por honorarios; gasto sin comprobante | Órdenes de compra, aprobaciones en varios pasos |
+| Pagos      | Pago al proveedor por el neto; depósito de detracción aparte, con su fecha límite; pagos parciales; caja chica | Archivos de pago masivo por banco |
 | Tesorería  | Lugares de dinero con lo disponible y lo restringido; caja del día; traspasos; cuadrar con el extracto del banco importado; plata proyectada a 7 y 30 días | Conexión directa con bancos (no existe regulada en el Perú) |
 | Stock      | Un local; entra con la compra, sale con la venta; ajuste con motivo; alerta de mínimo | Varios almacenes, traslados con guía, lotes |
 | Contador   | Paquete del mes; acceso propio de solo lectura; exportación completa   | Declaración mensual armada, libros electrónicos |
@@ -59,6 +59,7 @@ permisos (ver [02-base-de-datos.md](02-base-de-datos.md)).
 
 | Módulo         | Tablas de negocio                                           | Libros (solo se anexan)        |
 |----------------|-------------------------------------------------------------|--------------------------------|
+| `configuracion` | Catálogo `rubro` (existe desde el 26-nov-2026); las plantillas de rubro de `molde-de-rubro.md` | `rubro_elegido` (existe), `plantilla_aplicada` |
 | `terceros`     | `tercero`, `tercero_identificacion`, `tercero_rol`          |                                |
 | `catalogo`     | `producto`, `variante`, `precio`                            |                                |
 | `tesoreria`    | `lugar_dinero`, `cobro`, `pago`, `aplicacion_pago`, `cuenta_por_cobrar`, `cuenta_por_pagar`, `cuota`, `sesion_caja`, `extracto_linea` | `movimiento_dinero` |
@@ -67,7 +68,8 @@ permisos (ver [02-base-de-datos.md](02-base-de-datos.md)).
 | `compras`      | `compra`, `compra_linea`, `comprobante_recibido`            |                                |
 | `contabilidad` | `cuenta`, `regla_contabilizacion`, `periodo_contable`       | `asiento`, `asiento_linea`     |
 
-Catálogos con vigencia en el paquete Perú: tipos de documento, impuestos y
+Catálogos con vigencia en el paquete Perú: regímenes tributarios
+(`nucleo.regimen_tributario`, existe desde el 26-nov-2026, sin sus cifras), tipos de documento, impuestos y
 afectaciones, tipos de lugar de dinero, medios de cobro, parámetros de
 detracción, retención, percepción y honorarios, calendario de días hábiles y
 tipo de cambio diario.
@@ -83,9 +85,9 @@ luego la que sale, y al final el cuadre.
 | Entrega | Qué incluye | Pasa a la siguiente cuando... |
 |---|---|---|
 | Cimientos | Empresa, personas, clientes y proveedores, productos, lugares de dinero, catálogos con vigencia, textos, medidas de diseño y motor de asientos | Un negocio de ejemplo se configura completo sin tocar código |
-| 1. Vender y cobrar al contado | Inicio, Vender, cobro simple, boleta, factura o nota de venta, caja del día, stock que baja | Una venta simple toma 10 segundos y 3 toques; el cierre de caja cuadra al céntimo |
+| 1. Vender y cobrar al contado | Inicio, Ventas, cobro simple, boleta, factura o nota de venta, caja del día, stock que baja | Una venta simple toma 10 segundos y 3 toques; el cierre de caja cuadra al céntimo |
 | 2. Vender al crédito y fiado | Cotización, cuotas, nota de crédito, cobro repartido, «Le deben», recordatorio por WhatsApp | Cinco de cinco personas cobran sin ayuda una factura con detracción |
-| 3. Comprar y pagar | Bandeja, validación, detracción y honorarios, «Pagar», «Usted debe», caja chica, stock que sube | Una compra desde una foto queda registrada sin digitar; ninguna detracción vence sin aviso |
+| 3. Comprar y pagar | Bandeja, validación, detracción y honorarios, «Pagos», «Usted debe», caja chica, stock que sube | Una compra desde una foto queda registrada sin digitar; ninguna detracción vence sin aviso |
 | 4. Cuadrar bancos y ver la plata | Importar extractos, propuestas con motivo, reglas, diferencia, plata proyectada | Todo lo automático lleva su motivo y se deshace con un toque |
 | 5. Para su contador | Paquete del mes, acceso del contador, exportación completa | Dos o tres contadores reciben el paquete y no piden nada más |
 

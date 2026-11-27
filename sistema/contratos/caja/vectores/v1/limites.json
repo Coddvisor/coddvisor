@@ -1,0 +1,10 @@
+{
+  "leame": "Los topes del contrato. El código puede tener más, nunca menos.",
+  "minimos": {
+    "SOBRE_MAXIMO_BYTES": 65536,
+    "SOBRE_MAXIMO_NIVELES": 32,
+    "LOTE_MAXIMO_SOBRES": 100,
+    "LOTE_MAXIMO_BYTES": 524288,
+    "OCURRIDO_EN_MAXIMO_MS": 253402300799999
+  }
+}

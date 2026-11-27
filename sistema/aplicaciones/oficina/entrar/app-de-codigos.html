@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es-PE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <title data-texto="app.titulo-de-la-pagina"></title>
+  <link rel="icon" href="/marca/logo/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/marca/colores.css">
+  <link rel="stylesheet" href="/diseno/medidas.css">
+  <link rel="stylesheet" href="/comun/oficina.css">
+  <script type="module" src="/entrar/app-de-codigos.js"></script>
+</head>
+<body class="cargando">
+  <main class="marco">
+    <header class="cabecera">
+      <picture>
+        <source srcset="/marca/logo/coddvisor-logotipo-horizontal-fondo-oscuro.svg" media="(prefers-color-scheme: dark)">
+        <img class="logo" src="/marca/logo/coddvisor-logotipo-horizontal.svg" width="160" height="24" data-texto-alt="marca.nombre">
+      </picture>
+      <button class="enlace boton-como-enlace" id="salir" type="button" data-texto="comun.salir"></button>
+    </header>
+
+    <h1 id="titulo" tabindex="-1" data-texto="app.titulo"></h1>
+    <p class="ayuda" data-texto="app.bajada"></p>
+
+    <p class="aviso aviso-error" id="aviso" role="alert" hidden>
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>
+      <span id="aviso-texto"></span>
+    </p>
+
+    <!-- 1. Qué app bajar, sin nombrar ninguna: sirve cualquiera que dé códigos de seis números. -->
+    <section class="paso-de-la-app" id="paso-bajar" aria-labelledby="titulo-bajar">
+      <h2 id="titulo-bajar" data-texto="app.bajar.titulo"></h2>
+      <p data-texto="app.bajar.texto"></p>
+    </section>
+
+    <!-- 2. Agregar Coddvisor a la app: el código QR, o en este mismo celular, el enlace o la clave. -->
+    <section class="paso-de-la-app" id="paso-agregar" aria-labelledby="titulo-agregar">
+      <h2 id="titulo-agregar" data-texto="app.agregar.titulo"></h2>
+      <p data-texto="app.agregar.texto"></p>
+      <p class="nota" id="preparando" role="status" data-texto="app.preparando"></p>
+      <div class="qr-marco" id="qr-marco" hidden>
+        <svg class="qr" id="qr" role="img" data-texto-aria="app.qr"></svg>
+      </div>
+      <div class="sin-escanear" id="sin-escanear" hidden>
+        <p data-texto="app.mismo-celular"></p>
+        <a class="boton boton-secundario boton-ancho" id="abrir-en-la-app" data-texto="app.abrir-en-la-app"></a>
+        <p class="nota" data-texto="app.clave-nota"></p>
+        <div role="group" aria-labelledby="clave-etiqueta">
+          <p class="clave-etiqueta" id="clave-etiqueta" data-texto="app.clave"></p>
+          <p class="clave" id="clave"></p>
+        </div>
+        <button class="boton boton-secundario boton-ancho" id="copiar" type="button" data-texto="app.copiar"></button>
+        <p class="nota" id="copiada" role="status"></p>
+      </div>
+    </section>
+
+    <!-- Listo: la app quedó inscrita. Los códigos de respaldo todavía no existen: se dice que llegan. -->
+    <section class="tarjeta" id="listo" aria-labelledby="titulo-listo" hidden>
+      <h2 id="titulo-listo" tabindex="-1" data-texto="app.listo.titulo"></h2>
+      <p data-texto="app.listo.texto"></p>
+      <p data-texto="app.listo.respaldo"></p>
+    </section>
+
+    <form id="formulario" novalidate>
+      <!-- 3. El primer código confirma que la app quedó bien. -->
+      <section class="paso-de-la-app" id="paso-confirmar" aria-labelledby="titulo-confirmar">
+        <h2 id="titulo-confirmar" data-texto="app.confirmar.titulo"></h2>
+        <div class="campo campo-codigo">
+          <label for="codigo" data-texto="app.codigo"></label>
+          <input id="codigo" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="20" aria-describedby="nota-codigo" required>
+          <p class="nota" id="nota-codigo" data-texto="app.codigo-nota"></p>
+        </div>
+      </section>
+      <button class="boton boton-principal boton-ancho" id="confirmar" type="submit" data-texto="app.boton"></button>
+    </form>
+  </main>
+</body>
+</html>

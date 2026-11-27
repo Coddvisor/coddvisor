@@ -1,0 +1,8 @@
+{
+  "name": "coddvisor-wrangler",
+  "private": true,
+  "description": "Wrangler, la herramienta de Cloudflare que publica el repartidor. Solo la instala el flujo «Desplegar el repartidor», fuera del repositorio (herramientas/repartidor/LEEME.md).",
+  "dependencies": {
+    "wrangler": "4.165.0"
+  }
+}

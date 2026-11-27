@@ -1,0 +1,25 @@
+---
+// Entrada al panel del equipo: correo y contraseña de Supabase Auth (public/equipo/entrar.js y
+// sesion.js). La cuenta la crea cada persona al aceptar su invitación
+// (/equipo/invitacion/). Quien olvidó su contraseña pide un enlace nuevo a quien administra.
+import Equipo from '../../layouts/Equipo.astro';
+---
+<Equipo titulo="Entrar al panel del equipo | Coddvisor">
+<script slot="cabeza" is:inline src="/equipo/entrar.js" defer></script>
+<section class="entrar" aria-labelledby="en-t">
+  <p class="rotulo">Coddvisor, equipo</p>
+  <h1 id="en-t">Entrar al panel</h1>
+
+  <form novalidate>
+    <p>Visitas al sitio y pedidos de contacto. Solo para el equipo de Coddvisor.</p>
+    <label for="en-correo">Correo</label>
+    <input id="en-correo" name="correo" type="email" autocomplete="username" inputmode="email" required maxlength="120" placeholder="nombre@coddvisor.com">
+    <label for="en-clave">Contraseña</label>
+    <input id="en-clave" name="clave" type="password" autocomplete="current-password" required maxlength="200">
+    <button type="submit" class="boton">Entrar</button>
+    <p class="nota">¿Olvidó su contraseña? Pida a quien administra el equipo un enlace para crear una nueva.</p>
+  </form>
+
+  <p class="estado" data-estado role="status" aria-live="polite"></p>
+</section>
+</Equipo>

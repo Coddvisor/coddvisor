@@ -9,7 +9,7 @@ repositorio. Lo que dice aquí manda sobre la costumbre.
 Lea `arquitectura/bases/`. Son siete páginas cortas y son obligatorias:
 
 1. `01-principios.md`: los diez principios.
-2. `02-base-de-datos.md`: las quince reglas de la base.
+2. `02-base-de-datos.md`: las diecisiete reglas de la base.
 3. `03-nada-fijo-en-el-codigo.md`: dónde vive cada valor que puede variar.
 4. `04-experiencia.md`: cómo se ve y cómo habla el sistema.
 5. `05-modulos.md`: qué es un módulo y dónde va cada cosa.

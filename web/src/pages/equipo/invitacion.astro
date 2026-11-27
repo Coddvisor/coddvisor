@@ -1,0 +1,27 @@
+---
+// Aceptar una invitación al panel (o restablecer la contraseña): la persona abre el enlace que le
+// mandó quien administra, crea su contraseña y entra. La cuenta la crea la función de Supabase
+// equipo-invitacion (web/supabase/funciones/). Ver public/equipo/invitacion.js.
+import Equipo from '../../layouts/Equipo.astro';
+---
+<Equipo titulo="Invitación al panel del equipo | Coddvisor">
+<script slot="cabeza" is:inline src="/equipo/invitacion.js" defer></script>
+<section class="entrar" aria-labelledby="in-t">
+  <p class="rotulo">Coddvisor, equipo</p>
+  <h1 id="in-t" data-titulo>Invitación al panel</h1>
+  <p data-texto>Revisando su enlace…</p>
+
+  <form novalidate hidden>
+    <label for="in-correo">Correo</label>
+    <input id="in-correo" name="correo" type="email" autocomplete="username" readonly>
+    <label for="in-clave">Cree su contraseña</label>
+    <input id="in-clave" name="clave" type="password" autocomplete="new-password" required minlength="10" maxlength="200">
+    <label for="in-clave2">Repítala</label>
+    <input id="in-clave2" name="clave2" type="password" autocomplete="new-password" required minlength="10" maxlength="200">
+    <p class="nota">Al menos 10 caracteres. Mejor una frase que recuerde, con algún número. Nadie más la conocerá, ni quien lo invitó.</p>
+    <button type="submit" class="boton">Crear contraseña y entrar</button>
+  </form>
+
+  <p class="estado" data-estado role="status" aria-live="polite"></p>
+</section>
+</Equipo>

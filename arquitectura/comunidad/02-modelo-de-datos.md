@@ -10,8 +10,10 @@ desde la raíz del repositorio (necesita `npm ci` dentro de `sistema/`):
 node arquitectura/comunidad/borrador/probar.mjs
 ```
 
-Resultado al 26-nov-2026: **293 pruebas bien, 0 fallas**, en PGlite (Postgres
-18.6 que corre dentro del proceso).
+Resultado al 27-nov-2026: **296 pruebas bien, 0 fallas**, en PGlite (Postgres
+18.6 que corre dentro del proceso). Las tres pruebas nuevas son de BD-17,
+la regla que entró a las bases el 26-nov-2026: las 27 columnas marcadas
+`[personal]` o `[sensible]` se crean sin resúmenes (`SET STATISTICS 0`).
 
 ## 1. Cómo se hizo
 

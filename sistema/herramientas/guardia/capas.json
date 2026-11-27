@@ -1,0 +1,101 @@
+{
+  "leame": "Las capas del código del sistema: qué carpeta puede usar a cuál, cuáles son puras y qué librerías de npm entran en cada una. Quién usa a quién ENTRE MÓDULOS no está aquí: se lee de la tabla «Qué depende de qué» de arquitectura/bases/05-modulos.md. Cambiar este archivo es cambiar una frontera: lo aprueba el fundador.",
+  "puerta": "publico.ts",
+  "documento_de_modulos": "../arquitectura/bases/05-modulos.md",
+  "titulo_de_la_tabla": "## Qué depende de qué",
+  "titulo_del_arbol": "## Dónde vive cada cosa",
+  "capas": [
+    {
+      "nombre": "nucleo",
+      "unidades": false,
+      "pura": true,
+      "usa": [],
+      "npm": [],
+      "porque": "El núcleo no conoce a los módulos, ni a los países, ni a los rubros (05-modulos.md, regla 4). Si importara algo de arriba, cada cambio en un módulo podría romper el Dinero de todos."
+    },
+    {
+      "nombre": "contratos",
+      "unidades": true,
+      "pura": true,
+      "usa": [
+        "nucleo"
+      ],
+      "npm": [],
+      "porque": "Un contrato es lo que ve el exterior y queda congelado con su versión (05-modulos.md, regla 6). Lo leen la caja sin red y el servidor: si importara un módulo o la base, la caja dejaría de poder sellar una venta."
+    },
+    {
+      "nombre": "paquetes",
+      "unidades": true,
+      "pura": true,
+      "usa": [
+        "nucleo"
+      ],
+      "npm": [],
+      "porque": "Un país es un paquete de datos y funciones fiscales (05-modulos.md, regla 5). Corre igual en la caja y en el servidor: si importara un módulo, aparecerían dos cálculos del mismo impuesto."
+    },
+    {
+      "nombre": "modulos",
+      "unidades": true,
+      "pura": false,
+      "portatil": true,
+      "subcarpetas_puras": [
+        "dominio"
+      ],
+      "usa": [
+        "nucleo",
+        "contratos",
+        "modulos"
+      ],
+      "npm": [],
+      "segun_la_tabla": true,
+      "porque": "Un módulo usa el núcleo, los contratos y a los módulos que le permite la tabla de 05-modulos.md. No importa el paquete de un país por su nombre: el paquete se elige con el dato empresa.pais_codigo (03-nada-fijo-en-el-codigo.md), así que un segundo país no obliga a tocar el módulo. Tampoco una aplicación ni una herramienta: la capa de abajo quedaría atada a una pantalla."
+    },
+    {
+      "nombre": "aplicaciones",
+      "unidades": true,
+      "pura": false,
+      "portatil": true,
+      "usa": [
+        "nucleo",
+        "contratos",
+        "modulos"
+      ],
+      "npm": [
+        "postgres"
+      ],
+      "porque": "Una aplicación es un programa que se arranca (el servicio, la oficina, la caja): arma los módulos, lee el entorno y habla con el exterior. Usa el núcleo, los contratos y los módulos por su puerta. No importa el paquete de un país por su nombre, por lo mismo que un módulo. Ninguna otra capa usa a las aplicaciones: un módulo que importara una quedaría atado a un programa (cambio de frontera del 26-nov-2026, tramo 3 de identidad). La única librería es el controlador de Postgres (postgres.js, sistema/dependencias.md), y solo lo importa el repartidor del servicio, aplicaciones/servicio/base/postgres.ts (regla SV-02; cambio de frontera del 26-nov-2026, la función con base; lo aprueba el fundador).",
+      "del_navegador": {
+        "carpetas": [
+          "oficina"
+        ],
+        "porque": "Las páginas de la oficina corren en el navegador tal cual, sin construir: su JavaScript no pasa por esta guardia, que lee TypeScript. Lo revisan tsconfig.navegador.json (tipos y lo que entiende el celular más viejo) y aplicaciones/oficina/pruebas/paginas.test.ts (textos del catálogo, un solo botón ámbar, objetivos táctiles, contraste y peso). Fuera de esas carpetas, una capa sigue sin admitir JavaScript (cambio de frontera del 26-nov-2026, tramo 3 de identidad, parte 2)."
+      }
+    }
+  ],
+  "arranques": {
+    "carpetas": [
+      "supabase"
+    ],
+    "usan": [
+      "aplicaciones",
+      "paquetes"
+    ],
+    "npm": [],
+    "porque": "Un arranque es la capa delgada que pone un programa en marcha en su lugar de despliegue: hoy, la función de Supabase (supabase/functions/servicio/index.ts, en Deno), que Supabase exige en su carpeta propia. Lee el entorno, quita el nombre de la función del camino y le pasa cada pedido al manejador de la aplicación. No tiene lógica: solo importa la puerta de una aplicación o de un paquete de país, ninguna librería (su lista «npm» está vacía: el controlador de Postgres lo trae la aplicación), y es portátil como ellas (PO-01). Ninguna capa lo importa (cambio de frontera del 26-nov-2026, proveedor de cuentas real; lo aprueba el fundador)."
+  },
+  "fuera_del_producto": {
+    "carpetas": [
+      "herramientas",
+      "base-de-datos"
+    ],
+    "porque": "Las herramientas y el verificador de la base corren en la computadora del equipo y en la revisión automática, nunca en el negocio del cliente. El producto no las importa."
+  },
+  "pruebas": {
+    "patrones": [
+      "(^|/)pruebas/",
+      "\\.test\\.(ts|mts|mjs)$"
+    ],
+    "porque": "Una prueba puede usar Node, datos inventados y atajos. Si el código de producción importara una, heredaría esos atajos."
+  },
+  "portatil_porque": "Los módulos y las aplicaciones corren en una función de Supabase (Deno) y en Node sin reescribirse (donde-corre-el-sistema.md, decisiones 3 y 6). Por eso no usan piezas que solo existen en Node: ni node:, ni Buffer, process, require, global o setImmediate. Usan lo que traen los dos: WebCrypto, fetch, Request, Response, TextEncoder (regla PO-01, 26-nov-2026). Lo propio de Node vive en un arranque fuera del producto, como herramientas/probar-entrar."
+}

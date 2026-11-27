@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es-PE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <title data-texto="abrir.titulo-de-la-pagina"></title>
+  <link rel="icon" href="/marca/logo/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/marca/colores.css">
+  <link rel="stylesheet" href="/diseno/medidas.css">
+  <link rel="stylesheet" href="/comun/oficina.css">
+  <script type="module" src="/entrar/abrir.js"></script>
+</head>
+<body class="cargando">
+  <main class="marco">
+    <header class="cabecera">
+      <picture>
+        <source srcset="/marca/logo/coddvisor-logotipo-horizontal-fondo-oscuro.svg" media="(prefers-color-scheme: dark)">
+        <img class="logo" src="/marca/logo/coddvisor-logotipo-horizontal.svg" width="160" height="24" data-texto-alt="marca.nombre">
+      </picture>
+      <button class="enlace boton-como-enlace" id="salir" type="button" data-texto="comun.salir"></button>
+    </header>
+
+    <div class="avance">
+      <p class="avance-texto" id="avance-texto"></p>
+      <div class="barra" id="barra" role="progressbar" aria-valuemin="1" aria-labelledby="avance-texto">
+        <span class="barra-relleno" id="barra-relleno"></span>
+      </div>
+    </div>
+
+    <p class="aviso aviso-error" id="aviso" role="alert" hidden>
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>
+      <span id="aviso-texto"></span>
+    </p>
+
+    <!-- Sin name en los campos que se escriben: si el formulario llegara a enviarse solo,
+         nada de lo escrito (el RUC lleva el DNI de una persona natural) iría en la dirección. -->
+    <form id="formulario" novalidate>
+      <!-- 1. ¿Tiene RUC? -->
+      <section class="paso" id="paso-ruc" data-paso="ruc">
+        <h1 id="titulo-ruc" tabindex="-1" data-texto="abrir.ruc.titulo"></h1>
+        <p class="ayuda" data-texto="abrir.ruc.bajada"></p>
+        <div class="opciones" role="radiogroup" aria-labelledby="titulo-ruc" id="opciones-ruc">
+          <label class="opcion">
+            <input type="radio" name="tiene-ruc" data-respuesta="si">
+            <span class="opcion-texto">
+              <span class="opcion-titulo" data-texto="abrir.ruc.si"></span>
+              <span class="opcion-nota" data-texto="abrir.ruc.si-nota"></span>
+            </span>
+          </label>
+          <label class="opcion">
+            <input type="radio" name="tiene-ruc" data-respuesta="no">
+            <span class="opcion-texto">
+              <span class="opcion-titulo" data-texto="abrir.ruc.no"></span>
+              <span class="opcion-nota" data-texto="abrir.ruc.no-nota"></span>
+            </span>
+          </label>
+        </div>
+        <div class="campo" id="campo-ruc" hidden>
+          <label for="ruc" data-texto="abrir.ruc.numero"></label>
+          <input id="ruc" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="40" aria-describedby="nota-ruc">
+          <p class="nota" id="nota-ruc" data-texto="abrir.ruc.numero-nota"></p>
+        </div>
+      </section>
+
+      <!-- 2. ¿En qué régimen está? Solo si tiene RUC. -->
+      <section class="paso" id="paso-regimen" data-paso="regimen" hidden>
+        <h1 id="titulo-regimen" tabindex="-1" data-texto="abrir.regimen.titulo"></h1>
+        <p class="ayuda" data-texto="abrir.regimen.bajada"></p>
+        <div class="opciones" role="radiogroup" aria-labelledby="titulo-regimen" id="opciones-regimen"></div>
+      </section>
+
+      <!-- 3. ¿A qué se dedica? -->
+      <section class="paso" id="paso-rubro" data-paso="rubro" hidden>
+        <h1 id="titulo-rubro" tabindex="-1" data-texto="abrir.rubro.titulo"></h1>
+        <p class="ayuda" data-texto="abrir.rubro.bajada"></p>
+        <div class="opciones" role="radiogroup" aria-labelledby="titulo-rubro" id="opciones-rubro"></div>
+      </section>
+
+      <!-- 4. Su primer local -->
+      <section class="paso" id="paso-local" data-paso="local" hidden>
+        <h1 id="titulo-local" tabindex="-1" data-texto="abrir.local.titulo"></h1>
+        <p class="ayuda" data-texto="abrir.local.bajada"></p>
+        <div class="campo">
+          <label for="local" data-texto="abrir.local.nombre"></label>
+          <input id="local" type="text" autocomplete="organization" maxlength="120" aria-describedby="nota-local" required>
+          <p class="nota" id="nota-local" data-texto="abrir.local.nombre-nota"></p>
+        </div>
+        <div class="campo">
+          <label for="distrito" data-texto="abrir.local.distrito"></label>
+          <input id="distrito" type="text" autocomplete="address-level3" maxlength="120">
+        </div>
+      </section>
+
+      <div class="acciones">
+        <button class="boton boton-principal boton-ancho" id="seguir" type="submit" data-texto="abrir.seguir"></button>
+        <button class="boton boton-secundario boton-ancho" id="volver" type="button" data-texto="abrir.volver" hidden></button>
+      </div>
+    </form>
+
+    <template id="plantilla-opcion">
+      <label class="opcion">
+        <input type="radio">
+        <span class="opcion-texto">
+          <span class="opcion-titulo"></span>
+        </span>
+      </label>
+    </template>
+  </main>
+</body>
+</html>

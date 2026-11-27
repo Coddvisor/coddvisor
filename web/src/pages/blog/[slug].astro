@@ -7,6 +7,7 @@
 // cierre (la única mención de Coddvisor), enlaces [{ texto, href }] a herramientas, fuentes
 // [{ norma, enlace }] y, si el tema tiene fecha de fin, vence (AAAA-MM-DD) y vencido (el aviso).
 import Base from '../../layouts/Base.astro';
+import PreguntasGuia from '../../components/PreguntasGuia.astro';
 import { llamado } from '../../datos/navegacion';
 import { autor, fechaLarga } from '../../datos/herramientas';
 import { ubicar } from '../../datos/temas';
@@ -69,6 +70,9 @@ const vencidoYa = a.vence && hoy > a.vence;
     </div>
   </div>
 </article>
+
+<!-- «¿Le sirvió?» y las preguntas de otros dueños: src/components/PreguntasGuia.astro. -->
+<PreguntasGuia />
 
 {a.vence && (
   <script is:inline>

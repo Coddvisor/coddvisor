@@ -1,0 +1,223 @@
+---
+// Panel del equipo: visitas al sitio y quiénes dejaron sus datos, por día, semana o mes.
+// Como en una tienda: cuántos entraron (el contador de puerta), qué miraron, cuántos dejaron sus
+// datos (el cuaderno de pedidos) y a cuántos ya se les escribió.
+// La página es una cáscara sin datos: las cifras llegan de /api/equipo/visitas solo a quien entró
+// con su enlace. Si nadie entró, public/equipo/panel.js lleva a /equipo/entrar/.
+import Equipo from '../../layouts/Equipo.astro';
+import { herramientas } from '../../datos/herramientas';
+import { pie } from '../../datos/navegacion';
+import { listas } from '../../../servidor/firma.js';
+
+// Nombre de cada página para mostrarlo en vez de su dirección. Sale de las mismas listas que el
+// menú y el blog: una página nueva aparece con su nombre sin tocar el panel.
+type Titulo = { titulo: string; tipo: 'articulo' | 'herramienta' | 'pagina' };
+const titulos: Record<string, Titulo> = { '/': { titulo: 'Portada', tipo: 'pagina' } };
+for (const g of pie) for (const e of g.enlaces) {
+  const ruta = e.href.split('#')[0];
+  if (ruta && !titulos[ruta]) titulos[ruta] = { titulo: e.texto, tipo: 'pagina' };
+}
+titulos['/blog/'] = { titulo: 'Blog', tipo: 'pagina' };
+for (const h of herramientas) titulos[h.href] = { titulo: h.nombre + ' (herramienta y guía)', tipo: 'herramienta' };
+const archivos = import.meta.glob('../../articulos/*.md', { eager: true }) as Record<string, any>;
+for (const [ruta, md] of Object.entries(archivos)) {
+  titulos['/blog/' + ruta.split('/').pop()!.replace(/\.md$/, '') + '/'] = { titulo: md.frontmatter.titulo, tipo: 'articulo' };
+}
+---
+<Equipo titulo="Visitas y pedidos | Coddvisor">
+<!-- preguntas.js arma la firma de cada pregunta con la misma regla que el sitio. -->
+<script slot="cabeza" is:inline src="/preguntas.js" defer></script>
+<script slot="cabeza" is:inline src="/equipo/panel.js" defer></script>
+<script type="application/json" id="titulos" set:html={JSON.stringify(titulos).replace(/</g, '\\u003c')}></script>
+<!-- Cómo firma quien pregunta en una guía: las mismas listas del sitio (servidor/firma.js). -->
+<script type="application/json" data-firma-listas set:html={JSON.stringify(listas).replace(/</g, '\\u003c')}></script>
+
+<header class="eq-cab">
+  <div>
+    <p class="rotulo">Coddvisor, equipo</p>
+    <h1>Visitas y pedidos</h1>
+  </div>
+  <div class="eq-quien">
+    <span data-quien></span>
+    <button type="button" class="boton-2" data-salir>Salir</button>
+  </div>
+</header>
+
+<!-- Pestañas: cada una aparece solo si el rol tiene su permiso (public/equipo/panel.js). -->
+<nav class="pestanas" role="tablist" aria-label="Secciones del panel" data-pestanas>
+  <button type="button" role="tab" aria-selected="true" data-pestana="analisis" hidden>Análisis</button>
+  <button type="button" role="tab" aria-selected="false" data-pestana="pedidos" hidden>Pedidos</button>
+  <button type="button" role="tab" aria-selected="false" data-pestana="preguntas" hidden>Preguntas</button>
+  <button type="button" role="tab" aria-selected="false" data-pestana="equipo" hidden>Equipo</button>
+  <button type="button" role="tab" aria-selected="false" data-pestana="configuracion" hidden>Configuración</button>
+</nav>
+
+<!-- Un solo filtro para Análisis y Pedidos: la escala de tiempo. El periodo se elige tocando una barra. -->
+<div class="eq-filtros" data-filtros>
+  <div class="seg" role="radiogroup" aria-label="Ver por">
+    <button type="button" role="radio" aria-checked="true" data-escala="dia">Por día</button>
+    <button type="button" role="radio" aria-checked="false" data-escala="semana">Por semana</button>
+    <button type="button" role="radio" aria-checked="false" data-escala="mes">Por mes</button>
+  </div>
+  <p class="eq-periodo" data-periodo-texto aria-live="polite"></p>
+  <!-- Se actualiza solo cada 5 minutos mientras la pestaña está a la vista (public/equipo/panel.js). -->
+  <p class="eq-actualizado"><span data-actualizado></span> <button type="button" class="boton-2 boton-chico" data-actualizar>Actualizar</button></p>
+</div>
+
+<p class="estado" data-estado role="status" aria-live="polite">Cargando las cifras…</p>
+
+<div data-contenido hidden>
+<div data-panel="analisis" class="eq-panel">
+  <section class="eq-tiles" aria-label="Resumen del periodo">
+    <div class="tile"><p class="tile-rot">Entraron al sitio</p><p class="tile-val" data-tile="entradas"></p><p class="tile-delta" data-delta="entradas"></p></div>
+    <div class="tile"><p class="tile-rot">Páginas vistas</p><p class="tile-val" data-tile="paginas"></p><p class="tile-delta" data-delta="paginas"></p></div>
+    <div class="tile"><p class="tile-rot">Dejaron sus datos</p><p class="tile-val" data-tile="pedidos"></p><p class="tile-delta" data-delta="pedidos"></p></div>
+    <div class="tile"><p class="tile-rot">De cada 100 que entran, dejan sus datos</p><p class="tile-val" data-tile="conversion"></p><p class="tile-delta" data-delta="conversion"></p></div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="g-t">
+    <h2 id="g-t">Entradas al sitio</h2>
+    <p class="nota" data-grafico-nota></p>
+    <div class="grafico" data-grafico></div>
+    <details class="tabla-vista">
+      <summary>Ver como tabla</summary>
+      <div class="tabla-envoltura"><table data-tabla-serie>
+        <thead><tr><th scope="col">Periodo</th><th scope="col">Entradas</th><th scope="col">Páginas vistas</th><th scope="col">Dejaron sus datos</th><th scope="col">Ya atendidos</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </details>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="e-t">
+    <h2 id="e-t">Del que entra al que dejó sus datos</h2>
+    <p class="nota">Como en una tienda: cuántos entraron, cuántos pidieron que les escribamos y a cuántos ya les escribimos.</p>
+    <div class="embudo" data-embudo></div>
+  </section>
+
+  <div class="eq-doble">
+    <section class="tarjeta" aria-labelledby="o-t">
+      <h2 id="o-t">De dónde llegan</h2>
+      <div class="barras" data-origenes></div>
+      <details class="tabla-vista" data-campanas-caja hidden>
+        <summary>Campañas</summary>
+        <div class="barras" data-campanas></div>
+      </details>
+    </section>
+    <section class="tarjeta" aria-labelledby="d-t">
+      <h2 id="d-t">Desde qué equipo y lugar</h2>
+      <div class="barras" data-dispositivos></div>
+      <h3>Lugares</h3>
+      <div class="barras" data-lugares></div>
+    </section>
+  </div>
+
+  <section class="tarjeta" aria-labelledby="p-t">
+    <h2 id="p-t">Lo más visto</h2>
+    <div class="seg seg--chico" role="radiogroup" aria-label="Mostrar">
+      <button type="button" role="radio" aria-checked="true" data-filtro-paginas="todas">Todo el sitio</button>
+      <button type="button" role="radio" aria-checked="false" data-filtro-paginas="blog">Blog y herramientas</button>
+    </div>
+    <div class="tabla-envoltura"><table class="tabla" data-tabla-paginas>
+      <thead><tr><th scope="col">Página</th><th scope="col">Páginas vistas</th><th scope="col">Entradas</th><th scope="col">Dejaron sus datos después</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+</div>
+
+<div data-panel="pedidos" class="eq-panel" hidden>
+  <section class="tarjeta" aria-labelledby="q-t">
+    <h2 id="q-t">Quiénes dejaron sus datos</h2>
+    <p class="nota">Lo que escribieron en el formulario «Quiero ser de los primeros» y qué páginas leyeron antes. Marque «Ya le escribimos» cuando alguien del equipo le responda.</p>
+    <ol class="pedidos" data-pedidos></ol>
+  </section>
+</div>
+</div>
+
+<!-- Preguntas de las guías: responder (y así publicar), corregir o archivar, y «¿Le sirvió?».
+     Pide el permiso responder_preguntas. El correo de quien pidió aviso nunca llega aquí. -->
+<div data-panel="preguntas" class="eq-panel" hidden>
+  <p class="estado" data-preg-estado role="status" aria-live="polite"></p>
+  <section class="tarjeta" aria-labelledby="pr-n-t">
+    <h2 id="pr-n-t">Por responder <span class="pr-cuenta" data-preg-cuenta></span></h2>
+    <p class="nota">Nada se publica hasta que alguien la responda. Las más antiguas van primero: la meta es responder en menos de 24 horas. Si la pregunta trae un DNI, un celular u otro dato personal, corríjala antes de responder.</p>
+    <p class="nota" data-preg-sin-correo hidden>El aviso por correo a quien preguntó está apagado: falta la clave de Resend en la bóveda de Supabase (resend_api_key). Esas personas ven la respuesta con su enlace.</p>
+    <ol class="pedidos" data-preg-nuevas></ol>
+  </section>
+  <section class="tarjeta" aria-labelledby="pr-o-t">
+    <h2 id="pr-o-t">¿Le sirvió la guía? <small>(últimos 30 días)</small></h2>
+    <div class="tabla-envoltura"><table class="tabla" data-preg-opiniones>
+      <thead><tr><th scope="col">Guía</th><th scope="col">Sí</th><th scope="col">No</th></tr></thead><tbody></tbody>
+    </table></div>
+    <h3 class="pr-sub">Lo que les faltó</h3>
+    <ol class="historial" data-preg-faltantes></ol>
+  </section>
+  <section class="tarjeta" aria-labelledby="pr-p-t">
+    <h2 id="pr-p-t">Publicadas</h2>
+    <ol class="pedidos" data-preg-publicadas></ol>
+  </section>
+  <section class="tarjeta" aria-labelledby="pr-a-t">
+    <h2 id="pr-a-t">Archivadas</h2>
+    <ol class="pedidos" data-preg-archivadas></ol>
+  </section>
+</div>
+
+<!-- Equipo: quién puede entrar y con qué rol. Invitar, cambiar rol y quitar acceso: solo administración. -->
+<div data-panel="equipo" class="eq-panel" hidden>
+  <section class="tarjeta" aria-labelledby="eq-inv-t" data-equipo-admin hidden>
+    <h2 id="eq-inv-t">Invitar a alguien</h2>
+    <p class="nota">Escriba su nombre, su correo y su rol. Le daremos un enlace para que cree su contraseña; envíeselo por WhatsApp o por correo. Sirve una vez y vence en unos días.</p>
+    <form class="form-linea" data-equipo-form novalidate>
+      <label class="oculto" for="eq-nombre">Nombre</label>
+      <input id="eq-nombre" name="nombre" placeholder="Nombre" maxlength="80" autocomplete="off">
+      <label class="oculto" for="eq-correo">Correo</label>
+      <input id="eq-correo" name="correo" type="email" placeholder="correo@coddvisor.com" maxlength="120" autocomplete="off">
+      <label class="oculto" for="eq-rol">Rol</label>
+      <select id="eq-rol" name="rol" data-roles></select>
+      <button type="submit" class="boton">Invitar</button>
+    </form>
+    <p class="estado" data-equipo-estado role="status" aria-live="polite"></p>
+    <div class="enlace-listo" data-enlace hidden>
+      <p data-enlace-texto></p>
+      <input type="text" readonly data-enlace-valor aria-label="Enlace de invitación">
+      <div class="entrar-acciones">
+        <button type="button" class="boton-2" data-enlace-copiar>Copiar enlace</button>
+        <a class="boton-2" data-enlace-whatsapp target="_blank" rel="noopener">Enviar por WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="eq-t">
+    <h2 id="eq-t">Quiénes pueden entrar</h2>
+    <ul class="personas" data-equipo-lista></ul>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="eq-pend-t" data-equipo-invitaciones-caja hidden>
+    <h2 id="eq-pend-t">Invitaciones sin aceptar</h2>
+    <ul class="personas" data-equipo-invitaciones></ul>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="eq-h-t" data-equipo-historial-caja hidden>
+    <h2 id="eq-h-t">Historial de cambios</h2>
+    <ol class="historial" data-equipo-historial></ol>
+  </section>
+</div>
+
+<!-- Configuración: qué puede ver y hacer cada rol, y ajustes del panel. -->
+<div data-panel="configuracion" class="eq-panel" hidden>
+  <section class="tarjeta" aria-labelledby="cf-t">
+    <h2 id="cf-t">Qué puede hacer cada rol</h2>
+    <p class="nota">Marque o desmarque y se guarda al momento. El administrador siempre conserva «Administrar el equipo» y «Configurar».</p>
+    <div class="tabla-envoltura"><table class="tabla matriz" data-matriz>
+      <thead></thead><tbody></tbody>
+    </table></div>
+    <p class="estado" data-config-estado role="status" aria-live="polite"></p>
+  </section>
+  <section class="tarjeta" aria-labelledby="aj-t">
+    <h2 id="aj-t">Ajustes</h2>
+    <div class="ajustes" data-ajustes></div>
+  </section>
+</div>
+
+<div class="globo" data-globo role="tooltip" hidden></div>
+</Equipo>

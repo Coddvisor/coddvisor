@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es-PE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <title data-texto="abrir.google.titulo-de-la-pagina"></title>
+  <link rel="icon" href="/marca/logo/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/marca/colores.css">
+  <link rel="stylesheet" href="/diseno/medidas.css">
+  <link rel="stylesheet" href="/comun/oficina.css">
+  <script type="module" src="/entrar/abrir-con-google.js"></script>
+</head>
+<body class="cargando">
+  <main class="marco">
+    <header class="cabecera">
+      <picture>
+        <source srcset="/marca/logo/coddvisor-logotipo-horizontal-fondo-oscuro.svg" media="(prefers-color-scheme: dark)">
+        <img class="logo" src="/marca/logo/coddvisor-logotipo-horizontal.svg" width="160" height="24" data-texto-alt="marca.nombre">
+      </picture>
+    </header>
+
+    <h1 id="titulo" tabindex="-1" data-texto="abrir.google.titulo"></h1>
+    <p class="ayuda" data-texto="abrir.google.bajada"></p>
+
+    <p class="aviso aviso-error" id="aviso" role="alert" hidden>
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>
+      <span id="aviso-texto"></span>
+    </p>
+
+    <!-- Por qué se pide el correo, en palabras simples: sin este paso, nadie
+         podría crear una cuenta, y con él, nadie la crea por otra persona. -->
+    <section class="tarjeta" aria-labelledby="por-que">
+      <h2 id="por-que" data-texto="abrir.google.por-que.titulo"></h2>
+      <p data-texto="abrir.google.por-que.texto"></p>
+    </section>
+
+    <!-- Sin name: si el formulario llegara a enviarse solo, el correo no iría en la dirección. -->
+    <form id="formulario" novalidate>
+      <div class="campo">
+        <label for="correo" data-texto="abrir.google.correo"></label>
+        <input id="correo" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" aria-describedby="nota-correo" required>
+        <p class="nota" id="nota-correo" data-texto="abrir.google.correo-nota"></p>
+      </div>
+      <div class="captcha" id="captcha" data-accion="abrir_con_google"></div>
+      <button class="boton boton-principal boton-ancho" id="seguir" type="submit" data-texto="abrir.google.boton"></button>
+    </form>
+
+    <p class="pie"><span data-texto="abrir.google.ya-tiene"></span><a class="enlace" href="/entrar/" data-texto="abrir.google.entrar"></a></p>
+  </main>
+</body>
+</html>

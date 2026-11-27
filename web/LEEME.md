@@ -20,8 +20,16 @@ cada página y alguna quedaría desactualizada. Con Astro viven en un solo lugar
 | `public/estilos.css`     | Tonos de apoyo, qué color usa cada pieza, letras, espacios, celular |
 | `public/sitio.js`        | El movimiento: panel de la portada, pestañas, formularios y aparición al bajar |
 | `public/fluido.css`, `public/fluido.js` | La capa «fluida»: acabado (vidrio, sombras suaves, degradados) y movimiento al estilo de las páginas de Apple. Solo agrega; ver «La capa fluida» |
-| `functions/api/contacto.js` | Lo único que corre en el servidor: recibe el formulario de contacto, lo guarda y avisa por correo |
-| `migrations/`            | Cómo es la tabla donde se guardan los pedidos de contacto    |
+| `functions/api/contacto.js` | Corre en el servidor: recibe el formulario de contacto, lo guarda en Supabase y avisa por correo |
+| `functions/api/pregunta.js` | Corre en el servidor: recibe «Haga su pregunta» de las guías y la guarda (ver «Preguntas en las guías») |
+| `servidor/firma.js`      | Cómo se presenta quien pregunta: roles, rubros, regiones y tamaños, en un solo lugar |
+| `src/components/PreguntasGuia.astro`, `public/preguntas.js` | «¿Le sirvió?» y las preguntas al final de cada guía; `src/pages/pregunta.astro` es `/pregunta/`, donde cada persona ve su respuesta |
+| `public/contador.js`     | El contador de puerta: suma cada página abierta (ver «Visitas y panel del equipo») |
+| `src/pages/equipo/`, `public/equipo/` | El panel `/equipo/` y su página de entrada. No salen en el menú ni en Google |
+| `servidor/supabase.js`   | Dónde está la base del sitio (Supabase) y su llave pública, en un solo lugar |
+| `supabase/migraciones/`  | Cómo son las tablas y funciones de la base del sitio en Supabase |
+| `migrations/`            | La tabla de pedidos que se usó en Cloudflare D1 antes de pasar a Supabase (historia) |
+| `pruebas/`               | Las pruebas de todo lo anterior (`npm run probar`), con un PostgreSQL de prueba |
 | `public/favicon*`, `public/apple-touch-icon.png` | Los íconos de la pestaña y del iPhone |
 | `public/vista-previa.png`| La imagen que sale al compartir el enlace (WhatsApp, redes). Copia de `marca/logo/redes/coddvisor-vista-previa-enlace.png` |
 | `public/fuentes/`       | Space Grotesk y Space Mono, servidas desde el sitio (no desde Google). Licencia en `LICENCIA.txt` |
@@ -121,7 +129,9 @@ Fechas en que algo del sitio queda viejo si nadie lo revisa:
 | Cuándo | Qué revisar |
 |---|---|
 | Cuando salga la lista del subsidio (hacia el 2 de diciembre de 2026) | `src/articulos/subsidio-microempresas.md`: poner arriba la fecha real y el enlace a la resolución |
+| Noviembre de cada año | `src/articulos/feriado-trabajado.md`: poner la lista de feriados que vienen y mover `vence` al 1 de enero siguiente. Si el Gobierno declara no laborables el 24 o el 31 de diciembre, decir que obligan al sector privado solo si se acuerda |
 | 31 de diciembre de 2026 | El subsidio termina. El aviso sale solo; decidir si se retira el artículo |
+| Enero de 2027 | `src/articulos/declarar-en-cero.md`: cambiar el enlace al cronograma de SUNAT de 2027 |
 | Enero de 2027 | IGV: el texto dice «en 2026 es 10.5 %» (la tasa especial pasa a 15 %). CTS: revisar si se aprobó el proyecto de ley que amplía el retiro total |
 | Cuando salga el decreto del mínimo de S/ 1,300 (primer semestre de 2027) | Agregar la fila en `src/datos/laboral.ts` y actualizar `src/articulos/sueldo-minimo.md` (su tabla dice «estimado») |
 | Junio de 2027 | Gratificación: pasar al semestre de enero a junio y al plazo del 15 de julio |
@@ -185,6 +195,18 @@ Para revisar exactamente lo que se va a publicar:
 npm run build && npm run preview
 ```
 
+Antes de dar un cambio por terminado (corre las pruebas del contador, del panel y del formulario,
+y arma el sitio):
+
+```bash
+npm run verificar
+```
+
+En `npm run dev` no corre la función del formulario: usa su camino de respaldo. El contador no
+suma (solo cuenta en `www.coddvisor.com`). El panel `/equipo/` sí funciona contra la base real si
+entras con la cuenta del equipo. Las pruebas usan un PostgreSQL de prueba (PGlite) con la misma
+migración de `supabase/migraciones/`, así que revisan las funciones y los permisos de verdad.
+
 ## Correo y WhatsApp (un solo lugar)
 
 En `src/layouts/Base.astro`, la etiqueta `<body>` lleva dos datos:
@@ -203,8 +225,9 @@ ya escrito, y además lo muestra en pantalla con un botón «Copiar mensaje».
 
 Cuando alguien pulsa «Quiero ser de los primeros», pasa esto, en este orden:
 
-1. **Se guarda** en una base de datos de Cloudflare (D1), dentro de tu cuenta.
-   La persona ve «Listo, recibimos sus datos» solo cuando ya quedó guardado.
+1. **Se guarda** en la base del sitio (Supabase, proyecto `coddvisor`). La persona ve «Listo,
+   recibimos sus datos» solo cuando ya quedó guardado. Con el pedido se guarda qué páginas del sitio
+   leyó antes de escribir (ver «Visitas y panel del equipo»).
 2. **Se avisa** con un correo a `equipo@coddvisor.com`, que manda Resend. El
    correo trae un enlace para escribirle por WhatsApp con un toque.
 
@@ -216,38 +239,202 @@ tienda: el aviso por teléfono puede no llegar, pero lo anotado queda anotado.
 queda una sola vez: cada formulario lleva un número único y la base rechaza el
 repetido. Tampoco llegan dos correos.
 
-**Si Cloudflare no responde**, el formulario usa el camino de antes (abre el
+**Si la base no responde**, el formulario usa el camino de antes (abre el
 correo o WhatsApp con el mensaje escrito) y muestra el mensaje para copiarlo.
 Lo peor que puede pasar es lo que pasaba antes; nunca menos.
 
 ### Revisar los pedidos
 
-En Cloudflare: **Storage & Databases → D1 → `coddvisor-contacto` → Console**.
-Pega esto y pulsa **Execute** para ver lo que falta responder:
+En el panel **`/equipo/`**, sección «Quiénes dejaron sus datos». Ahí está cada pedido, qué leyó
+antes de escribir, el botón «Escribir por WhatsApp» y el botón **«Ya le escribimos»**, que anota la
+hora y quién lo marcó. No hace falta escribir consultas.
 
-```sql
-SELECT recibido_en, nombre, whatsapp, vende, personas, sedes, aviso_enviado_en
-FROM pedidos_contacto WHERE atendido_en IS NULL ORDER BY recibido_en;
-```
+**Pedidos sin aviso:** si a un pedido no le llegó el correo (Resend falló), en Supabase queda con
+`aviso_enviado_en` vacío. Para verlos: Supabase → proyecto `coddvisor` → **Table Editor** →
+esquema `sitio` → `pedidos_contacto`, filtrando `aviso_enviado_en` vacío.
 
-Si `aviso_enviado_en` está vacío, **ese correo no salió**: es la lista que
-hay que mirar si Resend falló. Cuando ya le respondiste a alguien, márcalo
-(cambia el número por el de esa persona):
+**Plazo de privacidad:** la página de privacidad promete guardar los pedidos 12 meses si no
+empezamos a trabajar juntos. Una vez al mes, revisa en el Table Editor los pedidos con más de 12
+meses. Borrar datos personales a pedido de la persona o por ese plazo es la excepción a «nada se
+borra»: lo exige la ley.
 
-```sql
-UPDATE pedidos_contacto SET atendido_en = strftime('%Y-%m-%dT%H:%M:%SZ','now')
-WHERE whatsapp = '51987654321';
-```
+**Los pedidos de antes (Cloudflare D1):** hasta el 24-nov-2026 el formulario guardaba en
+Cloudflare D1, base `coddvisor-contacto`. Esos pocos pedidos se copian una vez a Supabase: en la
+consola de D1, `SELECT * FROM pedidos_contacto;`, se exporta el resultado y se pasa a quien
+mantiene el sitio para insertarlo. Hecho eso, la base D1 y su conexión en Pages ya no se usan.
 
-Una vez al mes, borra lo que pasó el plazo que promete la página de privacidad
-(12 meses) sin que empezaran a trabajar juntos:
+## Preguntas en las guías
 
-```sql
-DELETE FROM pedidos_contacto WHERE recibido_en < strftime('%Y-%m-%dT%H:%M:%SZ','now','-12 months');
-```
+Decisión de la fundadora del 26-nov-2026. La propuesta completa, y cómo sigue hacia la comunidad,
+está en `arquitectura/propuestas/comunidad.md`.
 
-En tu computadora (`npm run dev`) no existe el servidor: el formulario siempre
-usa el camino de respaldo. Es lo esperado.
+Al final de cada guía (las seis herramientas con guía y todos los artículos de `src/articulos/`):
+
+1. **«¿Le sirvió esta guía?»** Sí o No. Si dice No, puede escribir «¿Qué le faltó?», sin nombre. Se
+   suma por día y página (`sitio.opiniones_dia`), como el contador. Desde fuera de
+   `www.coddvisor.com` no suma.
+2. **«Preguntas de otros dueños»**: las ya respondidas, con «A mí también me pasa». Salen en el HTML
+   al publicar el sitio (para Google) y el navegador suma las que se respondieron después. Si la base
+   no responde al publicar, la guía sale igual, sin preguntas.
+3. **«Haga su pregunta»**: la pregunta y cómo se presenta la persona: su nombre de pila y su rol con
+   el negocio descrito («Rosa», y debajo «Dueña de una bodega en Arequipa, 2 a 5 personas»). Nunca
+   el apellido, el distrito, el RUC ni el régimen. Puede elegir «Publicar sin firma». Los tamaños
+   grandes se guardan pero no se publican (`muestra: false` en `servidor/firma.js`).
+
+**Nada se publica sin respuesta del equipo.** La pregunta llega a `/api/pregunta`, que la revisa y
+la guarda con `sitio_registrar_pregunta`. Si hay `RESEND_API_KEY` en Cloudflare, avisa al equipo por
+correo.
+
+**Que la respuesta no quede en el vacío:**
+- El navegador crea un **enlace propio** (`/pregunta/#…`) y lo guarda. La persona puede copiarlo o
+  mandárselo por WhatsApp. La base guarda solo su huella, como las invitaciones.
+- Al volver al sitio desde ese navegador, una franja abajo dice «Su pregunta ya tiene respuesta»
+  (pregunta a la base como mucho cada 30 minutos).
+- Si pidió **aviso por correo**, al responder la base manda el correo por Resend (pg_net y la clave
+  `resend_api_key` de la bóveda de Supabase, la misma de antes) y **borra el correo**. Sin esa clave
+  no sale el aviso y el panel lo dice; el correo se borra igual a los 60 días
+  (`dias_aviso_respuesta`). El panel nunca ve el correo, solo «Pidió aviso».
+
+### Responder en el panel
+
+Pestaña **Preguntas** de `/equipo/`, con el permiso nuevo **«Responder preguntas»** (al empezar:
+Líder y Administrador; se cambia en Configuración):
+
+- **Por responder**, las más antiguas primero. La meta es responder en menos de 24 horas.
+- **Responder y publicar**. Se puede editar la respuesta después.
+- **Guardar la pregunta corregida**, para quitar un DNI, un celular u otro dato personal. El
+  historial (`sitio.preguntas_cambios`) dice quién y cuándo, sin guardar el texto anterior.
+- **Archivar por…** (spam, ofensiva, no es del tema, datos personales, repetida, otro): deja de
+  verse y se borra el correo de aviso. **Devolver** la trae de vuelta. Nada se borra.
+- **¿Le sirvió la guía?** de los últimos 30 días y **lo que les faltó**.
+
+### Topes y ajustes
+
+En la pestaña Configuración, sin tocar el programa: preguntas por día en una guía (30) y en todo el
+sitio (300), «¿Qué le faltó?» por día y guía (50), preguntas que se muestran por guía (20) y días que
+se guarda el correo de aviso (60). Cada ajuste con número tiene su rango en `sitio.ajustes`
+(`minimo` y `maximo`).
+
+### Para encenderlo
+
+1. Aprobar la solicitud de revisión.
+2. Aplicar la migración `supabase/migraciones/20261126120000_sitio_preguntas.sql` en el proyecto del
+   sitio con el conector de Supabase, como el 24-nov. Hasta entonces, las guías se ven igual y la
+   pregunta responde «No pudimos enviar su pregunta».
+3. Volver a publicar el sitio cuando haya respuestas, para que entren al HTML (el navegador ya las
+   muestra antes).
+
+## Visitas y panel del equipo
+
+Como en una tienda: **un contador en la puerta** (cuántos entraron y qué miraron), **el cuaderno de
+pedidos** (quiénes dejaron sus datos) y **la conversión** (de cada 100 que entran, cuántos dejan sus
+datos). Todo se ve en `/equipo/`, por día, semana o mes.
+
+Todo vive en **Supabase**, proyecto `coddvisor` (organización Coddvisor, plan gratis), en el esquema
+`sitio`: `supabase/migraciones/` dice cómo son las tablas y las funciones. Para el contador y el
+panel no hay nada que configurar en Cloudflare.
+
+### El contador de puerta
+
+`public/contador.js` corre en el navegador al abrir cada página y llama a la función
+`sitio_anotar_visita`. La base suma uno en `sitio.visitas_dia`: **una fila por día, página y
+procedencia**, nunca una fila por persona.
+
+- **Entrada:** la persona llegó desde fuera del sitio (Google, Facebook, un enlace de WhatsApp). Es
+  como alguien que cruza la puerta. **Página vista:** toda página abierta, también al pasar de una
+  página a otra del sitio.
+- **No guarda nada de la persona:** ni IP, ni cookies, ni la dirección completa de donde vino. Solo
+  el dominio (`google.com.pe`), el nombre de la campaña del enlace (`?utm_campaign=lanzamiento`), si
+  es celular, tableta o computadora, y el país si Supabase lo informa.
+- **No cuenta** robots, recargas de la página, el propio panel, ni el sitio abierto fuera de
+  `www.coddvisor.com` (tu computadora o una versión de prueba).
+- **Lo que no sabe:** si alguien volvió (no hay cookies) ni si leyó hasta el final. Quien tenga los
+  programas de la página bloqueados no se cuenta. Las cifras son buenas para comparar semanas, no
+  son exactas.
+- **WhatsApp casi nunca dice de dónde viene la persona:** cae en «Directo, WhatsApp o una app». Para
+  saber qué mensaje trajo gente, comparta el enlace con campaña:
+  `https://www.coddvisor.com/blog/liquidacion/?utm_campaign=whatsapp-noviembre`.
+
+### Quiénes dejaron sus datos y qué leyeron
+
+`sitio.js` anota en el navegador de la persona las páginas que abre en esa visita (hasta 15). Esa
+lista sale **solo si envía el formulario**, y se guarda con el pedido en `recorrido`. Así el panel
+dice, por ejemplo: «Rosa leyó *Liquidación de beneficios* y la portada antes de escribir», y en «Lo
+más visto» cuántas personas dejaron sus datos después de leer cada artículo.
+
+### Entrar al panel, roles e invitaciones
+
+Se entra con **correo y contraseña** de Supabase Auth, en `www.coddvisor.com/equipo/`.
+Supabase guarda la contraseña cifrada; ni el sitio ni el repositorio la conocen. Cada vez que el panel
+pide algo, la base revisa que la sesión sea de un correo activo en `sitio.colaboradores` y que su
+**rol** tenga el permiso. (Del 24-nov-2026 hubo un código por correo como segundo paso; se quitó el
+mismo día por decisión del equipo. Sus tablas quedan, sin uso.)
+
+**Roles** (decisión del equipo, 24-nov-2026). Lo que puede cada uno es configurable desde la pestaña
+**Configuración**; así empiezan:
+
+| Puede… | Integrante | Líder | Administrador |
+|---|:-:|:-:|:-:|
+| Ver el análisis (sin nombres de personas) | ✓ | ✓ | ✓ |
+| Ver quiénes dejaron sus datos | | ✓ | ✓ |
+| Marcar «Ya le escribimos» | | ✓ | ✓ |
+| Ver el equipo | | ✓ | ✓ |
+| Invitar, cambiar roles, quitar acceso | | | ✓ |
+| Configurar | | | ✓ |
+
+Las pestañas aparecen según el rol, y la base no entrega lo que el rol no puede ver: a un integrante
+no le llegan los nombres ni los WhatsApp de los pedidos. El administrador siempre conserva
+«Administrar el equipo» y «Configurar». Nadie cambia su propio rol ni se quita el acceso a sí mismo.
+Cada cambio queda en `sitio.equipo_historial`, que solo crece.
+
+**Invitar a alguien** (pestaña Equipo): nombre, correo y rol → **Invitar**. El panel muestra un
+enlace con **Copiar enlace** y **Enviar por WhatsApp**: se le manda a la persona, que lo abre, crea
+su contraseña y entra. El enlace sirve una vez y vence en 7 días (ajuste `dias_invitacion`). Si la
+persona ya tenía cuenta, recibe el acceso al momento.
+
+**Olvidó su contraseña:** en la pestaña Equipo, **Contraseña nueva** junto a su nombre: sale un enlace
+igual al de la invitación para que cree una nueva.
+
+**Cómo se crea la cuenta:** la crea la función de Supabase **`equipo-invitacion`**
+(`supabase/funciones/equipo-invitacion/`), con la llave secreta que Supabase le entrega a la función
+por dentro: no se copia a Cloudflare ni a ningún otro lado. No hace falta Resend: el enlace se manda
+por WhatsApp o por correo, a mano. Si se cambia `aceptar.js` o `index.ts`, se vuelve a subir la
+función con el conector «Supabase Coddvisor» (o `supabase functions deploy equipo-invitacion
+--no-verify-jwt`).
+
+**El panel se actualiza solo** cada 5 minutos mientras la pestaña está a la vista, y al volver a la
+pestaña si pasó más de un minuto. Cada actualización es una sola consulta sobre tablas ya sumadas
+por día: no carga la base. También hay un botón «Actualizar».
+
+### Lo que se cambia sin tocar el programa
+
+- **Qué dominio es «Buscadores», «Redes sociales» o «WhatsApp»:** la tabla `sitio.origenes_visita`.
+  Para sumar uno: `INSERT INTO sitio.origenes_visita (patron, grupo) VALUES ('%.ejemplo.com', 'Redes sociales');`
+  (`%` es cualquier texto).
+- **La zona horaria del día y los días que dura una invitación:** pestaña Configuración → Ajustes.
+- **Qué puede ver cada rol:** pestaña Configuración.
+
+### Seguridad y la excepción a D30
+
+Las tablas del esquema `sitio` no se pueden leer ni escribir desde fuera: la API de Supabase solo
+publica el esquema `public`, donde no hay tablas, solo las funciones `public.sitio_*`, cada una con
+su permiso. Las del navegador (anotar una visita, registrar un pedido) las puede llamar cualquiera;
+las del panel, solo una sesión iniciada, y cada una revisa además quién es. **No se crean tablas en
+`public`:** desde que está publicado, Supabase les daría acceso por la API.
+
+En Supabase → **Project Settings → Data API**, «Exposed schemas» debe tener solo `public`.
+
+La decisión D30 de la arquitectura dice que el sistema tendrá apagada la API de datos de Supabase.
+**Excepción aprobada el 24-nov-2026:** el sitio usa esa API solo para sus funciones, nunca para
+tablas. **Se revisa cuando llegue el sistema al mismo proyecto:** o el sitio pasa a su propio
+proyecto, o sus funciones se sirven desde el servicio del sistema.
+
+La llave que está en `servidor/supabase.js` es la **publicable**: está hecha para viajar a cada
+navegador y no abre ninguna tabla. La llave secreta de Supabase nunca va en el repositorio.
+
+Para el plan gratis: Supabase pausa un proyecto tras unos 7 días sin actividad. Mientras el sitio
+tenga visitas, el contador lo mantiene activo; si se pausa, no se pierde nada, pero no cuenta hasta
+reactivarlo desde el panel de Supabase.
 
 ## El movimiento
 
@@ -473,17 +660,11 @@ compartir el sitio:
 Hasta que hagas estos pasos, el sitio publicado sigue funcionando como antes
 (el formulario abre el correo). Hazlos en orden.
 
-**5a. Crear la base de datos (Cloudflare)**
+**5a. La base de datos**
 
-1. **Storage & Databases → D1 SQL Database → Create**. Nombre:
-   `coddvisor-contacto`. Ubicación: la que proponga.
-2. Entra a la base → **Console**. Copia todo el archivo
-   `web/migrations/0001_pedidos_contacto.sql`, pégalo y pulsa **Execute**.
-3. Ve a tu proyecto de Pages → **Settings → Bindings → Add → D1 database**.
-   - **Variable name:** `DB` (exacto, en mayúsculas).
-   - **D1 database:** `coddvisor-contacto`.
-   - Hazlo para **Production** y también para **Preview**, para poder probarlo
-     en la dirección de prueba de la rama.
+Ya no se crea en Cloudflare: los pedidos se guardan en Supabase (ver «Pedidos de contacto» y el
+paso 6). Si el proyecto ya tenía la base D1 `coddvisor-contacto` conectada como `DB`, puede quedarse
+hasta copiar los pedidos de antes; después se quita en **Settings → Bindings**.
 
 **5b. Crear la cuenta que manda el aviso (Resend)**
 
@@ -512,11 +693,29 @@ Hasta que hagas estos pasos, el sitio publicado sigue funcionando como antes
    cambios de los pasos anteriores solo entran con un despliegue nuevo).
 2. Llena el formulario desde tu celular, con datos tuyos.
 3. Debe decir «Listo, recibimos sus datos», llegar un correo a
-   `equipo@coddvisor.com`, y aparecer en la consulta de «Revisar los pedidos»
-   con `aviso_enviado_en` lleno.
-4. Si dice «No pudimos guardar sus datos», el paso 5a no quedó bien (revisa
-   que la variable se llame `DB`). Si se guarda pero no llega el correo, el
-   paso 5b o 5c no quedó bien: Resend → **Logs** te dice por qué.
+   `equipo@coddvisor.com`, y aparecer en el panel `/equipo/`.
+4. Si dice «No pudimos guardar sus datos», la base de Supabase no respondió:
+   revisa en Supabase que el proyecto `coddvisor` no esté pausado. Si se guarda
+   pero no llega el correo, el paso 5b o 5c no quedó bien: Resend → **Logs**
+   te dice por qué.
+
+### Paso 6: Encender el contador y el panel
+
+Hecho el 24-nov-2026 (no se repite):
+- Las migraciones de `supabase/migraciones/` están aplicadas en el proyecto `coddvisor` de
+  Supabase, con el conector «Supabase Coddvisor». El conector solo ve ese proyecto.
+- `soporte@coddvisor.com` existe en Supabase Auth y es administrador del panel.
+- En Supabase → **Project Settings → Data API**, «Exposed schemas» tiene solo `public`.
+
+- La función `equipo-invitacion` está subida en Supabase (Edge Functions), sin pedir sesión: la
+  protege el enlace de un solo uso.
+
+Lo que falta, una sola vez:
+
+1. **Cerrar el registro público:** Supabase → **Authentication → Sign In / Providers** → apagar
+   **Allow new users to sign up**. Las cuentas se crean solo por invitación.
+2. **Probar:** en la pestaña Equipo, invítate con otro correo tuyo como Integrante, abre el enlace en
+   una ventana privada, crea la contraseña y revisa que solo veas la pestaña Análisis.
 
 ---
 
@@ -528,10 +727,15 @@ Hasta que hagas estos pasos, el sitio publicado sigue funcionando como antes
 - **GoDaddy:** ya pagaste el dominio; el reenvío del dominio es gratis.
   Revisa la fecha de renovación del dominio.
 - **Zoho Mail:** según el plan que ya tienes.
-- **Cloudflare D1** (la base de los pedidos): gratis hasta 5 GB y 100 000
-  escrituras al día. Con 100 pedidos al mes se usa una fracción mínima.
+- **Supabase** (proyecto `coddvisor`, plan gratis): la base de los pedidos y de las visitas.
+  500 MB de base; el contador usa unos pocos MB al año (una fila por día, página y procedencia).
+  Sin copias de seguridad automáticas en el plan gratis. Se pausa tras unos 7 días sin actividad.
+  Supabase permite 2 proyectos gratis activos por persona y la cuenta del fundador ya los usa:
+  otro proyecto gratis no se puede crear sin pausar uno o pasar a un plan pagado.
+- **Cuándo revisar:** cuando llegue el sistema de Coddvisor al mismo proyecto (excepción D30, ver
+  «Visitas y panel del equipo») o si el sitio pasa de unas 100 000 páginas vistas al día.
 - **Resend:** gratis hasta 3 000 correos al mes y 100 al día. Cada pedido es un
-  correo.
+  correo; cada pregunta, uno al equipo, y otro a quien preguntó si pidió aviso.
 
 Cuándo revisar esta decisión: cuando exista la aplicación de Coddvisor (no esta
 página). Si se construye con Next.js, Vercel Pro puede convenir para la

@@ -65,6 +65,10 @@ describe('archivos de migración', () => {
     ['vacía una tabla', 'truncate nucleo.algo;'],
     ['borra filas', "delete from nucleo.algo where nombre = 'x';"],
     ['apaga la seguridad por fila', 'alter table nucleo.algo disable row level security;'],
+    ['cambia la clase de una tabla registrada', "update nucleo.tabla_registrada set clase = 'negocio' where tabla = 'membresia';"],
+    ['cambia la clase de una tabla registrada con comillas', `update only "nucleo"."tabla_registrada" set clase = 'negocio';`],
+    ['cambia la clase de una tabla registrada al insertar', "insert into nucleo.tabla_registrada (esquema, tabla, clase) values ('identidad', 'membresia', 'negocio') on conflict (esquema, tabla) do update set clase = excluded.clase;"],
+    ['apaga los disparadores de la sesión', 'set session_replication_role = replica;'],
   ]) {
     test(`rechaza una migración que ${caso} sin declararlo`, () => {
       const m = migracion('20270102030405_cambio.sql', sql);
@@ -76,6 +80,26 @@ describe('archivos de migración', () => {
     const m = migracion('20270102030405_quita_columna_vieja.sql',
       '-- contraer: la columna nombre_viejo ya no la lee ningún programa\nalter table nucleo.algo drop column nombre_viejo;');
     assert.deepEqual(revisarArchivos([m], sellar(m)), []);
+  });
+
+  test('rechaza reemplazar el cuerpo de una función sin declararlo', () => {
+    const m = migracion('20270102030405_cambio.sql',
+      "create or replace function nucleo.tenant_actual() returns uuid language sql as $ select null::uuid $;");
+    assert.match(detalles(revisarArchivos([m], sellar(m))), /CREATE OR REPLACE/);
+  });
+
+  test('acepta reemplazar el cuerpo de una función cuando la migración lo declara', () => {
+    const m = migracion('20270102030405_cambio.sql',
+      "-- reemplaza: nucleo.algo() ahora redondea hacia abajo\ncreate or replace function nucleo.algo() returns integer language sql as $ select 1 $;");
+    assert.deepEqual(revisarArchivos([m], sellar(m)), []);
+  });
+
+  test('acepta borrar de una tabla temporal de la transacción: no son datos', () => {
+    const m = migracion('20270102030405_contexto.sql',
+      'create function portero.f() returns void language plpgsql as $ begin\n  delete from pg_temp.contexto_activo c where c.tenant_id = null;\nend $;');
+    assert.deepEqual(revisarArchivos([m], sellar(m)), []);
+    const otra = migracion('20270102030405_contexto.sql', 'delete from pg_temporal.algo;');
+    assert.match(detalles(revisarArchivos([otra], sellar(otra))), /solo agregan/);
   });
 
   test('no confunde un comentario ni un disparador con una sentencia que borra', () => {

@@ -1,0 +1,1512 @@
+{
+  "leame": "Un caso a cada lado de cada borde del sobre. Se sella en JSON canónico y se abre. Lo que no cambia es abierto o ilegible.",
+  "casos": [
+    {
+      "nombre": "el de referencia",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "sin protocolo",
+      "espera": "ilegible",
+      "sobre": {
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "sin op_id",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "sin tenant_id",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "sin dispositivo_id",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "sin secuencia",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "sin huella_anterior",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "sin verbo",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "sin verbo_version",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "sin ocurrido_en_ms",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "sin autor",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "sin datos",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        }
+      }
+    },
+    {
+      "nombre": "con un campo que no existe",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        },
+        "sorpresa": 1
+      }
+    },
+    {
+      "nombre": "con hora_estimada, que ya no existe",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        },
+        "hora_estimada": false
+      }
+    },
+    {
+      "nombre": "con la huella adentro",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        },
+        "huella": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "nombre": "protocolo como texto",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": "1",
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "protocolo cero",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 0,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "op_id en mayúsculas",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019A8F2C-7B41-7C3E-9A10-000000000ABC",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "op_id que no es identificador",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "7",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "op_id nulo",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": null,
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "tenant_id en mayúsculas",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019A8F2C-7B41-7C3E-9A10-000000000ABC",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "tenant_id que no es identificador",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "7",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "tenant_id nulo",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": null,
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "dispositivo_id en mayúsculas",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019A8F2C-7B41-7C3E-9A10-000000000ABC",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "dispositivo_id que no es identificador",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "7",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "dispositivo_id nulo",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": null,
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "op_id que no es versión 7",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "7d444840-9dc0-41d1-b245-5ffdce74fad2",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "negocio que no es versión 7",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "7d444840-9dc0-41d1-b245-5ffdce74fad2",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "negocio de ceros",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "00000000-0000-0000-0000-000000000000",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "secuencia cero",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 0,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "secuencia negativa",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": -1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "secuencia como texto",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": "1",
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "secuencia dos con su anterior",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 2,
+        "huella_anterior": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "secuencia dos sin anterior",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 2,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "secuencia uno con anterior",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "secuencia máxima",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 9007199254740991,
+        "huella_anterior": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "huella anterior corta",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 2,
+        "huella_anterior": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "huella anterior larga",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 2,
+        "huella_anterior": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "huella anterior en mayúsculas",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 2,
+        "huella_anterior": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "verbo de una letra",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "a",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "verbo de 63 letras",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "verbo de 64 letras",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "verbo vacío",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "verbo con dígitos",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "pe_emitir_boleta2",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "verbo que empieza con dígito",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "2vender",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "verbo con mayúscula",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "Vender",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "verbo con tilde",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "anulación",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "versión cero",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 0,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "versión máxima",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 32767,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "versión sobre el máximo",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 32768,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "hora cero",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 0,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "hora negativa",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": -1,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "hora máxima",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 253402300799999,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "hora sobre el máximo",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 253402300800000,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "sin persona",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": null,
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "autor vacío",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {},
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "autor de ceros",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "00000000-0000-0000-0000-000000000000",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "autor de efes",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "autor que no es identificador",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "ana",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "autor sin vía",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "autor con nombre",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin",
+          "nombre": "Ana"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "vía con mayúscula",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "PIN"
+        },
+        "datos": {
+          "nota": "x"
+        }
+      }
+    },
+    {
+      "nombre": "datos vacíos",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {}
+      }
+    },
+    {
+      "nombre": "datos en lista",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": []
+      }
+    },
+    {
+      "nombre": "datos nulos",
+      "espera": "ilegible",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": null
+      }
+    },
+    {
+      "nombre": "contexto con claves que nadie conoce",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        },
+        "contexto": {
+          "app": "9.9",
+          "futuro": {
+            "a": [
+              1,
+              "x"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "nombre": "contexto en texto",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        },
+        "contexto": "texto"
+      }
+    },
+    {
+      "nombre": "contexto nulo",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        },
+        "contexto": null
+      }
+    },
+    {
+      "nombre": "contexto en lista",
+      "espera": "abierto",
+      "sobre": {
+        "protocolo": 1,
+        "op_id": "019a8f2c-7b41-7c3e-9a10-000000000001",
+        "tenant_id": "019a8f20-0000-7000-8000-0000000000a0",
+        "dispositivo_id": "019a8f20-1111-7000-8000-00000000ca1a",
+        "secuencia": 1,
+        "huella_anterior": null,
+        "verbo": "prueba",
+        "verbo_version": 1,
+        "ocurrido_en_ms": 1764000000001,
+        "autor": {
+          "usuario_id": "019a8f20-0000-7000-8000-00000000c0de",
+          "via": "pin"
+        },
+        "datos": {
+          "nota": "x"
+        },
+        "contexto": [
+          1
+        ]
+      }
+    }
+  ]
+}

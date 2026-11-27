@@ -372,6 +372,27 @@ let db;
        join nucleo.tabla_registrada tp on tp.esquema=pn.nspname and tp.tabla=p.relname and tp.al_dar_de_baja='eliminar'
        join nucleo.tabla_registrada th on th.esquema=hn.nspname and th.tabla=h.relname
        where c.contype='f' and th.al_dar_de_baja <> 'eliminar'`],
+    // BD-17, igual que en el verificador del ERP: la base guarda resúmenes de
+    // cada columna (valores frecuentes, rangos) para planear consultas, y por
+    // ahí se verían nombres o RUC. Lo marcado [personal] o [sensible] va sin
+    // resúmenes; en esas tablas, toda expresión de índice también, y no hay
+    // estadísticas extendidas (pueden tomar la fila entera).
+    ['BD-17 ningún dato personal guarda resúmenes en la base (SET STATISTICS 0)',
+      `select n.nspname||'.'||c.relname||'.'||a.attname as x from pg_attribute a join pg_class c on c.oid=a.attrelid join pg_namespace n on n.oid=c.relnamespace
+       where c.relkind='r' and n.nspname in ${esquemas} and a.attnum>0 and not a.attisdropped
+       and coalesce(col_description(c.oid,a.attnum),'') ~ '^\\[(personal|sensible)\\]' and coalesce(a.attstattarget,-1) <> 0`],
+    ['BD-17 en una tabla con datos personales, ninguna expresión de índice guarda resúmenes',
+      `select n.nspname||'.'||ic.relname||' columna '||ia.attnum as x from pg_index i
+       join pg_class ic on ic.oid=i.indexrelid join pg_namespace n on n.oid=ic.relnamespace
+       join pg_attribute ia on ia.attrelid=i.indexrelid and ia.attnum>0
+       where n.nspname in ${esquemas}
+       and exists (select 1 from pg_attribute p where p.attrelid=i.indrelid and p.attnum>0
+                   and coalesce(col_description(i.indrelid,p.attnum),'') ~ '^\\[(personal|sensible)\\]')
+       and (string_to_array(i.indkey::text,' ')::int2[])[ia.attnum]=0 and coalesce(ia.attstattarget,-1) <> 0`],
+    ['BD-17 sin estadísticas extendidas en tablas con datos personales',
+      `select n.nspname||'.'||s.stxname as x from pg_statistic_ext s join pg_namespace n on n.oid=s.stxnamespace
+       where exists (select 1 from pg_attribute p where p.attrelid=s.stxrelid and p.attnum>0
+                     and coalesce(col_description(s.stxrelid,p.attnum),'') ~ '^\\[(personal|sensible)\\]')`],
     ['BD-08 toda columna _por guarda a una persona (uuid)',
       `select table_schema||'.'||table_name||'.'||column_name||' '||data_type as x from information_schema.columns
        where table_schema in ${esquemas} and column_name ~ '_por$' and data_type <> 'uuid'`],

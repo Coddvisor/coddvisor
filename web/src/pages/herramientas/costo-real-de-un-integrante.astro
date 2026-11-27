@@ -1,9 +1,10 @@
 ---
 // Herramienta gratis: costo real de un integrante. La calculadora arriba y la guía debajo.
-// Cuentas en public/herramientas/laboral.js (costoReal, pension, minimaJornada); datos que cambian
+// Cuentas en public/herramientas/laboral.js (costoReal, pension, jornada); datos que cambian
 // por norma en src/datos/laboral.ts. Guía del borrador aprobado (web/borradores/costo-real-integrante.md).
 // Diseño: el mismo de las herramientas nuevas (herramienta.css).
 import Base from '../../layouts/Base.astro';
+import PreguntasGuia from '../../components/PreguntasGuia.astro';
 import { llamado } from '../../datos/navegacion';
 import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
 import { minimas, pensiones, costo, minimaVigente, asignacionFamiliar, solesCortos } from '../../datos/laboral';
@@ -50,16 +51,17 @@ const datosCosto = { pensiones, costo };
           <div data-f="fijo">
             <label class="igv-et" for="cr-sueldo" style="display:block;margin-top:20px">Sueldo mensual</label>
             <div class="igv-monto"><span>S/</span><input id="cr-sueldo" name="sueldo" type="text" inputmode="decimal" value="1500.00"></div>
-            <label class="casilla"><input type="checkbox" name="horas4" checked> Trabaja 4 horas diarias o más en promedio <small>(si no, no le corresponde CTS)</small></label>
           </div>
           <div data-f="horas" hidden>
-            <div class="caja-campos caja-campos--3">
-              <div class="campo campo--monto"><label for="cr-tarifa">Tarifa por hora</label><div class="monto"><span>S/</span><input id="cr-tarifa" name="tarifa" type="text" inputmode="decimal" value="8.00"></div></div>
-              <div class="campo"><label for="cr-horas-d">Horas al día</label><input id="cr-horas-d" name="horas" type="text" inputmode="decimal" value="4"></div>
-              <div class="campo"><label for="cr-dias">Días a la semana</label><input id="cr-dias" name="dias" type="number" inputmode="numeric" min="1" max="7" step="1" value="6"></div>
-            </div>
-            <p class="igv-ayuda">Sueldo del mes: <b data-r="sueldo-horas">S/ 0.00 al mes</b> (tarifa × horas × días × 52 semanas ÷ 12).</p>
+            <label class="igv-et" for="cr-tarifa" style="display:block;margin-top:20px">Tarifa por hora</label>
+            <div class="igv-monto"><span>S/</span><input id="cr-tarifa" name="tarifa" type="text" inputmode="decimal" value="8.00"></div>
           </div>
+          <div class="caja-campos" style="margin-top:16px">
+            <div class="campo"><label for="cr-horas-s">Horas a la semana</label><input id="cr-horas-s" name="horas" type="text" inputmode="decimal" value="48"></div>
+            <div class="campo"><label for="cr-dias">Días a la semana</label><input id="cr-dias" name="dias" type="number" inputmode="numeric" min="1" max="7" step="1" value="6"></div>
+          </div>
+          <p class="igv-ayuda">Las horas que de verdad trabaja, con las horas extra. <span data-r="jornada"></span></p>
+          <p class="igv-ayuda" data-f="horas-sueldo" hidden>Sueldo del mes: <b data-r="sueldo-horas">S/ 0.00 al mes</b> (tarifa × horas a la semana × 52 semanas ÷ 12).</p>
           <p class="caja-aviso" data-r="aviso-minima" hidden></p>
 
           <div class="igv-grupo">
@@ -246,7 +248,7 @@ const datosCosto = { pensiones, costo };
       <div class="guia-texto">
         <ul class="guia-lista">
           <li><b>Quien ya trabajaba antes de la inscripción.</b> Conserva sus beneficios: calcúlelo con el régimen general, aunque su negocio sea micro o pequeña empresa.</li>
-          <li><b>Sueldo fijo o pago por horas.</b> Si paga por horas, el sueldo del mes es la tarifa por hora por las horas trabajadas. Los beneficios se calculan igual, con el promedio de lo que ganó, salvo por la jornada: con menos de 4 horas diarias, la persona tiene gratificación, pero no CTS ni vacaciones. EsSalud nunca baja de S/ 110.70 al mes, el 9 % de la remuneración mínima, aunque la persona gane menos por trabajar pocas horas.</li>
+          <li><b>Sueldo fijo o pago por horas.</b> Si paga por horas, el sueldo del mes es la tarifa por hora por las horas trabajadas. Los beneficios se calculan igual, con el promedio de lo que ganó, salvo por la jornada: con menos de 4 horas diarias en promedio (menos de 24 horas a la semana si va 6 días, o de 20 si va 5 o menos, contando las horas extra), la persona tiene gratificación, pero no CTS. En vacaciones, la SUNAFIL y la Corte Suprema le reconocen al menos 6 días al año. Con menos de 4 horas, la mínima también es proporcional: con S/ 1,230 y 23 horas a la semana en 6 días, S/ 589.38. EsSalud nunca baja de S/ 110.70 al mes, el 9 % de la remuneración mínima, aunque la persona gane menos por trabajar pocas horas.</li>
           <li><b>Asignación familiar.</b> Si la persona tiene hijos menores de 18 años, sume S/ 123 al mes. También sube la gratificación, la CTS y EsSalud.</li>
           <li><b>Horas extra.</b> Cada hora se paga con al menos 25 % más las dos primeras del día, y 35 % más las siguientes. Si son regulares, también suben la gratificación y la CTS.</li>
           <li><b>EPS.</b> El negocio paga 6.75 % a EsSalud y el resto a la EPS, y la bonificación baja a 6.75 %.</li>
@@ -310,6 +312,9 @@ const datosCosto = { pensiones, costo };
     </section>
   </div>
 </article>
+
+<!-- «¿Le sirvió?» y las preguntas de otros dueños: src/components/PreguntasGuia.astro. -->
+<PreguntasGuia variante="herramienta" />
 
 <section class="contacto osc" aria-labelledby="hcr-cta-t">
   <div class="brillo brillo--contacto" aria-hidden="true"></div>

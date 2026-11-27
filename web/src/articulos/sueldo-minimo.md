@@ -11,6 +11,10 @@ enlaces:
   - { texto: "Calcule la gratificación de diciembre", href: "/herramientas/gratificacion/" }
   - { texto: "Calcule el costo real de un integrante", href: "/herramientas/costo-real-de-un-integrante/" }
 fuentes:
+  - norma: "R.M. 091-92-TR, art. 3 (transcrito en el Boletín N.° 79 del MTPE): con menos de 4 horas diarias, la remuneración mínima es proporcional a la jornada ordinaria del centro de trabajo; con 4 horas o más, corresponde la mínima completa"
+    enlace: "https://www2.trabajo.gob.pe/el-ministerio-2/sector-trabajo/direccion-general-de-trabajo/boletines/boletines-2017/boletin-no-79/"
+  - norma: "D.S. 001-96-TR, art. 12: las 4 horas diarias se cuentan en promedio, dividiendo las horas semanales entre 6 o entre 5, según los días que labora el centro de trabajo"
+    enlace: "https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=35"
   - norma: "D.S. 015-2026-TR, art. 1 (El Peruano, 28 de septiembre de 2026): la remuneración mínima sube de S/ 1,130 a S/ 1,230 desde el 1 de octubre de 2026; un segundo tramo de S/ 70, hasta S/ 1,300, se fijará por decreto supremo en el primer semestre de 2027"
     enlace: "https://busquedas.elperuano.pe/dispositivo/EX/2559163-1"
   - norma: "El Peruano, 1 de octubre de 2026: rige la nueva remuneración mínima y cambian la asignación familiar y el trabajo nocturno"
@@ -31,7 +35,7 @@ fuentes:
     enlace: "https://www.gob.pe/institucion/onp/noticias/1450959-afiliado-del-snp-aporte-minimo-se-actualiza-desde-octubre"
     nota: "PENDIENTE DE CONFIRMAR el monto exacto en la nota (se citó S/ 160). La guía no lo menciona"
 ---
-Desde el 1 de octubre de 2026, nadie que trabaje la jornada completa puede ganar menos de S/ 1,230 al mes. Si alguien de su equipo ganaba S/ 1,130, súbale el sueldo desde octubre. Con eso suben también la asignación familiar, a S/ 123, la gratificación de diciembre y la CTS de mayo.
+Desde el 1 de octubre de 2026, nadie que trabaje 4 horas diarias o más puede ganar menos de S/ 1,230 al mes. Si alguien de su equipo ganaba S/ 1,130, súbale el sueldo desde octubre. Con eso suben también la asignación familiar, a S/ 123, la gratificación de diciembre y la CTS de mayo.
 
 ## Qué cambió
 
@@ -41,7 +45,7 @@ El aumento tiene dos partes. La primera ya rige: S/ 1,230 desde octubre. La segu
 
 ## Qué tiene que ajustar
 
-1. **Revise el sueldo de cada persona.** Si trabaja la jornada completa y gana menos de S/ 1,230, súbalo. El cambio corre desde el 1 de octubre, así que pague la diferencia de los meses que ya pasaron.
+1. **Revise el sueldo de cada persona.** Si trabaja 4 horas diarias o más y gana menos de S/ 1,230, súbalo. El cambio corre desde el 1 de octubre, así que pague la diferencia de los meses que ya pasaron.
 2. **Suba la asignación familiar.** Es el 10 % del mínimo: pasa de S/ 113 a S/ 123 para quien tiene hijos menores de 18 años, o de hasta 24 si estudian.
 3. **Recalcule la gratificación de diciembre.** Se calcula con el sueldo vigente al 30 de noviembre, que ya incluye el aumento.
 4. **Prepare la CTS de mayo.** Se calcula con el sueldo de abril y un sexto de la gratificación de diciembre, los dos ya con el aumento.
@@ -90,7 +94,9 @@ Si arma su presupuesto de 2027, use estas cifras desde ya. Cuando el decreto fij
 No. La ley fija un piso, no un aumento para todos. Solo debe ajustar a quien gana menos.
 
 **¿Y quien trabaja medio tiempo?**
-El mínimo de S/ 1,230 es para la jornada completa. Para jornadas más cortas, confirme el monto con su contador.
+Si la persona trabaja 4 horas diarias o más en promedio, le corresponde el mínimo completo de S/ 1,230. Si trabaja menos de 4 horas, el mínimo es proporcional: S/ 1,230 × horas diarias ÷ la jornada ordinaria de su negocio, que normalmente es de 8 horas. Por ejemplo, con 3 horas diarias, el mínimo es S/ 1,230 × 3 ÷ 8 = **S/ 461.25**.
+
+El promedio diario se saca dividiendo las horas de la semana entre 6 o entre 5, según los días que trabaje su negocio. Cuenta la jornada que la persona trabaja de verdad, con las horas extra, no la que dice el contrato.
 
 **¿Cuándo sube a S/ 1,300?**
 Todavía no hay fecha. El decreto que la fije debe salir en el primer semestre de 2027.

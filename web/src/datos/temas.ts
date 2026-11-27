@@ -52,8 +52,10 @@ export const temas = [
     id: 'marketing',
     duda: 'Cómo vender más y lograr que el cliente vuelva.',
     // Ordenados por el camino del cliente, no por canal: los canales (Instagram, TikTok) cambian;
-    // que lo encuentren, que compre y que vuelva, no. El canal es el artículo.
-    subtemas: ['Que lo encuentren', 'Que entre y compre', 'WhatsApp y redes', 'Que vuelva', 'Medir lo que funciona'],
+    // conocerlo, que lo encuentre, que compre y que vuelva, no. El canal es el artículo.
+    // «Conocer a su cliente» va primero: sin saber quién es, lo demás se hace a ciegas
+    // (lo aprobó la fundadora el 25 de noviembre de 2026).
+    subtemas: ['Conocer a su cliente', 'Que lo encuentren', 'Que entre y compre', 'WhatsApp y redes', 'Que vuelva', 'Medir lo que funciona'],
   },
   {
     nombre: 'Su equipo',

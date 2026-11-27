@@ -53,8 +53,9 @@ la lógica.
 
 - Lo que el programa debe entender caso por caso: los estados de un documento
   y sus transiciones, los tipos de movimiento de un libro.
-- Las constantes de la matemática y de los formatos: cien céntimos, sesenta
-  minutos, el largo de un código de barras.
+- Las constantes de la matemática y de los formatos: mil milisegundos, sesenta
+  minutos, el largo de un código de barras. Los decimales de una moneda no: son un
+  dato de `nucleo.moneda`.
 - Los límites técnicos del sistema (tiempos de espera, tamaños de página). Van
   con nombre, en un solo archivo de configuración por módulo, no regados.
 

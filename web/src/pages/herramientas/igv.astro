@@ -8,6 +8,7 @@
 // números de la persona y los comprobantes que se arman solos. La guía conserva TODO su texto: el
 // paso a paso se arma al bajar (y se prueba con el precio propio) y los errores van en tarjetas.
 import Base from '../../layouts/Base.astro';
+import PreguntasGuia from '../../components/PreguntasGuia.astro';
 import { llamado } from '../../datos/navegacion';
 import { herramientas, autor, fechaLarga } from '../../datos/herramientas';
 
@@ -276,6 +277,9 @@ const h = herramientas.find((x) => x.href === '/herramientas/igv/')!;
     </section>
   </div>
 </article>
+
+<!-- «¿Le sirvió?» y las preguntas de otros dueños: src/components/PreguntasGuia.astro. -->
+<PreguntasGuia variante="herramienta" />
 
 <section class="contacto osc" aria-labelledby="hi-cta-t">
   <div class="brillo brillo--contacto" aria-hidden="true"></div>

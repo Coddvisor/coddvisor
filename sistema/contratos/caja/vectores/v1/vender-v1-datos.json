@@ -1,0 +1,135 @@
+{
+  "leame": "Qué datos acepta «vender» versión 1 al leer. No mira ningún catálogo.",
+  "casos": [
+    {
+      "acepta": true,
+      "datos": {
+        "moneda_codigo": "PEN",
+        "total": "7.5000"
+      }
+    },
+    {
+      "acepta": true,
+      "datos": {
+        "moneda_codigo": "PEN",
+        "total": "0.0000"
+      }
+    },
+    {
+      "acepta": true,
+      "datos": {
+        "moneda_codigo": "PEN",
+        "total": "7.4750"
+      }
+    },
+    {
+      "acepta": true,
+      "datos": {
+        "moneda_codigo": "XXX",
+        "total": "1.0000"
+      }
+    },
+    {
+      "acepta": true,
+      "datos": {
+        "moneda_codigo": "PEN",
+        "total": "99999999999.9999"
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {
+        "moneda_codigo": "PEN",
+        "total": "100000000000.0000"
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {
+        "moneda_codigo": "PEN",
+        "total": "-7.5000"
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {
+        "moneda_codigo": "PEN",
+        "total": "7.50"
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {
+        "moneda_codigo": "PEN",
+        "total": "7.50000"
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {
+        "moneda_codigo": "PEN",
+        "total": "07.5000"
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {
+        "moneda_codigo": "PEN",
+        "total": "7,5000"
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {
+        "moneda_codigo": "PEN",
+        "total": 7.5
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {
+        "moneda_codigo": "pen",
+        "total": "7.5000"
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {
+        "moneda_codigo": "PE",
+        "total": "7.5000"
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {
+        "total": "7.5000"
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {
+        "moneda_codigo": "PEN"
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {
+        "moneda_codigo": "PEN",
+        "total": "7.5000",
+        "extra": 1
+      }
+    },
+    {
+      "acepta": false,
+      "datos": {}
+    },
+    {
+      "acepta": false,
+      "datos": []
+    },
+    {
+      "acepta": false,
+      "datos": null
+    }
+  ]
+}
