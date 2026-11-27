@@ -36,6 +36,11 @@ Stock, caja y contabilidad son registros que no se editan. Un error se corrige
 con un movimiento inverso que queda a la vista. Lo que deja de usarse se
 archiva. Así siempre se puede explicar de dónde sale cada número. (D9, D10)
 
+Excepción aprobada el 26-nov-2026: en la comunidad, cuando una persona se da
+de baja, sus datos personales se eliminan de verdad (Ley 29733) y su
+contenido queda como «miembro retirado». Ver
+`../comunidad/01-diseno-de-la-comunidad.md`, sección 14.
+
 ## 6. Una operación ocurre entera o no ocurre
 
 La venta, su salida de stock, su ingreso de caja y su asiento se escriben

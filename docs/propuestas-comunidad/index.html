@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="es" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototipo: comunidad de Coddvisor</title>
+<link rel="stylesheet" href="../../marca/colores.css">
+<style>
+@font-face { font-family: "Space Grotesk"; src: url("../../web/public/fuentes/space-grotesk-latin.woff2") format("woff2"); font-weight: 300 700; font-display: swap; }
+@font-face { font-family: "Space Mono"; src: url("../../web/public/fuentes/space-mono-400-latin.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Space Mono"; src: url("../../web/public/fuentes/space-mono-700-latin.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+:root { --radio: 14px; --radio-s: 9px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Space Grotesk", system-ui, sans-serif; background: var(--superficie); color: var(--tinta); min-height: 100vh; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+.mono { font-family: "Space Mono", monospace; }
+
+/* Escenario: notas a la izquierda, teléfono a la derecha */
+.escenario { display: grid; grid-template-columns: minmax(260px, 420px) 390px; gap: 48px; justify-content: center; align-items: start; padding: 40px 24px; }
+.notas h1 { font-size: 30px; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 10px; }
+.notas > p { color: var(--texto-2); line-height: 1.5; margin-bottom: 22px; }
+.nota { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: var(--radio); padding: 16px 18px; margin-bottom: 12px; display: none; }
+.nota.activa { display: block; }
+.nota h2 { font-size: 16px; margin-bottom: 8px; }
+.nota li { color: var(--texto-2); line-height: 1.5; margin: 0 0 6px 18px; font-size: 14.5px; }
+.nota b { color: var(--tinta); }
+.etiqueta-nota { font-family: "Space Mono", monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ambar-tostado); margin-bottom: 6px; }
+@media (max-width: 900px) { .escenario { grid-template-columns: 1fr; justify-items: center; } .notas { order: 2; max-width: 390px; } }
+
+.telefono { width: 390px; height: 800px; background: var(--fondo); border-radius: 44px; border: 10px solid var(--cobalto); overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: 0 30px 60px -30px rgba(11,24,65,.45); }
+@media (max-width: 430px) { .telefono { width: 100%; height: 100vh; border: 0; border-radius: 0; } .escenario { padding: 0; } }
+
+/* Cabecera */
+.cab { padding: 14px 16px 10px; background: var(--tarjeta); border-bottom: 1px solid var(--borde); }
+.cab-fila { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cab img { height: 24px; display: block; }
+.cab-titulo { font-weight: 700; font-size: 17px; }
+.boton-pais { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; background: var(--hielo); color: var(--boton-2-texto); font-weight: 600; font-size: 13.5px; min-height: 36px; }
+.buscar { margin-top: 10px; display: flex; align-items: center; gap: 8px; background: var(--superficie); border-radius: 12px; padding: 10px 12px; color: var(--texto-3); font-size: 14.5px; }
+.espacios { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0 2px; scrollbar-width: none; }
+.espacios::-webkit-scrollbar { display: none; }
+.chip { flex: none; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--borde); background: var(--tarjeta); font-size: 13.5px; font-weight: 500; white-space: nowrap; min-height: 36px; }
+.chip.si { background: var(--cobalto); color: var(--fondo); border-color: var(--cobalto); }
+
+/* Cuerpo */
+.cuerpo { flex: 1; overflow-y: auto; padding: 12px 12px 24px; }
+.pantalla { display: none; }
+.pantalla.activa { display: block; }
+
+.tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: var(--radio); padding: 14px; margin-bottom: 10px; }
+.meta { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--texto-3); margin-bottom: 8px; flex-wrap: wrap; }
+.espacio-tag { font-weight: 600; color: var(--enlace); }
+.pais { font-family: "Space Mono", monospace; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 5px; background: var(--superficie); color: var(--texto-2); }
+.tarjeta h3 { font-size: 16.5px; line-height: 1.3; margin-bottom: 8px; letter-spacing: -0.01em; }
+.autor { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--texto-2); }
+.avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--hielo); color: var(--azul-real); display: grid; place-items: center; font-weight: 700; font-size: 12px; flex: none; }
+.avatar.anon { background: var(--superficie); color: var(--texto-3); }
+.avatar img { width: 100%; height: 100%; border-radius: 50%; }
+.insignia { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: var(--correcto-fondo); color: var(--correcto); white-space: nowrap; }
+.insignia.nivel { background: var(--hielo); color: var(--azul-real); }
+.insignia.pro { background: var(--aviso-fondo); color: var(--aviso); }
+.pie-tarjeta { display: flex; gap: 14px; margin-top: 10px; font-size: 13px; color: var(--texto-2); align-items: center; }
+.resuelta { color: var(--correcto); font-weight: 600; }
+.semilla { font-size: 11.5px; color: var(--texto-3); border-top: 1px dashed var(--borde); margin-top: 10px; padding-top: 8px; }
+
+.voz { display: flex; align-items: center; gap: 10px; background: var(--superficie); border-radius: 12px; padding: 8px 10px; margin: 6px 0; }
+.voz .play { width: 34px; height: 34px; border-radius: 50%; background: var(--cobalto); color: var(--fondo); display: grid; place-items: center; flex: none; }
+.onda { flex: 1; height: 22px; display: flex; align-items: center; gap: 2px; }
+.onda i { width: 3px; border-radius: 2px; background: var(--borde-fuerte); }
+.transcripcion { font-size: 13.5px; color: var(--texto-2); line-height: 1.45; }
+.transcripcion b { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--texto-3); display: block; margin-bottom: 2px; }
+
+.encuesta .op { position: relative; display: flex; justify-content: space-between; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--borde); margin-bottom: 6px; font-size: 14px; overflow: hidden; width: 100%; text-align: left; min-height: 44px; }
+.encuesta .op span { position: relative; }
+.encuesta .op .barra { position: absolute; inset: 0; width: 0; background: var(--hielo); transition: width .5s; }
+.encuesta.votada .op { cursor: default; }
+.encuesta .aviso-voto { font-size: 12.5px; color: var(--texto-3); margin-top: 4px; }
+
+/* Hilo */
+.volver { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--enlace); margin: 2px 2px 10px; min-height: 36px; }
+.pregunta-cuerpo { font-size: 15px; line-height: 1.5; color: var(--texto-2); margin: 6px 0 4px; }
+.orden { font-size: 12.5px; color: var(--texto-3); margin: 14px 4px 8px; font-family: "Space Mono", monospace; text-transform: uppercase; letter-spacing: .06em; }
+.respuesta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: var(--radio); padding: 14px; margin-bottom: 10px; }
+.respuesta.mejor { border: 2px solid var(--correcto); }
+.mejor-tag { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; font-weight: 700; color: var(--correcto); margin-bottom: 8px; }
+.respuesta p { font-size: 14.5px; line-height: 1.5; margin-top: 8px; }
+.acciones { display: flex; gap: 8px; margin-top: 12px; }
+.sirvio { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--borde-fuerte); font-size: 13.5px; font-weight: 600; min-height: 40px; }
+.sirvio.si { background: var(--correcto-fondo); color: var(--correcto); border-color: var(--correcto); }
+.secundaria { padding: 8px 12px; border-radius: 999px; font-size: 13.5px; color: var(--texto-2); min-height: 40px; }
+.responder-barra { position: sticky; bottom: -24px; background: var(--fondo); padding: 10px 0 0; }
+.campo-falso { display: flex; align-items: center; gap: 10px; background: var(--tarjeta); border: 1px solid var(--borde-fuerte); border-radius: 999px; padding: 6px 6px 6px 16px; color: var(--texto-3); font-size: 14.5px; }
+.campo-falso span:first-child { flex: 1; }
+.mic { width: 40px; height: 40px; border-radius: 50%; background: var(--boton); color: var(--boton-texto); display: grid; place-items: center; }
+
+/* Publicar */
+.paso { font-size: 13px; font-weight: 700; color: var(--texto-2); margin: 14px 2px 8px; }
+.rejilla-espacios { display: flex; flex-wrap: wrap; gap: 8px; }
+.area { width: 100%; min-height: 130px; border: 1px solid var(--borde-fuerte); border-radius: var(--radio); padding: 12px; font: inherit; font-size: 15.5px; line-height: 1.45; background: var(--tarjeta); color: var(--tinta); resize: none; }
+.area:focus { outline: 3px solid var(--hielo); border-color: var(--azul-real); }
+.paises { display: none; gap: 8px; flex-wrap: wrap; }
+.paises.ver { display: flex; }
+.pide-pais { display: none; font-size: 13px; color: var(--aviso); background: var(--aviso-fondo); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; }
+.pide-pais.ver { display: block; }
+.parecidas { display: none; background: var(--hielo); border-radius: var(--radio); padding: 12px; margin-top: 10px; }
+.parecidas.ver { display: block; }
+.parecidas h4 { font-size: 13.5px; margin-bottom: 6px; }
+.parecidas a { display: block; font-size: 14px; color: var(--enlace); padding: 6px 0; text-decoration: none; }
+.freno { display: none; border: 2px solid var(--aviso); background: var(--aviso-fondo); color: var(--tinta); border-radius: var(--radio); padding: 14px; margin-top: 10px; }
+.freno.ver { display: block; }
+.freno h4 { font-size: 15px; margin-bottom: 6px; color: var(--aviso); }
+.freno p { font-size: 14px; line-height: 1.45; margin-bottom: 10px; }
+.freno .opciones { display: grid; gap: 8px; }
+.freno button { text-align: left; padding: 10px 12px; border-radius: 10px; background: var(--tarjeta); border: 1px solid var(--borde-fuerte); font-size: 14px; min-height: 44px; }
+.interruptor { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; background: var(--tarjeta); border: 1px solid var(--borde); border-radius: var(--radio); margin-top: 10px; font-size: 14.5px; }
+.interruptor small { display: block; color: var(--texto-3); font-size: 12.5px; margin-top: 2px; }
+.sw { width: 46px; height: 28px; border-radius: 999px; background: var(--borde-fuerte); position: relative; flex: none; transition: background .2s; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--tarjeta); transition: left .2s; }
+.sw[aria-checked="true"] { background: var(--correcto); }
+.sw[aria-checked="true"]::after { left: 21px; }
+.principal { width: 100%; margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--boton); color: var(--boton-texto); font-weight: 700; font-size: 16px; min-height: 48px; }
+.principal[disabled] { opacity: .45; cursor: not-allowed; }
+.probar { font-size: 13.5px; color: var(--enlace); font-weight: 600; padding: 8px 2px; }
+
+/* Perfil */
+.perfil-cab { text-align: center; padding: 8px 0 4px; }
+.perfil-cab .avatar { width: 72px; height: 72px; font-size: 26px; margin: 0 auto 10px; }
+.perfil-cab h2 { font-size: 21px; }
+.perfil-cab p { color: var(--texto-2); font-size: 14px; margin: 2px 0 10px; }
+.fila-insignias { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.bloque h3 { font-size: 15px; margin-bottom: 10px; }
+.progreso { height: 10px; border-radius: 999px; background: var(--superficie); overflow: hidden; margin: 8px 0 6px; }
+.progreso i { display: block; height: 100%; background: var(--ambar); border-radius: 999px; }
+.permisos li { list-style: none; display: flex; gap: 8px; align-items: center; font-size: 14px; padding: 5px 0; color: var(--texto-2); }
+.permisos li.ya { color: var(--tinta); }
+.permisos .ic { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; flex: none; background: var(--superficie); color: var(--texto-3); }
+.permisos li.ya .ic { background: var(--correcto-fondo); color: var(--correcto); }
+.tema { display: grid; grid-template-columns: 1fr 70px; gap: 4px 10px; align-items: center; font-size: 14px; margin-bottom: 10px; }
+.tema .progreso { grid-column: 1 / -1; margin: 0; height: 8px; }
+.tema .progreso i { background: var(--grafico); }
+.tema b { text-align: right; font-family: "Space Mono", monospace; font-size: 13px; }
+
+/* Barra inferior */
+.nav { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--tarjeta); border-top: 1px solid var(--borde); padding: 6px 4px 10px; }
+.nav button { display: grid; justify-items: center; gap: 2px; font-size: 11.5px; color: var(--texto-3); padding: 6px 0; min-height: 48px; }
+.nav button[aria-current="page"] { color: var(--tinta); font-weight: 700; }
+.nav .mas { width: 44px; height: 44px; border-radius: 14px; background: var(--boton); color: var(--boton-texto); display: grid; place-items: center; margin-top: -2px; }
+
+/* Hoja de país */
+.velo { position: absolute; inset: 0; background: rgba(11,24,65,.45); display: none; align-items: flex-end; z-index: 5; }
+.velo.ver { display: flex; }
+.hoja { background: var(--tarjeta); width: 100%; border-radius: 22px 22px 0 0; padding: 18px 16px 24px; }
+.hoja h3 { font-size: 17px; margin-bottom: 4px; }
+.hoja > p { font-size: 13.5px; color: var(--texto-2); margin-bottom: 12px; }
+.opcion { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; padding: 14px; border: 1px solid var(--borde); border-radius: 12px; margin-bottom: 8px; font-size: 15px; min-height: 52px; }
+.opcion small { display: block; color: var(--texto-3); font-size: 12.5px; }
+.opcion[aria-checked="true"] { border: 2px solid var(--azul-real); }
+.opcion[aria-checked="true"]::after { content: "✓"; color: var(--azul-real); font-weight: 700; }
+.aviso-toast { position: absolute; left: 16px; right: 16px; bottom: 84px; background: var(--cobalto); color: var(--fondo); padding: 12px 14px; border-radius: 12px; font-size: 14px; display: none; z-index: 6; }
+.aviso-toast.ver { display: block; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="escenario">
+  <aside class="notas">
+    <div class="etiqueta-nota">Prototipo, no es el producto</div>
+    <h1>Comunidad de Coddvisor</h1>
+    <p>Toque las pantallas del teléfono. A la izquierda, por qué cada pantalla es como es. Todo lo que se ve es de ejemplo: personas y negocios inventados.</p>
+
+    <section class="nota activa" data-nota="inicio">
+      <h2>Inicio</h2>
+      <ul>
+        <li><b>Se ordena por «me sirvió»</b>, no por reacciones. Lo útil sube; lo que provoca, no.</li>
+        <li><b>El filtro de país</b> está arriba, a un toque: su país y lo global, solo su país u otro.</li>
+        <li><b>Nueve espacios</b> en una fila que se desliza con el pulgar.</li>
+        <li>Lo publicado por Coddvisor para arrancar <b>dice que es contenido inicial</b>.</li>
+        <li>Una pregunta puede ir <b>sin nombre</b>; las respuestas, nunca.</li>
+      </ul>
+    </section>
+    <section class="nota" data-nota="hilo">
+      <h2>Una pregunta y sus respuestas</h2>
+      <ul>
+        <li>Arriba, <b>la que le sirvió a quien preguntó</b>. Debajo, las demás por utilidad.</li>
+        <li><b>La insignia profesional</b> muestra que la contadora está colegiada. Responde como cualquiera y no ofrece servicios.</li>
+        <li><b>Nota de voz con transcripción</b>: se escucha o se lee, y Google la encuentra.</li>
+        <li>Responder está siempre abajo, con el micrófono a mano.</li>
+      </ul>
+    </section>
+    <section class="nota" data-nota="publicar">
+      <h2>Preguntar</h2>
+      <ul>
+        <li>Si el espacio depende de la ley (<b>Empezar y formalizar</b>), <b>pide país</b>.</li>
+        <li>Al escribir, <b>muestra preguntas parecidas ya respondidas</b>.</li>
+        <li>Toque <b>«Probar el freno»</b>: una acusación de delito con nombre se detiene y ofrece reescribirla, quitar el nombre o denunciar.</li>
+        <li>El interruptor permite <b>preguntar sin mostrar el nombre</b>.</li>
+      </ul>
+    </section>
+    <section class="nota" data-nota="perfil">
+      <h2>Perfil</h2>
+      <ul>
+        <li><b>El negocio se ve aquí</b>, no en anuncios: rubro y ciudad salen del RUC declarado.</li>
+        <li><b>El nivel desbloquea permisos reales.</b> Es la recompensa que hace que la comunidad se modere sola.</li>
+        <li><b>Reputación por tema</b>, no un solo número.</li>
+        <li><b>Los avisos los decide la persona</b>, canal por canal.</li>
+      </ul>
+    </section>
+  </aside>
+
+  <div class="telefono" id="tel">
+    <header class="cab">
+      <div class="cab-fila">
+        <img src="../../marca/logo/coddvisor-logotipo-horizontal.svg" alt="Coddvisor">
+        <button class="boton-pais" id="abrirPais" aria-haspopup="dialog">
+          <span id="etiquetaPais">Perú y global</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        </button>
+      </div>
+      <div class="buscar">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11 11l4 4" stroke="currentColor" stroke-width="2"/></svg>
+        Busque una duda: «cómo poner precios»
+      </div>
+      <nav class="espacios" id="espacios" aria-label="Espacios"></nav>
+    </header>
+
+    <main class="cuerpo" id="cuerpo">
+      <!-- INICIO -->
+      <section class="pantalla activa" id="p-inicio">
+        <article class="tarjeta" data-abrir="hilo" role="button" tabindex="0">
+          <div class="meta"><span class="espacio-tag">Precios y márgenes</span><span>Global</span><span>hace 3 h</span></div>
+          <h3>¿Cómo calculan el precio de un producto nuevo sin perder plata?</h3>
+          <div class="autor"><span class="avatar">LM</span>Lucía M., bodega en Arequipa <span class="insignia nivel">Referente en precios</span></div>
+          <div class="pie-tarjeta"><span class="resuelta">✓ Resuelta</span><span>41 me sirvió</span><span>12 respuestas</span></div>
+        </article>
+
+        <article class="tarjeta">
+          <div class="meta"><span class="espacio-tag">Caja y dinero</span><span class="pais">PE</span><span>hace 5 h</span></div>
+          <h3>¿Cuánto se pagan ustedes como sueldo? Yo saco de la caja cuando necesito y nunca sé si gané.</h3>
+          <div class="autor"><span class="avatar anon">?</span>Miembro de la comunidad <span class="insignia nivel">Nivel 1</span></div>
+          <div class="pie-tarjeta"><span>28 me sirvió</span><span>18 respuestas</span></div>
+        </article>
+
+        <article class="tarjeta">
+          <div class="meta"><span class="espacio-tag">La vida del dueño</span><span>Global</span><span>ayer</span></div>
+          <h3>Llevo tres años sin vacaciones. ¿Cómo hicieron para soltar el negocio una semana?</h3>
+          <div class="voz">
+            <span class="play" aria-hidden="true">▶</span>
+            <span class="onda" data-onda="22"></span>
+            <span class="mono" style="font-size:12px">1:12</span>
+          </div>
+          <div class="autor"><span class="avatar">JR</span>Jorge R., ferretería en Trujillo <span class="insignia">Negocio verificado</span></div>
+          <div class="pie-tarjeta"><span>63 me sirvió</span><span>34 respuestas</span></div>
+        </article>
+
+        <article class="tarjeta encuesta" id="encuesta">
+          <div class="meta"><span class="espacio-tag">Precios y márgenes</span><span>Global</span><span>Encuesta</span></div>
+          <h3>¿Qué margen le ponen a los abarrotes de primera necesidad?</h3>
+          <button class="op" data-p="18"><span class="barra"></span><span>Menos de 10 %</span><span class="pct"></span></button>
+          <button class="op" data-p="46"><span class="barra"></span><span>Entre 10 % y 20 %</span><span class="pct"></span></button>
+          <button class="op" data-p="27"><span class="barra"></span><span>Entre 20 % y 30 %</span><span class="pct"></span></button>
+          <button class="op" data-p="9"><span class="barra"></span><span>Más de 30 %</span><span class="pct"></span></button>
+          <p class="aviso-voto">Los resultados se ven después de votar. 214 votos.</p>
+        </article>
+
+        <article class="tarjeta">
+          <div class="meta"><span class="espacio-tag">Equipo y personas</span><span class="pais">PE</span><span>hace 2 días</span></div>
+          <h3>¿Qué pasa si pago la gratificación unos días tarde?</h3>
+          <div class="autor"><span class="avatar"><img src="../../marca/logo/coddvisor-isotipo.svg" alt=""></span>Coddvisor</div>
+          <div class="pie-tarjeta"><span class="resuelta">✓ Resuelta</span><span>19 me sirvió</span><span>7 respuestas</span></div>
+          <p class="semilla">Contenido inicial de Coddvisor, basado en la guía de gratificación del blog.</p>
+        </article>
+      </section>
+
+      <!-- HILO -->
+      <section class="pantalla" id="p-hilo">
+        <button class="volver" data-ir="inicio">← Inicio</button>
+        <div class="tarjeta">
+          <div class="meta"><span class="espacio-tag">Precios y márgenes</span><span>Global</span><span>hace 3 h</span></div>
+          <h3>¿Cómo calculan el precio de un producto nuevo sin perder plata?</h3>
+          <p class="pregunta-cuerpo">Voy a vender un detergente nuevo. Me cuesta S/ 8.40 con el flete. Si le pongo S/ 10 ¿estoy ganando o solo creo que gano?</p>
+          <div class="autor" style="margin-top:8px"><span class="avatar">LM</span>Lucía M., bodega en Arequipa</div>
+        </div>
+
+        <div class="orden">12 respuestas, por utilidad</div>
+
+        <article class="respuesta mejor">
+          <div class="mejor-tag">✓ Le sirvió a quien preguntó</div>
+          <div class="autor"><span class="avatar">CT</span>Carmen T., contadora en Lima <span class="insignia pro">Contadora colegiada</span></div>
+          <p>Súmele lo que no se ve: la bolsa, lo que se malogra y lo que le cuesta tener el producto parado. Si de cada 20 unidades se le pierde una, su costo real ya no es S/ 8.40 sino unos S/ 8.85. A S/ 10 gana poco más de un sol por unidad, no S/ 1.60.</p>
+          <div class="acciones"><button class="sirvio" data-sirvio="57">♥ Me sirvió <span>57</span></button><button class="secundaria">Responder</button></div>
+        </article>
+
+        <article class="respuesta">
+          <div class="autor"><span class="avatar">PH</span>Pedro H., minimarket en Huancayo <span class="insignia nivel">Nivel 3</span></div>
+          <div class="voz">
+            <span class="play" aria-hidden="true">▶</span>
+            <span class="onda" data-onda="18"></span>
+            <span class="mono" style="font-size:12px">0:48</span>
+          </div>
+          <p class="transcripcion"><b>Transcripción</b>«Yo miro primero cuánto lo vende la competencia de la cuadra. Si ellos lo tienen a 10.50, no me conviene bajarme: le pongo 10.50 y regalo la bolsa.»</p>
+          <div class="acciones"><button class="sirvio" data-sirvio="22">♥ Me sirvió <span>22</span></button><button class="secundaria">Responder</button></div>
+        </article>
+
+        <article class="respuesta">
+          <div class="autor"><span class="avatar">AV</span>Ana V., por emprender en Cusco <span class="insignia nivel">Nivel 0</span></div>
+          <p>Yo recién empiezo, ¿lo que se malogra se calcula por producto o por todo lo que vendo al mes?</p>
+          <div class="acciones"><button class="sirvio" data-sirvio="4">♥ Me sirvió <span>4</span></button><button class="secundaria">Responder</button></div>
+        </article>
+
+        <div class="responder-barra">
+          <div class="campo-falso"><span>Escriba su respuesta</span><span class="mic" aria-label="Responder con nota de voz">🎙</span></div>
+        </div>
+      </section>
+
+      <!-- PUBLICAR -->
+      <section class="pantalla" id="p-publicar">
+        <div class="paso">1. ¿De qué trata?</div>
+        <div class="rejilla-espacios" id="elegirEspacio"></div>
+
+        <div class="paso" id="pasoPais" hidden>2. ¿De qué país es su caso?</div>
+        <div class="pide-pais" id="pidePais">Este tema depende de la ley de cada país. Elija el suyo para que le respondan bien.</div>
+        <div class="paises" id="paises">
+          <button class="chip si" data-pais>Perú</button><button class="chip" data-pais>Colombia</button><button class="chip" data-pais>Chile</button><button class="chip" data-pais>Otro</button>
+        </div>
+
+        <div class="paso" id="pasoTexto">2. Su pregunta</div>
+        <textarea class="area" id="texto" placeholder="Cuente su caso como se lo contaría a otro dueño."></textarea>
+        <button class="probar" id="probarFreno">Probar el freno de acusaciones</button>
+
+        <div class="parecidas" id="parecidas">
+          <h4>Quizá ya está respondida:</h4>
+          <a href="#">¿Cómo reclamo a un proveedor que no cumple la entrega? (9 respuestas)</a>
+          <a href="#">¿Conviene pagar por adelantado a un distribuidor nuevo? (14 respuestas)</a>
+        </div>
+
+        <div class="freno" id="freno" role="alert">
+          <h4>Antes de publicar</h4>
+          <p>Su mensaje acusa a una empresa con nombre de un delito («estafa»). Eso puede traerle problemas legales a usted. Elija cómo seguir:</p>
+          <div class="opciones">
+            <button data-freno="reescribir"><b>Contar lo que pasó, sin acusar</b><br><small>Ejemplo: «Pagué por adelantado y me entregaron incompleto.»</small></button>
+            <button data-freno="sinnombre"><b>Quitar el nombre de la empresa</b></button>
+            <button data-freno="denunciar"><b>Hacer una denuncia formal</b><br><small>Le llevamos a la vía oficial de su país.</small></button>
+          </div>
+        </div>
+
+        <div class="interruptor">
+          <div>Preguntar sin mostrar mi nombre<small>Los demás verán «Miembro de la comunidad». Las respuestas siempre llevan nombre.</small></div>
+          <button class="sw" role="switch" aria-checked="false" aria-label="Preguntar sin mostrar mi nombre"></button>
+        </div>
+
+        <button class="principal" id="publicar" disabled>Publicar pregunta</button>
+      </section>
+
+      <!-- PERFIL -->
+      <section class="pantalla" id="p-perfil">
+        <div class="perfil-cab">
+          <span class="avatar">RQ</span>
+          <h2>Rosa Q.</h2>
+          <p>Bodega en Arequipa, desde 2019</p>
+          <div class="fila-insignias"><span class="insignia">Negocio declarado</span><span class="insignia nivel">Nivel 2, Habitual</span></div>
+          <p style="font-size:12px;color:var(--texto-3);margin-top:8px">RUC revisado en el padrón de SUNAT del 24/11/26</p>
+        </div>
+
+        <div class="tarjeta bloque">
+          <h3>Camino al nivel 3, Referente</h3>
+          <div class="progreso"><i style="width:68%"></i></div>
+          <p style="font-size:13px;color:var(--texto-2)">Le faltan unas semanas de constancia y 9 respuestas útiles.</p>
+          <ul class="permisos" style="margin-top:10px">
+            <li class="ya"><span class="ic">✓</span>Enlaces, notas de voz y encuestas</li>
+            <li class="ya"><span class="ic">✓</span>Mensajes privados y plantillas</li>
+            <li><span class="ic">3</span>Sus denuncias ocultan al instante</li>
+            <li><span class="ic">3</span>Mover publicaciones y aprobar espacios nuevos</li>
+          </ul>
+        </div>
+
+        <div class="tarjeta bloque">
+          <h3>En qué sabe más</h3>
+          <div class="tema"><span>Comprar e inventario</span><b>312</b><div class="progreso"><i style="width:82%"></i></div></div>
+          <div class="tema"><span>Caja y dinero</span><b>140</b><div class="progreso"><i style="width:40%"></i></div></div>
+          <div class="tema"><span>Vender y conseguir clientas</span><b>58</b><div class="progreso"><i style="width:16%"></i></div></div>
+        </div>
+
+        <div class="tarjeta bloque">
+          <h3>Cómo quiere enterarse</h3>
+          <div class="interruptor" style="margin-top:0"><div>Notificación del celular<small>Cuando respondan su pregunta</small></div><button class="sw" role="switch" aria-checked="true" aria-label="Notificación del celular"></button></div>
+          <div class="interruptor"><div>Correo<small>Resumen semanal de sus temas</small></div><button class="sw" role="switch" aria-checked="false" aria-label="Correo"></button></div>
+          <div class="interruptor"><div>WhatsApp<small>Solo cuando respondan su pregunta</small></div><button class="sw" role="switch" aria-checked="false" aria-label="WhatsApp"></button></div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="nav" aria-label="Secciones">
+      <button data-ir="inicio" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z" fill="none" stroke="currentColor" stroke-width="2"/></svg>Inicio</button>
+      <button data-ir="hilo"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="2"/></svg>Respuestas</button>
+      <button data-ir="publicar"><span class="mas"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2.4"/></svg></span>Preguntar</button>
+      <button data-ir="perfil"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>Perfil</button>
+    </nav>
+
+    <div class="velo" id="velo">
+      <div class="hoja" role="dialog" aria-label="Qué países ver">
+        <h3>¿Qué quiere ver?</h3>
+        <p>Lo global sirve en cualquier país. Los temas de ley e impuestos siempre llevan su país.</p>
+        <button class="opcion" aria-checked="true" data-etiqueta="Perú y global"><span>Perú y lo global<small>Recomendado</small></span></button>
+        <button class="opcion" aria-checked="false" data-etiqueta="Solo Perú"><span>Solo Perú</span></button>
+        <button class="opcion" aria-checked="false" data-etiqueta="Colombia y global"><span>Otro país<small>Por ejemplo, Colombia</small></span></button>
+      </div>
+    </div>
+    <div class="aviso-toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+// Datos de ejemplo del prototipo: en el producto, los espacios y cuáles piden país son filas del catálogo.
+const ESPACIOS = [
+  { nombre: 'Empezar y formalizar', pidePais: true },
+  { nombre: 'Vender y conseguir clientas' },
+  { nombre: 'Precios y márgenes' },
+  { nombre: 'Caja y dinero' },
+  { nombre: 'Comprar e inventario' },
+  { nombre: 'Equipo y personas', pidePais: true },
+  { nombre: 'Crecer' },
+  { nombre: 'Herramientas y tecnología' },
+  { nombre: 'La vida del dueño' },
+];
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+// Fila de espacios del inicio
+$('#espacios').innerHTML = '<button class="chip si">Todo</button>' + ESPACIOS.map(e => `<button class="chip">${e.nombre}</button>`).join('');
+$$('#espacios .chip').forEach(c => c.addEventListener('click', () => { $$('#espacios .chip').forEach(x => x.classList.remove('si')); c.classList.add('si'); }));
+
+// Ondas de las notas de voz
+$$('[data-onda]').forEach(o => { const n = +o.dataset.onda; o.innerHTML = Array.from({ length: n }, (_, i) => `<i style="height:${6 + Math.round(14 * Math.abs(Math.sin(i * 1.7)))}px"></i>`).join(''); });
+
+// Navegación
+function ir(p) {
+  $$('.pantalla').forEach(x => x.classList.toggle('activa', x.id === 'p-' + p));
+  $$('.nav button').forEach(b => b.dataset.ir === p ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+  $$('.nota').forEach(n => n.classList.toggle('activa', n.dataset.nota === p));
+  $('.cab .espacios').style.display = p === 'inicio' ? '' : 'none';
+  $('.cab .buscar').style.display = p === 'inicio' ? '' : 'none';
+  $('#cuerpo').scrollTop = 0;
+}
+$$('[data-ir]').forEach(b => b.addEventListener('click', () => ir(b.dataset.ir)));
+$$('[data-abrir]').forEach(t => { t.addEventListener('click', () => ir(t.dataset.abrir)); t.addEventListener('keydown', e => { if (e.key === 'Enter') ir(t.dataset.abrir); }); });
+
+// Hoja de país
+$('#abrirPais').addEventListener('click', () => $('#velo').classList.add('ver'));
+$('#velo').addEventListener('click', e => { if (e.target.id === 'velo') $('#velo').classList.remove('ver'); });
+$$('.opcion').forEach(o => o.addEventListener('click', () => {
+  $$('.opcion').forEach(x => x.setAttribute('aria-checked', 'false'));
+  o.setAttribute('aria-checked', 'true');
+  $('#etiquetaPais').textContent = o.dataset.etiqueta;
+  setTimeout(() => $('#velo').classList.remove('ver'), 150);
+}));
+
+// Encuesta: resultados después de votar
+$$('#encuesta .op').forEach(op => op.addEventListener('click', () => {
+  const enc = $('#encuesta'); if (enc.classList.contains('votada')) return;
+  enc.classList.add('votada');
+  $$('.op', enc).forEach(o => { $('.barra', o).style.width = o.dataset.p + '%'; $('.pct', o).textContent = o.dataset.p + ' %'; });
+  op.style.borderColor = 'var(--azul-real)';
+  $('.aviso-voto', enc).textContent = 'Gracias. 215 votos.';
+}));
+
+// Me sirvió (una vez por persona; se puede deshacer)
+$$('.sirvio').forEach(b => b.addEventListener('click', () => {
+  const si = b.classList.toggle('si');
+  $('span', b).textContent = +b.dataset.sirvio + (si ? 1 : 0);
+}));
+
+// Interruptores
+$$('.sw').forEach(s => s.addEventListener('click', () => s.setAttribute('aria-checked', s.getAttribute('aria-checked') === 'true' ? 'false' : 'true')));
+
+// Publicar: elegir espacio, pedir país, parecidas y freno
+let espacioElegido = null;
+$('#elegirEspacio').innerHTML = ESPACIOS.map((e, i) => `<button class="chip" data-i="${i}">${e.nombre}</button>`).join('');
+$$('#elegirEspacio .chip').forEach(c => c.addEventListener('click', () => {
+  $$('#elegirEspacio .chip').forEach(x => x.classList.remove('si')); c.classList.add('si');
+  espacioElegido = ESPACIOS[+c.dataset.i];
+  const pide = !!espacioElegido.pidePais;
+  $('#pasoPais').hidden = !pide; $('#pidePais').classList.toggle('ver', pide); $('#paises').classList.toggle('ver', pide);
+  $('#pasoTexto').textContent = (pide ? '3' : '2') + '. Su pregunta';
+  revisar();
+}));
+$$('[data-pais]').forEach(c => c.addEventListener('click', () => { $$('[data-pais]').forEach(x => x.classList.remove('si')); c.classList.add('si'); }));
+
+// En el producto, la lista de palabras de acusación es un dato del catálogo por idioma.
+const ACUSACION = /(estaf|rob(o|ó|aron)|ladr[oó]n|me engañ|fraude)/i;
+function revisar() {
+  const t = $('#texto').value.trim();
+  const acusa = ACUSACION.test(t);
+  $('#parecidas').classList.toggle('ver', t.length > 25 && !acusa);
+  $('#freno').classList.toggle('ver', acusa);
+  $('#publicar').disabled = !espacioElegido || t.length < 15 || acusa;
+}
+$('#texto').addEventListener('input', revisar);
+$('#probarFreno').addEventListener('click', () => {
+  $('#texto').value = 'Los de Distribuidora Ejemplo son unos estafadores, les pagué por adelantado y me robaron la plata.';
+  if (!espacioElegido) $$('#elegirEspacio .chip')[4].click();
+  revisar();
+});
+$$('[data-freno]').forEach(b => b.addEventListener('click', () => {
+  const q = b.dataset.freno;
+  if (q === 'reescribir') $('#texto').value = 'Le pagué por adelantado a Distribuidora Ejemplo y me entregó tarde y con faltantes. ¿Cómo se protegen ustedes al pagar por adelantado?';
+  if (q === 'sinnombre') $('#texto').value = 'Le pagué por adelantado a un proveedor y no me entregó lo acordado. ¿Qué hago para recuperar mi dinero?';
+  if (q === 'denunciar') { toast('En el producto, aquí se abre la vía oficial de denuncia de su país.'); return; }
+  revisar();
+}));
+$('#publicar').addEventListener('click', () => { toast('Publicada. Le avisaremos cuando alguien responda.'); });
+
+function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('ver'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('ver'), 2600); }
+</script>
+</body>
+</html>

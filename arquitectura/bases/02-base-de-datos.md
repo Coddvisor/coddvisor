@@ -7,6 +7,25 @@ que impide unir a `main` un cambio que la incumpla. La revisión vive en
 Estas reglas son las más caras de cambiar del proyecto, porque se copian en
 cada fila de cada cliente. Por eso se fijan antes de la primera tabla de negocio.
 
+## Alcance: la base del ERP
+
+Estas reglas son de la base del sistema de gestión (el ERP). La comunidad es
+un producto aparte, con su propia base, y no tiene clientes que aislar: todo
+lo que se publica es compartido. Por eso, con aprobación de la fundadora del
+26-nov-2026, la base de la comunidad tiene dos excepciones:
+
+1. **BD-02 no aplica.** Sus tablas no llevan `tenant_id`. Las tablas de
+   contenido se reparten por espacio (`espacio_id`).
+2. **La baja de una persona elimina sus datos personales de verdad.** Su
+   contenido queda como «miembro retirado», sin nombre ni negocio, para
+   cumplir la Ley 29733 sin perder el conocimiento. Los votos, las denuncias
+   y la historia de moderación siguen siendo libros que solo se anexan.
+
+Todas las demás reglas valen igual para la comunidad. Su propio verificador
+nace con su primera migración. El detalle está en
+`arquitectura/comunidad/01-diseno-de-la-comunidad.md` (sección 14) y
+`arquitectura/comunidad/02-modelo-de-datos.md`.
+
 ## Las cinco clases de tabla
 
 Toda tabla declara qué clase es. De la clase salen su aislamiento y sus permisos.
