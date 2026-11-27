@@ -92,12 +92,17 @@ sistema/
     oficina/                Las páginas del navegador. Hoy: entrar, el segundo paso,
                             elegir negocio, abrir un negocio y un inicio provisional. HTML, CSS y poco
                             JavaScript, sin construir; Cloudflare las servirá tal cual.
+    repartidor/             El Worker de Cloudflare de app.coddvisor.com: las páginas salen de
+                            los archivos fijos y /api va a la función de Supabase en São Paulo,
+                            con su freno por IP. Código portátil, probado en Node.
   diseno/                   Las medidas (medidas.css) y el catálogo de textos
                             (textos/es-PE.json). Los colores siguen en marca/colores.css.
   herramientas/
     probar-entrar/          El modo de prueba local de entrar. Solo para la computadora.
     migrador/               El camino de las migraciones a la base real y la ceremonia de
                             la llave del portero, que corre GitHub Actions. Su guía: LEEME.md.
+    repartidor/             El despliegue del repartidor con Wrangler, que corre GitHub Actions,
+                            y la mudanza del DNS a Cloudflare. Su guía: LEEME.md.
   supabase/                 Lo que pide Supabase para desplegar: config.toml y el arranque
     functions/servicio/     del servicio como función (index.ts, en Deno), que solo entra
                             por la puerta del servicio. Su guía: supabase/LEEME.md.

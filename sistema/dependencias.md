@@ -25,7 +25,8 @@ programas que corren solo en GitHub Actions:
 |---|---|---|---|
 | `psql` | La que trae el runner `ubuntu-24.04` (cliente de PostgreSQL 16) | Habla con la base: el migrador y la ceremonia de la llave | El runner de GitHub. No se instala nada |
 | Postgres | Imagen `postgres:17.6` | El ensayo del migrador antes de tocar la base real. Vive solo durante esa corrida | Docker Hub, como servicio del flujo |
-| CLI de Supabase | 2.108.0, con `supabase/setup-cli` v3.2.0 fijada por su huella | `supabase secrets set` en la ceremonia de la llave del portero | La acción la descarga en cada corrida de la ceremonia |
+| CLI de Supabase | 2.108.0, con `supabase/setup-cli` v3.2.0 fijada por su huella | `supabase secrets set` en la ceremonia de la llave del portero y en el secreto del repartidor | La acción la descarga en cada corrida de la ceremonia |
+| Wrangler | 4.165.0, con su candado en `herramientas/repartidor/wrangler/` | `wrangler deploy`: publica el repartidor en Cloudflare (`herramientas/repartidor/LEEME.md`). Publicado el 18-nov-2026 (registro de npm, leído el 27-nov-2026): cumple los siete días. Trae programas de instalación (`esbuild`, `workerd`); el flujo instala con `--ignore-scripts` | El flujo «Desplegar el repartidor» lo instala del candado en una carpeta temporal, fuera del repositorio. No entra en `package.json` del sistema |
 
 Fechas de publicación, comprobadas en GitHub el 26-nov-2026 para la regla de
 los siete días: `supabase/setup-cli` v3.2.0 salió el 2-nov-2026 y su etiqueta

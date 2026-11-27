@@ -19,7 +19,7 @@ migración llegó a una base real.
 La región no se fija al desplegar. Supabase la elige en cada llamada: el Worker
 de Cloudflare manda cada pedido a `/api` con el encabezado `x-region: sa-east-1`
 (supabase.com/docs/guides/functions/regional-invocation y
-`arquitectura/propuestas/donde-corre-el-sistema.md`, decisión 3).
+`arquitectura/propuestas/donde-corre-el-sistema.md`, decisión 3). El Worker y su despliegue: `herramientas/repartidor/LEEME.md`.
 
 ## Lo que hace el fundador en el panel de `coddvisor-sistema`
 
