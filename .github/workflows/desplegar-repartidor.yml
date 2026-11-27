@@ -1,0 +1,95 @@
+# Publica el repartidor: el Worker de Cloudflare que atiende app.coddvisor.com,
+# sirve las páginas de la oficina y lleva /api a la función «servicio» de
+# Supabase en São Paulo.
+#
+# Solo a mano (pestaña Actions), solo desde main y en el entorno protegido
+# «base-real», que exige la aprobación del fundador. Nadie publica el Worker
+# desde su computadora (donde-corre-el-sistema.md, decisión 8).
+#
+# «Secreto»: «conservar» publica el código y deja el secreto que ya tiene el
+# Worker. «nuevo» genera aquí un secreto al azar, lo guarda en Supabase y en el
+# Worker, y nunca lo escribe en el registro. La primera vez es «nuevo».
+#
+# La guía está en sistema/herramientas/repartidor/LEEME.md.
+name: Desplegar el repartidor
+
+on:
+  workflow_dispatch:
+    inputs:
+      secreto:
+        description: 'El secreto que comparten el Worker y la función'
+        type: choice
+        options: [conservar, nuevo]
+        default: conservar
+
+permissions:
+  contents: read
+
+# Una publicación a la vez. Una nueva espera detrás de la que corre o espera su
+# aprobación; ninguna cancela a otra.
+concurrency:
+  group: repartidor
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  desplegar:
+    name: Desplegar el repartidor
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: base-real
+    defaults:
+      run:
+        working-directory: sistema
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: sistema/.nvmrc
+      # Lo mismo que se revisa al unir: si algo no pasa, no se publica nada.
+      - name: Revisar el sistema
+        run: |
+          npm ci --ignore-scripts
+          npm run verificar
+      # Wrangler en la versión exacta de su candado (herramientas/repartidor/wrangler/),
+      # instalado fuera del repositorio y sin correr programas al instalarse.
+      - name: Instalar Wrangler
+        run: |
+          mkdir -p "$RUNNER_TEMP/wrangler"
+          cp herramientas/repartidor/wrangler/package.json herramientas/repartidor/wrangler/package-lock.json "$RUNNER_TEMP/wrangler/"
+          npm ci --ignore-scripts --no-audit --no-fund --prefix "$RUNNER_TEMP/wrangler"
+          "$RUNNER_TEMP/wrangler/node_modules/.bin/wrangler" --version
+      # La CLI de Supabase, en una versión exacta (la misma de «Llave del portero»).
+      # Solo hace falta para guardar un secreto nuevo.
+      - if: inputs.secreto == 'nuevo'
+        uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13 # v3.2.0
+        with:
+          version: 2.108.0
+      - name: Armar las páginas y la configuración
+        env:
+          SUPABASE_PROYECTO_REF: ${{ vars.SUPABASE_PROYECTO_REF }}
+        run: node herramientas/repartidor/construir.ts --salida "$RUNNER_TEMP/repartidor"
+      # Arma el Worker sin publicarlo y sin ningún token: si la configuración no
+      # sirve, se sabe aquí, antes de tocar Supabase o Cloudflare.
+      - name: Ensayo sin publicar
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+        run: >-
+          "$RUNNER_TEMP/wrangler/node_modules/.bin/wrangler" deploy --dry-run
+          --config "$RUNNER_TEMP/repartidor/wrangler.json"
+          --outdir "$RUNNER_TEMP/repartidor/ensayo"
+      - name: Publicar
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          SUPABASE_ACCESS_TOKEN: ${{ inputs.secreto == 'nuevo' && secrets.SUPABASE_ACCESS_TOKEN || '' }}
+          SUPABASE_PROYECTO_REF: ${{ vars.SUPABASE_PROYECTO_REF }}
+          SECRETO: ${{ inputs.secreto }}
+        run: >-
+          node herramientas/repartidor/desplegar.ts "$SECRETO"
+          --config "$RUNNER_TEMP/repartidor/wrangler.json"
+          --wrangler "$RUNNER_TEMP/wrangler/node_modules/.bin/wrangler"
