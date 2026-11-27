@@ -19,6 +19,7 @@ repartidor de Supabase en modo sesión viene en el plan que ya se paga.
 | `psql.mjs` | El ejecutor de verdad: `psql`, que trae el runner de GitHub. La cadena de conexión viaja en variables de entorno, nunca en la línea de órdenes |
 | `migrar.mjs` | La entrada que corre GitHub: `node herramientas/migrador/migrar.mjs` (o con `--solo-mirar`) |
 | `llave.mjs`, `ceremonia.mjs` | La ceremonia de la llave del portero: crear una llave en la base y guardarla en Supabase, o retirar una vieja |
+| `clave.mjs`, `clave-de-entrada.mjs`, `scram.mjs` | La ceremonia de la contraseña de `coddvisor_entrada`. Su guía está en [`CLAVE-DE-ENTRADA.md`](CLAVE-DE-ENTRADA.md) |
 | `configuracion.mjs` | Los nombres de las variables, de la tabla del registro y de cada llave, y los límites (cuánto espera por un candado) |
 | `pruebas/` | Las pruebas, contra un Postgres en memoria (PGlite) con las migraciones de verdad. Corren dentro de `npm run verificar` |
 
@@ -28,6 +29,7 @@ Los flujos de GitHub están en `.github/workflows/`:
 |---|---|---|
 | `migraciones.yml`, «Migraciones a la base real» | Al unir a `main` un cambio que toca `sistema/base-de-datos/migraciones/` o su candado, y a mano | Primero, sin secretos: `npm run verificar` y un ensayo del migrador con `psql` contra un Postgres de prueba dentro del runner. Después, en el entorno `base-real`, con su aprobación: el migrador contra la base real |
 | `llave-del-portero.yml`, «Llave del portero» | Solo a mano | En el entorno `base-real`, con su aprobación: crea una llave del portero y la guarda en los secretos de Supabase, o retira una |
+| `clave-de-entrada.yml`, «Contraseña de la entrada» | Solo a mano | En el entorno `base-real`, con su aprobación: le pone una contraseña al azar a `coddvisor_entrada` y guarda `CODDVISOR_BASE_DIRECCION` en Supabase ([`CLAVE-DE-ENTRADA.md`](CLAVE-DE-ENTRADA.md)) |
 
 ## Cómo trabaja el migrador
 

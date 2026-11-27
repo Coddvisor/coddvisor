@@ -20,7 +20,7 @@ migración llegó a una base real.
 La región no se fija al desplegar. Supabase la elige en cada llamada: el Worker
 de Cloudflare manda cada pedido a `/api` con el encabezado `x-region: sa-east-1`
 (supabase.com/docs/guides/functions/regional-invocation y
-`arquitectura/propuestas/donde-corre-el-sistema.md`, decisión 3).
+`arquitectura/propuestas/donde-corre-el-sistema.md`, decisión 3). El Worker y su despliegue: `herramientas/repartidor/LEEME.md`.
 
 ## Lo que hace el fundador en el panel de `coddvisor-sistema`
 
@@ -168,12 +168,15 @@ pasó antes por el botón «Abra su negocio».
 - **Los tiempos de sesión del plan Pro** (time-box, inactividad): los aplica el
   servicio por rol (decisión 8), no Supabase.
 - **Desplegar la función** y cargar sus secretos (`CODDVISOR_*`, en **Edge
-  Functions → Secrets**): espera que las migraciones lleguen a la base por su
-  camino, la contraseña de `coddvisor_entrada` y las pruebas de abajo («Lo que
-  falta probar en el proyecto real»). La llave del portero no se pega a mano:
+  Functions → Secrets**). El camino ya existe, por GitHub Actions y con la
+  aprobación del fundador: `herramientas/desplegar/LEEME.md`. El primer
+  despliegue espera que las migraciones lleguen a la base por su camino, la
+  contraseña de `coddvisor_entrada` y las pruebas de abajo («Lo que falta
+  probar en el proyecto real»). La llave del portero no se pega a mano:
   la guarda la ceremonia «Llave del portero» de GitHub Actions
   (`sistema/herramientas/migrador/LEEME.md`), que puede correr antes del
-  despliegue, después de la primera corrida de las migraciones.
+  despliegue, después de la primera corrida de las migraciones. La dirección
+  de la base tampoco: la guarda la ceremonia «Contraseña de la entrada».
 - **La llave de servicio** (`service_role` o `sb_secret_...`) en cualquier
   lugar del servicio. Solo la tendrá el programa aparte que crea las cuentas con
   correo (decisión 10), que todavía no existe.
@@ -194,14 +197,19 @@ las personas juntas**. Lo que ya hace el servicio:
   ventanas de cinco minutos y de un día (`turnstile.md`). Los topes son datos de
   `identidad.tope_de_cupo`. La IP es la que el Worker de Cloudflare pone en
   `x-coddvisor-ip` (no `cf-connecting-ip`, que detrás del Worker trae la IP del
-  Worker), y vale solo con la revisión del repartidor: esta versión no se
-  despliega sin ella (`turnstile.md`).
+  Worker), y se cree solo si el pedido trae el secreto del Worker;
+- solo atiende al Worker: la función de Supabase se puede llamar directo, pero
+  responde 403 a todo pedido sin el secreto del Worker
+  (`x-coddvisor-repartidor`, `CODDVISOR_REPARTIDOR_SECRETO`), antes de mirar la
+  ruta, y solo con él cree la IP (`aplicaciones/servicio/rutas/puerta.ts`).
 
 Lo que falta, y no se resuelve sin el fundador:
 
-- La función de Supabase se puede llamar directo, sin pasar por el Worker, con
-  un `x-coddvisor-ip` inventado. Falta que la función acepte solo pedidos del
-  Worker (un secreto compartido en un encabezado).
+- El Worker de Cloudflare ya está en el repositorio
+  (`aplicaciones/repartidor/`) y pone los dos encabezados, pero se publica
+  aparte, con el flujo «Desplegar el repartidor»
+  (`herramientas/repartidor/LEEME.md`). Mientras no esté publicado con el mismo
+  secreto que tiene la función, la función niega todo.
 - Para que Supabase cuente por la IP de cada persona hay que mandarle esa IP
   (`Sb-Forwarded-For`), y eso exige la llave secreta, que el servicio no puede
   tener (decisión 10). Mientras no se resuelva, el límite por IP de Supabase no
@@ -253,16 +261,12 @@ Cómo se conecta, y por qué:
 Qué hace el fundador, cuando llegue el momento (no antes de que las migraciones
 lleguen a la base por su camino):
 
-1. Ponerle una contraseña larga y al azar a `coddvisor_entrada`. Ninguna
-   migración la pone (la contraseña no va en el repositorio), y nadie ejecuta SQL
-   a mano en una base real: el camino para hacerlo se decide con el de las
-   migraciones.
-2. En **Project Settings → Database → Connection string**, copiar la del
-   **Transaction pooler**, cambiar el usuario `postgres.<ref>` por
-   `coddvisor_entrada.<ref>`, poner su contraseña y agregar `?sslmode=verify-full`.
-3. Guardarla como el secreto `CODDVISOR_BASE_DIRECCION` en **Edge Functions →
-   Secrets**. Nunca en el chat, en un correo ni en el repositorio.
-4. Si `verify-full` no reconoce el certificado (punto 3 de lo que falta probar),
+1. Correr la ceremonia «Contraseña de la entrada» de GitHub Actions
+   (`sistema/herramientas/migrador/CLAVE-DE-ENTRADA.md`): le pone a
+   `coddvisor_entrada` una contraseña al azar que nadie ve y guarda
+   `CODDVISOR_BASE_DIRECCION` en **Edge Functions → Secrets**. No se arma ni se
+   pega a mano.
+2. Si `verify-full` no reconoce el certificado (punto 3 de lo que falta probar),
    descargar el certificado de Supabase de **Database Settings → SSL Configuration** y
    guardarlo como `CODDVISOR_BASE_CERTIFICADO`.
 
@@ -346,8 +350,15 @@ Y la de la base:
 
 | Variable | Qué va | Dónde se ve en el panel |
 |---|---|---|
-| `CODDVISOR_BASE_DIRECCION` | `postgresql://coddvisor_entrada.<ref>:<contraseña>@<servidor del repartidor>:6543/postgres?sslmode=verify-full` | **Project Settings → Database → Connection string → Transaction pooler**, con el usuario y la contraseña de `coddvisor_entrada` (ver «La conexión a la base») |
+| `CODDVISOR_BASE_DIRECCION` | `postgresql://coddvisor_entrada.<ref>:<contraseña>@<servidor del repartidor>:6543/postgres?sslmode=verify-full` | La guarda la ceremonia «Contraseña de la entrada» (`sistema/herramientas/migrador/CLAVE-DE-ENTRADA.md`); no se arma ni se pega a mano |
 | `CODDVISOR_BASE_CERTIFICADO` (opcional) | El certificado raíz de la base en PEM, solo si `verify-full` no reconoce el del repartidor. Exige `sslmode=verify-full` | **Database Settings → SSL Configuration** |
 
 Es un secreto: lleva la contraseña. El servicio no arranca si el usuario no es
 `coddvisor_entrada`, si falta `sslmode` o si trae otra opción.
+
+Y las de Cloudflare, que nadie pega a mano en el panel:
+
+| Variable | Qué va | Quién la pone |
+|---|---|---|
+| `CODDVISOR_CAPTCHA_LLAVE_DEL_SITIO` y `CODDVISOR_CAPTCHA_SECRETO` | Las dos llaves del widget de Turnstile | El fundador las deja en el entorno `base-real` de GitHub (`turnstile.md`, paso 3) y el flujo «Desplegar el servicio» las guarda aquí (`sistema/herramientas/desplegar/LEEME.md`) |
+| `CODDVISOR_REPARTIDOR_SECRETO` | El secreto que comparte con el Worker | El flujo «Desplegar el repartidor» con «nuevo», que lo guarda aquí y en el Worker (`sistema/herramientas/repartidor/LEEME.md`, paso 5) |

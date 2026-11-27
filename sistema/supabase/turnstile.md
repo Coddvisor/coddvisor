@@ -45,13 +45,16 @@ llenó es el tope de altas de todo el sistema, ve otra cosa, porque no es culpa
 suya: «Por hoy no podemos abrir más negocios nuevos. Vuelva a intentarlo
 mañana.»
 
-**Esta versión se despliega solo junto con el repartidor** (paso 21 del plan de
-despliegue). El servicio cuenta la IP que el Worker pone en `x-coddvisor-ip`, y
-ese encabezado se cree solo porque la función rechaza todo pedido que no trae el
-secreto del repartidor. Sin esa revisión, cualquiera que llame a la función
-directo podría inventar su IP. Y no se puede usar `cf-connecting-ip`: cuando el
-Worker llama a Supabase, Cloudflare pone ahí la IP del Worker, la misma para
-todos, y todos compartirían un solo cupo.
+**Los cupos cuentan la IP que pone el Worker** (el repartidor de
+`app.coddvisor.com`, `herramientas/repartidor/LEEME.md`) en `x-coddvisor-ip`, y
+ese encabezado se cree solo porque la función rechaza con 403, antes de mirar la
+ruta, todo pedido que no trae el secreto del repartidor
+(`aplicaciones/servicio/rutas/puerta.ts`). Sin esa revisión, cualquiera que
+llame a la función directo podría inventar su IP. Y no se puede usar
+`cf-connecting-ip`: cuando el Worker llama a Supabase, Cloudflare pone ahí la IP
+del Worker, la misma para todos, y todos compartirían un solo cupo. Delante de
+los cupos, el Worker tiene además su propio freno por IP para `/api/entrar` y
+`/api/abrir`, que cubre todas las rutas que cuentan cupos.
 
 ## Lo que hace usted
 
@@ -107,9 +110,10 @@ darse cuenta. Por eso el paso 4 lo comprueba.
 
 Este paso va **antes** de desplegar: sin las llaves, la función no arranca.
 
-La función no se configura a mano: la carga el flujo de GitHub que la
-despliega, desde el entorno protegido `base-real` y con su aprobación
-(decisión 8). Usted solo deja las dos llaves en ese entorno:
+La función no se configura a mano: la carga el flujo «Desplegar el servicio»
+de GitHub (`herramientas/desplegar/LEEME.md`), desde el entorno protegido
+`base-real` y con su aprobación (decisión 8). Usted solo deja las dos llaves en
+ese entorno:
 
 1. En GitHub, **Settings → Environments → base-real**.
 2. **Add environment secret** (agregar secreto del entorno):
@@ -120,8 +124,9 @@ despliega, desde el entorno protegido `base-real` y con su aprobación
    - Valor: la **Site Key** del paso 1.
 4. Cierre la pestaña de Cloudflare donde se veía la llave secreta.
 
-El flujo de despliegue las pasa a **Edge Functions → Secrets** de Supabase. Sin
-las dos, la función no arranca y dice cuál falta. Tampoco arranca con las llaves
+El flujo «Desplegar el servicio» las revisa antes de tocar nada y las pasa a
+**Edge Functions → Secrets** de Supabase. Sin las dos, el flujo para en su
+primer paso y dice cuál falta; la función tampoco arrancaría sin ellas. Tampoco arranca con las llaves
 de prueba de Cloudflare (las que empiezan con `1x`, `2x` o `3x`): esas dejan
 pasar o niegan a todos. Ni con las dos cruzadas: la secreta es la más larga, y
 si va en el lugar de la del sitio, el servicio se la daría a cualquiera.
@@ -168,11 +173,9 @@ acción. Sin el Worker delante, todos los pedidos cuentan como «sin IP».
   mismo con siteverify, como el servicio en «Abra su negocio».
 - **El trabajo que archiva las ventanas vencidas** de `control.cupo_usado`: solo
   importan mientras dura su ventana (llega con el primer trabajo de fondo).
-- **El freno grueso por IP en el Worker** de Cloudflare, delante de todo: es de
-  la pieza del Worker.
-- **Que el flujo de despliegue compruebe solo que la protección de Supabase está
-  encendida** (la API de administración dice `security_captcha_enabled` y
-  `security_captcha_provider` en `config/auth`): es del flujo de despliegue.
+- **Que el flujo «Desplegar el servicio» compruebe solo que la protección de
+  Supabase está encendida** (la API de administración dice
+  `security_captcha_enabled` y `security_captcha_provider` en `config/auth`).
   Hasta entonces, lo comprueba usted en el paso 4.
 - **Un aviso cuando el tope de altas de todo el sistema esté por llenarse.**
 

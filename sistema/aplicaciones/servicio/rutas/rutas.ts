@@ -15,6 +15,8 @@
  *     catálogo (EX-19). Y ninguno dice si una cuenta existe: un correo que no
  *     existe y una contraseña equivocada responden lo mismo;
  *   - el negocio viaja en cada pedido y se comprueba cada vez (decisión 4);
+ *   - todo pedido pasa primero por la puerta (rutas/puerta.ts): sin el secreto
+ *     del Worker de Cloudflare, 403, y la IP de la persona se cree solo con él;
  *   - las contraseñas, los códigos y los permisos de alta tienen sus cupos
  *     compartidos por IP y por lo que se intenta (cupos.ts, en la base: valen
  *     igual en todas las copias del servicio), que cortan antes de llamar a
@@ -36,7 +38,8 @@ import { abrirElNegocio, opcionesParaAbrir, permitirLaAlta, registrarLaCuentaNue
 import { devolver, gastar, quedan } from "../cupos.ts";
 import { ACCIONES_DEL_CAPTCHA, type VerificarCaptcha } from "../proveedor/turnstile.ts";
 import { ProveedorOcupado, PruebaDePersonaRechazada, type EntradaDelProveedor, type ProveedorDeCuentas, type SesionDelProveedor, type VueltaDeGoogle } from "./cuentas.ts";
-import { claveDeLaIp, ipDe } from "./ip.ts";
+import { claveDeLaIp } from "./ip.ts";
+import type { Puerta } from "./puerta.ts";
 import { borrarCookie, COOKIES, leerCookies, leerCuerpo, llevarA, llevarAfuera, ponerCookie, responder, vieneDelPanel } from "./http.ts";
 
 export interface OpcionesDeLasRutas {
@@ -50,6 +53,11 @@ export interface OpcionesDeLasRutas {
    * el proveedor de cuentas.
    */
   readonly captcha: { readonly llaveDelSitio: string; readonly verificar: VerificarCaptcha };
+  /**
+   * Quién puede llamar y con qué IP. En la función de Supabase, la del Worker
+   * (puertaDelWorker); sin ella cualquiera llamaría directo con una IP inventada.
+   */
+  readonly puerta: Puerta;
   /** Recibe lo que falló adentro, para el registro del servidor. A la persona solo le llega «interno». */
   readonly anotarFallo?: (error: unknown) => void;
 }
@@ -112,7 +120,9 @@ const VUELTAS_DEL_ALTA = {
 export type CodigoDeError =
   | "origen" | "pedido_invalido" | "credenciales" | "sin_sesion" | "codigo_incorrecto" | "sin_segundo_paso"
   | "faltan_dos_pasos" | "sin_acceso" | "no_existe" | "metodo" | "interno" | "ruc_invalido" | "ya_usado"
-  | "demasiados_negocios" | "demasiados_intentos" | "ya_inscrita" | "captcha" | "altas_del_dia";
+  | "demasiados_negocios" | "demasiados_intentos" | "ya_inscrita" | "captcha" | "altas_del_dia"
+  // El pedido no vino por el Worker de Cloudflare (rutas/puerta.ts).
+  | "sin_repartidor";
 
 type Siguiente = "segundo_paso" | "negocios" | "entrar" | "abrir_cuenta";
 
@@ -227,13 +237,14 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
   const { piezas, proveedor, origen, captcha } = opciones;
 
   // Los cupos de cada cosa que se intenta: por la IP y por lo que se intenta.
-  // Las claves llegan ya revisadas: ninguna vacía (la puerta las rechaza).
-  const cuposDeUnCodigo = (pedido: Request, claveDeLaSesion: string): readonly UsoDeCupo[] => [
-    { cupo: CUPOS.intentosFallidosPorIp, clave: claveDeLaIp(ipDe(pedido)) },
+  // Las claves llegan ya revisadas: ninguna vacía (la puerta las rechaza). La IP
+  // es la que dejó pasar la puerta (rutas/puerta.ts), nunca una que se lea aquí.
+  const cuposDeUnCodigo = (ip: string | null, claveDeLaSesion: string): readonly UsoDeCupo[] => [
+    { cupo: CUPOS.intentosFallidosPorIp, clave: claveDeLaIp(ip) },
     { cupo: CUPOS.codigosFallidosPorSesion, clave: claveDeLaSesion },
   ];
-  const cuposDeUnaContrasena = (pedido: Request, correo: string): readonly UsoDeCupo[] => [
-    { cupo: CUPOS.intentosFallidosPorIp, clave: claveDeLaIp(ipDe(pedido)) },
+  const cuposDeUnaContrasena = (ip: string | null, correo: string): readonly UsoDeCupo[] => [
+    { cupo: CUPOS.intentosFallidosPorIp, clave: claveDeLaIp(ip) },
     { cupo: CUPOS.intentosFallidosPorCorreo, clave: claveDelCorreo(correo) },
   ];
   const cuposDeUnPermiso = (ip: string | null): readonly UsoDeCupo[] => [
@@ -275,7 +286,7 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     return clave === "" ? null : clave;
   }
 
-  async function entrarConCorreo(pedido: Request): Promise<Response> {
+  async function entrarConCorreo(pedido: Request, _url: URL, ip: string | null): Promise<Response> {
     const cuerpo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido));
     const correo = cuerpo?.["correo"];
     const contrasena = cuerpo?.["contrasena"];
@@ -285,7 +296,7 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     // La prueba la revisa Supabase Auth: aquí solo se exige que venga.
     const prueba = pruebaDe(cuerpo);
     if (prueba === null) return sinPrueba();
-    const intento = await intentarConCupos(cuposDeUnaContrasena(pedido, correo), async () => await proveedor.entrarConContrasena(correo.trim(), contrasena, prueba), (e) => e === null);
+    const intento = await intentarConCupos(cuposDeUnaContrasena(ip, correo), async () => await proveedor.entrarConContrasena(correo.trim(), contrasena, prueba), (e) => e === null);
     if (intento === null) return demasiados();
     const entrada = intento.r;
     if (entrada === null) return fallo(401, "credenciales", BORRAR_LA_SESION);
@@ -415,12 +426,11 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
   // correo tenga uno vigente: así no se llena control.alta_permitida.
   // Si se llenó el tope de todo el sistema, la persona no hizo nada malo: se le
   // dice que hoy no se abren más, con otro código que el de «muchos intentos».
-  async function permisoDeAlta(pedido: Request): Promise<Response> {
+  async function permisoDeAlta(pedido: Request, _url: URL, ip: string | null): Promise<Response> {
     const cuerpo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido));
     const correo = cuerpo?.["correo"];
     if (!esTexto(correo, LIMITES_DEL_SERVICIO.largoMaximoDelCorreo) || !PARECE_UN_CORREO.test(correo.trim())) return fallo(400, "pedido_invalido");
     const prueba = pruebaDe(cuerpo);
-    const ip = ipDe(pedido);
     if (prueba === null || !(await captcha.verificar(prueba, ip, ACCIONES_DEL_CAPTCHA.abrirConGoogle))) return sinPrueba();
     const cupos = cuposDeUnPermiso(ip);
     if (!(await permitirLaAlta(piezas, correo.trim(), cupos))) {
@@ -453,7 +463,7 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     return responder(200, inscripcion.value);
   }
 
-  async function confirmarInscripcion(pedido: Request): Promise<Response> {
+  async function confirmarInscripcion(pedido: Request, _url: URL, ip: string | null): Promise<Response> {
     const sesion = sesionDe(pedido);
     if (sesion === null) return fallo(401, "sin_sesion");
     const cuerpo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido));
@@ -462,7 +472,7 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     if (!esTexto(factor, LARGO_DE_UN_ID) || typeof codigo !== "string" || !CODIGO_DE_SEIS.test(codigo)) return fallo(401, "codigo_incorrecto");
     const clave = claveDeLaSesion(sesion);
     if (clave === null) return fallo(401, "sin_sesion", BORRAR_LA_SESION);
-    const intento = await intentarConCupos(cuposDeUnCodigo(pedido, clave), async () => await proveedor.confirmarInscripcion(sesion, factor, codigo), (x) => !x.ok);
+    const intento = await intentarConCupos(cuposDeUnCodigo(ip, clave), async () => await proveedor.confirmarInscripcion(sesion, factor, codigo), (x) => !x.ok);
     if (intento === null) return demasiados();
     const r = intento.r;
     if (!r.ok) return fallo(401, r.error);
@@ -477,7 +487,7 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     return responder(200, { siguiente: siguienteDe(entrada) }, cookiesDeLaSesion(entrada.sesion));
   }
 
-  async function segundoPaso(pedido: Request): Promise<Response> {
+  async function segundoPaso(pedido: Request, _url: URL, ip: string | null): Promise<Response> {
     const sesion = sesionDe(pedido);
     if (sesion === null) return fallo(401, "sin_sesion");
     const codigo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido))?.["codigo"];
@@ -485,7 +495,7 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     const clave = claveDeLaSesion(sesion);
     if (clave === null) return fallo(401, "sin_sesion", BORRAR_LA_SESION);
     // Cuenta solo el código equivocado; lo demás (sin segundo paso, sesión vencida) se devuelve.
-    const intento = await intentarConCupos(cuposDeUnCodigo(pedido, clave), async () => await proveedor.confirmarSegundoPaso(sesion, codigo), (x) => !x.ok && x.error === "codigo_incorrecto");
+    const intento = await intentarConCupos(cuposDeUnCodigo(ip, clave), async () => await proveedor.confirmarSegundoPaso(sesion, codigo), (x) => !x.ok && x.error === "codigo_incorrecto");
     if (intento === null) return demasiados();
     const r = intento.r;
     if (!r.ok) return fallo(401, r.error);
@@ -537,7 +547,9 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     return responder(200, { siguiente: "entrar" satisfies Siguiente }, [...BORRAR_LA_SESION, borrarCookie(COOKIES.google)]);
   }
 
-  type Atender = (pedido: Request, url: URL) => Promise<Response>;
+  // La IP es la que dejó pasar la puerta, nunca la de un encabezado que se lee aquí:
+  // null si el Worker no mandó una que se entienda (cuenta como «sin-ip», rutas/ip.ts).
+  type Atender = (pedido: Request, url: URL, ip: string | null) => Promise<Response>;
   const CAMBIAN: ReadonlyMap<string, Atender> = new Map<string, Atender>([
     [RUTAS.entrarConCorreo, entrarConCorreo],
     [RUTAS.segundoPaso, segundoPaso],
@@ -565,14 +577,17 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     const cambia = CAMBIAN.get(url.pathname);
     const lee = LEEN.get(url.pathname);
     try {
+      // Antes que nada, ni siquiera decir si la ruta existe: ¿vino por el Worker?
+      const entrada = await opciones.puerta(pedido);
+      if (entrada === null) return fallo(403, "sin_repartidor");
       if (cambia !== undefined) {
         if (pedido.method !== "POST") return fallo(405, "metodo");
         if (!vieneDelPanel(pedido, origen)) return fallo(403, "origen");
-        return await cambia(pedido, url);
+        return await cambia(pedido, url, entrada.ip);
       }
       if (lee !== undefined) {
         if (pedido.method !== "GET") return fallo(405, "metodo");
-        return await lee(pedido, url);
+        return await lee(pedido, url, entrada.ip);
       }
       return fallo(404, "no_existe");
     } catch (error) {

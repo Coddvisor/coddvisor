@@ -13,6 +13,7 @@ import { crearProveedorDePrueba, type ProveedorDePrueba } from "./proveedor-de-p
 import { repartidorDePrueba, type RepartidorDePrueba } from "./repartidor-de-prueba.ts";
 import { crearVerificadorDeTurnstile } from "../proveedor/turnstile.ts";
 import { crearCloudflareFalso, TURNSTILE_DE_PRUEBA } from "./turnstile-falso.ts";
+import { puertaSinWorker } from "./puerta-sin-worker.ts";
 
 export interface Montaje {
   readonly db: Base;
@@ -65,6 +66,6 @@ export async function montarEntrar(opciones: OpcionesDelMontaje): Promise<Montaj
     // Con las llaves de prueba no se revisan el dominio ni la acción: Cloudflare responde «example.com».
     verificar: crearVerificadorDeTurnstile({ secreto: TURNSTILE_DE_PRUEBA.secreto, dominio: null, pedir: opciones.pedirAlCaptcha ?? crearCloudflareFalso().pedir }),
   };
-  const manejador = crearManejador({ piezas, proveedor, origen: opciones.origen, captcha, ...(opciones.anotarFallo === undefined ? {} : { anotarFallo: opciones.anotarFallo }) });
+  const manejador = crearManejador({ piezas, proveedor, origen: opciones.origen, captcha, puerta: puertaSinWorker, ...(opciones.anotarFallo === undefined ? {} : { anotarFallo: opciones.anotarFallo }) });
   return { db, repartidor, proveedor, piezas, manejador, captcha, ejemplo, cerrar: async () => { await db.close(); } };
 }

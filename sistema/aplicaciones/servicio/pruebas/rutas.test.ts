@@ -9,6 +9,7 @@ import { COOKIES } from "../rutas/http.ts";
 import { crearManejador, PAGINAS, RUTAS } from "../rutas/rutas.ts";
 import { TURNSTILE_DE_PRUEBA } from "./turnstile-falso.ts";
 import { montarEntrar, type Montaje } from "./montaje.ts";
+import { puertaSinWorker } from "./puerta-sin-worker.ts";
 import { CODIGO_DE_PRUEBA, CONTRASENA_DE_EJEMPLO, NOMBRES_DE_EJEMPLO } from "./ejemplo.ts";
 import { crearProveedorDePrueba, type CuentaDeEjemplo } from "./proveedor-de-prueba.ts";
 import { uuid7 } from "../../../modulos/identidad/pruebas/apoyo.ts";
@@ -278,7 +279,7 @@ describe("salir", () => {
   it("si anotar la sesión falla, la cookie se borra igual y el fallo queda en el registro", async () => {
     const fallos: unknown[] = [];
     const firmarRoto = async (): Promise<never> => { throw new Error("la base no responde"); };
-    const roto = crearManejador({ piezas: { ...m.piezas, firmar: firmarRoto }, proveedor: m.proveedor, origen: ORIGEN, captcha: m.captcha, anotarFallo: (e) => { fallos.push(e); } });
+    const roto = crearManejador({ piezas: { ...m.piezas, firmar: firmarRoto }, proveedor: m.proveedor, origen: ORIGEN, captcha: m.captcha, puerta: puertaSinWorker, anotarFallo: (e) => { fallos.push(e); } });
     const jarro = await entrar(m.ejemplo.cuentas.vendedor);
     const h = new Headers({ origin: ORIGEN, "content-type": "application/json", "sec-fetch-site": "same-origin", cookie: `${COOKIES.sesion}=${encodeURIComponent(jarro.get(COOKIES.sesion) ?? "")}` });
     const r = await roto(new Request(new URL(RUTAS.salir, ORIGEN), { method: "POST", headers: h, body: "{}" }));

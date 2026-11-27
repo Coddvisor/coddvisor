@@ -6,14 +6,16 @@
 // en memoria, con sus migraciones, detrás de un puerto que se comporta como el
 // repartidor de Supabase en modo transacción. También se exige que deno.json
 // traduzca los mismos nombres con # que package.json, y las mismas librerías con
-// la misma versión, porque Deno no lee package.json.
+// la misma versión, porque Deno no lee package.json. Y que la función atiende solo
+// lo que trae el secreto del Worker de Cloudflare (aplicaciones/servicio/rutas/puerta.ts).
 
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { after, before, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-import { VARIABLES } from "#aplicaciones/servicio";
+import { randomBytes } from "node:crypto";
+import { ENCABEZADOS_DEL_WORKER, VARIABLES } from "#aplicaciones/servicio";
 import { crearBase, llaveDelPortero, type Base } from "../../../../modulos/identidad/pruebas/apoyo.ts";
 import { abrirServidorDeLaBase, type ServidorDeLaBase } from "../../../../aplicaciones/servicio/pruebas/servidor-de-la-base.ts";
 
@@ -24,6 +26,9 @@ const AUTH = "https://proyecto-de-prueba.supabase.test/auth/v1";
 const FUNCION = "https://proyecto-de-prueba.supabase.test";
 
 const NUMERO_DE_LA_LLAVE = 1;
+const SECRETO_DEL_WORKER = randomBytes(32).toString("base64url");
+/** Lo que el Worker de Cloudflare pone en cada pedido que reenvía. */
+const DEL_WORKER = { [ENCABEZADOS_DEL_WORKER.secreto]: SECRETO_DEL_WORKER };
 
 const ENTORNO: Record<string, string> = {
   [VARIABLES.origenDelPanel]: ORIGEN,
@@ -35,6 +40,7 @@ const ENTORNO: Record<string, string> = {
   [VARIABLES.clavePublicaDeLasCuentas]: "sb_publishable_clave-de-prueba-0123456789",
   [VARIABLES.llaveDelSitioDelCaptcha]: "0x4AAAAAAAsitio-de-ejemplo",
   [VARIABLES.secretoDelCaptcha]: "0x4AAAAAAAsecreto-de-ejemplo-0123456789",
+  [VARIABLES.secretoDelWorker]: SECRETO_DEL_WORKER,
 };
 /** La prueba de Turnstile que acepta el siteverify de mentira de abajo. */
 const PRUEBA_BUENA = "prueba-de-una-persona";
@@ -87,9 +93,12 @@ after(async () => {
   await db.close();
 });
 
-async function pedir(ruta: string, init: RequestInit = {}): Promise<Response> {
+/** Un pedido como lo entrega Supabase. Por omisión, con el secreto del Worker, como llega de app.coddvisor.com. */
+async function pedir(ruta: string, init: RequestInit = {}, delWorker = true): Promise<Response> {
   assert.ok(atender, "index.ts no llamó a Deno.serve");
-  return await atender(new Request(`${FUNCION}/servicio${ruta}`, init));
+  const headers = new Headers(init.headers);
+  if (delWorker) for (const [k, v] of Object.entries(DEL_WORKER)) headers.set(k, v);
+  return await atender(new Request(`${FUNCION}/servicio${ruta}`, { ...init, headers }));
 }
 
 describe("la función de Supabase", () => {
@@ -101,6 +110,18 @@ describe("la función de Supabase", () => {
     assert.equal(new URL(destino.searchParams.get("redirect_to") ?? "").origin, ORIGEN);
   });
 
+  it("un pedido que llega directo, sin el secreto del Worker o con otro, responde 403 en cualquier ruta", async () => {
+    for (const [ruta, init] of [
+      ["/api/entrar/google", {}],
+      ["/api/no-existe", {}],
+      ["/api/entrar/google", { headers: { [ENCABEZADOS_DEL_WORKER.secreto]: randomBytes(32).toString("base64url") } }],
+      ["/api/entrar/google", { headers: { [ENCABEZADOS_DEL_WORKER.secreto]: SECRETO_DEL_WORKER.slice(1) } }],
+    ] as const) {
+      const r = await pedir(ruta, init, false);
+      assert.deepEqual([r.status, await r.json()], [403, { error: "sin_repartidor" }], ruta);
+    }
+  });
+
   it("lo que no es una ruta responde que no existe", async () => {
     const r = await pedir("/api/no-existe");
     assert.deepEqual([r.status, await r.json()], [404, { error: "no_existe" }]);
@@ -110,7 +131,7 @@ describe("la función de Supabase", () => {
     const antes = servidor.textos.length;
     const r = await pedir("/api/abrir/permiso", {
       method: "POST",
-      headers: { origin: ORIGEN, "content-type": "application/json", "sec-fetch-site": "same-origin", "x-coddvisor-ip": "203.0.113.7" },
+      headers: { origin: ORIGEN, "content-type": "application/json", "sec-fetch-site": "same-origin", [ENCABEZADOS_DEL_WORKER.ip]: "203.0.113.7" },
       body: JSON.stringify({ correo: "alguien@ejemplo.test", captcha: PRUEBA_BUENA }),
     });
     assert.deepEqual([r.status, await r.json()], [200, { siguiente: "abrir_cuenta" }]);

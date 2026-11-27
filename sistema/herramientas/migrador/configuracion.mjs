@@ -55,3 +55,54 @@ export const LLAVES = {
     porque: 'en Supabase los secretos de las funciones son de todo el proyecto, así que la función del servicio también la vería, y la propuesta pide que solo la tenga la función de los trabajos. Se habilita cuando eso esté resuelto',
   },
 };
+
+// La ceremonia de la contraseña de la entrada (clave.mjs, CLAVE-DE-ENTRADA.md):
+// le pone una contraseña nueva y al azar al rol con que entra el servicio, y
+// guarda la dirección completa en los secretos de las funciones de Supabase.
+// El rol y el nombre del secreto son los que lee
+// aplicaciones/servicio/configuracion.ts (una prueba lo exige).
+export const CLAVE_DE_ENTRADA = {
+  rol: 'coddvisor_entrada',
+  secreto: 'CODDVISOR_BASE_DIRECCION',
+  // 32 bytes al azar, escritos en hexadecimal: 64 letras y números, sin signos
+  // que haya que codificar en la dirección ni en el archivo de la CLI.
+  bytesDeLaContrasena: 32,
+  // La forma SCRAM-SHA-256 de Postgres: 16 bytes de sal (los que usa Postgres)
+  // y 4096 vueltas (el valor de fábrica de scram_iterations). Con una
+  // contraseña al azar de 256 bits, más vueltas no protegen más y hacen más
+  // lenta cada conexión de la función.
+  bytesDeLaSal: 16,
+  vueltas: 4096,
+  // El servicio entra por el repartidor en modo transacción (sistema/supabase/LEEME.md,
+  // «La conexión a la base»). Es el mismo servidor que el modo sesión con que
+  // migra, en otro puerto (supabase.com/docs/guides/database/connecting-to-postgres).
+  puertoDelModoTransaccion: 6543,
+  // El servidor del repartidor compartido de Supabase: aws-<n>-<región>.pooler.supabase.com.
+  servidorDelRepartidor: /^aws-[0-9]+-[a-z0-9-]+\.pooler\.supabase\.com$/,
+  // Cómo se cifra la conexión del servicio. El primero es el que se ofrece primero.
+  cifrados: ['verify-full', 'require'],
+  // El rol de la entrada tiene que estar como lo crea la migración del portero
+  // (20261125160000_portero.sql): miembro solo de este rol, que hereda sin
+  // poder volverse él (inherit true, set false).
+  miembroDe: 'coddvisor_app',
+  // Cómo se prueba entrar por el repartidor: solo con el saludo SCRAM
+  // (PGREQUIREAUTH, libpq 16 o más nuevo). Si alguien en medio pide la
+  // contraseña en claro, psql no se la da.
+  autenticacionExigida: 'scram-sha-256',
+  // Después de cambiar la contraseña, el repartidor sigue un rato con la vieja
+  // en su memoria: con conexiones activas la toma en unos 15 segundos, y no
+  // conviene insistir ni cambiarla varias veces seguidas
+  // (supabase.com/docs/guides/troubleshooting/supavisor-error-password-authentication-failed-after-password-rotation).
+  // Por eso se espera antes del primer intento y se espacian los siguientes.
+  esperaAntesDelPrimerIntentoS: 15,
+  intentosParaProbarla: 4,
+  esperaEntreIntentosS: 30,
+  // Tras varios fallos, el repartidor bloquea por hasta 2 minutos la IP que
+  // intenta, y cada intento durante el bloqueo lo alarga
+  // (supabase.com/docs/guides/troubleshooting/supavisor-error-circuit-breaker-open-after-password-rotation-0fdb72).
+  // Si el error es ese, se espera más de 2 minutos antes del siguiente. En el
+  // peor caso la prueba dura 15 + 3 × 130 segundos, menos que los 10 minutos
+  // del flujo.
+  disyuntorDelRepartidor: /circuit breaker open|temporarily blocked/i,
+  esperaSiElDisyuntorS: 130,
+};

@@ -95,6 +95,8 @@ export const LIMITES_DEL_SERVICIO = {
   vidaDeUnaConexionS: 1800,
   /** Al cerrar todas las conexiones de una copia, cuánto se espera a los pedidos en curso, en segundos. */
   esperaAlDescartarConexionesS: 5,
+  /** La IP más larga que se lee del encabezado del Worker: el largo de una IPv6 escrita entera. */
+  largoMaximoDeUnaIp: 45,
 } as const;
 
 /** El nombre de cada variable de entorno que lee el servicio. */
@@ -112,6 +114,10 @@ export const VARIABLES = {
   // Cloudflare Turnstile: la llave del sitio es pública (la pide la página); la secreta, no.
   llaveDelSitioDelCaptcha: "CODDVISOR_CAPTCHA_LLAVE_DEL_SITIO",
   secretoDelCaptcha: "CODDVISOR_CAPTCHA_SECRETO",
+  // El secreto que comparte con el Worker de Cloudflare que está delante (rutas/puerta.ts).
+  // El nombre dice «repartidor» porque así se llama ese Worker en la propuesta; no es
+  // el repartidor de conexiones a la base.
+  secretoDelWorker: "CODDVISOR_REPARTIDOR_SECRETO",
 } as const;
 
 export interface Configuracion {
@@ -146,6 +152,13 @@ export interface Configuracion {
     readonly llaveDelSitio: string;
     readonly secreto: string;
   };
+  /**
+   * El Worker de Cloudflare que reenvía los pedidos de app.coddvisor.com: el
+   * secreto que pone en cada uno (rutas/puerta.ts). Sin él, la función no atiende.
+   */
+  readonly worker: {
+    readonly secreto: string;
+  };
 }
 
 export type Entorno = Readonly<Record<string, string | undefined>>;
@@ -168,6 +181,12 @@ const LLAVE_DE_TURNSTILE = /^[A-Za-z0-9_-]{10,200}$/;
 // Las llaves de prueba de Turnstile (developers.cloudflare.com/turnstile/troubleshooting/testing):
 // dejan pasar o niegan a todos. Sirven en la computadora, nunca en el producto.
 const LLAVE_DE_PRUEBA_DE_TURNSTILE = /^[1-3]x0+[A-Z]{2}$/;
+// El secreto del Worker es parte del contrato con él: solo letras de base64, base64url o
+// hex, que llegan iguales por todos los caminos (un archivo --env-file de la CLI de
+// Supabase cambia $, comillas y barras invertidas; Wrangler no), y largo como para no
+// adivinarlo: se genera con 32 bytes al azar (43 o 44 letras de base64, 64 de hex).
+// El tope evita leer un encabezado enorme.
+const SECRETO_DEL_WORKER = /^[A-Za-z0-9+/=_-]{32,1024}$/;
 
 /** Si la clave es un JWT de Supabase con el rol de servicio (la llave antigua «service_role»). */
 function esJwtDeServicio(clave: string): boolean {
@@ -211,6 +230,7 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
   const clavePublica = valor(VARIABLES.clavePublicaDeLasCuentas);
   const llaveDelSitio = valor(VARIABLES.llaveDelSitioDelCaptcha);
   const secretoDelCaptcha = valor(VARIABLES.secretoDelCaptcha);
+  const secretoDelWorker = valor(VARIABLES.secretoDelWorker);
 
   const urlDelOrigen = origen === "" ? null : direccionSegura(origen);
   if (origen !== "" && (urlDelOrigen === null || urlDelOrigen.origin !== origen)) {
@@ -255,6 +275,9 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
   else if (llaveDelSitio !== "" && secretoDelCaptcha !== "" && secretoDelCaptcha.length <= llaveDelSitio.length) {
     faltas.push(`${VARIABLES.llaveDelSitioDelCaptcha} y ${VARIABLES.secretoDelCaptcha} parecen cruzadas: la secreta es la más larga de las dos.`);
   }
+  if (secretoDelWorker !== "" && !SECRETO_DEL_WORKER.test(secretoDelWorker)) {
+    faltas.push(`${VARIABLES.secretoDelWorker} debe tener de 32 a 1024 letras de base64, base64url o hex (32 bytes al azar).`);
+  }
   if (LIMITES_DEL_SERVICIO.negociosPorPagina > LIMITES_DE_IDENTIDAD.maximoDeNegociosPorPagina) {
     faltas.push("La página de negocios del servicio es más grande que el tope de la puerta.");
   }
@@ -266,6 +289,7 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
     llaveDelPortero: { numero: Number.parseInt(numero, 10), secreto: bytes },
     cuentas: { direccion: direccionDeLasCuentas, clavePublica },
     captcha: { llaveDelSitio, secreto: secretoDelCaptcha },
+    worker: { secreto: secretoDelWorker },
   });
 }
 

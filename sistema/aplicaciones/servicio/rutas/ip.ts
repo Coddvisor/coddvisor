@@ -10,15 +10,16 @@
  * 27-nov-2026), y todos compartirían un solo cupo.
  *
  * x-coddvisor-ip se cree solo porque la función rechaza, antes de llegar aquí,
- * todo pedido sin el secreto del repartidor (la pieza del repartidor, paso 21
- * del plan de despliegue). Sin esa revisión cualquiera podría inventarla: esta
- * versión no se despliega sin ella.
+ * todo pedido sin el secreto del repartidor: ipDe la llama solo la puerta
+ * (rutas/puerta.ts), después de revisar el secreto, y las rutas reciben la IP de
+ * ella. Sin esa revisión cualquiera podría inventarla.
  *
  * Cómo se cuenta. Una IPv4, por su dirección. Una IPv6, por su bloque /64: cada
  * casa o celular recibe normalmente un bloque entero, y cambiar de dirección
  * dentro de él es gratis. Lo que no parece una IP cuenta como «sin-ip», una sola
  * clave para todos: se falla cerrado.
  */
+import { LIMITES_DEL_SERVICIO } from "../configuracion.ts";
 
 /** El encabezado que pone el Worker (contrato entre el Worker y la función). */
 export const ENCABEZADO_DE_LA_IP = "x-coddvisor-ip";
@@ -28,7 +29,6 @@ export const SIN_IP = "sin-ip";
 // Un /64: los cuatro primeros grupos de 16 bits de una IPv6.
 const GRUPOS_DEL_BLOQUE = 4;
 const GRUPOS_DE_UNA_IPV6 = 8;
-const LARGO_MAXIMO_DE_UNA_IP = 64;
 const IPV4 = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$/;
 const GRUPO = /^[0-9a-f]{1,4}$/;
 // Una IPv4 dentro de una IPv6 (::ffff:198.51.100.7) es una IPv4.
@@ -47,10 +47,13 @@ function gruposDe(ip: string): string[] | null {
   return grupos.every((g) => GRUPO.test(g)) ? grupos.map((g) => g.replace(/^0+(?=.)/, "")) : null;
 }
 
-/** La IP del pedido tal como llegó, o null si no hay una que se entienda. Es la que va a siteverify. */
+/**
+ * La IP del pedido tal como llegó, o null si no hay una que se entienda. Es la
+ * que va a siteverify. La llama solo la puerta, con el secreto del Worker ya revisado.
+ */
 export function ipDe(pedido: Request): string | null {
   const ip = pedido.headers.get(ENCABEZADO_DE_LA_IP)?.trim().toLowerCase() ?? "";
-  if (ip === "" || ip.length > LARGO_MAXIMO_DE_UNA_IP) return null;
+  if (ip === "" || ip.length > LIMITES_DEL_SERVICIO.largoMaximoDeUnaIp) return null;
   return claveDeLaIp(ip) === SIN_IP ? null : ip;
 }
 

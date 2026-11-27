@@ -21,7 +21,8 @@ sentido de todos los días, y el abogado confirma cómo se llaman en la ley.
   sueldo: esas tablas todavía no existen.
 - **Dos empresas tratan esos datos por cuenta de Coddvisor**: Supabase, que
   los guarda en São Paulo (Brasil), y Cloudflare, por donde van a pasar todos
-  los pedidos de `app.coddvisor.com` cuando exista el Worker.
+  los pedidos de `app.coddvisor.com` cuando se publique el Worker (su código
+  ya está en `sistema/aplicaciones/repartidor/`).
 - **Google no guarda datos por Coddvisor**: es el proveedor con el que la
   persona elige entrar. Se anota porque le entrega a Coddvisor su correo y su
   nombre.
@@ -62,7 +63,7 @@ el negocio y Coddvisor los trata por encargo suyo. El abogado lo confirma.
 | Proveedor | Qué hace para Coddvisor | Qué datos ve | Dónde | Desde cuándo |
 |---|---|---|---|---|
 | **Supabase** (proyecto `coddvisor-sistema`) | Guarda la base, las cuentas (Supabase Auth), corre la función `servicio` y manda los correos de confirmación de cuenta (Coddvisor no tiene un servidor de correo propio, `sistema/supabase/LEEME.md`) | Todo lo de la tabla de arriba, y lo que el sistema guarde después | **São Paulo, Brasil** (D30). Es una transferencia internacional. Se justifica en D30: es la única región de Supabase en Sudamérica, y una más lejana haría lentas las pantallas | Ya: Auth está encendido. La base, desde la primera corrida de las migraciones |
-| **Cloudflare** | El Worker que recibe todo lo que llega a `app.coddvisor.com` y lo reparte (decisión 1 de `donde-corre-el-sistema.md`). Y Turnstile, la prueba de que no es un robot (decisión C del plan de despliegue), en `/entrar/` y en «Abra su negocio con Google» | Por el Worker, todo lo que viaja entre el navegador y el servicio: correos, contraseñas al entrar, y después ventas, DNI y sueldos; no lo guarda, lo deja pasar. Por Turnstile, de cada visitante de esas dos pantallas: su dirección de internet y señales de su navegador y del uso de la página, para decidir si es una persona | Su red en muchos países. El Worker corre en el centro de Cloudflare más cercano a la persona | Cuando se cree el Worker. Hoy no pasa nada del sistema por ahí |
+| **Cloudflare** | El Worker que recibe todo lo que llega a `app.coddvisor.com` y lo reparte (decisión 1 de `donde-corre-el-sistema.md`). Y Turnstile, la prueba de que no es un robot (decisión C del plan de despliegue), en `/entrar/` y en «Abra su negocio con Google» | Por el Worker, todo lo que viaja entre el navegador y el servicio: correos, contraseñas al entrar, y después ventas, DNI y sueldos; no lo guarda, lo deja pasar. Para el freno contra intentos a la fuerza, cuenta los pedidos de cada IP (con IPv6, de su red `/64`) durante 60 segundos, en el centro de datos que atiende a la persona; su registro anota solo errores, sin la IP (`sistema/herramientas/repartidor/LEEME.md`). Por Turnstile, de cada visitante de esas dos pantallas: su dirección de internet y señales de su navegador y del uso de la página, para decidir si es una persona | Su red en muchos países. El Worker corre en el centro de Cloudflare más cercano a la persona | Desde el primer despliegue del repartidor. Hasta entonces no pasa nada del sistema por ahí |
 | **Google** (no es encargado) | El botón «Continuar con Google» | Google sabe que la persona entró a Coddvisor. A Coddvisor le entrega correo, nombre y foto, solo con los permisos `openid`, `email` y `profile` (decisión 8 bis) | Los suyos | Ya: Google está encendido en Supabase |
 
 ## Quién más los trata: el sitio (`www.coddvisor.com`)

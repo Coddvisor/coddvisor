@@ -23,6 +23,7 @@ import { COOKIES } from "../rutas/http.ts";
 import { crearManejador, PAGINAS, RUTAS, type Manejador } from "../rutas/rutas.ts";
 import { crearBase, ESPERADO, EMISOR, fundar, llaveDelPortero, registrar, uuid7, type Base } from "../../../modulos/identidad/pruebas/apoyo.ts";
 import { repartidorDePrueba } from "./repartidor-de-prueba.ts";
+import { puertaSinWorker } from "./puerta-sin-worker.ts";
 import { crearSupabaseFalso, type CuentaDelFalso, type SupabaseFalso } from "./supabase-falso.ts";
 import { crearVerificadorDeTurnstile } from "../proveedor/turnstile.ts";
 import { ENCABEZADO_DE_LA_IP } from "../rutas/ip.ts";
@@ -91,7 +92,7 @@ before(async () => {
   };
   piezasBase = piezas;
   const proveedor = crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: falso.pedir });
-  manejador = crearManejador({ piezas, proveedor, origen: ORIGEN, captcha: CAPTCHA });
+  manejador = crearManejador({ piezas, proveedor, origen: ORIGEN, captcha: CAPTCHA, puerta: puertaSinWorker });
 });
 after(async () => {
   await db.close();
@@ -262,7 +263,7 @@ describe("el segundo paso con la app de códigos", () => {
   it("volver a pedir la inscripción (recargar la pantalla) da otro QR, no un error", async () => {
     const persona = cuenta("recarga@ejemplo.test", "Recarga de Ejemplo");
     const otro = await crearSupabaseFalsoCon([persona]);
-    const m = crearManejador({ piezas: piezasDe(otro), proveedor: crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: otro.pedir }), origen: ORIGEN, captcha: CAPTCHA });
+    const m = crearManejador({ piezas: piezasDe(otro), proveedor: crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: otro.pedir }), origen: ORIGEN, captcha: CAPTCHA, puerta: puertaSinWorker });
     const entrada = await m(peticion(RUTAS.entrarConCorreo, { correo: persona.correo, contrasena: CONTRASENA, captcha: PRUEBA }));
     const jarro = guardar(new Map(), entrada);
     const primera = await m(peticion(RUTAS.inscribirSegundoPaso, undefined, jarro));
@@ -286,7 +287,7 @@ describe("el segundo paso con la app de códigos", () => {
       emisor: EMISOR, audiencia: ESPERADO.audiencia, clavePublica: CLAVE_PUBLICA, codigoDeLaApp: CODIGO_DE_LA_APP,
       vueltasPermitidas: [ORIGEN], duracionDelPaseS: 3600, reloj: () => ahora, cuentas: [persona], antesDeCrearUnaCuenta: ganchoDeLaBase, captcha: PRUEBA,
     });
-    const m = crearManejador({ piezas: piezasDe(otro), proveedor: crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: otro.pedir }), origen: ORIGEN, captcha: CAPTCHA });
+    const m = crearManejador({ piezas: piezasDe(otro), proveedor: crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: otro.pedir }), origen: ORIGEN, captcha: CAPTCHA, puerta: puertaSinWorker });
     const jarro = guardar(new Map(), await m(peticion(RUTAS.entrarConCorreo, { correo: persona.correo, contrasena: CONTRASENA, captcha: PRUEBA })));
     const TOPE_DE_SUPABASE = 10;
     for (let i = 0; i < TOPE_DE_SUPABASE; i += 1) assert.equal((await m(peticion(RUTAS.inscribirSegundoPaso, undefined, jarro))).status, 200);
@@ -415,7 +416,7 @@ describe("los cupos compartidos de intentos", () => {
     const ip = "192.0.2.31";
     const tope = await topeDe(db, "permisos_de_alta_por_ip");
     await esperarLejosDelBorde(tope.ventanaS);
-    const otraCopia = crearManejador({ piezas: piezasBase, proveedor: crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: falso.pedir }), origen: ORIGEN, captcha: CAPTCHA });
+    const otraCopia = crearManejador({ piezas: piezasBase, proveedor: crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: falso.pedir }), origen: ORIGEN, captcha: CAPTCHA, puerta: puertaSinWorker });
     for (let i = 0; i < tope.maximo; i += 1) {
       const copia = i % 2 === 0 ? manejador : otraCopia;
       assert.equal((await copia(peticionDesde(ip, RUTAS.permisoDeAlta, { correo: `copia.${String(i)}@ejemplo.test`, captcha: PRUEBA }))).status, 200);

@@ -252,6 +252,17 @@ una página que dice que esa parte llega pronto. Cloudflare publica solo desde
 `main`, como la web. Nadie sube nada a mano. Ese día no se abre ninguna otra
 cuenta: ni Fly.io, ni Vercel, ni nada en Supabase fuera de lo que ya hay.
 
+(Propuesto el 27-nov-2026, plan de despliegue, pasos 25 y 26. Cambia esta
+decisión: queda aprobado solo si el fundador aprueba la solicitud que lo trae.) El
+Worker se adelanta a la caja: las pantallas de entrar ya existen y Google
+necesita volver a `app.coddvisor.com`. Vive en `sistema/aplicaciones/repartidor/`,
+con sus pruebas, y también frena por IP. Cambia cómo se publica: en vez de
+importar el repositorio en el panel de Cloudflare (pasos 2 y 3 de arriba), lo
+publica el flujo «Desplegar el repartidor» de GitHub Actions con Wrangler, desde
+`main` y con la aprobación del fundador, como pide la decisión 8. El fundador
+solo agrega el dominio (paso 4). La guía está en
+`sistema/herramientas/repartidor/LEEME.md`.
+
 **2. Las pantallas del ERP son páginas que sirve Cloudflare.** El panel y la
 caja se construyen como archivos fijos (páginas, estilos y programas del
 navegador). El Worker los sirve gratis desde Cloudflare. Los datos los piden
@@ -516,9 +527,12 @@ Dónde vive cada secreto, porque el repositorio es público:
   restaurar un respaldo en otro entorno. La llave de uso `trabajos` la tiene
   solo la función de trabajos.
 - **El permiso para desplegar Edge Functions**: en el mismo entorno protegido
-  de GitHub. Ese permiso es de la cuenta de Supabase, no de un solo proyecto.
-  Por eso se crea con la cuenta que solo tiene `coddvisor-sistema`, o se
-  confirma antes qué proyectos alcanza.
+  de GitHub. (Corregido el 27-nov-2026: antes decía que ese permiso era de toda
+  la cuenta.) Supabase deja limitar el token a un solo proyecto y a ciertos
+  permisos (supabase.com/docs/guides/platform/personal-access-tokens): se crea
+  solo para `coddvisor-sistema`, con Edge Functions y Edge Function Secrets,
+  justo antes de cada despliegue, y se revoca al terminar
+  (`sistema/herramientas/desplegar/LEEME.md`).
 
 - **Se rompe si** alguien despliega a mano desde su computadora, o si un
   secreto queda al alcance de una solicitud de revisión.

@@ -113,6 +113,7 @@ dentro de Node (con PGlite) y desaparece al terminar.
 | `supabase/`                               | Lo que pide Supabase para desplegar: `config.toml` y el arranque del servicio como función (`functions/servicio/index.ts`, en Deno). Su guía, con los pasos del panel: `supabase/LEEME.md` |
 | `herramientas/probar-entrar/`             | El modo de prueba local de entrar (`npm run probar:entrar`): solo para esta computadora |
 | `herramientas/migrador/`                  | El migrador que lleva las migraciones nuevas a la base real, con su registro (`control.migracion_aplicada`), y la ceremonia de la llave del portero. Los corre GitHub Actions (`.github/workflows/migraciones.yml` y `llave-del-portero.yml`). Su guía: `LEEME.md` |
+| `herramientas/desplegar/`                 | El despliegue de la función del servicio en Supabase, que corre GitHub Actions (`.github/workflows/desplegar-servicio.yml`, con su candado de Deno en `candado-de-deno.yml`). Su guía: `LEEME.md` |
 | `base-de-datos/migraciones/`              | Cada cambio de la base, con fecha en el nombre. Solo se agregan archivos |
 | `base-de-datos/migraciones.candado.json`  | La huella de cada migración aceptada, para notar si alguien la edita |
 | `base-de-datos/verificador/reglas.mjs`    | Las reglas BD-01 a BD-14, BD-16 y BD-17, escritas como preguntas a la base |
