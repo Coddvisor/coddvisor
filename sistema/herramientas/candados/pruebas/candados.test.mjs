@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { compararCandados, rutasAComparar } from '../contra-main.mjs';
+import { compararCandados, compararCorrecciones, correccionesNuevas, rutasAComparar } from '../contra-main.mjs';
 import { faltas, huellasDe, leerCandado, listarContratos, publicar, sellar } from '../contratos.mjs';
 
 const pub = (huella) => ({ estado: 'publicado', huella, publicado_el: '2026-12-01', motivo: 'primera caja' });
@@ -51,6 +51,42 @@ describe('candado contra main', () => {
     assert.match(compararCandados({ a: { estado: 'borrador', huella: '1' } }, { a: pub('2') })[0], /mismo cambio/);
     assert.match(compararCandados({}, { a: pub('1') })[0], /ya viene publicado/);
     assert.match(compararCandados(null, { a: pub('1') })[0], /ya viene publicado/);
+  });
+  it('una migración se corrige solo con su corrección anotada, y nunca un vector publicado', () => {
+    const [a, b, c] = ['a'.repeat(64), 'b'.repeat(64), 'c'.repeat(64)];
+    const x = '20261126233000_x.sql';
+    const corr = [{ archivo: x, antes: a, despues: b }];
+    assert.deepEqual(compararCandados({ [x]: a }, { [x]: b }, corr), []);
+    assert.match(compararCandados({ [x]: a }, { [x]: c }, corr)[0], /cambió respecto de main/);
+    assert.match(compararCandados({ [x]: c }, { [x]: b }, corr)[0], /cambió respecto de main/);
+    assert.match(compararCandados({ y: a }, { y: b }, corr)[0], /cambió respecto de main/);
+    assert.match(compararCandados({ [x]: pub(a) }, { [x]: pub(b) }, corr)[0], /cambió respecto de main/);
+    assert.match(compararCandados({ [x]: a }, {}, corr)[0], /desapareció/);
+  });
+  it('solo abren paso las correcciones que trae este cambio, nunca las ya unidas', () => {
+    const vieja = { archivo: 'v', antes: 'a', despues: 'b' };
+    const nueva = { archivo: 'n', antes: 'c', despues: 'd' };
+    assert.deepEqual(correccionesNuevas([vieja], [vieja, nueva]), [nueva]);
+    assert.deepEqual(correccionesNuevas(null, [nueva]), [nueva]);
+    assert.deepEqual(correccionesNuevas([vieja], {}), []);
+  });
+  it('las correcciones solo se agregan y dicen qué, cuándo, por qué y quién', () => {
+    const buena = { archivo: '20261126233000_x.sql', antes: 'a'.repeat(64), despues: 'b'.repeat(64), fecha: '2026-11-27', motivo: 'falló en la base real y no llegó a aplicarse', aprobo: 'fundador' };
+    assert.deepEqual(compararCorrecciones(null, [buena]), []);
+    assert.deepEqual(compararCorrecciones([buena], [buena, { ...buena, archivo: '20261127220000_y.sql' }]), []);
+    assert.match(compararCorrecciones([buena], [])[0], /solo se agregan/);
+    assert.match(compararCorrecciones([buena], [{ ...buena, motivo: 'otro motivo cualquiera, bastante largo' }])[0], /solo se agregan/);
+    assert.match(compararCorrecciones(null, {})[0], /lista/);
+    // Atada al cambio de huella de este mismo cambio.
+    const x = buena.archivo;
+    assert.deepEqual(compararCorrecciones(null, [buena], { [x]: buena.antes }, { [x]: buena.despues }), []);
+    assert.match(compararCorrecciones(null, [buena], {}, { [x]: buena.antes }).join(' '), /no estaba aceptada en main/, 'plantada de antemano');
+    assert.match(compararCorrecciones(null, [buena], { [x]: 'c'.repeat(64) }, { [x]: buena.despues }).join(' '), /«antes»/);
+    assert.match(compararCorrecciones(null, [buena], { [x]: buena.antes }, { [x]: buena.antes }).join(' '), /«después»/, 'sin el cambio de huella');
+    for (const [campo, valor, error] of [
+      ['archivo', 'x.sql', /no nombra/], ['antes', 'zz', /huella/], ['despues', 'a'.repeat(64), /distintas/],
+      ['fecha', '2026-02-31', /fecha/], ['fecha', '2026-13-01', /fecha/], ['motivo', 'corto', /motivo/], ['aprobo', '', /aprobó/],
+    ]) assert.match(compararCorrecciones(null, [{ ...buena, [campo]: valor }]).join(' '), error, `${campo}=${valor}`);
   });
   it('renombrar o borrar la carpeta entera de un contrato se nota', () => {
     assert.deepEqual(rutasAComparar(['m', 'contratos/nueva/candado.json'], ['contratos/caja/candado.json']), ['contratos/caja/candado.json', 'contratos/nueva/candado.json', 'm']);

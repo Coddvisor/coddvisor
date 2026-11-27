@@ -1,0 +1,18 @@
+[
+  {
+    "archivo": "20261126233000_barrera_de_altas.sql",
+    "antes": "2d73f13b8d0fb257aedc34cec5649532d10bb9d7daeeebfc23bfb34053f6b2f5",
+    "despues": "4155dd896a16a7bec8c378ebbd78fd5a4419b37c5dea0129ed63b21ec6ce58c0",
+    "fecha": "2026-11-27",
+    "motivo": "La primera corrida contra la base real (Migraciones a la base real, corrida 46075946021) falló aquí: «permission denied for function antes_de_crear_cuenta». En Supabase quien migra (postgres) no es superusuario y, con el dueño ya cambiado a coddvisor_identidad, no puede quitar permisos a anon, authenticated y service_role. El bloque iba en la transacción del primer paso, que se deshizo entera: la base quedó con 0 migraciones y esta nunca llegó a una base real. Solo cambia el orden: el dueño cambia después de quitar esos permisos.",
+    "aprobo": "fundador, 27-nov-2026"
+  },
+  {
+    "archivo": "20261127220000_cupos_compartidos.sql",
+    "antes": "65d25d0924d57df8d69e96831d9b0b2dce74d650f06d06207d406ebce8668e1e",
+    "despues": "a8fab9f3d1a409ef6be68a9bb89d278e4adbe0e23c8053750dec03fa72487f70",
+    "fecha": "2026-11-27",
+    "motivo": "Tiene el mismo error que la barrera de altas, encontrado en el ensayo con la base de Supabase: «permission denied for function usar_cupos». No llegó a la base real, porque la corrida se detuvo antes. Solo cambia el orden: el dueño cambia después de quitar los permisos de anon, authenticated y service_role.",
+    "aprobo": "fundador, 27-nov-2026"
+  }
+]

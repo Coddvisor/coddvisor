@@ -42,3 +42,8 @@ jobs:
           cache-dependency-path: sistema/package-lock.json
       - run: npm ci --ignore-scripts
       - run: npm run verificar
+
+  # Las migraciones, aplicadas en una base igual a la de Supabase, con su rol
+  # postgres que no es superusuario. Corre en toda solicitud, como la de arriba.
+  ensayo-en-supabase:
+    uses: ./.github/workflows/ensayo-en-supabase.yml

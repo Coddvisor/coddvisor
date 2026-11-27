@@ -205,10 +205,24 @@ describe('los flujos de GitHub', () => {
     assert.match(on, /push:\n\s+branches: \[main\]/);
     assert.match(on, /workflow_dispatch:/);
     const migrar = texto.slice(texto.indexOf('\n  migrar:'));
-    assert.match(migrar, /needs: verificar/);
+    assert.match(migrar, /needs: \[verificar, ensayo-en-supabase\]/, 'la base real espera a los dos ensayos');
     assert.match(migrar, /environment: base-real/);
-    assert.match(texto.slice(0, texto.indexOf('\n  migrar:')), /npm run verificar/);
-    assert.ok(!texto.slice(0, texto.indexOf('\n  migrar:')).includes('secrets.'), 'el paso sin entorno no ve ningún secreto');
+    const antes = texto.slice(0, texto.indexOf('\n  migrar:'));
+    assert.match(antes, /npm run verificar/);
+    assert.match(antes, /uses: \.\/\.github\/workflows\/ensayo-en-supabase\.yml/);
+    assert.ok(!antes.includes('secrets'), 'los pasos sin entorno no ven ningún secreto');
+  });
+
+  test('el ensayo en Supabase usa su imagen fijada, migra como postgres y no ve secretos', async () => {
+    const texto = await flujo('ensayo-en-supabase.yml');
+    assert.match(disparadores(texto), /^\non:\n\s+workflow_call:\s*$/, 'solo lo llaman otros flujos');
+    assert.match(texto, /image: public\.ecr\.aws\/supabase\/postgres:17\.[0-9.]+@sha256:[0-9a-f]{64}/, 'la imagen de Supabase, fijada por su huella');
+    assert.match(texto, /rolsuper/, 'comprueba que postgres no sea superusuario');
+    assert.match(texto, /postgresql:\/\/postgres:/, 'migra como postgres');
+    assert.match(texto, /permisos-en-supabase\.sql/);
+    assert.ok(!texto.includes('secrets'), 'no ve ningún secreto');
+    const bases = await flujo('bases.yml');
+    assert.match(bases, /uses: \.\/\.github\/workflows\/ensayo-en-supabase\.yml/, 'corre en cada solicitud');
   });
 
   test('la llave del portero corre solo a mano y en el entorno protegido', async () => {
