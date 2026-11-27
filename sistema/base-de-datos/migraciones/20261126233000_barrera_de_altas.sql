@@ -187,7 +187,7 @@ comment on function identidad.permitir_alta(uuid, text, integer, bigint, integer
 
 revoke all on function identidad.permitir_alta(uuid, text, integer, bigint, integer, bytea) from public;
 grant execute on function identidad.permitir_alta(uuid, text, integer, bigint, integer, bytea) to coddvisor_app;
-alter function identidad.permitir_alta(uuid, text, integer, bigint, integer, bytea) owner to coddvisor_identidad;
+-- Cambia de dueño al final, después de quitar los permisos de Supabase.
 
 -- ---------------------------------------------------------------------------
 -- b. El gancho «antes de crear una cuenta»
@@ -231,11 +231,16 @@ comment on function ganchos.antes_de_crear_cuenta(jsonb) is 'Gancho «Before Use
 
 revoke all on function ganchos.antes_de_crear_cuenta(jsonb) from public;
 grant execute on function ganchos.antes_de_crear_cuenta(jsonb) to supabase_auth_admin;
-alter function ganchos.antes_de_crear_cuenta(jsonb) owner to coddvisor_identidad;
 
 -- Supabase da permisos por omisión a sus roles de la API (anon, authenticated,
 -- service_role). Como pide su documentación, ninguno ejecuta el gancho ni la
 -- puerta. Fuera de Supabase esos roles no existen y no hay nada que quitar.
+--
+-- Va ANTES de cambiar el dueño de las dos funciones. En Supabase quien migra
+-- (postgres) no es superusuario y es miembro de coddvisor_identidad sin
+-- heredar sus permisos: una vez que el dueño es coddvisor_identidad, ya no
+-- puede quitar permisos sobre ellas («permission denied for function»). En la
+-- base de prueba no se notaba: esos roles no existen y el bloque no hace nada.
 do $$
 declare
   v_rol text;
@@ -249,6 +254,9 @@ begin
   end loop;
 end
 $$;
+
+alter function identidad.permitir_alta(uuid, text, integer, bigint, integer, bytea) owner to coddvisor_identidad;
+alter function ganchos.antes_de_crear_cuenta(jsonb) owner to coddvisor_identidad;
 
 -- ---------------------------------------------------------------------------
 -- Al final

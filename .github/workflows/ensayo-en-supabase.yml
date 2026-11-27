@@ -1,0 +1,75 @@
+# Ensayo de las migraciones en una base igual a la de Supabase.
+#
+# Usa la imagen de Postgres que publica Supabase, la misma versión que la base
+# real (17.12), y migra con su rol postgres, que allí NO es superusuario: igual
+# que en la base real. Así aparece aquí lo que antes solo aparecía en la base
+# real. El 27-nov-2026 la primera corrida real falló: en Supabase postgres no
+# es superusuario y no pudo quitar permisos después de cambiar el dueño de una
+# función. El ensayo de entonces no lo vio, porque no tenía los roles de la API
+# de Supabase (anon, authenticated, service_role) y no pasaba por esas
+# instrucciones.
+#
+# Lo llaman «Bases del sistema» (en cada solicitud) y «Migraciones a la base
+# real» (antes de tocarla). No usa secretos: la base vive solo dentro del runner
+# y su contraseña no protege nada.
+name: Ensayo en una base como la de Supabase
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  ensayar:
+    name: Ensayo en una base como la de Supabase
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        # La versión de la base real (la escribe el migrador al empezar: «La
+        # base es PostgreSQL 17.12»). Fijada por su huella, como las acciones.
+        image: public.ecr.aws/supabase/postgres:17.12.0.005@sha256:df59ef0172dec80053ea186542ba12c8719bb5ca38abbecffd6b7cd6b4075994
+        env:
+          POSTGRES_PASSWORD: ensayo-dentro-del-runner
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -h 127.0.0.1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 30
+    defaults:
+      run:
+        working-directory: sistema
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGPASSWORD: ensayo-dentro-del-runner
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: sistema/.nvmrc
+      # Si postgres fuera superusuario, el ensayo no se parecería a la base real.
+      - name: Quien migra no es superusuario, como en Supabase
+        run: |
+          es=$(psql --no-psqlrc -U postgres -d postgres -Atc "select rolsuper from pg_roles where rolname = current_user")
+          if [ "$es" != "f" ]; then
+            echo "::error::En esta imagen postgres es superusuario: el ensayo no se parece a Supabase."
+            exit 1
+          fi
+      # El migrador no usa librerías: no hace falta npm ci. Dos veces: la
+      # segunda no debe aplicar nada.
+      - name: Migrar como postgres, dos veces
+        run: |
+          export CODDVISOR_MIGRAR_CONEXION="postgresql://postgres:${PGPASSWORD}@localhost:5432/postgres?sslmode=disable"
+          node herramientas/migrador/migrar.mjs
+          node herramientas/migrador/migrar.mjs | tee segunda.txt
+          grep -q "No hay migraciones nuevas" segunda.txt
+      - name: Revisar los permisos que quedaron
+        run: |
+          esquemas=$(grep -h -o -i -E "create schema( if not exists)? [a-z_]+" base-de-datos/migraciones/*.sql | awk '{print $NF}' | sort -u | paste -sd, -)
+          psql --no-psqlrc -q -U supabase_admin -d postgres -v esquemas="$esquemas" -f herramientas/migrador/permisos-en-supabase.sql

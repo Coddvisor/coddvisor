@@ -116,6 +116,7 @@ dentro de Node (con PGlite) y desaparece al terminar.
 | `herramientas/desplegar/`                 | El despliegue de la función del servicio en Supabase, que corre GitHub Actions (`.github/workflows/desplegar-servicio.yml`, con su candado de Deno en `candado-de-deno.yml`). Su guía: `LEEME.md` |
 | `base-de-datos/migraciones/`              | Cada cambio de la base, con fecha en el nombre. Solo se agregan archivos |
 | `base-de-datos/migraciones.candado.json`  | La huella de cada migración aceptada, para notar si alguien la edita |
+| `base-de-datos/migraciones.correcciones.json` | Las correcciones de migraciones que nunca llegaron a una base real (la excepción de BD-15). Solo se agregan |
 | `base-de-datos/verificador/reglas.mjs`    | Las reglas BD-01 a BD-14, BD-16 y BD-17, escritas como preguntas a la base |
 | `base-de-datos/verificador/migraciones.mjs` | La regla BD-15, sobre los archivos de migración           |
 | `base-de-datos/verificador/configuracion.mjs` | Permisos por clase de tabla, la lista cerrada del plano de control y convenciones de nombres |

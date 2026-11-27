@@ -203,11 +203,16 @@ la contraseña sola, y la ceremonia tapa la llave antes de escribir nada.
 ## Cómo se aprueba una corrida de las migraciones
 
 1. Al unir a `main` un cambio con una migración, en **Actions** aparece
-   «Migraciones a la base real». Su primer paso, «Verificar y ensayar», corre
-   solo. El segundo, «Migrar la base real», queda **Waiting**.
-2. Antes de aprobar, abra «Verificar y ensayar» → «Ensayo del migrador en un
-   Postgres de prueba». Ahí está la lista de lo que se aplicó en la base de
-   prueba. Si el ensayo falló, el segundo paso no arranca.
+   «Migraciones a la base real». Sus dos ensayos corren solos:
+   - «Verificar y ensayar», en un Postgres de prueba;
+   - «Ensayo en una base como la de Supabase», en la misma base que usa
+     Supabase, migrando con su rol `postgres`, que no es superusuario.
+
+   El tercer paso, «Migrar la base real», queda **Waiting**.
+2. Antes de aprobar, abra «Ensayo en una base como la de Supabase» y luego
+   «Migrar como postgres, dos veces». Ahí está la lista de lo que se aplicó en
+   la base de prueba. Si alguno de los dos ensayos falló, el tercer paso no
+   arranca.
 3. Toque **Review deployments**, marque `base-real` y **Approve and deploy**. O
    **Reject** si no es el momento.
 4. Al terminar, el registro de «Migrar la base real» dice cada migración
@@ -232,6 +237,20 @@ y qué dijo la base. No se arregla a mano: se corrige con un cambio nuevo, por
 solicitud de revisión, y la próxima corrida sigue desde ahí. Si dice que una
 huella no coincide o que la base tiene tablas sin registro, alguien tocó la base
 o una migración aceptada: no apruebe más corridas hasta entender qué pasó.
+
+Si la que falló es la migración misma, ella nunca llegó a la base, porque su
+transacción se deshizo. Entonces vale la única excepción de BD-15: se corrige
+ese archivo y se vuelve a sellar con `npm run candado -- --rehacer archivo.sql`.
+En la misma solicitud, el cambio se anota en `migraciones.correcciones.json`,
+con la huella de antes y la de después, la fecha, el motivo y quién lo aprobó.
+Antes de aprobarla:
+1. Corra **Migraciones a la base real** con «solo mirar» y confirme que el
+   archivo corregido aparece como «se aplicaría», es decir, que la base real
+   no lo tiene.
+2. Compruebe que el ensayo en una base como la de Supabase
+   (`.github/workflows/ensayo-en-supabase.yml`) pasa con el archivo corregido.
+
+Así pasó el 27-nov-2026 con la primera corrida.
 
 ## La ceremonia de la llave del portero
 

@@ -33,7 +33,10 @@ a D34) y en `arquitectura/reports/Referencia de diseño y primer alcance.md`.
 4. **Nada se borra.** Se archiva o se anula. Los libros (stock, caja,
    contabilidad) solo se anexan.
 5. **Las migraciones solo agregan** y no se editan después de aceptadas. Nadie
-   ejecuta SQL a mano en una base real.
+   ejecuta SQL a mano en una base real. La única excepción está en BD-15: una
+   migración que nunca llegó a una base real y no se puede aplicar se corrige,
+   se anota en `migraciones.correcciones.json` y la aprueba el fundador.
+   (Cambio del 27-nov-2026.)
 6. **Antes de dar un cambio por terminado**, corra `npm run verificar` dentro
    de `sistema/` y muestre el resultado. Si falla, no está terminado.
 7. **Una regla no se salta en silencio.** Si estorba, se propone cambiarla

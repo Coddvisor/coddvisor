@@ -441,6 +441,24 @@ el portero el negocio que abrió una puerta de identidad. (Cambio del
 26-nov-2026, tramo 2a de la identidad.) `migraciones.candado.json` guarda la
 huella de cada archivo. Nadie ejecuta SQL a mano en producción.
 
+Hay una sola excepción: corregir una migración aceptada que **nunca llegó a
+una base real y que no se puede aplicar**. Que no se puede aplicar lo demuestra
+una corrida contra la base real que falló en ella, con su transacción deshecha
+entera, o el ensayo en una base como la de Supabase. Agregar otro archivo no
+sirve, porque el que falla va antes y seguiría fallando. Se corrige el archivo
+y se vuelve a sellar con `npm run candado -- --rehacer archivo.sql`. El cambio
+de huella se anota en `migraciones.correcciones.json`, en la misma solicitud:
+qué archivo, la huella de antes y la de después, la fecha, el motivo y quién lo
+aprobó. Las correcciones solo se agregan y las aprueba el fundador. Antes de
+aprobar una, el fundador corre «Migraciones a la base real» con «solo mirar» y
+confirma que el archivo aparece como «se aplicaría», es decir, que la base real
+no lo tiene. La revisión automática (CT-01) acepta solo el cambio de huella
+exacto que anota una corrección nueva de esa misma solicitud: una corrección
+ya unida no vuelve a servir. Si una base real tuviera aplicada la versión de
+antes, el migrador se niega a seguir, porque compara cada huella aplicada con
+la del archivo. (Cambio del 27-nov-2026: la primera corrida contra la base
+real falló, porque en Supabase quien migra no es superusuario.)
+
 ### Afuera de los negocios
 
 **BD-16. Afuera de los negocios viven solo las tablas de una lista cerrada.**

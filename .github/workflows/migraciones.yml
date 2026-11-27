@@ -5,12 +5,14 @@
 # la pestaña Actions. Nunca en una solicitud de revisión: ninguna solicitud llega
 # al secreto de la base.
 #
-# Dos pasos:
+# Tres pasos:
 #   1. «verificar», sin secretos: npm run verificar y un ensayo del migrador con
 #      psql contra un Postgres de prueba dentro del runner, dos veces (la segunda
 #      no debe aplicar nada).
-#   2. «migrar», en el entorno protegido «base-real», que exige la aprobación del
-#      fundador: el migrador contra la base real.
+#   2. «ensayo-en-supabase», sin secretos: el mismo ensayo en una base igual a
+#      la de Supabase, migrando con su rol postgres, que no es superusuario.
+#   3. «migrar», en el entorno protegido «base-real», que exige la aprobación del
+#      fundador: el migrador contra la base real. Solo si los dos ensayos pasan.
 #
 # La guía para el fundador (qué secretos se crean, dónde se saca cada valor y
 # cómo se aprueba una corrida) está en sistema/herramientas/migrador/LEEME.md.
@@ -95,9 +97,14 @@ jobs:
           node herramientas/migrador/migrar.mjs | tee segunda.txt
           grep -q "No hay migraciones nuevas" segunda.txt
 
+  # El mismo ensayo en una base igual a la de Supabase (ver ese archivo).
+  ensayo-en-supabase:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/ensayo-en-supabase.yml
+
   migrar:
     name: Migrar la base real
-    needs: verificar
+    needs: [verificar, ensayo-en-supabase]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 15

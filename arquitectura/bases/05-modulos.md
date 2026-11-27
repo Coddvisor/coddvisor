@@ -67,6 +67,7 @@ sistema/
   base-de-datos/
     migraciones/            Cada cambio de la base, con fecha. Solo se agregan.
     migraciones.candado.json  La huella de cada migración aceptada.
+    migraciones.correcciones.json  Las correcciones que permite BD-15.
     verificador/            Las diecisiete reglas, escritas como revisiones.
     pruebas/                Pruebas de las reglas y del comportamiento.
   herramientas/             Guardias que corren en cada cambio.
@@ -245,7 +246,9 @@ que lo use la primera caja real.
 - **CT-01.** Lo publicado no cambia. Se compara contra lo que ya está en `main`,
   así que editar el vector y su huella en el mismo cambio también se nota, y
   renombrar o borrar la carpeta también. Publicar y editar van en cambios distintos. Lo
-  mismo vale para las migraciones selladas.
+  mismo vale para las migraciones selladas, salvo la corrección que permite
+  BD-15: una migración que nunca llegó a una base real, anotada en
+  `migraciones.correcciones.json`.
 
 ## Cuándo nace un módulo nuevo
 

@@ -251,10 +251,11 @@ comment on function identidad.usar_cupos(text[], text[], integer, bigint, intege
 
 revoke all on function identidad.usar_cupos(text[], text[], integer, bigint, integer, bytea) from public;
 grant execute on function identidad.usar_cupos(text[], text[], integer, bigint, integer, bytea) to coddvisor_app;
-alter function identidad.usar_cupos(text[], text[], integer, bigint, integer, bytea) owner to coddvisor_identidad;
 
 -- Como en la barrera de altas: ninguno de los roles de la API de Supabase
--- ejecuta la puerta. Fuera de Supabase esos roles no existen.
+-- ejecuta la puerta. Fuera de Supabase esos roles no existen. Va antes de
+-- cambiar el dueño: en Supabase quien migra no es superusuario y, con el dueño
+-- ya cambiado, no podría quitar estos permisos.
 do $$
 declare
   v_rol text;
@@ -266,6 +267,8 @@ begin
   end loop;
 end
 $$;
+
+alter function identidad.usar_cupos(text[], text[], integer, bigint, integer, bytea) owner to coddvisor_identidad;
 
 -- ---------------------------------------------------------------------------
 -- Al final
