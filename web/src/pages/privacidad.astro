@@ -1,7 +1,7 @@
 ---
 // Aviso de privacidad del sitio (Ley 29733 de Protección de Datos Personales y su reglamento).
 // BORRADOR: debe revisarlo alguien que conozca la norma antes de publicarlo.
-// Si cambia lo que se guarda o para qué, se sube AVISO_VERSION en functions/api/contacto.js y en
+// Si cambia lo que se guarda, para qué o quién más lo ve, se sube AVISO_VERSION en functions/api/contacto.js y en
 // functions/api/pregunta.js, y la fecha de abajo: así cada pedido y cada pregunta saben qué versión
 // de este texto vio la persona.
 import Base from '../layouts/Base.astro';
@@ -9,7 +9,7 @@ import { fechaLarga } from '../datos/herramientas';
 
 // PENDIENTE antes de publicar: razón social y RUC de quien es responsable de los datos.
 const titular = { nombre: 'Coddvisor', ruc: '' };
-const vigente = '2026-11-26';
+const vigente = '2026-11-27';
 ---
 <Base
   titulo="Privacidad: qué datos guardamos y para qué | Coddvisor"
@@ -57,11 +57,12 @@ const vigente = '2026-11-26';
       <p>Los datos del formulario, para escribirle por WhatsApp y conversar sobre si Coddvisor le sirve a su negocio. Las preguntas, para responderlas y publicarlas, y para mejorar las guías. Para nada más.</p>
 
       <h3>Quién más los ve</h3>
-      <p>Nadie fuera del equipo de Coddvisor. Tres empresas nos dan el servicio técnico y por eso pasan por sus servidores, que están fuera del Perú:</p>
+      <p>Nadie fuera del equipo de Coddvisor. Cuatro empresas nos dan el servicio técnico y por eso pasan por sus servidores, que están fuera del Perú:</p>
       <ul class="revisar">
         <li><b>Cloudflare</b> publica este sitio.</li>
         <li><b>Supabase</b> guarda los datos del formulario, las preguntas y el conteo de visitas.</li>
         <li><b>Resend</b> nos envía un correo de aviso cada vez que alguien escribe o pregunta, y le manda a usted el aviso de respuesta si lo pidió.</li>
+        <li><b>Zoho</b> guarda nuestro buzón de correo, equipo@coddvisor.com. Ahí llegan esos avisos, con lo que usted escribió en el formulario o en su pregunta, y los correos que usted nos mande.</li>
       </ul>
       <p>Ninguna puede usarlos para otra cosa.</p>
 

@@ -265,7 +265,7 @@ test('la pregunta se guarda, avisa al equipo una vez y no se publica sola', asyn
     assert.ok(!red.correos[0].text.includes(CLAVE), 'el enlace propio no va en el correo');
     const fila = (await db.query('SELECT estado, aviso_version FROM sitio.preguntas')).rows[0];
     assert.equal(fila.estado, 'nueva');
-    assert.equal(fila.aviso_version, '2026-11-26');
+    assert.equal(fila.aviso_version, '2026-11-27');
   } finally { red.restaurar(); }
 });
 

@@ -15,7 +15,7 @@ import { llamar } from '../../servidor/supabase.js';
 import { codigoValido, limpiarNombre, firmaTexto } from '../../servidor/firma.js';
 
 // Qué versión del aviso de privacidad vio la persona. Se sube cuando cambia /privacidad/.
-export const AVISO_VERSION = '2026-11-26';
+export const AVISO_VERSION = '2026-11-27';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const CLAVE = /^[A-Za-z0-9_-]{32,100}$/;
 const RUTA = /^\/(blog|herramientas)\/[a-z0-9-]+\/$/;
