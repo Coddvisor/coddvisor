@@ -17,7 +17,7 @@ import { llamar } from '../../servidor/supabase.js';
 const PERSONAS = ['1 a 5', '6 a 15', '16 a 40'];
 const SEDES = ['1', '2 o 3', '4 o más'];
 // Qué versión del aviso de privacidad vio la persona. Se sube cuando cambia /privacidad/.
-const AVISO_VERSION = '2026-11-26';
+const AVISO_VERSION = '2026-11-27';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 // Recorrido: páginas del sitio que la persona abrió antes de escribir (las anota sitio.js en su
 // navegador y llegan solo con el formulario). Se aceptan rutas del sitio, sin repetir.
