@@ -24,6 +24,23 @@ está marcado allí.
 | **Las cuentas viven en `coddvisor-sistema`** | Son las cuentas de Coddvisor, una por persona, las mismas del sistema |
 | **Las dos cosas a la vez** | Las preguntas en las guías del sitio empiezan ya; la comunidad se construye en paralelo, sobre las cuentas del sistema |
 
+## Lo que decidió la fundadora el 27 de noviembre de 2026
+
+El 26 de noviembre otra sesión diseñó la misma comunidad por su cuenta, con
+una base y cuentas aparte (solicitud Coddvisor/coddvisor#85). Las dos se
+contradecían. La fundadora eligió esta propuesta como base y sumarle lo mejor
+de la otra:
+
+| Decisión | Qué quiere decir |
+|---|---|
+| **Esta propuesta es la base** | La comunidad vive en `coddvisor-sistema`, con las cuentas del sistema. La #85 se cierra |
+| **La comunidad se modera sola desde el primer día** | Los permisos para cuidar la convivencia se ganan con constancia, por niveles de confianza («Los riesgos y cómo se cuidan») |
+| **Coddvisor entra solo a pedido** | El equipo no patrulla ni revisa por su cuenta. Entra cuando alguien se lo pide con «Pedir ayuda a Coddvisor» o cuando lo ordena una autoridad, y entonces puede moderar |
+| **Coddvisor no responde por la comunidad** | La cuenta de Coddvisor no contesta lo que queda sin respuesta. La comunidad se activa con el contenido inicial, «Sin responder» a la vista y los avisos a quien sigue el tema |
+| **El espacio para ofrecer se llama «Oportunidades»** | Ofertas y pedidos de productos, servicios, proveedores y trabajo. Fuera de él, se archivan |
+| **Se confirma el perfil** | Nombre de pila y negocio descrito, que se achica solo. El RUC y el nombre del negocio, solo si ella lo pide |
+| **Se suman de la otra propuesta** | Los niveles de confianza, el freno de acusaciones y lo que se aprendió al probar un modelo completo ([comunidad-etapa-1.md](comunidad-etapa-1.md)) |
+
 ## En corto
 
 - **La comunidad es dinámica, pero premia lo que sirve.** Los experimentos
@@ -31,9 +48,13 @@ está marcado allí.
   pasó por lo mismo, con información concreta, en una relación que dura. Una
   red que premia lo más ruidoso no hace eso. Por eso lo primero que se muestra
   es lo que a otros dueños **les sirvió**, no lo que más clics tuvo.
-- **Nadie se queda sin respuesta.** Como abre a todos el primer día, el equipo
-  garantiza una respuesta a toda pregunta en menos de 24 horas, y la comunidad
-  abre con las preguntas de las guías ya respondidas.
+- **Ninguna pregunta queda escondida.** La comunidad abre con las preguntas de
+  las guías ya respondidas, y lo que nadie contestó se muestra primero a quien
+  quiere ayudar.
+- **La comunidad se cuida sola.** Los permisos para moderar se ganan con
+  constancia, por niveles. El equipo de Coddvisor no patrulla ni responde:
+  nombra a los primeros guardianes y entra solo cuando alguien se lo pide o lo
+  ordena una autoridad.
 - **Dentro hay grupos chicos.** Además del muro, los dueños pueden armar grupos
   de 8 a 12 que no compiten entre sí, que es lo que más mueve las ventas en los
   estudios.
@@ -85,6 +106,8 @@ Como en Reddit, cada publicación va a un espacio:
 - **Un espacio por rubro**: bodegas, ropa, comida, belleza, ferretería, y los
   demás. Los rubros son datos, no programa.
 - **Un espacio por región.**
+- **«Oportunidades»**: el único lugar para ofrecer o buscar productos,
+  servicios, proveedores y trabajo (ver «Los riesgos y cómo se cuidan»).
 - Una publicación puede ir a un tema y a un rubro a la vez.
 
 ### Lo que se puede publicar
@@ -173,8 +196,9 @@ Dueña de una bodega en Arequipa, 2 a 5 personas
   verificado» (se comprueba con su RUC). Sirve a quien quiere darse a conocer,
   y evita que alguien se haga pasar por otro negocio.
 - **«Publicar sin firma»** para temas como SUNAT, deudas, un trabajador o la
-  extorsión. Sale como «Un dueño de la comunidad», queda ligado a su cuenta y
-  el equipo lo revisa antes de mostrarlo.
+  extorsión. Sale como «Alguien de la comunidad» (decisión de la etapa 1),
+  queda ligado a su cuenta y un guardián de la comunidad lo revisa antes de
+  mostrarlo, sin ver quién lo escribió.
 
 **Por qué no el nombre real del negocio por defecto.** El nombre de pila más el
 nombre del negocio identifica a la persona. Los gremios dicen que casi todos los
@@ -192,9 +216,11 @@ primer mensaje y el 44 % de los que no). Se cuida así:
 1. **Abre con contenido.** Las preguntas de las guías, ya respondidas, pasan a
    la comunidad. El equipo publica antes del lanzamiento las dudas más comunes
    de cada tema.
-2. **Respuesta garantizada en menos de 24 horas.** «Sin responder» es la cola
-   de trabajo del equipo. Si una pregunta cumple 12 horas sin respuesta, le
-   avisa al equipo.
+2. **«Sin responder» es la puerta de quien quiere ayudar.** Responder ahí da
+   reputación en su tema. Si una pregunta cumple 12 horas sin respuesta, se
+   avisa a quienes siguen su espacio. El equipo no responde por la comunidad
+   (decisión del 27-nov): la activan el contenido inicial, esta vista y los
+   avisos.
 3. **Contadores invitados antes de abrir**, para que las dudas de impuestos
    tengan quien las conteste bien.
 4. **Los primeros grupos chicos, armados por el equipo**, con quienes ya
@@ -205,32 +231,70 @@ primer mensaje y el 44 % de los que no). Se cuida así:
 
 ## Los riesgos y cómo se cuidan
 
-Como se publica al momento, la moderación va después y no antes, pero con
-frenos automáticos:
+Como se publica al momento, la moderación va después y no antes. La hace la
+comunidad, no el equipo (decisión del 27-nov), con frenos automáticos y con
+permisos que se ganan:
 
 - **Cuentas nuevas**: pocas publicaciones por día la primera semana, sin
   enlaces ni imágenes hasta tener alguna respuesta marcada «Me sirvió».
 - **Datos personales en el texto**: antes de publicar, el sistema avisa si
   aparece algo que parece un DNI, un RUC, un celular o un correo, y no publica
   números de documento.
-- **Reportes**: tres reportes de cuentas distintas ocultan una publicación hasta
-  que el equipo la revise. Las personas con buen historial pesan más.
-- **Mal consejo de impuestos o leyes**: lo que no responde el equipo ni un
-  profesional verificado lleva «Respuesta de otro dueño, no revisada. Revísela
-  con su contador».
-- **Venta disfrazada**: un espacio propio, «Ofrezco», para quien quiere
-  ofrecer algo; fuera de él, se archiva.
+- **Niveles de confianza**: se suben por constancia (días activos, lectura,
+  respuestas que sirvieron), no por publicar mucho. Cada nivel desbloquea
+  permisos reales: poner enlaces e imágenes, publicar en «Oportunidades»,
+  revisar lo oculto, mover una publicación a su espacio. El nivel alto se
+  pierde si la persona deja de participar: modera quien está presente. Los
+  umbrales son ajustes, no programa.
+- **Reportes**: los reportes ocultan una publicación cuando suman suficiente
+  peso, y pesa más quien tiene más nivel. Lo oculto va a una cola que revisan
+  los miembros de nivel alto. Si la restauran, quien reportó sin razón pierde
+  peso al reportar.
+- **Los primeros guardianes**: el primer día nadie tiene nivel. Coddvisor
+  nombra a los primeros (dueños y profesionales que ya ayudaron en las guías),
+  con un tope de cuántos. Es su única intervención de arranque, y termina
+  cuando los guardianes los elige la propia comunidad.
+- **Coddvisor, solo a pedido**: el equipo no patrulla. Entra en dos casos:
+  cuando alguien se lo pide con **«Pedir ayuda a Coddvisor»** y cuando lo ordena
+  una autoridad.
+  - Pueden pedir ayuda quien no está de acuerdo con lo que los guardianes
+    decidieron sobre lo suyo (una apelación) y cualquier miembro ante algo
+    grave que no puede esperar a la comunidad: una amenaza, una extorsión,
+    datos personales de otra persona o algo que involucra a un menor.
+  - Al entrar, el equipo puede lo mismo que un guardián (ocultar, restaurar,
+    mover) y, si la ley lo pide, retirar. Entra con su cuenta identificada y
+    con los dos pasos.
+  - Cada intervención queda registrada, y cada año se publica cuántas hubo y
+    por qué.
+  - Pedir ayuda tiene un tope por persona (un ajuste), para que no se vuelva
+    el camino de todo.
+- **Mal consejo de impuestos o leyes**: lo que no responde un profesional
+  verificado lleva «Respuesta de otro dueño, no revisada. Revísela con su
+  contador».
+- **Venta disfrazada**: un espacio propio, **«Oportunidades»**, con el
+  subtítulo «Ofrezco y busco: productos, servicios, proveedores y trabajo». Fuera
+  de él, se archiva. Publicar ahí pide nivel y tiene un tope por semana. No se
+  aceptan «ingresos extra», multinivel ni negocios donde se gana por sumar
+  personas: en el Perú, «oportunidad de negocio» es la frase con que se ofrecen
+  las pirámides, y el freno de palabras las detiene.
 - **Normas de convivencia** cortas, que se aceptan al entrar y se ven siempre.
   Lo que más frena las agresiones es la costumbre del grupo, no el nombre real.
 - **Difamación**: en el Perú no se encontró una norma que proteja al sitio por
-  lo que escriben otros. Lo revisa un abogado antes de abrir.
+  lo que escriben otros. Lo revisa un abogado antes de abrir. Mientras, un
+  freno: una acusación de delito con nombre («son unos estafadores») se detiene
+  antes de publicar, y el sistema ofrece contarlo sin acusar, quitar el nombre
+  o ir a la denuncia oficial. Contar un hecho con nombre («me entregó tarde y
+  con faltantes») sí se publica, y la empresa nombrada puede contestar debajo.
+  Las palabras que frenan son un dato por idioma.
 - **Menores**: las normas dicen que la comunidad es para mayores de edad.
 - **Nada se borra, salvo lo que pide la ley.** Lo que rompe las normas se
   archiva y deja de verse. Si la persona pide borrar sus datos, se borran su
   cuenta y su firma en el plazo de la ley, y lo que publicó queda como «Un
   dueño que dejó la comunidad», o se borra si trae datos suyos.
-- **El tiempo del equipo**: unos 30 a 60 minutos al día para responder y
-  moderar. Si no hay quien los tenga, la apertura se posterga.
+- **El tiempo del equipo**: el equipo no modera. Antes de abrir arma el
+  contenido inicial, invita a los contadores y nombra a los primeros
+  guardianes. Después, entra solo cuando alguien se lo pide o lo ordena una
+  autoridad.
 
 ## Cómo se construye: dos caminos a la vez
 
@@ -327,7 +391,9 @@ del negocio?».
   tiene (Supabase, Cloudflare Pages y Resend, que manda 3 000 correos al mes).
 - **La comunidad:** S/ 0 en programas al construirla. Al abrir, el plan pagado
   de Supabase para las copias de seguridad, si la fundadora lo ordena.
-- **El costo real es el tiempo** del equipo para responder y moderar.
+- **El costo real es el tiempo** del equipo antes de abrir: el contenido
+  inicial, invitar a los contadores y nombrar a los primeros guardianes.
+  Después, solo atiende lo que le piden.
 
 ## Datos personales (Ley 29733)
 
@@ -346,5 +412,7 @@ Lo revisa el abogado que revisará `/privacidad/`. Esto es una interpretación:
 
 1. Quién guía los primeros grupos chicos: la fundadora, alguien del equipo o
    dueños con experiencia. Puede esperar hasta que la comunidad esté por abrir.
-2. Quién del equipo tiene los 30 a 60 minutos diarios para responder y moderar.
-3. El plan pagado de Supabase, antes de abrir.
+2. El plan pagado de Supabase, antes de abrir.
+3. Los umbrales de los niveles de confianza, cuántos guardianes nombra
+   Coddvisor al arrancar y el tope de pedidos de ayuda. Se proponen con la
+   etapa 4 y se ajustan con el uso.
