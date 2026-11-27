@@ -26,7 +26,7 @@ export interface CuentasDeEjemplo {
   readonly contador: CuentaDeEjemplo;
   /** Vendedor de la bodega: su rol no pide segundo paso. */
   readonly vendedor: CuentaDeEjemplo;
-  /** Dueño de la ferretería que todavía no inscribió su app de códigos: no puede abrir su negocio. */
+  /** Dueño de la ferretería que no inscribió su app de códigos: al abrir su negocio, el segundo paso lo lleva a inscribirla y vuelve a la ferretería. */
   readonly sinCodigo: CuentaDeEjemplo;
 }
 

@@ -448,14 +448,18 @@ copia del nombre de `nucleo.tenant`, que `fundar_negocio` escribe en la misma
 transacción), la llave del portero y la marca que el portero traba al abrir
 un negocio (`portero.marca`, sin filas) y los permisos de alta que anota «Abra su negocio»
 para que el gancho de Supabase Auth deje crear la cuenta (`control.alta_permitida`,
-solo la huella del correo y su vencimiento). Lo
+solo la huella del correo y su vencimiento) y el registro de las migraciones
+que el migrador aplicó a la base, con su huella (`control.migracion_aplicada`,
+que solo se anexa). Lo
 que es de un negocio vive dentro del negocio, donde lo cuidan el aislamiento y
 los sellos. La lista está en la configuración del verificador
 (`tablasDeControl`). Una tabla de control que no figura en ella es una falta, y
 el esquema `control` no guarda tablas de otra clase. Para agregar una se cambia
 la lista con su porqué, y lo aprueba el fundador. (`control.negocio` entra el
 26-nov-2026, con el tramo 3 de la identidad; `control.alta_permitida`, el mismo
-día, con la barrera de altas, pendiente de la aprobación del fundador.)
+día, con la barrera de altas, pendiente de la aprobación del fundador;
+`control.migracion_aplicada`, el mismo día, con el camino de las migraciones,
+también pendiente de su aprobación.)
 
 **BD-17. Los datos personales no dejan rastro en los resúmenes de la base.**
 La base guarda resúmenes de cada columna (los valores más frecuentes, los
@@ -521,5 +525,8 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 | Archivar los permisos de alta vencidos (`control.alta_permitida`): solo importan diez minutos | Primer trabajo de fondo (decisión 7) |
 | Que cada rubro proponga sus plantillas (la tabla que une `configuracion.rubro` con `plantilla`) | La primera plantilla publicada (`molde-de-rubro.md`) |
 
-Ninguna migración se aplicó a una base real. Antes de hacerlo hay que cerrar
-la región y el inventario de datos personales (decisiones D27 y D30).
+Ninguna migración se aplicó a una base real. El camino ya existe
+(`sistema/herramientas/migrador/`: GitHub Actions al unir a `main`, en el entorno
+protegido `base-real`, con la aprobación del fundador), pero antes de la primera
+corrida hay que cerrar la región y el inventario de datos personales
+(decisiones D27 y D30).

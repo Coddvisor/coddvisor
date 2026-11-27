@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, it } from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const OFICINA = fileURLToPath(new URL("../", import.meta.url));
 const SISTEMA = path.resolve(OFICINA, "../..");
@@ -37,7 +37,7 @@ const regimenes = [...sqlDe("20261126231100_paquete_peru_regimenes.sql").matchAl
 
 /** Las familias de claves que se eligen por un dato (el código del rol, del rubro o del régimen). */
 const FAMILIAS = ["rol.", "rubro.", "regimen."];
-const CLAVE = /^(?:marca|comun|entrar|segundo|negocios|inicio|pronto|abrir|rol)\.[a-z0-9.-]+$/;
+const CLAVE = /^(?:marca|comun|entrar|segundo|negocios|inicio|pronto|abrir|app|rol)\.[a-z0-9.-]+$/;
 
 const sinCodigo = (html: string): string => html.replace(/<!--[\s\S]*?-->/g, "").replace(/<(script|style)\b[\s\S]*?<\/\1>/g, "");
 const clavesDelHtml = (html: string): string[] => [...html.matchAll(/data-texto(?:-alt|-aria)?="([^"]*)"/g)].map((m) => m[1] ?? "");
@@ -162,6 +162,8 @@ describe("cómo se ve y cómo se toca", () => {
     ["error", "error-fondo", 4.5], ["aviso", "aviso-fondo", 4.5], ["texto-3", "tarjeta", 3], ["texto-3", "fondo", 3], ["boton-2-texto", "fondo", 3],
     // El relleno de la barra de avance sobre su riel (un indicador: 3 a 1).
     ["enlace", "borde", 3],
+    // El código QR: oscuro sobre claro en los dos temas, para que la cámara lo lea.
+    ["qr", "qr-fondo", 4.5],
   ];
 
   it("cada pareja de texto y fondo pasa AA, en claro y en oscuro (EX-18)", () => {
@@ -204,11 +206,106 @@ describe("abrir un negocio", () => {
     for (const m of abrir.matchAll(/role="radiogroup" aria-labelledby="([a-z-]+)"/g)) assert.match(abrir, new RegExp(`<h1 id="${m[1] ?? ""}"`));
   });
 
-  it("«Abra su negocio» lleva al alta de la cuenta, y la lista vacía, a las preguntas", () => {
+  it("«Abra su negocio» lleva a pedir el correo de Google, y la lista vacía, a las preguntas", () => {
     const entrar = paginas.find((p) => p.archivo === path.join("entrar", "index.html"))?.html ?? "";
     const negocios = paginas.find((p) => p.archivo === path.join("entrar", "negocios.html"))?.html ?? "";
-    assert.match(entrar, /href="\/api\/abrir\/cuenta" data-texto="entrar.abrir"/);
+    assert.match(entrar, /href="\/entrar\/abrir-con-google" data-texto="entrar.abrir"/);
     assert.match(negocios, /href="\/entrar\/abrir" data-texto="negocios.vacio.boton"/);
+  });
+});
+
+describe("abrir con Google", () => {
+  const html = paginas.find((p) => p.archivo === path.join("entrar", "abrir-con-google.html"))?.html ?? "";
+  const js = programas.find((p) => p.archivo === path.join("entrar", "abrir-con-google.js"))?.js ?? "";
+
+  it("pide el correo y explica por qué, antes de ir a Google", () => {
+    assert.match(html, /<input id="correo" type="email"[^>]*autocomplete="email"/);
+    assert.doesNotMatch(/<input id="correo"[^>]*>/.exec(html)?.[0] ?? "", /\bname=/);
+    assert.match(html, /data-texto="abrir.google.por-que.texto"/);
+  });
+
+  it("primero anota el permiso y solo después va a Google", () => {
+    const permiso = js.indexOf('pedir("/api/abrir/permiso"');
+    const ida = js.indexOf("irA(IR_A_GOOGLE)");
+    assert.ok(permiso > 0 && ida > permiso);
+    assert.match(js, /const IR_A_GOOGLE = "\/api\/abrir\/cuenta";/);
+  });
+
+  it("si al volver no se creó la cuenta, avisa que el correo puede no coincidir", () => {
+    assert.match(js, /correo: "abrir.google.error.no-coincide"/);
+    assert.match(catalogo["abrir.google.error.no-coincide"] ?? "", /otro correo/);
+  });
+
+  it("solo el aviso del correo marca el campo: cancelar u otro error no dicen que el correo está mal", () => {
+    assert.match(js, /avisar\(AVISOS_DE_LA_DIRECCION\.correo, \{\}, correo\)/);
+    assert.match(js, /avisar\(AVISOS_DE_LA_DIRECCION\[motivo\]\)/);
+    for (const clave of ["abrir.google.error.cancelado", "abrir.google.error.otro"]) assert.ok((catalogo[clave] ?? "") !== "", clave);
+  });
+});
+
+describe("la app de códigos", () => {
+  const html = paginas.find((p) => p.archivo === path.join("entrar", "app-de-codigos.html"))?.html ?? "";
+  const js = programas.find((p) => p.archivo === path.join("entrar", "app-de-codigos.js"))?.js ?? "";
+
+  it("muestra el QR con su nombre, el enlace, la clave para copiar y pide el primer código", () => {
+    assert.match(html, /<svg class="qr" id="qr" role="img" data-texto-aria="app.qr">/);
+    assert.match(html, /id="abrir-en-la-app"/);
+    assert.match(html, /id="clave"/);
+    assert.match(html, /autocomplete="one-time-code"/);
+    assert.match(js, /pedir\("\/api\/entrar\/segundo-paso\/inscribir"/);
+    assert.match(js, /pedir\("\/api\/entrar\/segundo-paso\/confirmar", \{ factor: inscripcion.factor, codigo: limpio \}\)/);
+  });
+
+  it("no nombra ninguna app: cualquiera que dé códigos sirve", () => {
+    const textos = Object.entries(catalogo).filter(([c]) => c.startsWith("app.")).map(([, v]) => v).join(" ");
+    assert.doesNotMatch(textos, /Google Authenticator|Microsoft|Authy|1Password|Play Store|App Store/i);
+  });
+
+  it("el secreto no se guarda en el navegador", () => {
+    assert.doesNotMatch(js, /localStorage|sessionStorage|indexedDB|document\.cookie/);
+  });
+
+  it("el segundo paso lleva a inscribirla, y ella vuelve al mismo negocio", () => {
+    const segundo = paginas.find((p) => p.archivo === path.join("entrar", "segundo-paso.html"))?.html ?? "";
+    const segundoJs = programas.find((p) => p.archivo === path.join("entrar", "segundo-paso.js"))?.js ?? "";
+    assert.match(segundo, /href="\/entrar\/app-de-codigos" data-texto="segundo.sin-app"/);
+    assert.match(segundoJs, /error === "sin_segundo_paso"[\s\S]{0,200}irA\(PAGINAS.appDeCodigos, conNegocio\)/);
+  });
+
+  it("los códigos de respaldo, que todavía no existen, se anuncian sin prometer una fecha", () => {
+    assert.match(catalogo["app.listo.respaldo"] ?? "", /^Pronto/);
+  });
+});
+
+describe("el código QR (comun/qr.js)", async () => {
+  type Qr = { matrizQr: (texto: string) => boolean[][]; correccionDe: (datos: readonly number[], divisor: readonly number[]) => number[]; divisor: (grado: number) => number[] };
+  const qr = (await import(pathToFileURL(path.join(OFICINA, "comun", "qr.js")).href)) as Qr;
+
+  it("la corrección de errores da la del ejemplo de la norma («HELLO WORLD», versión 1, nivel M)", () => {
+    const datos = [32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236, 17, 236, 17];
+    assert.deepEqual(qr.correccionDe(datos, qr.divisor(10)), [196, 35, 39, 119, 235, 215, 231, 226, 93, 23]);
+  });
+
+  it("elige la versión más chica, con sus tres ojos, sus líneas de tiempo y el formato de nivel M", () => {
+    const enlace = `otpauth://totp/Coddvisor:duena@ejemplo.test?secret=${"A".repeat(32)}&issuer=Coddvisor`;
+    for (const [texto, lado] of [["hola", 21], [enlace, 41]] as const) {
+      const m = qr.matrizQr(texto);
+      assert.equal(m.length, lado, texto);
+      const en = (x: number, y: number): boolean => m[y]?.[x] === true;
+      // Cada ojo: un cuadro de 7 con borde oscuro, anillo claro y centro de 3 oscuro.
+      for (const [ox, oy] of [[0, 0], [lado - 7, 0], [0, lado - 7]] as const) {
+        for (let d = 0; d < 7; d++) assert.ok(en(ox + d, oy) && en(ox, oy + d) && en(ox + 6, oy + d) && en(ox + d, oy + 6));
+        assert.ok(!en(ox + 1, oy + 1) && en(ox + 2, oy + 2) && en(ox + 4, oy + 4));
+      }
+      for (let i = 8; i < lado - 8; i++) assert.equal(en(i, 6), i % 2 === 0);
+      // El formato, leído de la columna 8 y la fila 8: nivel M (00) y su código BCH bien hecho.
+      const bits = [0, 1, 2, 3, 4, 5, 7, 8].map((y) => en(8, y)).concat([7, 5, 4, 3, 2, 1, 0].map((x) => en(x, 8)));
+      const formato = bits.reduce((n, b, i) => n | (Number(b) << i), 0) ^ 0x5412;
+      assert.equal(formato >>> 13, 0, "nivel M");
+      let resto = formato >>> 10;
+      for (let i = 0; i < 10; i++) resto = (resto << 1) ^ ((resto >>> 9) * 0x537);
+      assert.equal(((formato >>> 10) << 10) | resto, formato);
+    }
   });
 });
 

@@ -10,7 +10,7 @@ import { abrirNegocio, campoTexto, campoTextoOpcional, campoUuid, LIMITES_DE_IDE
 import { COOKIES } from "../rutas/http.ts";
 import { PAGINAS, RUTAS } from "../rutas/rutas.ts";
 import { montarEntrar, type Montaje } from "./montaje.ts";
-import { CODIGO_DE_PRUEBA } from "./ejemplo.ts";
+import { CODIGO_DE_PRUEBA, CONTRASENA_DE_EJEMPLO } from "./ejemplo.ts";
 import { codigoDeError, comoServicio, uuid7 } from "../../../modulos/identidad/pruebas/apoyo.ts";
 
 const ORIGEN = "https://app.ejemplo.test";
@@ -62,13 +62,17 @@ async function cuentaNueva(): Promise<Jarro> {
   const url = new URL(vuelta);
   const r = await pedir(url.pathname + url.search, { jarro });
   assert.equal(r.status, 303);
-  assert.equal(r.headers.get("location"), new URL(PAGINAS.abrir, ORIGEN).href);
+  // La cuenta nueva no tiene app de códigos: la inscribe antes de las preguntas.
+  assert.equal(r.headers.get("location"), new URL(`${PAGINAS.appDeCodigos}?despues=abrir`, ORIGEN).href);
   return guardar(jarro, r);
 }
 
-/** El segundo paso, con el código de prueba: la cuenta nueva ya tiene su app inscrita. */
-async function segundoPaso(jarro: Jarro): Promise<void> {
-  const r = await pedir(RUTAS.segundoPaso, { metodo: "POST", cuerpo: { codigo: CODIGO_DE_PRUEBA }, jarro });
+/** Inscribe la app de códigos de la cuenta nueva y la confirma con el código de prueba: la sesión queda con los dos pasos. */
+async function inscribirLaApp(jarro: Jarro): Promise<void> {
+  const ida = await pedir(RUTAS.inscribirSegundoPaso, { metodo: "POST", cuerpo: {}, jarro });
+  assert.equal(ida.status, 200);
+  const { factor } = await json(ida);
+  const r = await pedir(RUTAS.confirmarInscripcion, { metodo: "POST", cuerpo: { factor, codigo: CODIGO_DE_PRUEBA }, jarro });
   assert.equal(r.status, 200);
   guardar(jarro, r);
 }
@@ -108,8 +112,58 @@ describe("la cuenta nueva", () => {
     const antes = await cuantas("select count(*)::int as n from control.cuenta");
     const r = await pedir(`${RUTAS.vueltaDelAlta}?code=x&state=y`);
     assert.equal(r.status, 303);
-    assert.equal(r.headers.get("location"), new URL(`${PAGINAS.entrar}?error=abrir`, ORIGEN).href);
+    assert.equal(r.headers.get("location"), new URL(`${PAGINAS.abrirConGoogle}?error=correo`, ORIGEN).href);
     assert.equal(await cuantas("select count(*)::int as n from control.cuenta"), antes);
+  });
+
+  it("si canceló en Google, la página lo dice así; si el gancho negó el alta, dice que revise el correo", async () => {
+    const antes = await cuantas("select count(*)::int as n from control.cuenta");
+    const cancelo = await pedir(`${RUTAS.vueltaDelAlta}?error=access_denied&error_description=${encodeURIComponent("The user denied the request")}`);
+    assert.equal(cancelo.status, 303);
+    assert.equal(cancelo.headers.get("location"), new URL(`${PAGINAS.abrirConGoogle}?error=cancelado`, ORIGEN).href);
+    assert.ok(cancelo.headers.getSetCookie().some((c) => c.startsWith(`${COOKIES.google}=;`)));
+    const negado = await pedir(`${RUTAS.vueltaDelAlta}?error=access_denied&error_code=&error_description=alta_no_permitida`);
+    assert.equal(negado.headers.get("location"), new URL(`${PAGINAS.abrirConGoogle}?error=correo`, ORIGEN).href);
+    assert.equal(await cuantas("select count(*)::int as n from control.cuenta"), antes);
+  });
+
+  it("si Supabase negó el alta por otra razón, no dice que canceló ni que revise el correo", async () => {
+    const antes = await cuantas("select count(*)::int as n from control.cuenta");
+    // Una cuenta bloqueada también vuelve como «access_denied», pero trae error_code.
+    const bloqueada = await pedir(`${RUTAS.vueltaDelAlta}?error=access_denied&error_code=user_banned&error_description=${encodeURIComponent("User is banned")}`);
+    assert.equal(bloqueada.status, 303);
+    assert.equal(bloqueada.headers.get("location"), new URL(`${PAGINAS.abrirConGoogle}?error=otro`, ORIGEN).href);
+    assert.ok(bloqueada.headers.getSetCookie().some((c) => c.startsWith(`${COOKIES.google}=;`)));
+    const suyo = await pedir(`${RUTAS.vueltaDelAlta}?error=server_error&error_code=unexpected_failure&error_description=x`);
+    assert.equal(suyo.headers.get("location"), new URL(`${PAGINAS.abrirConGoogle}?error=otro`, ORIGEN).href);
+    assert.equal(await cuantas("select count(*)::int as n from control.cuenta"), antes);
+  });
+});
+
+describe("la app de códigos se inscribe una sola vez", () => {
+  async function entrarCon(correo: string): Promise<Jarro> {
+    const r = await pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo, contrasena: CONTRASENA_DE_EJEMPLO } });
+    assert.equal(r.status, 200);
+    return guardar(new Map(), r);
+  }
+
+  it("una cuenta que ya tiene su app no inscribe otra: sin el código le falta el segundo paso", async () => {
+    const jarro = await entrarCon(m.ejemplo.cuentas.duena.correo);
+    const r = await pedir(RUTAS.inscribirSegundoPaso, { metodo: "POST", cuerpo: {}, jarro });
+    assert.deepEqual([r.status, await json(r)], [403, { error: "faltan_dos_pasos" }]);
+    const codigo = await pedir(RUTAS.segundoPaso, { metodo: "POST", cuerpo: { codigo: CODIGO_DE_PRUEBA }, jarro });
+    assert.equal(codigo.status, 200);
+    guardar(jarro, codigo);
+    const conDosPasos = await pedir(RUTAS.inscribirSegundoPaso, { metodo: "POST", cuerpo: {}, jarro });
+    assert.deepEqual([conDosPasos.status, await json(conDosPasos)], [409, { error: "ya_inscrita" }]);
+  });
+
+  it("recargar o volver «Atrás» después de «Listo» no da otro QR: la página sigue adelante", async () => {
+    const jarro = await cuentaNueva();
+    await inscribirLaApp(jarro);
+    const otraVez = await pedir(RUTAS.inscribirSegundoPaso, { metodo: "POST", cuerpo: {}, jarro });
+    assert.deepEqual([otraVez.status, await json(otraVez)], [409, { error: "ya_inscrita" }]);
+    assert.deepEqual(otraVez.headers.getSetCookie(), []);
   });
 });
 
@@ -245,15 +299,18 @@ describe("abrir el negocio", () => {
     assert.notEqual(deOtra, deUna);
   });
 
-  it("el dueño queda con su rol: la lista de negocios lo muestra y el inicio, después del segundo paso", async () => {
+  it("el dueño queda con su rol: la lista de negocios lo muestra y el inicio, después de inscribir su app", async () => {
     const jarro = await cuentaNueva();
     const negocio = await negocioCreado(jarro, conRuc(uuid7(), { local: "Librería El Lápiz", rubro: "libreria" }));
     const lista = await json(await pedir(RUTAS.negocios, { jarro }));
     assert.deepEqual(lista["negocios"], [{ id: negocio, nombre: "Librería El Lápiz", estado: "activa", roles: [{ codigo: "dueno" }] }]);
-    // Su rol pide los dos pasos: el inicio lo manda al código, como a todo dueño.
+    // Su rol pide los dos pasos: sin la app inscrita, el inicio no se abre.
     const sinCodigo = await pedir(`${RUTAS.negocio}?id=${negocio}`, { jarro });
     assert.deepEqual(await json(sinCodigo), { error: "faltan_dos_pasos" });
-    await segundoPaso(jarro);
+    // El código del segundo paso todavía no sirve: no hay app inscrita.
+    const antesDeInscribir = await pedir(RUTAS.segundoPaso, { metodo: "POST", cuerpo: { codigo: CODIGO_DE_PRUEBA }, jarro });
+    assert.deepEqual(await json(antesDeInscribir), { error: "sin_segundo_paso" });
+    await inscribirLaApp(jarro);
     const inicio = await json(await pedir(`${RUTAS.negocio}?id=${negocio}`, { jarro }));
     assert.deepEqual(inicio["negocio"], { id: negocio, nombre: "Librería El Lápiz" });
     assert.deepEqual(inicio["roles"], [{ codigo: "dueno", nombre: "Dueño" }]);

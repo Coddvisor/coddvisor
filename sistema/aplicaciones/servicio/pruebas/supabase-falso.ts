@@ -52,6 +52,8 @@ interface Factor {
   readonly id: string;
   readonly cuenta: string;
   readonly nombre: string;
+  /** Cuándo se inscribió, en milisegundos: uno sin confirmar vence a los FACTOR_VENCE_MS. */
+  readonly creado: number;
   estado: "verified" | "unverified";
 }
 
@@ -81,6 +83,13 @@ export interface SupabaseFalso {
 const ECDSA = { name: "ECDSA", namedCurve: "P-256" } as const;
 const ECDSA_SHA256 = { name: "ECDSA", hash: "SHA-256" } as const;
 const MS = 1000;
+// Los valores por omisión de GoTrue (internal/conf/configuration.go): el tope de
+// factores por cuenta, confirmados o no (MaxEnrolledFactors), y cuánto vive uno
+// sin confirmar antes de que lo borre la inscripción siguiente (FactorExpiryDuration).
+const TOPE_DE_FACTORES = 10;
+const FACTOR_VENCE_MS = 300 * MS;
+// GoTrue devuelve el QR como un SVG en texto, sin el prefijo data: (ese lo pone supabase-js).
+const QR_EN_SVG = '<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21"></svg>';
 const json64 = (valor: unknown): string => aBase64url(deTexto(JSON.stringify(valor)));
 
 const respuesta = (estado: number, cuerpo?: unknown): Response =>
@@ -108,7 +117,7 @@ export async function crearSupabaseFalso(op: OpcionesDelFalso): Promise<Supabase
   for (const c of op.cuentas) {
     if (!c.conSegundoPaso) continue;
     const id = uuid7();
-    factores.set(id, { id, cuenta: c.id, nombre: "", estado: "verified" });
+    factores.set(id, { id, cuenta: c.id, nombre: "", creado: op.reloj(), estado: "verified" });
   }
 
   const porCorreo = (correo: string): CuentaDelFalso | undefined => [...cuentas.values()].find((c) => c.correo === correo.trim().toLowerCase());
@@ -208,17 +217,22 @@ export async function crearSupabaseFalso(op: OpcionesDelFalso): Promise<Supabase
     if (id === undefined) {
       const c = await cuerpoDe(pedido);
       if (c["factor_type"] !== "totp") return error(422, "validation_failed");
-      // Como validateFactors de GoTrue (internal/api/mfa.go): con un factor ya
-      // confirmado, inscribir otro pide aal2; y un nombre repetido se niega,
-      // aunque el otro factor siga sin confirmar.
+      // Como EnrollFactor y validateFactors de GoTrue (internal/api/mfa.go):
+      // primero borra los sin confirmar que vencieron; con el tope de factores
+      // niega; con un factor ya confirmado, inscribir otro pide aal2; y un nombre
+      // repetido se niega, aunque el otro factor siga sin confirmar.
+      for (const f of [...factores.values()]) {
+        if (f.cuenta === s.cuenta && f.estado === "unverified" && op.reloj() - f.creado > FACTOR_VENCE_MS) factores.delete(f.id);
+      }
       const suyos = [...factores.values()].filter((f) => f.cuenta === s.cuenta);
+      if (suyos.length >= TOPE_DE_FACTORES) return error(422, "too_many_enrolled_mfa_factors");
       if (suyos.some((f) => f.estado === "verified") && s.aal !== "aal2") return error(403, "insufficient_aal");
       const nombre = typeof c["friendly_name"] === "string" ? c["friendly_name"] : "";
       if (suyos.some((f) => f.nombre === nombre)) return error(422, "mfa_factor_name_conflict");
-      const nuevo: Factor = { id: uuid7(), cuenta: s.cuenta, nombre, estado: "unverified" };
+      const nuevo: Factor = { id: uuid7(), cuenta: s.cuenta, nombre, creado: op.reloj(), estado: "unverified" };
       factores.set(nuevo.id, nuevo);
       const secreto = "FALSO".padEnd(32, "A");
-      return respuesta(200, { id: nuevo.id, type: "totp", totp: { qr_code: "data:image/svg+xml;utf-8,<svg/>", secret: secreto, uri: `otpauth://totp/falso:${s.cuenta}?secret=${secreto}` } });
+      return respuesta(200, { id: nuevo.id, type: "totp", totp: { qr_code: QR_EN_SVG, secret: secreto, uri: `otpauth://totp/falso:${s.cuenta}?secret=${secreto}` } });
     }
     const f = factores.get(id);
     if (f === undefined || f.cuenta !== s.cuenta) return error(404, "mfa_factor_not_found");
@@ -233,6 +247,10 @@ export async function crearSupabaseFalso(op: OpcionesDelFalso): Promise<Supabase
       if (desafios.get(desafio) !== f.id) return error(422, "mfa_challenge_expired");
       desafios.delete(desafio);
       if (c["code"] !== op.codigoDeLaApp) return error(422, "mfa_verification_failed");
+      // Como GoTrue al verificar un factor por primera vez: borra los demás sin confirmar de la cuenta.
+      if (f.estado === "unverified") {
+        for (const otro of [...factores.values()]) if (otro.cuenta === s.cuenta && otro.estado === "unverified" && otro.id !== f.id) factores.delete(otro.id);
+      }
       f.estado = "verified";
       s.aal = "aal2";
       return await emitir(s);
@@ -292,9 +310,13 @@ export async function crearSupabaseFalso(op: OpcionesDelFalso): Promise<Supabase
       llamadasAlGancho.push({ evento, respuesta: r });
       const negado = typeof r === "object" && r !== null && "error" in r;
       if (negado) {
-        // Sin confirmar en la documentación: la vuelta lleva el error y no lleva código.
+        // Como getErrorQueryString de supabase/auth: el 403 del gancho es un
+        // HTTPError, así que la vuelta lleva «access_denied», el mensaje que
+        // respondió el gancho y «error_code» vacío, y no lleva código.
+        const mensaje = (r as { error?: { message?: unknown } }).error?.message;
         destino.searchParams.set("error", "access_denied");
-        destino.searchParams.set("error_description", "alta_no_permitida");
+        destino.searchParams.set("error_description", typeof mensaje === "string" ? mensaje : "");
+        destino.searchParams.set("error_code", "");
         return destino.href;
       }
       cuenta = { id, correo: persona.correo.toLowerCase(), nombre: persona.nombre, contrasena: null, proveedor: "google", confirmada: true, conSegundoPaso: false };

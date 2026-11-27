@@ -97,7 +97,8 @@ incluida: por eso los dos asteriscos del final.
 Solo **después** de que la migración
 `base-de-datos/migraciones/20261126233000_barrera_de_altas.sql` esté aplicada a
 la base. Hoy ninguna migración llegó a una base real, y nadie la aplica a mano:
-este paso espera el camino de las migraciones.
+este paso espera la primera corrida aprobada del flujo «Migraciones a la base
+real» (`sistema/herramientas/migrador/LEEME.md`).
 
 **Authentication → Hooks**, el gancho **Before User Created**:
 
@@ -168,7 +169,10 @@ pasó antes por el botón «Abra su negocio».
 - **Desplegar la función** y cargar sus secretos (`CODDVISOR_*`, en **Edge
   Functions → Secrets**): espera que las migraciones lleguen a la base por su
   camino, la contraseña de `coddvisor_entrada` y las pruebas de abajo («Lo que
-  falta probar en el proyecto real»).
+  falta probar en el proyecto real»). La llave del portero no se pega a mano:
+  la guarda la ceremonia «Llave del portero» de GitHub Actions
+  (`sistema/herramientas/migrador/LEEME.md`), que puede correr antes del
+  despliegue, después de la primera corrida de las migraciones.
 - **La llave de servicio** (`service_role` o `sb_secret_...`) en cualquier
   lugar del servicio. Solo la tendrá el programa aparte que crea las cuentas con
   correo (decisión 10), que todavía no existe.

@@ -28,20 +28,28 @@ un aviso amarillo, «Modo de prueba», con las cuentas y el código.
 | `duena@ejemplo.test` | Dueña de la Bodega de Ejemplo, con segundo paso | Pide el código y entra a la bodega como dueña |
 | `contador@ejemplo.test` | Contador de la Bodega y de la Ferretería de Ejemplo, con segundo paso | Pide el código y elige entre sus dos negocios |
 | `vendedor@ejemplo.test` | Vendedor de la bodega | Entra sin código: su rol no lo pide |
-| `sin.codigo@ejemplo.test` | Dueño de la ferretería que no inscribió su app de códigos | Ve su negocio, pero no puede abrirlo: su rol pide el segundo paso |
+| `sin.codigo@ejemplo.test` | Dueño de la ferretería que no inscribió su app de códigos | Al abrir su negocio, el segundo paso lo lleva a inscribir su app (con el código `123456`) y vuelve a la ferretería |
 
 - **Contraseña de todas:** `una frase de ejemplo para entrar`.
 - **Código del segundo paso:** `123456`. Se muestra también en pantalla.
 - **«Continuar con Google»** simula la vuelta de Google y entra como
   `contador@ejemplo.test`.
-- **«Abra su negocio»** crea una cuenta nueva de ejemplo (`nueva.1@ejemplo.test`,
-  `nueva.2@ejemplo.test`...), como la simulación de Google, y lleva a las cuatro
-  preguntas: si tiene RUC (pruebe `20600000005` o `10123456781`; con
+- **«Abra su negocio»** pide primero el correo de Google y explica por qué (en
+  el producto, solo ese correo puede crear la cuenta; aquí sirve cualquiera,
+  porque el gancho de Supabase que lo compara no corre en esta computadora). El
+  aviso de un correo que no coincide se ve en
+  `http://localhost:8080/entrar/abrir-con-google?error=correo`. Después crea una
+  cuenta nueva de ejemplo (`nueva.1@ejemplo.test`, `nueva.2@ejemplo.test`...),
+  como la simulación de Google, y le hace **inscribir su app de códigos**: un
+  código QR, un botón para abrirla en el mismo celular y la clave para copiar.
+  El QR es de ejemplo: no lo escanee; confirme con `123456`. Luego vienen las
+  cuatro preguntas: si tiene RUC (pruebe `20600000005` o `10123456781`; con
   `20600000004` el dígito verificador no cuadra), su régimen (solo con RUC), a qué
-  se dedica y su primer local. «Crear mi negocio» lo crea y va a su inicio, que
-  pide el código `123456`: el rol de dueño pide el segundo paso.
+  se dedica y su primer local. «Crear mi negocio» lo crea y entra a su inicio
+  sin pedir otra vez el código: la sesión ya hizo el segundo paso al inscribir la app.
 - «Olvidé mi contraseña» y los códigos de respaldo llevan a una página que dice
-  que llegan pronto.
+  que llegan pronto. Los códigos de respaldo todavía no existen: la pantalla de
+  la app de códigos dice que llegan después, y ahí se mostrarán al confirmarla.
 - **«Salir»** borra la cookie y anota la sesión como cerrada en la base
   (`control.sesion_cerrada`): un pase copiado de esa sesión ya no entra, aunque
   no haya vencido.
@@ -99,11 +107,12 @@ dentro de Node (con PGlite) y desaparece al terminar.
 | `modulos/configuracion/`                  | Lo que se puede elegir al abrir un negocio: los rubros y los regímenes de un país, leídos de sus catálogos |
 | `modulos/identidad/`                      | Verificar el pase de Supabase (ES256) y firmar como el servicio, con WebCrypto, que traen igual Node y Deno; llamar a las puertas de identidad para entrar y leer el negocio abierto. Su puerta es `publico.ts` |
 | `aplicaciones/servicio/`                  | El programa del servidor: la conexión con la base (transacción por pedido, con la sesión limpia antes de terminarla, y el controlador de Postgres en `base/postgres.ts`), la configuración del entorno, cómo entra una persona y sus rutas bajo `/api` (`rutas/`), escritas con Request y Response para correr igual en Node y en una función de Supabase |
-| `aplicaciones/oficina/`                   | Las páginas del sistema en el navegador. Hoy: entrar, el segundo paso, elegir negocio, abrir un negocio y un inicio provisional. HTML, CSS y poco JavaScript, sin construir |
+| `aplicaciones/oficina/`                   | Las páginas del sistema en el navegador. Hoy: entrar, el segundo paso, inscribir la app de códigos (con su código QR, hecho en `comun/qr.js` sin librerías), elegir negocio, abrir un negocio con Google y sus preguntas, y un inicio provisional. HTML, CSS y poco JavaScript, sin construir |
 | `diseno/`                                 | Lo que comparten las pantallas: las medidas (`medidas.css`) y el catálogo de textos (`textos/es-PE.json`). Los colores siguen en `marca/colores.css` |
 | `aplicaciones/servicio/proveedor/`        | El proveedor de cuentas real: Supabase Auth por su API HTTP, con `fetch` y sin librerías (contraseña, Google con PKCE, el segundo paso y su inscripción, renovar y salir). Se prueba contra un Supabase Auth falso (`pruebas/supabase-falso.ts`) |
 | `supabase/`                               | Lo que pide Supabase para desplegar: `config.toml` y el arranque del servicio como función (`functions/servicio/index.ts`, en Deno). Su guía, con los pasos del panel: `supabase/LEEME.md` |
 | `herramientas/probar-entrar/`             | El modo de prueba local de entrar (`npm run probar:entrar`): solo para esta computadora |
+| `herramientas/migrador/`                  | El migrador que lleva las migraciones nuevas a la base real, con su registro (`control.migracion_aplicada`), y la ceremonia de la llave del portero. Los corre GitHub Actions (`.github/workflows/migraciones.yml` y `llave-del-portero.yml`). Su guía: `LEEME.md` |
 | `base-de-datos/migraciones/`              | Cada cambio de la base, con fecha en el nombre. Solo se agregan archivos |
 | `base-de-datos/migraciones.candado.json`  | La huella de cada migración aceptada, para notar si alguien la edita |
 | `base-de-datos/verificador/reglas.mjs`    | Las reglas BD-01 a BD-14, BD-16 y BD-17, escritas como preguntas a la base |
@@ -160,10 +169,13 @@ exige que toda regla tenga al menos un caso.
 
 ## Lo que esto todavía no es
 
-No hay registro de que alguna migración de esta carpeta se haya aplicado a
-una base real. El proyecto de base de datos del sistema ya está creado en
-Supabase (`coddvisor-sistema`, región São Paulo), pero todavía no existe el
-camino para llevarle las migraciones, y nadie las aplica a mano. El contrato de
+Ninguna migración de esta carpeta se aplicó todavía a una base real. El
+proyecto de base de datos del sistema ya está creado en Supabase
+(`coddvisor-sistema`, región São Paulo) y el camino para llevarle las
+migraciones ya existe (`herramientas/migrador/`): GitHub Actions las aplica al
+unir a `main`, después de `npm run verificar` y con la aprobación del fundador.
+Nadie las aplica a mano. La primera corrida espera esa aprobación, y lo que el
+fundador prepara en GitHub y en Supabase está en `herramientas/migrador/LEEME.md`. El contrato de
 la caja es un borrador: ninguna caja real selló nada.
 
 El proveedor de cuentas real ya existe (`aplicaciones/servicio/proveedor/supabase.ts`)
