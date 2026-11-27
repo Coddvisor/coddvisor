@@ -172,7 +172,8 @@ pasó antes por el botón «Abra su negocio».
   falta probar en el proyecto real»). La llave del portero no se pega a mano:
   la guarda la ceremonia «Llave del portero» de GitHub Actions
   (`sistema/herramientas/migrador/LEEME.md`), que puede correr antes del
-  despliegue, después de la primera corrida de las migraciones.
+  despliegue, después de la primera corrida de las migraciones. La dirección
+  de la base tampoco: la guarda la ceremonia «Contraseña de la entrada».
 - **La llave de servicio** (`service_role` o `sb_secret_...`) en cualquier
   lugar del servicio. Solo la tendrá el programa aparte que crea las cuentas con
   correo (decisión 10), que todavía no existe.
@@ -251,16 +252,12 @@ Cómo se conecta, y por qué:
 Qué hace el fundador, cuando llegue el momento (no antes de que las migraciones
 lleguen a la base por su camino):
 
-1. Ponerle una contraseña larga y al azar a `coddvisor_entrada`. Ninguna
-   migración la pone (la contraseña no va en el repositorio), y nadie ejecuta SQL
-   a mano en una base real: el camino para hacerlo se decide con el de las
-   migraciones.
-2. En **Project Settings → Database → Connection string**, copiar la del
-   **Transaction pooler**, cambiar el usuario `postgres.<ref>` por
-   `coddvisor_entrada.<ref>`, poner su contraseña y agregar `?sslmode=verify-full`.
-3. Guardarla como el secreto `CODDVISOR_BASE_DIRECCION` en **Edge Functions →
-   Secrets**. Nunca en el chat, en un correo ni en el repositorio.
-4. Si `verify-full` no reconoce el certificado (punto 3 de lo que falta probar),
+1. Correr la ceremonia «Contraseña de la entrada» de GitHub Actions
+   (`sistema/herramientas/migrador/CLAVE-DE-ENTRADA.md`): le pone a
+   `coddvisor_entrada` una contraseña al azar que nadie ve y guarda
+   `CODDVISOR_BASE_DIRECCION` en **Edge Functions → Secrets**. No se arma ni se
+   pega a mano.
+2. Si `verify-full` no reconoce el certificado (punto 3 de lo que falta probar),
    descargar el certificado de Supabase de **Database Settings → SSL Configuration** y
    guardarlo como `CODDVISOR_BASE_CERTIFICADO`.
 
@@ -344,7 +341,7 @@ Y la de la base:
 
 | Variable | Qué va | Dónde se ve en el panel |
 |---|---|---|
-| `CODDVISOR_BASE_DIRECCION` | `postgresql://coddvisor_entrada.<ref>:<contraseña>@<servidor del repartidor>:6543/postgres?sslmode=verify-full` | **Project Settings → Database → Connection string → Transaction pooler**, con el usuario y la contraseña de `coddvisor_entrada` (ver «La conexión a la base») |
+| `CODDVISOR_BASE_DIRECCION` | `postgresql://coddvisor_entrada.<ref>:<contraseña>@<servidor del repartidor>:6543/postgres?sslmode=verify-full` | La guarda la ceremonia «Contraseña de la entrada» (`sistema/herramientas/migrador/CLAVE-DE-ENTRADA.md`); no se arma ni se pega a mano |
 | `CODDVISOR_BASE_CERTIFICADO` (opcional) | El certificado raíz de la base en PEM, solo si `verify-full` no reconoce el del repartidor. Exige `sslmode=verify-full` | **Database Settings → SSL Configuration** |
 
 Es un secreto: lleva la contraseña. El servicio no arranca si el usuario no es
