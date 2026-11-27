@@ -50,9 +50,9 @@ export interface ProveedorDePrueba extends ProveedorDeCuentas {
    */
   simularGoogle(direccion: URL, origenPermitido: string): string | null;
   /**
-   * Hace de proveedor al abrir un negocio: crea una cuenta nueva de ejemplo, con
-   * su app de códigos ya inscrita, y devuelve la vuelta con un código de un solo
-   * uso. null si la vuelta no es del origen permitido.
+   * Hace de proveedor al abrir un negocio: crea una cuenta nueva de ejemplo, sin
+   * app de códigos (como una cuenta recién nacida en Supabase), y devuelve la
+   * vuelta con un código de un solo uso. null si la vuelta no es del origen permitido.
    */
   simularAlta(direccion: URL, origenPermitido: string): string | null;
   /** Las cuentas que nacieron con «Abra su negocio», en orden. */
@@ -176,7 +176,7 @@ export async function crearProveedorDePrueba(op: OpcionesDelProveedorDePrueba): 
       const numero = String(altas.length + 1);
       const cuenta: CuentaDeEjemplo = {
         id: uuid7(), proveedor: uuid7(), correo: `nueva.${numero}@ejemplo.test`, nombre: `Cuenta Nueva de Ejemplo ${numero}`,
-        contrasena: op.cuentas[0]?.contrasena ?? "", segundoPaso: true,
+        contrasena: op.cuentas[0]?.contrasena ?? "", segundoPaso: false,
       };
       const vuelta = volverCon(direccion, origenPermitido, (codigo, desafio) => codigosDeAlta.set(codigo, { desafio, cuenta }));
       if (vuelta !== null) {
@@ -191,11 +191,9 @@ export async function crearProveedorDePrueba(op: OpcionesDelProveedorDePrueba): 
       codigosDeAlta.delete(codigo);
       if (guardado === undefined || !(await cuadraElDesafio(guardado.desafio, verificador))) return null;
       const { cuenta } = guardado;
-      // La cuenta recién nacida sigue directo a abrir su negocio, como antes: la
-      // app de códigos de ejemplo nace con ella, pero no hay una sesión vieja que
-      // proteger. (Con Supabase, pide el código solo una cuenta que ya existía.)
-      const recien = await entrada(cuenta, "aal1");
-      return { entrada: { ...recien, faltaSegundoPaso: false }, proveedorCuentaId: cuenta.proveedor, correo: cuenta.correo, nombre: cuenta.nombre };
+      // Como en Supabase: la cuenta recién nacida no tiene app de códigos, así
+      // que vuelve sin pedir el código y la inscribe antes de abrir su negocio.
+      return { entrada: await entrada(cuenta, "aal1"), proveedorCuentaId: cuenta.proveedor, correo: cuenta.correo, nombre: cuenta.nombre };
     },
 
     async confirmarSegundoPaso(sesion: SesionDelProveedor, codigo: string) {
@@ -207,11 +205,16 @@ export async function crearProveedorDePrueba(op: OpcionesDelProveedorDePrueba): 
       return ok(await entrada(cuenta, "aal2", pase.value.sesion));
     },
 
-    // La inscripción de prueba: cualquier cuenta con sesión recibe un factor
-    // nuevo, que se confirma con el mismo código fijo del segundo paso.
+    // La inscripción de prueba: una cuenta sin app recibe un factor nuevo, que
+    // se confirma con el mismo código fijo del segundo paso. Como con Supabase,
+    // una cuenta que ya tiene su app no inscribe otra: con aal1 le falta el
+    // código de la que tiene, y con aal2 ya está inscrita.
     async inscribirSegundoPaso(sesion: SesionDelProveedor) {
       const pase = await verificarPase(sesion.pase, llavero, esperado, Math.floor(op.reloj() / MS));
       if (!pase.ok) return err("sin_sesion");
+      const cuenta = cuentas.find((c) => c.proveedor === pase.value.cuentaDelProveedor);
+      if (cuenta === undefined) return err("sin_sesion");
+      if (cuenta.segundoPaso) return err(pase.value.nivel === "aal2" ? "ya_inscrita" : "faltan_dos_pasos");
       const factor = uuid7();
       inscripciones.set(factor, pase.value.cuentaDelProveedor);
       return ok({ factor, enlace: `otpauth://totp/prueba:${factor}?secret=PRUEBA`, secreto: "PRUEBA" });

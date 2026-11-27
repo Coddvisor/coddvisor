@@ -39,6 +39,9 @@
   --toque: 48px;
   --toque-minimo: 24px;
 
+  /* El código QR de la app de códigos: grande para la cámara, sin salirse de la columna */
+  --tamano-del-qr: 15rem;
+
   /* Celular primero: una columna que no pasa de este ancho */
   --ancho-de-la-columna: 28rem;
 }

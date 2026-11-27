@@ -220,6 +220,10 @@ describe("el segundo paso con la app de códigos", () => {
     assert.deepEqual([bueno.status, await json(bueno)], [200, { siguiente: "negocios" }]);
     guardar(jarro, bueno);
     assert.equal(nivelDe(jarro), "aal2");
+    // Recargar o volver «Atrás» después de «Listo» no da otro QR: la app ya está inscrita.
+    const recarga = await pedir(RUTAS.inscribirSegundoPaso, { metodo: "POST", jarro });
+    assert.deepEqual([recarga.status, await json(recarga)], [409, { error: "ya_inscrita" }]);
+    assert.deepEqual(recarga.headers.getSetCookie(), []);
     // Desde ahora, al entrar con su contraseña le pide el código.
     const otraVez = await entrarConCorreo(CUENTAS.vendedor.correo);
     assert.deepEqual(await json(otraVez.r), { siguiente: "segundo_paso" });
@@ -231,9 +235,12 @@ describe("el segundo paso con la app de códigos", () => {
     assert.deepEqual([r.status, await json(r)], [403, { error: "faltan_dos_pasos" }]);
     assert.deepEqual(r.headers.getSetCookie(), []);
     assert.equal(nivelDe(jarro), "aal1");
-    // Con el segundo paso hecho, sí puede inscribir otra.
+    // Con el segundo paso hecho tampoco inscribe otra: ya tiene su app, y una
+    // segunda no serviría (el segundo paso usa la primera confirmada).
     guardar(jarro, await pedir(RUTAS.segundoPaso, { metodo: "POST", cuerpo: { codigo: CODIGO_DE_LA_APP }, jarro }));
-    assert.equal((await pedir(RUTAS.inscribirSegundoPaso, { metodo: "POST", jarro })).status, 200);
+    const otra = await pedir(RUTAS.inscribirSegundoPaso, { metodo: "POST", jarro });
+    assert.deepEqual([otra.status, await json(otra)], [409, { error: "ya_inscrita" }]);
+    assert.equal(nivelDe(jarro), "aal2");
   });
 
   it("volver a pedir la inscripción (recargar la pantalla) da otro QR, no un error", async () => {
@@ -245,7 +252,34 @@ describe("el segundo paso con la app de códigos", () => {
     const primera = await m(peticion(RUTAS.inscribirSegundoPaso, undefined, jarro));
     const segunda = await m(peticion(RUTAS.inscribirSegundoPaso, undefined, jarro));
     assert.deepEqual([primera.status, segunda.status], [200, 200]);
-    assert.notEqual(((await json(primera)) as { factor: string }).factor, ((await json(segunda)) as { factor: string }).factor);
+    const factor = ((await json(segunda)) as { factor: string }).factor;
+    assert.notEqual(((await json(primera)) as { factor: string }).factor, factor);
+    // Al confirmar una, Supabase borra las otras sin confirmar: queda una sola app.
+    const bueno = await m(peticion(RUTAS.confirmarInscripcion, { factor, codigo: CODIGO_DE_LA_APP }, jarro));
+    assert.equal(bueno.status, 200);
+    guardar(jarro, bueno);
+    const usuario = await otro.pedir(new Request(`${EMISOR}/user`, { headers: { apikey: CLAVE_PUBLICA, authorization: `Bearer ${jarro.get(COOKIES.sesion) ?? ""}` } }));
+    const { factors } = (await usuario.json()) as { factors: Array<{ id: string; status: string }> };
+    assert.deepEqual(factors.map((f) => [f.id, f.status]), [[factor, "verified"]]);
+  });
+
+  it("muchos QR seguidos sin confirmar llegan al tope de Supabase: pide esperar, y a los cinco minutos se puede otra vez", async () => {
+    const persona = cuenta("muchos.qr@ejemplo.test", "Muchos QR de Ejemplo");
+    let ahora = Date.now();
+    const otro = await crearSupabaseFalso({
+      emisor: EMISOR, audiencia: ESPERADO.audiencia, clavePublica: CLAVE_PUBLICA, codigoDeLaApp: CODIGO_DE_LA_APP,
+      vueltasPermitidas: [ORIGEN], duracionDelPaseS: 3600, reloj: () => ahora, cuentas: [persona], antesDeCrearUnaCuenta: ganchoDeLaBase,
+    });
+    const m = crearManejador({ piezas: piezasDe(otro), proveedor: crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: otro.pedir }), origen: ORIGEN });
+    const jarro = guardar(new Map(), await m(peticion(RUTAS.entrarConCorreo, { correo: persona.correo, contrasena: CONTRASENA })));
+    const TOPE_DE_SUPABASE = 10;
+    for (let i = 0; i < TOPE_DE_SUPABASE; i += 1) assert.equal((await m(peticion(RUTAS.inscribirSegundoPaso, undefined, jarro))).status, 200);
+    const tope = await m(peticion(RUTAS.inscribirSegundoPaso, undefined, jarro));
+    assert.deepEqual([tope.status, await json(tope)], [429, { error: "demasiados_intentos" }]);
+    assert.deepEqual(tope.headers.getSetCookie(), []);
+    // Supabase borra los sin confirmar de más de cinco minutos al pedir el siguiente.
+    ahora += 301 * 1000;
+    assert.equal((await m(peticion(RUTAS.inscribirSegundoPaso, undefined, jarro))).status, 200);
   });
 
   it("sin sesión no se inscribe nada", async () => {
@@ -398,7 +432,7 @@ describe("la barrera de altas: «Abra su negocio» con Google", () => {
     assert.deepEqual([permiso.status, await json(permiso)], [200, { siguiente: "abrir_cuenta" }]);
     const { r, jarro } = await idaYVueltaConGoogle(RUTAS.abrirCuenta, persona);
     assert.deepEqual(falso.llamadasAlGancho.at(-1)?.respuesta, {});
-    assert.equal(lugar(r).pathname, PAGINAS.abrir);
+    assert.equal(caminoDe(lugar(r)), `${PAGINAS.appDeCodigos}?despues=abrir`);
     const nueva = falso.cuentaPorCorreo(persona.correo);
     assert.ok(nueva);
     const { rows } = await db.query("select nombre from control.cuenta where proveedor_cuenta_id = $1", [nueva.id]);
@@ -419,7 +453,7 @@ describe("la barrera de altas: «Abra su negocio» con Google", () => {
     await pedir(RUTAS.permisoDeAlta, { metodo: "POST", cuerpo: { correo: "otra.persona@ejemplo.test" } });
     const persona = { correo: "intruso@ejemplo.test", nombre: "Intruso de Ejemplo" };
     const { r } = await idaYVueltaConGoogle(RUTAS.abrirCuenta, persona);
-    assert.equal(caminoDe(lugar(r)), `${PAGINAS.entrar}?error=abrir`);
+    assert.equal(caminoDe(lugar(r)), `${PAGINAS.abrirConGoogle}?error=correo`);
     assert.equal(falso.cuentaPorCorreo(persona.correo), undefined);
     const { rows } = await db.query("select 1 from control.cuenta where lower(correo) = $1", [persona.correo]);
     assert.equal(rows.length, 0);

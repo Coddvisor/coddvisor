@@ -72,13 +72,30 @@ export const PAGINAS = {
   segundoPaso: "/entrar/segundo-paso",
   negocios: "/entrar/negocios",
   abrir: "/entrar/abrir",
+  // «Abra su negocio con Google»: pide el correo antes de ir a Google, y dice si no coincidió al volver.
+  abrirConGoogle: "/entrar/abrir-con-google",
+  // Inscribir la app de códigos la primera vez.
+  appDeCodigos: "/entrar/app-de-codigos",
+} as const;
+
+/** Lo que dicen a la página, en la dirección, las vueltas del alta. */
+const VUELTAS_DEL_ALTA = {
+  // No volvió una cuenta: lo más común es que en Google se eligiera otro correo que el del permiso.
+  fallo: `${PAGINAS.abrirConGoogle}?error=correo`,
+  // La persona canceló en Google (no eligió una cuenta): se dice eso, no que el correo no coincidió.
+  cancelado: `${PAGINAS.abrirConGoogle}?error=cancelado`,
+  // Supabase no dejó crear la cuenta por otra razón (cuenta bloqueada, altas
+  // apagadas, un error suyo): no se le dice que revise el correo ni que canceló.
+  otro: `${PAGINAS.abrirConGoogle}?error=otro`,
+  // La cuenta nueva no tiene app de códigos: la inscribe primero y después sigue a las preguntas.
+  inscribir: `${PAGINAS.appDeCodigos}?despues=abrir`,
 } as const;
 
 /** Lo que responde cada ruta cuando no puede: un código que la página busca en su catálogo. */
 export type CodigoDeError =
   | "origen" | "pedido_invalido" | "credenciales" | "sin_sesion" | "codigo_incorrecto" | "sin_segundo_paso"
   | "faltan_dos_pasos" | "sin_acceso" | "no_existe" | "metodo" | "interno" | "ruc_invalido" | "ya_usado"
-  | "demasiados_negocios" | "demasiados_intentos";
+  | "demasiados_negocios" | "demasiados_intentos" | "ya_inscrita";
 
 type Siguiente = "segundo_paso" | "negocios" | "entrar" | "abrir_cuenta";
 
@@ -97,6 +114,19 @@ const SIN_IP = "sin-ip";
 const LARGO_DE_LA_CLAVE_DEL_PASE = 128;
 const PIDE_ESPERAR = 429;
 const PROVEEDOR_OCUPADO = 503;
+// Lo que Supabase Auth pone en la vuelta cuando no hay cuenta (getErrorQueryString,
+// internal/api/external.go de supabase/auth). Si el error vino de Google (la
+// persona canceló), la vuelta trae «error» y «error_description», pero no
+// «error_code». Todo error propio de Supabase trae siempre «error_code», aunque
+// vaya vacío, y muchos llegan también como «access_denied»: el 403 del gancho,
+// una cuenta bloqueada, las altas apagadas. Al gancho se lo reconoce por su
+// mensaje, que viaja en error_description (ganchos.antes_de_crear_cuenta,
+// migración 20261126233000_barrera_de_altas).
+const ERROR_EN_LA_VUELTA = "error";
+const CODIGO_DEL_ERROR = "error_code";
+const DESCRIPCION_DEL_ERROR = "error_description";
+const ACCESO_NEGADO = "access_denied";
+const NEGADO_POR_EL_GANCHO = "alta_no_permitida";
 
 const fallo = (estado: number, error: CodigoDeError, cookies: readonly string[] = []): Response => responder(estado, { error }, cookies);
 
@@ -263,7 +293,17 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
 
   async function vueltaDelAlta(pedido: Request, url: URL): Promise<Response> {
     const sinGoogle = borrarCookie(COOKIES.google);
-    const volverConError = llevarA(origen, `${PAGINAS.entrar}?error=abrir`, [sinGoogle]);
+    // El gancho de Supabase niega el alta si el correo que se eligió en Google no
+    // es el del permiso, y la vuelta llega sin código. No se sabe con certeza si
+    // fue eso o si el permiso venció: la página lo dice con las dos posibilidades.
+    const volverConError = llevarA(origen, VUELTAS_DEL_ALTA.fallo, [sinGoogle]);
+    const error = url.searchParams.get(ERROR_EN_LA_VUELTA);
+    if (error !== null) {
+      // Si canceló en Google, no tiene sentido decirle que revise el correo.
+      if (error === ACCESO_NEGADO && !url.searchParams.has(CODIGO_DEL_ERROR)) return llevarA(origen, VUELTAS_DEL_ALTA.cancelado, [sinGoogle]);
+      if (url.searchParams.get(DESCRIPCION_DEL_ERROR) === NEGADO_POR_EL_GANCHO) return volverConError;
+      return llevarA(origen, VUELTAS_DEL_ALTA.otro, [sinGoogle]);
+    }
     const vuelta = vueltaValida(pedido, url);
     if (vuelta === null) return volverConError;
     const alta = await proveedor.canjearAlta(vuelta.codigo, vuelta.verificador);
@@ -271,7 +311,11 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     await registrarLaCuentaNueva(piezas, { proveedorCuentaId: alta.proveedorCuentaId, correo: alta.correo, nombre: alta.nombre });
     // Una cuenta que ya existía y tiene su app de códigos no crea nada en
     // Supabase (el gancho no corre) y vuelve con un pase aal1: antes de abrir, el código.
-    const pagina = alta.entrada.faltaSegundoPaso ? PAGINAS.segundoPaso : PAGINAS.abrir;
+    // Si no tiene app (la cuenta recién nacida, o una vieja que nunca la inscribió),
+    // la inscribe antes de las preguntas: el rol de dueño pide los dos pasos, y
+    // así entra a su negocio nuevo sin otra parada (decisión 8: «el segundo paso
+    // se inscribe al crear la cuenta»).
+    const pagina = alta.entrada.faltaSegundoPaso ? PAGINAS.segundoPaso : VUELTAS_DEL_ALTA.inscribir;
     return llevarA(origen, pagina, [sinGoogle, ...cookiesDeLaSesion(alta.entrada.sesion)]);
   }
 
@@ -341,8 +385,15 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     if (sesion === null) return fallo(401, "sin_sesion");
     const inscripcion = await proveedor.inscribirSegundoPaso(sesion);
     if (!inscripcion.ok) {
-      // Con una app ya confirmada, inscribir otra pide antes el código de esa: la sesión sigue.
-      return inscripcion.error === "faltan_dos_pasos" ? fallo(403, "faltan_dos_pasos") : fallo(401, "sin_sesion", BORRAR_LA_SESION);
+      switch (inscripcion.error) {
+        // Con una app ya confirmada, inscribir otra pide antes el código de esa: la sesión sigue.
+        case "faltan_dos_pasos": return fallo(403, "faltan_dos_pasos");
+        // Ya tiene su app y los dos pasos hechos (recargó después de «Listo»): la página sigue adelante.
+        case "ya_inscrita": return fallo(409, "ya_inscrita");
+        // El proveedor no acepta más apps sin confirmar por ahora: que espere unos minutos.
+        case "demasiados_intentos": return demasiados();
+        case "sin_sesion": return fallo(401, "sin_sesion", BORRAR_LA_SESION);
+      }
     }
     return responder(200, inscripcion.value);
   }

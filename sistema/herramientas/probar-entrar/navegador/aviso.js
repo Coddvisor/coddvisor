@@ -39,7 +39,7 @@ async function mostrar() {
   const caja = document.createElement("details");
   caja.className = "aviso-de-prueba";
   // Abierto donde hace falta: para elegir cuenta y para escribir el código.
-  caja.open = window.location.pathname === "/entrar/" || window.location.pathname === "/entrar/segundo-paso";
+  caja.open = ["/entrar/", "/entrar/segundo-paso", "/entrar/app-de-codigos"].includes(window.location.pathname);
   caja.append(elemento("summary", texto(t, "aviso.titulo")));
   caja.append(elemento("p", texto(t, "aviso.codigo", { codigo: d.codigo }), "aviso-de-prueba-codigo"));
   caja.append(elemento("p", texto(t, "aviso.contrasena", { contrasena: d.contrasena })));
@@ -48,6 +48,7 @@ async function mostrar() {
   caja.append(lista);
   caja.append(elemento("p", texto(t, "aviso.google", { correo: d.google })));
   caja.append(elemento("p", texto(t, "aviso.abrir")));
+  caja.append(elemento("p", texto(t, "aviso.app")));
   document.body.prepend(caja);
 }
 
