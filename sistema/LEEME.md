@@ -101,6 +101,8 @@ dentro de Node (con PGlite) y desaparece al terminar.
 | `aplicaciones/servicio/`                  | El programa del servidor: la conexión con la base (transacción por pedido y `DISCARD ALL` al devolverla), la configuración del entorno, cómo entra una persona y sus rutas bajo `/api` (`rutas/`), escritas con Request y Response para correr igual en Node y en una función de Supabase |
 | `aplicaciones/oficina/`                   | Las páginas del sistema en el navegador. Hoy: entrar, el segundo paso, elegir negocio, abrir un negocio y un inicio provisional. HTML, CSS y poco JavaScript, sin construir |
 | `diseno/`                                 | Lo que comparten las pantallas: las medidas (`medidas.css`) y el catálogo de textos (`textos/es-PE.json`). Los colores siguen en `marca/colores.css` |
+| `aplicaciones/servicio/proveedor/`        | El proveedor de cuentas real: Supabase Auth por su API HTTP, con `fetch` y sin librerías (contraseña, Google con PKCE, el segundo paso y su inscripción, renovar y salir). Se prueba contra un Supabase Auth falso (`pruebas/supabase-falso.ts`) |
+| `supabase/`                               | Lo que pide Supabase para desplegar: `config.toml` y el arranque del servicio como función (`functions/servicio/index.ts`, en Deno). Su guía, con los pasos del panel: `supabase/LEEME.md` |
 | `herramientas/probar-entrar/`             | El modo de prueba local de entrar (`npm run probar:entrar`): solo para esta computadora |
 | `base-de-datos/migraciones/`              | Cada cambio de la base, con fecha en el nombre. Solo se agregan archivos |
 | `base-de-datos/migraciones.candado.json`  | La huella de cada migración aceptada, para notar si alguien la edita |
@@ -162,13 +164,25 @@ No hay registro de que alguna migración de esta carpeta se haya aplicado a
 una base real. El proyecto de base de datos del sistema ya está creado en
 Supabase (`coddvisor-sistema`, región São Paulo), pero todavía no existe el
 camino para llevarle las migraciones, y nadie las aplica a mano. El contrato de
-la caja es un borrador: ninguna caja real selló nada. Las rutas de entrar todavía no
-hablan con Supabase Auth: el proveedor de cuentas real (contraseña, Google con
-PKCE y el segundo paso) y el arranque de la función de Supabase son el paso
-siguiente; hoy solo existe el proveedor de prueba. Abrir un negocio crea la cuenta solo
-en el proveedor de prueba: con Supabase falta el alta de verdad (Google con el
-hook que deja pasar solo las altas de «Abra su negocio», o el correo con su
-enlace de un solo uso), su prueba de que no es un robot, su límite por día y la
-inscripción de la app de códigos (decisiones 8 bis y 10). El servicio todavía no frena los
-intentos de contraseña ni de código: hoy los frena solo el proveedor. La lista de lo pendiente
+la caja es un borrador: ninguna caja real selló nada.
+
+El proveedor de cuentas real ya existe (`aplicaciones/servicio/proveedor/supabase.ts`)
+y el arranque como función de Supabase también (`supabase/functions/servicio/`),
+pero ninguno habló todavía con el Supabase de verdad: se prueban contra un
+Supabase Auth falso, en memoria, que responde como GoTrue. La función no se
+despliega hasta que exista el controlador de Postgres (SV-02). La barrera de
+altas (decisión 8 bis) es el gancho `ganchos.antes_de_crear_cuenta`: deja crear
+una cuenta solo con Google y solo si su correo pasó antes por «Abra su negocio»
+(`POST /api/abrir/permiso`). Falta la pantalla que pide ese correo antes de ir a
+Google, la que inscribe la app de códigos (las rutas ya están), el alta con
+correo y su enlace de un solo uso (la hace el programa aparte con la llave de
+administrador, que el servicio no tiene), la prueba de que no es un robot y el
+límite de altas por día (decisiones 8 bis y 10). Lo que el fundador hace en el
+panel de Supabase está en `supabase/LEEME.md`. El registro de Supabase, el
+botón público «Abra su negocio» y el despliegue de la función no se encienden
+antes de la prueba de que no es un robot y de un límite compartido de permisos y
+altas por día. El servicio frena los intentos de contraseña, de código y de
+permisos de alta con un límite propio por IP, por correo y por sesión, pero ese
+límite vive en la memoria de cada copia de la función: falta uno compartido
+(`supabase/LEEME.md`, «Los límites de Supabase y el servicio»). La lista de lo pendiente
 está al final de `arquitectura/bases/02-base-de-datos.md`.

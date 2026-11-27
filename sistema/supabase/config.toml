@@ -1,0 +1,13 @@
+# La configuración local de Supabase para el sistema (la lee la CLI de Supabase).
+# Solo dice cómo se arma la función del servicio. Lo de Supabase Auth (Google,
+# el gancho, el segundo paso) lo pone el fundador en el panel del proyecto, como
+# dice supabase/LEEME.md: este archivo no lo sube nadie con «config push».
+project_id = "coddvisor-sistema"
+
+[functions.servicio]
+# Las rutas del servicio entran con la cookie de la sesión, no con un pase de
+# Supabase en el encabezado Authorization: cada ruta verifica el pase ella misma.
+verify_jwt = false
+# Traduce los nombres con # de package.json, que Deno no lee.
+import_map = "./functions/servicio/deno.json"
+entrypoint = "./functions/servicio/index.ts"

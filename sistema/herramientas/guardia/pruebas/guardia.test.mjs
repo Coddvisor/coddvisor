@@ -116,6 +116,15 @@ mal('PO-01', ['import { createServer } from "node:http"; export const a = create
 bien(['export const a = crypto.subtle;', 'export const a = new TextEncoder().encode("x");', 'export const a = new Response("x");', 'export const a = async (u: string): Promise<number> => (await fetch(u)).status;', 'export const a = new Uint8Array(4);', 'export const a = btoa("x");', 'export const a = setTimeout;', 'export const a = { Buffer: 1, process: 2 };', 'export const f = (o: { process: number }): number => o.process;'], SERVIDOR);
 bien(['export const a = new Headers({ "x-a": "b" });', 'export const a = new URL("https://x.pe").origin;'], SERVICIO);
 
+// ---------- Arranques: la capa delgada que pone un programa en marcha ----------
+// Desde el 26-nov-2026 (proveedor de cuentas real) la función de Supabase vive en
+// supabase/functions/: solo entra por la puerta de una aplicación o de un paquete, y
+// corre en Deno.
+const ARRANQUE = { en: 'supabase/functions/caso' };
+mal('FR-03', ['import { LIMITES } from "../../../modulos/identidad/limites.ts"; export const a = LIMITES;', 'import { verificarPase } from "../../../modulos/identidad/publico.ts"; export const a = verificarPase;', 'import { crearManejador } from "../../../aplicaciones/servicio/rutas/rutas.ts"; export const a = crearManejador;', 'import { cosa } from "../../../herramientas/cosa.ts"; export const a = cosa;'], ARRANQUE);
+mal('PO-01', ['import { createServer } from "node:http"; export const a = createServer;', 'export const a = process.env;'], ARRANQUE);
+bien(['import { crearManejador } from "../../../aplicaciones/servicio/publico.ts"; export const a = crearManejador;', 'import { pais } from "../../../paquetes/pais/publico.ts"; export const a = pais;'], ARRANQUE);
+
 // ---------- Servicio: el texto de una consulta ----------
 const CONSULTA = { en: 'modulos/ventas/datos', cabeza: 'import type { Transaccion } from "#nucleo";\n' };
 const q = (cuerpo, firma = 't: Transaccion, x: string') => `export const f = async (${firma}): Promise<unknown> => ${cuerpo};`;

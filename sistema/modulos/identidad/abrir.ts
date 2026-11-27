@@ -8,7 +8,7 @@
  * no conoce ningún país.
  */
 import { err, ok, type Result, type Transaccion } from "#nucleo";
-import { campoTexto, campoTextoOpcional, campoUuid, type Firmador } from "./firma/mensaje.ts";
+import { campoEntero, campoTexto, campoTextoOpcional, campoUuid, type Firmador } from "./firma/mensaje.ts";
 import { LIMITES } from "./limites.ts";
 
 export interface CuentaNueva {
@@ -33,6 +33,29 @@ export async function registrarCuenta(t: Transaccion, firmar: Firmador, c: Cuent
   const id = fila?.["cuenta_id"];
   if (typeof id !== "string") throw new TypeError("La base devolvió la cuenta sin la forma esperada.");
   return id;
+}
+
+export interface PermisoDeAlta {
+  /** El id del permiso (UUID v7): repetir el mismo no anota otro. */
+  readonly permiso: string;
+  /** El correo de Google con que la persona dice que abrirá su negocio. La base guarda solo su huella. */
+  readonly correo: string;
+  /** Cuánto vale el permiso, en segundos. */
+  readonly duracionS: number;
+}
+
+/**
+ * identidad.permitir_alta: anota que alguien tocó «Abra su negocio» con este
+ * correo. El gancho de Supabase Auth que corre antes de crear una cuenta
+ * (ganchos.antes_de_crear_cuenta) deja crear una cuenta con Google solo si su
+ * correo tiene un permiso vigente (decisión 8 bis). Se puede repetir.
+ */
+export async function permitirAlta(t: Transaccion, firmar: Firmador, p: PermisoDeAlta): Promise<void> {
+  const f = await firmar("identidad_permitir_alta", [campoUuid(p.permiso), campoTexto(p.correo), campoEntero(p.duracionS)]);
+  await t.consultar(
+    "select identidad.permitir_alta($1, $2, $3, $4, $5, $6)",
+    [p.permiso, p.correo, p.duracionS, f.venceS, f.numero, f.firma],
+  );
 }
 
 /** Los identificadores de todo lo que nace al abrir un negocio. El servicio los hace repetibles. */

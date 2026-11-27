@@ -96,12 +96,22 @@ sistema/
                             (textos/es-PE.json). Los colores siguen en marca/colores.css.
   herramientas/
     probar-entrar/          El modo de prueba local de entrar. Solo para la computadora.
+  supabase/                 Lo que pide Supabase para desplegar: config.toml y el arranque
+    functions/servicio/     del servicio como función (index.ts, en Deno), que solo entra
+                            por la puerta del servicio. Su guía: supabase/LEEME.md.
 ```
 
 Las páginas de entrar viven en `aplicaciones/oficina/` y no en el servicio
 (cambio del 26-nov-2026): desde que el panel se arma en el navegador
 (`donde-corre-el-sistema.md`, decisión 2), el servicio solo entrega datos y las
 pantallas son archivos fijos. Las rutas que ellas llaman sí son del servicio.
+
+`supabase/` es un **arranque**, no una capa (cambio de frontera del 26-nov-2026,
+proveedor de cuentas real; lo aprueba el fundador): Supabase exige el archivo de
+entrada de su función en `supabase/functions/<nombre>/`. Un arranque no tiene
+lógica, nadie lo importa, corre en Deno como las aplicaciones (PO-01) y entra
+solo por la puerta de una aplicación o de un paquete de país (FR-03). Lo declara
+`herramientas/guardia/capas.json`, en «arranques».
 
 Esto es lo que existe hoy. Lo que sigue es la estructura de destino; cada
 carpeta se crea cuando llega su primer código, no antes.

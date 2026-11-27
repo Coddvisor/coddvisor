@@ -23,6 +23,26 @@ export interface EntradaDelProveedor {
   readonly faltaSegundoPaso: boolean;
 }
 
+/**
+ * El proveedor no atiende ahora: pidió esperar (Supabase Auth responde 429 al
+ * pasar sus límites por IP). No es un «no» de la persona: las rutas no borran
+ * la sesión y responden «demasiados_intentos» para que vuelva a intentar luego.
+ */
+export class ProveedorOcupado extends Error {
+  constructor(que: string) {
+    super(`El proveedor de cuentas pidió esperar al ${que}.`);
+    this.name = "ProveedorOcupado";
+  }
+}
+
+/**
+ * Por qué no se pudo empezar a inscribir la app de códigos. `sin_sesion`: la
+ * sesión ya no vale. `faltan_dos_pasos`: la cuenta ya tiene una app confirmada y
+ * esta sesión todavía no hizo el segundo paso (aal1): para inscribir otra, antes
+ * el código de la que tiene.
+ */
+export type RechazoDeLaInscripcion = "sin_sesion" | "faltan_dos_pasos";
+
 /** `sin_segundo_paso`: la cuenta no tiene una app de códigos inscrita. */
 export type RechazoDelSegundoPaso = "codigo_incorrecto" | "sin_segundo_paso";
 
@@ -49,6 +69,16 @@ export interface AltaDelProveedor {
   readonly nombre: string;
 }
 
+/** Lo que la persona copia a su app de códigos al inscribirla: el enlace otpauth:// (para el código QR) y su secreto. */
+export interface InscripcionDelSegundoPaso {
+  /** El id del factor que nace sin confirmar. Se manda de vuelta con el primer código. */
+  readonly factor: string;
+  /** El enlace otpauth:// que la página muestra como código QR. */
+  readonly enlace: string;
+  /** El mismo secreto, para escribirlo a mano si la cámara no lee el QR. */
+  readonly secreto: string;
+}
+
 export interface ProveedorDeCuentas {
   /** null si el correo o la contraseña no coinciden. Nunca dice cuál de los dos, ni si la cuenta existe. */
   entrarConContrasena(correo: string, contrasena: string): Promise<EntradaDelProveedor | null>;
@@ -58,25 +88,35 @@ export interface ProveedorDeCuentas {
   canjearGoogle(codigo: string, verificador: string): Promise<EntradaDelProveedor | null>;
   /** El código de seis dígitos de la app del celular: devuelve la sesión con aal2. */
   confirmarSegundoPaso(sesion: SesionDelProveedor, codigo: string): Promise<Result<EntradaDelProveedor, RechazoDelSegundoPaso>>;
-  /** Cierra la sesión en el proveedor. Si falla, la cookie igual se borra. */
+  /**
+   * Empieza a inscribir la app de códigos de la cuenta (decisión 8: «el segundo
+   * paso se inscribe al crear la cuenta»).
+   */
+  inscribirSegundoPaso(sesion: SesionDelProveedor): Promise<Result<InscripcionDelSegundoPaso, RechazoDeLaInscripcion>>;
+  /** Confirma la inscripción con el primer código de la app: la deja lista y devuelve la sesión con aal2. */
+  confirmarInscripcion(sesion: SesionDelProveedor, factor: string, codigo: string): Promise<Result<EntradaDelProveedor, "codigo_incorrecto">>;
+  /** Una sesión nueva con la renovación de la cookie, antes de que el pase venza. null si ya no se puede renovar. */
+  renovar(sesion: SesionDelProveedor): Promise<EntradaDelProveedor | null>;
+  /**
+   * Cierra la sesión en el proveedor. Si el pase ya venció, la renueva primero
+   * para poder cerrarla allá también. Si falla, la cookie igual se borra.
+   */
   salir(sesion: SesionDelProveedor): Promise<void>;
 
   /**
-   * «Abra su negocio» con una cuenta nueva: la dirección a la que se manda a la
-   * persona para crearla (decisiones 8 bis y 10 de identidad). Vuelve igual que
-   * Google, con un código de un solo uso y el mismo desafío PKCE.
+   * «Abra su negocio» con una cuenta nueva de Google: la dirección a la que se
+   * manda a la persona para crearla (decisiones 8 bis y 10 de identidad). Vuelve
+   * igual que Google, con un código de un solo uso y el mismo desafío PKCE.
    *
-   * En la computadora, el proveedor de prueba crea una cuenta de ejemplo y
-   * vuelve enseguida. Con Supabase falta (queda escrito en
-   * arquitectura/propuestas/identidad-y-membresia.md, decisión 10):
-   *   - con Google: la dirección de Google con la marca que reconoce el hook de
-   *     «antes de crear una cuenta», que deja pasar solo las altas que vienen de
-   *     este botón y niega las demás;
-   *   - con correo: la cuenta nace pendiente y sin contraseña, el programa aparte
-   *     con la llave de administrador manda el enlace de un solo uso, y recién al
-   *     volver por ese enlace la persona pone su contraseña;
-   *   - en los dos: la prueba de que no es un robot, el límite de altas por día
-   *     y la inscripción de la app de códigos antes de entrar al negocio.
+   * Con Supabase, la cuenta nace solo si antes el servicio anotó el permiso de
+   * alta de su correo (identidad.permitir_alta): el gancho de «antes de crear una
+   * cuenta» (ganchos.antes_de_crear_cuenta) niega las demás altas. En la
+   * computadora, el proveedor de prueba crea una cuenta de ejemplo y vuelve
+   * enseguida. Falta, y queda escrito en identidad-y-membresia.md: el alta con
+   * correo y su enlace de un solo uso (la crea el programa aparte con la llave
+   * de administrador, que este servicio no tiene), la prueba de que no es un
+   * robot y el límite de altas por día compartido (hoy el servicio pone solo un
+   * límite propio en memoria, por IP).
    */
   direccionParaAbrir(vuelta: VueltaDeGoogle): string;
   /** Canjea la vuelta del alta, con el verificador PKCE. null si no vale. */

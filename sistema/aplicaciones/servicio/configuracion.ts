@@ -9,7 +9,7 @@
  * (cuánto dura una firma, la tolerancia del reloj) están en su módulo.
  */
 import { err, ok, type Result } from "#nucleo";
-import { deBase64, LIMITES_DE_IDENTIDAD, type LlaveDelPortero } from "#modulos/identidad";
+import { deBase64, deBase64url, LIMITES_DE_IDENTIDAD, type LlaveDelPortero } from "#modulos/identidad";
 
 export const LIMITES_DEL_SERVICIO = {
   /** Cuántos negocios muestra cada página de «¿A qué negocio entra?». Como mucho, el tope de la puerta. */
@@ -22,6 +22,31 @@ export const LIMITES_DEL_SERVICIO = {
   largoMaximoDeLaContrasena: 1024,
   /** Cuánto dura el ida y vuelta con Google, en segundos, antes de que su cookie venza. */
   duracionDeLaVueltaDeGoogleS: 600,
+  /**
+   * Cuánto vale el permiso de alta que anota «Abra su negocio» (control.alta_permitida):
+   * lo mismo que el ida y vuelta con Google, que es cuando Supabase Auth crea la cuenta.
+   */
+  duracionDelPermisoDeAltaS: 600,
+  /**
+   * El límite propio de intentos (rutas/limite.ts): cuántos fallos se admiten en
+   * cada ventana antes de responder «demasiados_intentos» sin llamar a Supabase.
+   * La ventana es la misma de los límites de Supabase Auth: cinco minutos.
+   */
+  ventanaDeIntentosMs: 300_000,
+  /** Contraseñas y códigos fallidos desde una misma IP, sumados. */
+  intentosFallidosPorIp: 30,
+  /** Contraseñas fallidas para un mismo correo, vengan de donde vengan. */
+  intentosFallidosPorCorreo: 10,
+  /** Códigos de seis dígitos fallidos con una misma sesión. */
+  codigosFallidosPorSesion: 5,
+  /** Permisos de alta («Abra su negocio») pedidos desde una misma IP. Cuentan todos, no solo los fallidos. */
+  permisosDeAltaPorIp: 5,
+  /** Cuántas claves guarda cada límite como mucho: así su memoria tiene tope. */
+  clavesMaximasDelLimite: 10_000,
+  /** Cuánto se espera al proveedor de cuentas en cada pedido, en milisegundos. */
+  esperaAlProveedorDeCuentasMs: 10_000,
+  /** La respuesta más larga que se lee del proveedor de cuentas, en bytes. Una sesión de Supabase mide unos pocos KiB. */
+  largoMaximoDeLaRespuestaDelProveedor: 65_536,
   /** El nombre más largo que se acepta para un negocio, un local o su distrito, en caracteres. */
   largoMaximoDeUnNombre: 120,
   /** El RUC más largo que se lee del pedido, con los espacios y guiones que traiga al pegarlo. */
@@ -47,6 +72,8 @@ export const VARIABLES = {
   llavesDelPase: "CODDVISOR_PASE_LLAVES",
   numeroDeLaLlaveDelPortero: "CODDVISOR_PORTERO_LLAVE_NUMERO",
   secretoDeLaLlaveDelPortero: "CODDVISOR_PORTERO_LLAVE_SECRETO",
+  direccionDeLasCuentas: "CODDVISOR_CUENTAS_DIRECCION",
+  clavePublicaDeLasCuentas: "CODDVISOR_CUENTAS_CLAVE_PUBLICA",
 } as const;
 
 export interface Configuracion {
@@ -61,6 +88,16 @@ export interface Configuracion {
     readonly direccionDeLasLlaves: string;
   };
   readonly llaveDelPortero: LlaveDelPortero;
+  /**
+   * Supabase Auth del proyecto. La dirección es la de su API (https://<proyecto>.supabase.co/auth/v1),
+   * en el mismo origen que el emisor del pase. La clave es la pública del proyecto
+   * (la «publishable» o la «anon»), que Supabase pide en el encabezado apikey: no es
+   * un secreto. La llave de servicio nunca llega aquí (decisión 10).
+   */
+  readonly cuentas: {
+    readonly direccion: string;
+    readonly clavePublica: string;
+  };
 }
 
 export type Entorno = Readonly<Record<string, string | undefined>>;
@@ -70,6 +107,28 @@ const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
 const BYTES_MINIMOS_DE_LA_LLAVE = 32;
 const NUMERO_DE_LLAVE = /^[1-9][0-9]{0,8}$/;
 const PROTOCOLO_SEGURO = "https:";
+// La clave pública: una de Supabase («sb_publishable_...» o un JWT «anon»), sin espacios.
+const CLAVE_PUBLICA = /^[A-Za-z0-9._-]{20,4096}$/;
+// Las llaves secretas nuevas de Supabase empiezan así. La antigua «service_role» es un
+// JWT: se reconoce leyendo su cuerpo (role).
+const CLAVE_DE_SERVICIO = /^sb_secret_/;
+const ROL_DE_SERVICIO = "service_role";
+const PARTES_DE_UN_JWT = 3;
+const UTF8 = new TextDecoder("utf-8", { fatal: true });
+
+/** Si la clave es un JWT de Supabase con el rol de servicio (la llave antigua «service_role»). */
+function esJwtDeServicio(clave: string): boolean {
+  const partes = clave.split(".");
+  if (partes.length !== PARTES_DE_UN_JWT) return false;
+  const bytes = deBase64url(partes[1] ?? "");
+  if (bytes === null) return false;
+  try {
+    const cuerpo: unknown = JSON.parse(UTF8.decode(bytes));
+    return typeof cuerpo === "object" && cuerpo !== null && (cuerpo as Record<string, unknown>)["role"] === ROL_DE_SERVICIO;
+  } catch {
+    return false;
+  }
+}
 
 function direccionSegura(texto: string): URL | null {
   try {
@@ -95,6 +154,8 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
   const llaves = valor(VARIABLES.llavesDelPase);
   const numero = valor(VARIABLES.numeroDeLaLlaveDelPortero);
   const secreto = valor(VARIABLES.secretoDeLaLlaveDelPortero);
+  const direccionDeLasCuentas = valor(VARIABLES.direccionDeLasCuentas);
+  const clavePublica = valor(VARIABLES.clavePublicaDeLasCuentas);
 
   const urlDelOrigen = origen === "" ? null : direccionSegura(origen);
   if (origen !== "" && (urlDelOrigen === null || urlDelOrigen.origin !== origen)) {
@@ -107,6 +168,20 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
   // Las llaves salen del mismo proveedor que emite los pases: nunca de otro lado.
   if (urlDelEmisor !== null && urlDeLasLlaves !== null && urlDelEmisor.origin !== urlDeLasLlaves.origin) {
     faltas.push(`${VARIABLES.llavesDelPase} debe estar en el mismo origen que ${VARIABLES.emisorDelPase}.`);
+  }
+  const urlDeLasCuentas = direccionDeLasCuentas === "" ? null : direccionSegura(direccionDeLasCuentas);
+  if (direccionDeLasCuentas !== "" && (urlDeLasCuentas === null || urlDeLasCuentas.search !== "" || direccionDeLasCuentas.endsWith("/"))) {
+    faltas.push(`${VARIABLES.direccionDeLasCuentas} debe ser una dirección https, sin usuario, consulta ni barra final.`);
+  }
+  // Las cuentas las lleva el mismo proveedor que firma los pases.
+  if (urlDelEmisor !== null && urlDeLasCuentas !== null && urlDelEmisor.origin !== urlDeLasCuentas.origin) {
+    faltas.push(`${VARIABLES.direccionDeLasCuentas} debe estar en el mismo origen que ${VARIABLES.emisorDelPase}.`);
+  }
+  if (clavePublica !== "" && !CLAVE_PUBLICA.test(clavePublica)) {
+    faltas.push(`${VARIABLES.clavePublicaDeLasCuentas} debe ser la clave pública del proyecto, sin espacios.`);
+  }
+  if (CLAVE_DE_SERVICIO.test(clavePublica) || esJwtDeServicio(clavePublica)) {
+    faltas.push(`${VARIABLES.clavePublicaDeLasCuentas} parece la llave de servicio de Supabase. El servicio usa solo la pública (decisión 10).`);
   }
   if (numero !== "" && !NUMERO_DE_LLAVE.test(numero)) faltas.push(`${VARIABLES.numeroDeLaLlaveDelPortero} debe ser un número entero positivo.`);
   const bytes = BASE64.test(secreto) ? deBase64(secreto) : null;
@@ -122,6 +197,7 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
     origen,
     pase: { emisor, audiencia, direccionDeLasLlaves: llaves },
     llaveDelPortero: { numero: Number.parseInt(numero, 10), secreto: bytes },
+    cuentas: { direccion: direccionDeLasCuentas, clavePublica },
   });
 }
 

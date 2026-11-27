@@ -5,6 +5,7 @@
   "comun.error.red": "No hay conexión. Revise su internet y vuelva a intentar.",
   "comun.error.general": "Algo falló de nuestro lado. Vuelva a intentar en un momento.",
   "comun.error.sesion": "Su sesión terminó. Vuelva a entrar.",
+  "comun.error.demasiados": "Hubo muchos intentos seguidos. Espere unos minutos y vuelva a intentar.",
 
   "entrar.titulo-de-la-pagina": "Entrar a Coddvisor",
   "entrar.titulo": "Entre a su negocio",

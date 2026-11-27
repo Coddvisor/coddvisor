@@ -327,6 +327,18 @@ no pueden saltarse la seguridad por fila. Además:
 - La aplicación no crea tablas temporales.
 - Una función que corre con los permisos de su dueño es una puerta: quién puede
   ejecutarla figura, con nombre, en la lista de puertas.
+- Un solo rol que no es de Coddvisor figura en esa lista: `supabase_auth_admin`,
+  con el que Supabase Auth ejecuta su gancho «antes de crear una cuenta»
+  (`ganchos.antes_de_crear_cuenta`). No recibe ninguna tabla: solo ejecutar esa
+  función y usar el esquema `ganchos`, que no guarda tablas. La función corre
+  como `coddvisor_identidad`, que suma a su lista cerrada leer y anexar
+  `control.alta_permitida`. (Cambio del 26-nov-2026, barrera de altas de la
+  decisión 8 bis de identidad; lo aprueba el fundador.) Aquí se aparta de la
+  guía de Auth Hooks de Supabase, que recomienda no usar `security definer` y
+  dar a `supabase_auth_admin` permiso directo sobre las tablas que lee el
+  gancho: se prefiere que un rol ajeno no reciba ninguna tabla, y que la
+  función corra con un dueño sin sesión que solo lee y anexa lo suyo, con
+  `search_path` fijo.
 
 ### Tipos
 
@@ -411,13 +423,16 @@ cada negocio y con qué nombre se muestra (`control.negocio`, decisión 14 de
 identidad: así la persona elige a qué negocio entra sin abrir ninguno; es una
 copia del nombre de `nucleo.tenant`, que `fundar_negocio` escribe en la misma
 transacción), la llave del portero y la marca que el portero traba al abrir
-un negocio (`portero.marca`, sin filas). Lo
+un negocio (`portero.marca`, sin filas) y los permisos de alta que anota «Abra su negocio»
+para que el gancho de Supabase Auth deje crear la cuenta (`control.alta_permitida`,
+solo la huella del correo y su vencimiento). Lo
 que es de un negocio vive dentro del negocio, donde lo cuidan el aislamiento y
 los sellos. La lista está en la configuración del verificador
 (`tablasDeControl`). Una tabla de control que no figura en ella es una falta, y
 el esquema `control` no guarda tablas de otra clase. Para agregar una se cambia
 la lista con su porqué, y lo aprueba el fundador. (`control.negocio` entra el
-26-nov-2026, con el tramo 3 de la identidad.)
+26-nov-2026, con el tramo 3 de la identidad; `control.alta_permitida`, el mismo
+día, con la barrera de altas, pendiente de la aprobación del fundador.)
 
 **BD-17. Los datos personales no dejan rastro en los resúmenes de la base.**
 La base guarda resúmenes de cada columna (los valores más frecuentes, los
@@ -477,7 +492,10 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 | Campos propios y su definición | Módulo de configuración (D16) |
 | Valores legales del Perú en `parametro_legal`, entre ellos los topes, categorías y tasas de cada régimen tributario, y la norma y la fecha legal de cada régimen (`nucleo.regimen_tributario.norma_fuente` está vacía, y su `vigente_desde`, 2017-01-01, es la fecha desde la que el sistema ofrece la opción, no el inicio legal), y la nota de la primera pregunta de «Abra su negocio» sobre qué comprobantes entrega cada régimen | Confirmación del contador asesor, con norma y fecha |
 | El historial del régimen de una empresa (el perfil fiscal con vigencia): hoy `nucleo.empresa.regimen_codigo` guarda el que eligió al abrir | La primera pantalla que deje cambiar de régimen |
-| Abrir un negocio con una cuenta real: el alta en Supabase (Google con el hook que deja pasar solo las altas de «Abra su negocio», o el correo con su enlace de un solo uso), la prueba de que no es un robot, el límite de altas de cuentas por día (el de negocios abiertos por cuenta ya lo pone `abrir_negocio`) y la inscripción de la app de códigos antes de entrar al negocio. Hoy la cuenta nace solo en el proveedor de prueba | Proveedor de cuentas real (decisiones 8 bis y 10) |
+| Abrir un negocio con una cuenta real. Ya existen el proveedor real, el gancho que deja pasar solo las altas con Google cuyo correo pasó por «Abra su negocio» (`ganchos.antes_de_crear_cuenta` y `control.alta_permitida`) y las rutas para inscribir la app de códigos. Falta: la pantalla que pide el correo de Google antes de ir a Google, la de inscribir la app, el alta con correo y su enlace de un solo uso (el programa aparte con la llave de administrador, que usa `POST /admin/users` y nunca `/invite`: según el código de GoTrue, las invitaciones pasan por el gancho y las altas del administrador no; se confirma en el proyecto de pruebas), la prueba de que no es un robot, el límite compartido de permisos y de altas de cuentas por día (hoy el servicio pone solo uno propio, en memoria, por IP; el de negocios abiertos por cuenta ya lo pone `abrir_negocio`). La pantalla que pide el correo dice que use exactamente el de su cuenta de Google: el permiso se compara con la huella exacta, y Google devuelve el correo principal (sin los puntos o el googlemail.com que la persona pueda escribir) | Pantallas de «Abra su negocio» y programa de administrador (decisiones 8 bis y 10) |
+| Aceptar una invitación entrando con Google, para alguien que todavía no tiene cuenta: el gancho la niega porque su correo no tiene un permiso de «Abra su negocio». La invitación tendrá que anotar su propio permiso (la huella del correo en `control.alta_permitida` o en una tabla hermana). La decisión 8 bis lo pone como condición: la barrera no está completa sin esto | Invitaciones (decisión 8 bis) |
+| Un límite de intentos compartido entre las copias del servicio, que la función acepte solo pedidos del Worker, y cómo pasar a Supabase la IP de la persona sin la llave secreta (decisión 10) | Fundador, antes de abrir al público (`sistema/supabase/LEEME.md`) |
+| Archivar los permisos de alta vencidos (`control.alta_permitida`): solo importan diez minutos | Primer trabajo de fondo (decisión 7) |
 | Que cada rubro proponga sus plantillas (la tabla que une `configuracion.rubro` con `plantilla`) | La primera plantilla publicada (`molde-de-rubro.md`) |
 
 Ninguna migración se aplicó a una base real. Antes de hacerlo hay que cerrar

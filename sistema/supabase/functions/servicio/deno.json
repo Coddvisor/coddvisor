@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "#nucleo": "../../../nucleo/publico.ts",
+    "#contratos/caja": "../../../contratos/caja/publico.ts",
+    "#modulos/configuracion": "../../../modulos/configuracion/publico.ts",
+    "#modulos/identidad": "../../../modulos/identidad/publico.ts",
+    "#paquetes/pe": "../../../paquetes/pe/publico.ts"
+  }
+}

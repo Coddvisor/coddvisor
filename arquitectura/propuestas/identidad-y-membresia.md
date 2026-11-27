@@ -340,6 +340,32 @@ Decisión del fundador del 26 de noviembre de 2026. Condiciones:
   persona invitada no puede aceptar entrando con Google. Las dos cosas se
   prueban antes en el proyecto de pruebas.
 
+  > **Nota del 26-nov-2026 (proveedor de cuentas real):** el gancho no puede
+  > saber de qué botón viene un alta por el pedido: su documentación dice que
+  > recibe solo `metadata` (uuid, time, name, ip_address) y `user`, sin nada
+  > del pedido a `/authorize`. Por eso la marca se guarda antes, en la base:
+  > «Abra su negocio» pide el correo de Google y el servicio anota su permiso
+  > (`identidad.permitir_alta`, que guarda solo la huella del correo en
+  > `control.alta_permitida`, por diez minutos). El gancho
+  > (`ganchos.antes_de_crear_cuenta`, migración
+  > `20261126233000_barrera_de_altas.sql`) deja pasar un alta solo si es con
+  > Google y su correo tiene un permiso vigente. El gancho no distingue los
+  > dos botones: «Continuar con Google» de alguien sin cuenta y **sin**
+  > permiso vigente vuelve con error y no crea nada; **con** un permiso
+  > vigente, Supabase crea la cuenta aunque haya tocado «Continuar con
+  > Google», y Coddvisor la registra recién cuando pasa por «Abra su
+  > negocio». Según el código de GoTrue, el gancho no corre para las altas
+  > del administrador (`POST /admin/users`) ni cuando Google se une solo a
+  > una cuenta que ya existe con el mismo correo, y sí corre para las
+  > invitaciones de Supabase (`POST /invite`): el programa de la decisión 10
+  > crea las cuentas con `POST /admin/users`, nunca con `/invite`. Queda
+  > abierto, y la barrera no está completa sin ello: una persona invitada
+  > sin cuenta que acepta con Google queda negada, así que la invitación
+  > tendrá que anotar su propio permiso. Se descartó marcar por
+  > la dirección IP (`metadata.ip_address`): con varios celulares detrás de una
+  > misma IP, y con IPv4 e IPv6 mezclados, negaría a quien sí viene del botón.
+  > Los pasos del panel están en `sistema/supabase/LEEME.md`.
+
 ### 9. Recuperar una cuenta
 
 Es el camino más fácil para robar una cuenta, así que es lento a propósito:
