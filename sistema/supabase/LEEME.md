@@ -13,9 +13,10 @@ Esta carpeta tiene lo que pide Supabase para desplegar el servicio:
 La función ya habla con la base: el repartidor de Postgres
 (`aplicaciones/servicio/base/postgres.ts`, con postgres.js) entra con el rol
 `coddvisor_entrada` por la dirección de `CODDVISOR_BASE_DIRECCION`. Sin esa
-variable, la función no arranca y dice qué revisar. Todavía **no se despliega**:
-espera las protecciones de abajo («Lo que NO se enciende todavía») y que ninguna
-migración llegó a una base real.
+variable, la función no arranca y dice qué revisar. **Todavía no se desplegó.**
+Lo que tiene que estar antes del primer despliegue, y en qué orden, está en una
+sola lista: `sistema/herramientas/desplegar/LEEME.md`, «Lo que tiene que estar
+antes del primer despliegue».
 
 La región no se fija al desplegar. Supabase la elige en cada llamada: el Worker
 de Cloudflare manda cada pedido a `/api` con el encabezado `x-region: sa-east-1`
@@ -155,8 +156,8 @@ pasó antes por el botón «Abra su negocio».
 
 - **El registro (paso 6) antes del gancho (paso 5)**, ni antes de la prueba de
   que no es un robot y del límite compartido de permisos y altas por día.
-- **El botón público «Abra su negocio» y el despliegue de la función**, por lo
-  mismo: ninguno llega antes de esas dos protecciones.
+- **El botón público «Abra su negocio»**, por lo mismo: no llega antes del
+  gancho ni de la protección de Supabase Auth (`turnstile.md`, paso 2).
 - **La prueba de que no es un robot (CAPTCHA)** en **Attack Protection**: se
   enciende después de desplegar la función que manda la prueba
   (`turnstile.md`, paso 2).
@@ -167,16 +168,13 @@ pasó antes por el botón «Abra su negocio».
   paso, porque corta la clave «anon» antigua.
 - **Los tiempos de sesión del plan Pro** (time-box, inactividad): los aplica el
   servicio por rol (decisión 8), no Supabase.
-- **Desplegar la función** y cargar sus secretos (`CODDVISOR_*`, en **Edge
-  Functions → Secrets**). El camino ya existe, por GitHub Actions y con la
-  aprobación del fundador: `herramientas/desplegar/LEEME.md`. El primer
-  despliegue espera que las migraciones lleguen a la base por su camino, la
-  contraseña de `coddvisor_entrada` y las pruebas de abajo («Lo que falta
-  probar en el proyecto real»). La llave del portero no se pega a mano:
-  la guarda la ceremonia «Llave del portero» de GitHub Actions
-  (`sistema/herramientas/migrador/LEEME.md`), que puede correr antes del
-  despliegue, después de la primera corrida de las migraciones. La dirección
-  de la base tampoco: la guarda la ceremonia «Contraseña de la entrada».
+- **Cargar a mano los secretos de la función** (`CODDVISOR_*`, en **Edge
+  Functions → Secrets**). Cada uno tiene su flujo de GitHub Actions, con la
+  aprobación del fundador, y la función se despliega por el suyo
+  (`herramientas/desplegar/LEEME.md`, con la lista y el orden de lo que va
+  antes del primer despliegue). Las pruebas de abajo («Lo que falta probar en
+  el proyecto real») no son requisito del primer despliegue, que no abre nada
+  al público: lo son de abrir el registro (paso 6).
 - **La llave de servicio** (`service_role` o `sb_secret_...`) en cualquier
   lugar del servicio. Solo la tendrá el programa aparte que crea las cuentas con
   correo (decisión 10), que todavía no existe.
@@ -193,7 +191,7 @@ las personas juntas**. Lo que ya hace el servicio:
   sesión de nadie;
 - cupos compartidos antes de llamar a Supabase, contados en la base para todas
   las copias de la función: contraseñas fallidas por IP y por correo, códigos
-  fallidos por IP y por sesión, permisos de alta por IP y de todo el sistema, en
+  fallidos por IP y por cuenta, permisos de alta por IP y de todo el sistema, en
   ventanas de cinco minutos y de un día (`turnstile.md`). Los topes son datos de
   `identidad.tope_de_cupo`. La IP es la que el Worker de Cloudflare pone en
   `x-coddvisor-ip` (no `cf-connecting-ip`, que detrás del Worker trae la IP del
@@ -214,6 +212,34 @@ Lo que falta, y no se resuelve sin el fundador:
   (`Sb-Forwarded-For`), y eso exige la llave secreta, que el servicio no puede
   tener (decisión 10). Mientras no se resuelva, el límite por IP de Supabase no
   frena a nadie en particular: solo corta a todos a la vez.
+
+**Lo que los cupos del servicio no cubren.** Cuentan lo que pasa por el Worker
+y la función. Supabase Auth, en cambio, también atiende directo en
+`https://<ref>.supabase.co/auth/v1`, y para llamarlo basta la clave pública
+(`sb_publishable_...`), que no es un secreto. Quien sepa la contraseña de una
+cuenta puede pedir ahí el pase (`/token`, con una prueba de Turnstile que saca
+resolviendo el recuadro en `app.coddvisor.com`) y probar códigos
+(`/factors/<id>/challenge` y `/verify`, que no piden Turnstile), sin pasar por
+ningún cupo del servicio. A ese camino solo lo frenan los límites propios de
+Supabase Auth, que ahí sí ven la IP de quien llama:
+
+- **El segundo paso**: 15 por minuto por IP, y no se puede cambiar. Es el
+  riesgo que queda: quien ya sabe la contraseña y cambia de IP puede probar
+  códigos más rápido que lo que deja el servicio. Lo que lo hace difícil es que
+  antes tiene que saber la contraseña (15 letras como mínimo, sin las
+  filtradas).
+- **Entrar** (**Authentication → Rate Limits**, «Sign ups and sign ins»):
+  revíselo y déjelo en lo más bajo que no corte al servicio. Todos los pedidos
+  de las personas le llegan desde la IP del servicio, así que el tope tiene que
+  alcanzar para todas juntas.
+- **La protección de Turnstile** (`turnstile.md`, paso 2): encendida. Es lo
+  único que pide una persona también en ese camino, y solo al entrar con
+  contraseña.
+
+Cerrarlo del todo pide que Supabase Auth no se pueda llamar de afuera, y eso no
+lo ofrece Supabase hoy. El fundador lo acepta o lo resuelve antes de abrir el
+registro (paso 6); está en la lista de lo pendiente de
+`arquitectura/bases/02-base-de-datos.md`.
 
 ## La conexión a la base
 
@@ -267,8 +293,9 @@ lleguen a la base por su camino):
    `CODDVISOR_BASE_DIRECCION` en **Edge Functions → Secrets**. No se arma ni se
    pega a mano.
 2. Si `verify-full` no reconoce el certificado (punto 3 de lo que falta probar),
-   descargar el certificado de Supabase de **Database Settings → SSL Configuration** y
-   guardarlo como `CODDVISOR_BASE_CERTIFICADO`.
+   **parar ahí**: no se pega `CODDVISOR_BASE_CERTIFICADO` a mano. Se pide su
+   camino por solicitud de revisión, como dice `herramientas/desplegar/LEEME.md`
+   («Lo que tiene que estar antes del primer despliegue», al final).
 
 ## Lo que falta probar en el proyecto real
 
@@ -282,7 +309,11 @@ un texto, muchos pedidos a la vez, la red que se corta (también con más pedido
 que conexiones), los topes de espera y que el entorno (PGDEBUG y parecidos) no
 cambia al controlador. La imitación atiende una orden a la vez y no encadena:
 no puede mostrar el problema de las órdenes encadenadas que advierte Supabase. Lo que esa imitación no
-puede probar, y hay que probar en un proyecto de pruebas antes de desplegar:
+puede probar. Se prueba **antes de abrir el registro** (paso 6), no antes del
+primer despliegue, que no abre nada al público y sin el cual varias de estas
+pruebas no se pueden hacer. Si va en un proyecto de pruebas aparte o en
+`coddvisor-sistema` con el registro apagado lo decide el fundador
+(`herramientas/desplegar/LEEME.md`):
 
 1. **El portero detrás de Supavisor en modo transacción, con varias sesiones de
    verdad.** Dos pedidos seguidos de negocios distintos que caen en la misma
@@ -351,7 +382,7 @@ Y la de la base:
 | Variable | Qué va | Dónde se ve en el panel |
 |---|---|---|
 | `CODDVISOR_BASE_DIRECCION` | `postgresql://coddvisor_entrada.<ref>:<contraseña>@<servidor del repartidor>:6543/postgres?sslmode=verify-full` | La guarda la ceremonia «Contraseña de la entrada» (`sistema/herramientas/migrador/CLAVE-DE-ENTRADA.md`); no se arma ni se pega a mano |
-| `CODDVISOR_BASE_CERTIFICADO` (opcional) | El certificado raíz de la base en PEM, solo si `verify-full` no reconoce el del repartidor. Exige `sslmode=verify-full` | **Database Settings → SSL Configuration** |
+| `CODDVISOR_BASE_CERTIFICADO` (opcional) | El certificado raíz de la base en PEM, solo si `verify-full` no reconoce el del repartidor. Exige `sslmode=verify-full` | Hoy nadie: no tiene camino y no se pega a mano. Si hace falta, se pide por solicitud de revisión (`sistema/herramientas/desplegar/LEEME.md`). El certificado sale de **Database Settings → SSL Configuration** |
 
 Es un secreto: lleva la contraseña. El servicio no arranca si el usuario no es
 `coddvisor_entrada`, si falta `sslmode` o si trae otra opción.

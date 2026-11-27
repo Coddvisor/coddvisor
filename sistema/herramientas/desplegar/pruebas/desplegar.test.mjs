@@ -7,8 +7,12 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import { leerConfiguracion, VARIABLES } from '../../../aplicaciones/servicio/configuracion.ts';
-import { COMPROBACION, DEL_ENTORNO, FUNCION, NUNCA_LOS_CARGA_EL_FLUJO, SECRETOS_QUE_CARGA_EL_FLUJO, SECRETOS_QUE_DEBEN_ESTAR, SUPABASE, VARIABLES_QUE_CARGA_EL_FLUJO } from '../configuracion.mjs';
-import { archivoDeVariables, comprobar, guardarVariables, revisarVariables, secretosQueFaltan } from '../desplegar.mjs';
+import { VARIABLES as DEL_WORKER } from '../../../aplicaciones/repartidor/publico.ts';
+import { configuracionDeWrangler, SISTEMA } from '../../repartidor/despliegue.ts';
+import { COMPROBACION, COMPROBACION_POR_EL_REPARTIDOR, DEL_ENTORNO, FUNCION, NUNCA_LOS_CARGA_EL_FLUJO, SECRETOS_QUE_CARGA_EL_FLUJO, SECRETOS_QUE_DEBEN_ESTAR, SUPABASE, VARIABLES_QUE_CARGA_EL_FLUJO } from '../configuracion.mjs';
+import {
+  archivoDeVariables, comprobar, comprobarPorElRepartidor, guardarVariables, revisarElProyecto, revisarLaComprobacion, revisarVariables, secretosQueFaltan,
+} from '../desplegar.mjs';
 
 const PROYECTO = 'abcdefghij0123456789';
 const REGION = 'sa-east-1';
@@ -103,6 +107,25 @@ describe('las variables del despliegue', () => {
   });
 });
 
+describe('lo que lee cada orden', () => {
+  test('mirar los secretos y comprobar no piden la llave secreta de Turnstile', () => {
+    const sinLaLlave = Object.fromEntries(Object.entries(bueno).filter(([nombre]) => !SECRETOS_QUE_CARGA_EL_FLUJO.includes(nombre)));
+    assert.deepEqual(revisarElProyecto({ [DEL_ENTORNO.proyecto]: PROYECTO, [DEL_ENTORNO.region]: REGION }).faltas, []);
+    assert.deepEqual(revisarLaComprobacion({ [DEL_ENTORNO.proyecto]: PROYECTO, [DEL_ENTORNO.region]: REGION, [VARIABLES.origenDelPanel]: 'https://app.ejemplo.test' }).faltas, []);
+    // Revisar y guardar sí la piden.
+    assert.ok(revisarVariables(sinLaLlave).faltas.some((f) => SECRETOS_QUE_CARGA_EL_FLUJO.some((nombre) => f.includes(nombre))));
+  });
+
+  test('comprobar pide el origen del panel, con https y sin camino', () => {
+    const base = { [DEL_ENTORNO.proyecto]: PROYECTO, [DEL_ENTORNO.region]: REGION };
+    for (const malo of [undefined, 'http://app.ejemplo.test', 'https://app.ejemplo.test/', 'https://app.ejemplo.test/panel', 'no es una dirección']) {
+      const r = revisarLaComprobacion(malo === undefined ? base : { ...base, [VARIABLES.origenDelPanel]: malo });
+      assert.ok(r.faltas.some((f) => f.includes(VARIABLES.origenDelPanel)), String(malo));
+    }
+    assert.ok(revisarLaComprobacion({}).faltas.some((f) => f.includes(DEL_ENTORNO.proyecto)));
+  });
+});
+
 describe('lo que recibe la CLI de Supabase', () => {
   test('el archivo de variables tiene una línea por variable', () => {
     assert.equal(archivoDeVariables({ A: 'uno', B: 'https://x.test/y' }), 'A="uno"\nB="https://x.test/y"\n');
@@ -193,6 +216,77 @@ describe('la comprobación después de desplegar', () => {
   });
 });
 
+describe('la comprobación por el Worker: la base y Supabase Auth', () => {
+  const ORIGEN = 'https://app.ejemplo.test';
+  const C = COMPROBACION_POR_EL_REPARTIDOR;
+  const respuesta = (estado, cuerpo, region = REGION) => new Response(JSON.stringify(cuerpo), { status: estado, headers: region === null ? {} : { [SUPABASE.regionEnQueCorrio]: region } });
+  const sinPrisa = async () => {};
+  const callado = () => {};
+  const con = (pedir) => comprobarPorElRepartidor({ origen: ORIGEN, region: REGION, dormir: sinPrisa, informar: callado, pedir });
+
+  test('entra con contraseña por el panel, como una persona, con un correo que no es de nadie', async () => {
+    let visto = null;
+    const r = await con(async (direccion, init) => { visto = { direccion, init }; return respuesta(400, { error: 'captcha' }); });
+    assert.deepEqual(r, { estado: 400, region: REGION, proteccion: true });
+    assert.equal(visto.direccion, `${ORIGEN}${C.ruta}`);
+    assert.equal(visto.init.method, 'POST');
+    assert.equal(visto.init.headers.origin, ORIGEN);
+    const cuerpo = JSON.parse(visto.init.body);
+    assert.deepEqual(Object.keys(cuerpo).sort(), ['captcha', 'contrasena', 'correo']);
+    assert.match(cuerpo.correo, /@example\.com$/);
+    // No lleva el secreto del Worker ni una IP: eso lo pone el Worker.
+    assert.deepEqual(Object.keys(visto.init.headers).sort(), ['content-type', 'origin']);
+  });
+
+  test('si Supabase Auth no revisa la prueba, pasa, pero avisa que falta su protección', async () => {
+    const r = await con(async () => respuesta(401, { error: 'credenciales' }));
+    assert.equal(r.proteccion, false);
+  });
+
+  test('un 500 es la base o Auth que no responden: falla en seguida y dice qué revisar, sin esperar', async () => {
+    let veces = 0;
+    await assert.rejects(con(async () => { veces += 1; return respuesta(500, { error: 'interno' }); }), /Migraciones a la base real.*Contraseña de la entrada.*verify-full/s);
+    assert.equal(veces, 1);
+  });
+
+  test('un 403 de la puerta es el Worker con otro secreto', async () => {
+    await assert.rejects(con(async () => respuesta(403, { error: 'sin_repartidor' })), /«nuevo»/);
+  });
+
+  test('falla si el Worker pidió otra región', async () => {
+    await assert.rejects(con(async () => respuesta(400, { error: 'captcha' }, 'us-east-1')), /el Worker pide otra región/);
+  });
+
+  test('vuelve a intentar si no respondió o respondió 503, y se rinde después de los intentos', async () => {
+    let veces = 0;
+    const r = await con(async () => { veces += 1; if (veces === 1) throw new Error('sin red'); return veces === 2 ? respuesta(503, {}) : respuesta(400, { error: 'captcha' }); });
+    assert.equal(r.estado, 400);
+    assert.equal(veces, 3);
+    veces = 0;
+    await assert.rejects(con(async () => { veces += 1; return respuesta(503, {}); }), /dominio/);
+    assert.equal(veces, C.intentos);
+  });
+});
+
+describe('el Worker y este flujo hablan de la misma función', () => {
+  test('el Worker llama a la dirección y pide la región que comprueba este flujo', async () => {
+    const vars = configuracionDeWrangler({ sistema: SISTEMA, paginas: '/x', proyecto: PROYECTO, region: REGION }).vars;
+    let direccion = null;
+    let pedida = null;
+    await comprobar({
+      proyecto: PROYECTO, region: REGION, dormir: async () => {}, informar: () => {},
+      pedir: async (d, init) => { direccion = d; pedida = init.headers[SUPABASE.pedirRegion]; return new Response(JSON.stringify({ error: 'sin_repartidor' }), { status: 403, headers: { [SUPABASE.regionEnQueCorrio]: REGION } }); },
+    });
+    assert.equal(direccion, `${vars[DEL_WORKER.funcion]}${COMPROBACION.ruta}`);
+    assert.equal(pedida, vars[DEL_WORKER.region]);
+  });
+
+  test('el flujo del repartidor lee el proyecto y la región de las mismas variables', () => {
+    const repartidor = flujo('desplegar-repartidor.yml');
+    for (const nombre of Object.values(DEL_ENTORNO)) assert.match(repartidor, new RegExp(`${nombre}: \\$\\{\\{ vars\\.${nombre} \\}\\}`), nombre);
+  });
+});
+
 describe('el flujo que despliega', () => {
   const texto = flujo('desplegar-servicio.yml');
   const desplegar = texto.slice(texto.indexOf('\n  desplegar:'));
@@ -251,8 +345,22 @@ describe('el flujo que despliega', () => {
     // La comprobación final no lleva el token: llama como cualquiera desde afuera.
     const ultimo = desplegar.slice(desplegar.indexOf('Comprobar la puerta'));
     assert.ok(!ultimo.includes('SUPABASE_ACCESS_TOKEN'));
+    assert.match(ultimo, new RegExp(`${VARIABLES.origenDelPanel}: \\$\\{\\{ vars\\.${VARIABLES.origenDelPanel} \\}\\}`));
     // Las entradas de quien lo corre no se pegan al texto de una orden.
     assert.ok(!/run:.*\$\{\{/.test(texto));
+  });
+
+  test('la llave secreta de Turnstile la ven solo los dos pasos que la revisan y la guardan', () => {
+    // Lo del trabajo entero lo ven todos sus pasos, también las acciones de afuera.
+    const delTrabajo = desplegar.slice(desplegar.indexOf('\n    env:'), desplegar.indexOf('\n    steps:'));
+    assert.ok(delTrabajo.length > 0);
+    assert.ok(!delTrabajo.includes('secrets.'), 'ningún secreto en el env del trabajo');
+    for (const nombre of VARIABLES_QUE_CARGA_EL_FLUJO.filter((n) => n !== VARIABLES.origenDelPanel)) assert.ok(!delTrabajo.includes(nombre), nombre);
+    const pasos = desplegar.slice(desplegar.indexOf('\n    steps:')).split('\n      - ').slice(1);
+    for (const nombre of SECRETOS_QUE_CARGA_EL_FLUJO) {
+      const conElSecreto = pasos.filter((p) => p.includes(`secrets.${nombre}`)).map((p) => /run: (.*)/.exec(p)?.[1] ?? p.slice(0, 40));
+      assert.deepEqual(conElSecreto, ['node herramientas/desplegar/desplegar.mjs revisar', 'node herramientas/desplegar/desplegar.mjs guardar'], nombre);
+    }
   });
 });
 

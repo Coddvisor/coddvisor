@@ -19,9 +19,11 @@
  *     del Worker de Cloudflare, 403, y la IP de la persona se cree solo con él;
  *   - las contraseñas, los códigos y los permisos de alta tienen sus cupos
  *     compartidos por IP y por lo que se intenta (cupos.ts, en la base: valen
- *     igual en todas las copias del servicio), que cortan antes de llamar a
- *     Supabase: sus límites son por IP, y todo le llega desde la IP del
- *     servicio. El cupo se gasta antes de intentar (así una ráfaga de pedidos a
+ *     igual en todas las copias del servicio). A lo que pasa por aquí lo cortan
+ *     antes de llamar a Supabase, cuyos límites son por IP y ven a todos desde
+ *     la IP del servicio. A quien llama directo a Supabase Auth con la clave
+ *     pública no lo cuentan: ese riesgo y lo que lo frena están en
+ *     supabase/turnstile.md. El cupo se gasta antes de intentar (así una ráfaga de pedidos a
  *     la vez no pasa del tope) y se devuelve si el intento salió bien o no
  *     llegó a contarse. Si Supabase igual pide esperar, se responde lo mismo
  *     («demasiados_intentos») y la sesión no se borra;
@@ -33,7 +35,7 @@
 import { err, ok, type Result } from "#nucleo";
 import { aBase64url, CUPOS, deTexto, igualesSinPrisa, leerNegocioAbierto, type NegocioEnPalabras, type Nivel, type UsoDeCupo } from "#modulos/identidad";
 import { LIMITES_DEL_SERVICIO } from "../configuracion.ts";
-import { cerrarLaSesion, negociosDeLaPersona, trabajarEnNegocio, type Piezas, type RechazoAlEntrar } from "../entrar.ts";
+import { cerrarLaSesion, cuentaDelPase, negociosDeLaPersona, trabajarEnNegocio, type Piezas, type RechazoAlEntrar } from "../entrar.ts";
 import { abrirElNegocio, opcionesParaAbrir, permitirLaAlta, registrarLaCuentaNueva, revisarElRuc, type PedidoDeAbrir, type RechazoAlAbrirElNegocio } from "../abrir.ts";
 import { devolver, gastar, quedan } from "../cupos.ts";
 import { ACCIONES_DEL_CAPTCHA, type VerificarCaptcha } from "../proveedor/turnstile.ts";
@@ -133,8 +135,6 @@ const CODIGO_DE_SEIS = /^[0-9]{6}$/;
 const PARECE_UN_CORREO = /^[^\s@]+@[^\s@]+$/;
 const LARGO_DE_UN_ID = 36;
 const SEPARADOR_DE_GOOGLE = ".";
-// De un pase, para contar sus códigos fallidos, basta su firma: es distinta en cada pase.
-const LARGO_DE_LA_CLAVE_DEL_PASE = 128;
 const PIDE_ESPERAR = 429;
 const PEDIDO_MALO = 400;
 // Lo que se cuenta por todas las personas juntas: una sola clave.
@@ -215,7 +215,6 @@ function responderRechazoAlAbrir(r: RechazoAlAbrirElNegocio): Response {
   return fallo(400, "pedido_invalido");
 }
 
-const claveDelPase = (pase: string): string => pase.slice(pase.lastIndexOf(".") + 1).slice(0, LARGO_DE_LA_CLAVE_DEL_PASE);
 const claveDelCorreo = (correo: string): string => correo.trim().toLowerCase();
 const demasiados = (): Response => fallo(PIDE_ESPERAR, "demasiados_intentos");
 
@@ -239,9 +238,11 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
   // Los cupos de cada cosa que se intenta: por la IP y por lo que se intenta.
   // Las claves llegan ya revisadas: ninguna vacía (la puerta las rechaza). La IP
   // es la que dejó pasar la puerta (rutas/puerta.ts), nunca una que se lea aquí.
-  const cuposDeUnCodigo = (ip: string | null, claveDeLaSesion: string): readonly UsoDeCupo[] => [
+  // Los códigos se cuentan por cuenta, no por pase ni por sesión: un pase
+  // renovado o una sesión nueva traen otra firma y otra sesión, pero la misma cuenta.
+  const cuposDeUnCodigo = (ip: string | null, cuenta: string): readonly UsoDeCupo[] => [
     { cupo: CUPOS.intentosFallidosPorIp, clave: claveDeLaIp(ip) },
-    { cupo: CUPOS.codigosFallidosPorSesion, clave: claveDeLaSesion },
+    { cupo: CUPOS.codigosFallidosPorCuenta, clave: cuenta },
   ];
   const cuposDeUnaContrasena = (ip: string | null, correo: string): readonly UsoDeCupo[] => [
     { cupo: CUPOS.intentosFallidosPorIp, clave: claveDeLaIp(ip) },
@@ -280,10 +281,9 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     return { r };
   }
 
-  /** La clave de una sesión para contar sus códigos: la firma del pase. null si el pase no tiene firma. */
-  function claveDeLaSesion(sesion: SesionDelProveedor): string | null {
-    const clave = claveDelPase(sesion.pase);
-    return clave === "" ? null : clave;
+  /** La clave con que se cuentan los códigos de una sesión: su cuenta. null si el pase no vale. */
+  async function claveDeLaCuenta(sesion: SesionDelProveedor): Promise<string | null> {
+    return await cuentaDelPase(piezas, sesion.pase);
   }
 
   async function entrarConCorreo(pedido: Request, _url: URL, ip: string | null): Promise<Response> {
@@ -470,7 +470,7 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     const factor = cuerpo?.["factor"];
     const codigo = cuerpo?.["codigo"];
     if (!esTexto(factor, LARGO_DE_UN_ID) || typeof codigo !== "string" || !CODIGO_DE_SEIS.test(codigo)) return fallo(401, "codigo_incorrecto");
-    const clave = claveDeLaSesion(sesion);
+    const clave = await claveDeLaCuenta(sesion);
     if (clave === null) return fallo(401, "sin_sesion", BORRAR_LA_SESION);
     const intento = await intentarConCupos(cuposDeUnCodigo(ip, clave), async () => await proveedor.confirmarInscripcion(sesion, factor, codigo), (x) => !x.ok);
     if (intento === null) return demasiados();
@@ -492,7 +492,7 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     if (sesion === null) return fallo(401, "sin_sesion");
     const codigo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido))?.["codigo"];
     if (typeof codigo !== "string" || !CODIGO_DE_SEIS.test(codigo)) return fallo(401, "codigo_incorrecto");
-    const clave = claveDeLaSesion(sesion);
+    const clave = await claveDeLaCuenta(sesion);
     if (clave === null) return fallo(401, "sin_sesion", BORRAR_LA_SESION);
     // Cuenta solo el código equivocado; lo demás (sin segundo paso, sesión vencida) se devuelve.
     const intento = await intentarConCupos(cuposDeUnCodigo(ip, clave), async () => await proveedor.confirmarSegundoPaso(sesion, codigo), (x) => !x.ok && x.error === "codigo_incorrecto");
