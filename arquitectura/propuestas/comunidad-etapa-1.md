@@ -20,7 +20,8 @@ comprueba quién entra (tramo 2b). Ver
   (convivencia), porque abre a todos desde el primer día.
 - **La comunidad se modera sola** (decisión del 27-nov). La etapa 4 trae los
   niveles de confianza, los reportes que pesan según el nivel y los primeros
-  guardianes, no una cola del equipo.
+  guardianes, no una cola del equipo. Coddvisor entra solo a pedido, con
+  «Pedir ayuda a Coddvisor», o cuando lo ordena una autoridad.
 - **Las conversaciones no son de ningún negocio.** Por eso no caben en ninguna
   de las seis clases de tabla que hay hoy. Se propone una séptima, `comun`:
   datos de todos, que la aplicación lee y que solo escriben las puertas del
@@ -46,7 +47,7 @@ comprueba quién entra (tramo 2b). Ver
 | **1. Perfiles y espacios** | La clase `comun`, el módulo `comunidad`, el perfil, la descripción que se achica, los espacios y sus catálogos | Nada a la vista todavía: crear su perfil en un entorno de pruebas | Tramo 2 de la identidad (ya unido) |
 | **2. Publicar, responder y «Me sirvió»** | Publicaciones (pregunta y algo corto), respuestas en hilo, «Me sirvió», la respuesta elegida, «Publicar sin firma», las vistas «Lo que más sirvió», «Lo nuevo» y «Sin responder», la búsqueda en español y la copia de las preguntas de las guías | Leer, preguntar, responder y marcar lo que le sirvió | Etapa 1 |
 | **3. Seguir y avisos** | Seguir a una persona, un espacio o una pregunta; «Lo que sigo»; avisos dentro de la comunidad y por correo, que se apagan con un botón | Enterarse cuando le responden | Etapa 2 y el servicio de correo de la decisión 4 de identidad |
-| **4. Convivencia por la comunidad** | Normas de convivencia que se aceptan al entrar, frenos para cuentas nuevas, aviso de datos personales en el texto, el freno de acusaciones, los niveles de confianza y su libro de evidencia, reportes que pesan según el nivel, la cola de lo oculto que revisan los miembros de nivel alto, los primeros guardianes, el botón rojo, el espacio «Oportunidades» y la marca «Respuesta de otro dueño, no revisada» | Reportar y, con nivel, revisar lo oculto. La comunidad modera. **Aquí se abre al público** | Etapa 2 |
+| **4. Convivencia por la comunidad** | Normas de convivencia que se aceptan al entrar, frenos para cuentas nuevas, aviso de datos personales en el texto, el freno de acusaciones, los niveles de confianza y su libro de evidencia, reportes que pesan según el nivel, la cola de lo oculto que revisan los miembros de nivel alto, los primeros guardianes, «Pedir ayuda a Coddvisor» con su registro y su conteo público, el espacio «Oportunidades» y la marca «Respuesta de otro dueño, no revisada» | Reportar y, con nivel, revisar lo oculto. La comunidad modera. **Aquí se abre al público** | Etapa 2 |
 | **5. Encuestas** | Encuestas con el resultado escondido hasta un mínimo de respuestas, que es un dato | Preguntar «¿cuánto paga usted…?» y ver el resultado | Etapa 4 |
 | **6. Grupos chicos** | Grupos de 8 a 12, abiertos o por invitación, con su conversación, su reunión del mes y el compromiso de cada persona | Armar o unirse a un grupo | Etapa 4 |
 | **7. Consejo de alguien de su rubro** | Dueños con experiencia que se ofrecen; tres conversaciones, una al mes; «¿quieren seguir?» al final | Pedir consejo a alguien de su mismo rubro | Etapa 6 |
@@ -182,8 +183,8 @@ membresía: no entra a ningún negocio hasta que abra el suyo o la inviten.
 
 - La comunidad **no pide los dos pasos** a quien solo publica. Los pide a
   quien tiene nivel para ocultar o mover lo de otros (los guardianes) y al
-  personal de Coddvisor que usa el botón rojo, como ya pide la identidad al
-  personal de Coddvisor.
+  personal de Coddvisor que atiende los pedidos de ayuda, como ya pide la
+  identidad al personal de Coddvisor.
 - **Se rompe si** una cuenta nacida en la comunidad puede abrir un negocio sin
   pasar por las protecciones de «Abrir su negocio» (prueba de que no es un
   robot, límites por día, negocio en prueba). Se prueba en el proyecto de
@@ -275,6 +276,10 @@ nacen en la etapa 2, con las publicaciones.
 - **Los frenos valen igual.** Los topes por día y los reportes de la etapa 4
   cuentan por la cuenta, con firma o sin ella, para que nadie use el anonimato
   para insultar.
+- **Pedir ayuda sin delatarse.** Si quien publicó sin firma pide ayuda a
+  Coddvisor por esa publicación (por ejemplo, porque un guardián la ocultó), el
+  equipo ve el pedido como «quien la escribió», nunca la cuenta. Si no, pedir
+  ayuda le mostraría al equipo justo lo que «Publicar sin firma» esconde.
 - **La pantalla dice la verdad**: «Su nombre no se mostrará. Coddvisor sabe que
   usted lo escribió, y solo lo diría si una autoridad lo pide por ley». El
   texto exacto lo revisa el abogado.
@@ -392,8 +397,8 @@ requisitos de las etapas 2 y 4, cada uno con el problema que se encontró:
    de nivel a otra persona «por inactividad». El nivel de destino lo calcula la
    base desde el libro de evidencia, solo se pierde un nivel que el catálogo
    dice que se pierde, y una auditoría compara cada nivel con su evidencia.
-9. **Guardianes y personal se revocan con fecha, no borrando.** Quien usó el
-   botón rojo quedaba citado por el registro de moderación y no se le podía
+9. **Guardianes y personal se revocan con fecha, no borrando.** Quien había
+   intervenido quedaba citado por el registro de moderación y no se le podía
    quitar el rol.
 10. **Lo oculto o retirado sale de circulación en un solo lugar.** No recibe
     respuestas, «Me sirvió» ni la marca de respuesta elegida, y nadie elige su
@@ -421,6 +426,10 @@ El modelo completo, con su SQL y sus pruebas, queda como referencia en la rama
   para que, después, los elijan los propios guardianes. Va con la etapa 4.
 - **Los umbrales de los niveles de confianza.** Cuánta constancia pide cada
   nivel y qué permiso desbloquea. Son ajustes con fecha. Van con la etapa 4.
+- **Los pedidos de ayuda.** El tope por persona y qué casos graves pueden ir
+  directo a Coddvisor sin pasar antes por los guardianes. La propuesta inicial
+  es: amenaza, extorsión, datos personales de otra persona y menores. Van con
+  la etapa 4.
 - **El plan pagado de Supabase con copias diarias**, antes de abrir. Lo decide
   la fundadora; esta propuesta no contrata nada.
 
@@ -458,6 +467,7 @@ Elegida esta propuesta como base frente a la #85, decidió además:
 
 | Pregunta | Decisión | Qué descartó |
 |---|---|---|
-| ¿Quién modera? | **La comunidad, desde el primer día**, con niveles de confianza y los primeros guardianes que nombra Coddvisor | Que modere el equipo, al inicio o siempre |
+| ¿Quién modera? | **La comunidad, desde el primer día**, con niveles de confianza y los primeros guardianes que nombra Coddvisor. El equipo entra solo cuando alguien se lo pide o lo ordena una autoridad | Que modere el equipo, al inicio o siempre |
+| ¿Responde Coddvisor lo que queda sin respuesta? | **No.** La comunidad se activa sola: contenido inicial, «Sin responder» a la vista y avisos a quien sigue el tema | Que la cuenta de Coddvisor responda lo que cumple 24 horas, los primeros tres meses |
 | ¿Dónde se ofrece algo? | **En un espacio aparte, «Oportunidades»** | Prohibir toda oferta |
 | ¿Cómo se presenta cada persona? | **Se confirma**: nombre de pila y negocio descrito | Nombre real y RUC declarado, de la #85 |

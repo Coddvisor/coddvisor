@@ -34,7 +34,9 @@ de la otra:
 | Decisión | Qué quiere decir |
 |---|---|
 | **Esta propuesta es la base** | La comunidad vive en `coddvisor-sistema`, con las cuentas del sistema. La #85 se cierra |
-| **La comunidad se modera sola desde el primer día** | El equipo de Coddvisor no revisa ni oculta publicaciones. Los permisos para cuidar la convivencia se ganan con constancia, por niveles de confianza («Los riesgos y cómo se cuidan») |
+| **La comunidad se modera sola desde el primer día** | Los permisos para cuidar la convivencia se ganan con constancia, por niveles de confianza («Los riesgos y cómo se cuidan») |
+| **Coddvisor entra solo a pedido** | El equipo no patrulla ni revisa por su cuenta. Entra cuando alguien se lo pide con «Pedir ayuda a Coddvisor» o cuando lo ordena una autoridad, y entonces puede moderar |
+| **Coddvisor no responde por la comunidad** | La cuenta de Coddvisor no contesta lo que queda sin respuesta. La comunidad se activa con el contenido inicial, «Sin responder» a la vista y los avisos a quien sigue el tema |
 | **El espacio para ofrecer se llama «Oportunidades»** | Ofertas y pedidos de productos, servicios, proveedores y trabajo. Fuera de él, se archivan |
 | **Se confirma el perfil** | Nombre de pila y negocio descrito, que se achica solo. El RUC y el nombre del negocio, solo si ella lo pide |
 | **Se suman de la otra propuesta** | Los niveles de confianza, el freno de acusaciones y lo que se aprendió al probar un modelo completo ([comunidad-etapa-1.md](comunidad-etapa-1.md)) |
@@ -50,8 +52,9 @@ de la otra:
   las guías ya respondidas, y lo que nadie contestó se muestra primero a quien
   quiere ayudar.
 - **La comunidad se cuida sola.** Los permisos para moderar se ganan con
-  constancia, por niveles. El equipo de Coddvisor no modera: solo nombra a los
-  primeros guardianes y retira lo que ordena una autoridad.
+  constancia, por niveles. El equipo de Coddvisor no patrulla ni responde:
+  nombra a los primeros guardianes y entra solo cuando alguien se lo pide o lo
+  ordena una autoridad.
 - **Dentro hay grupos chicos.** Además del muro, los dueños pueden armar grupos
   de 8 a 12 que no compiten entre sí, que es lo que más mueve las ventas en los
   estudios.
@@ -215,9 +218,9 @@ primer mensaje y el 44 % de los que no). Se cuida así:
    de cada tema.
 2. **«Sin responder» es la puerta de quien quiere ayudar.** Responder ahí da
    reputación en su tema. Si una pregunta cumple 12 horas sin respuesta, se
-   avisa a quienes siguen su espacio. El equipo no garantiza la respuesta: la
-   fundadora decidió el 27-nov que la comunidad se cuide sola (ver «Lo que
-   queda por decidir»).
+   avisa a quienes siguen su espacio. El equipo no responde por la comunidad
+   (decisión del 27-nov): la activan el contenido inicial, esta vista y los
+   avisos.
 3. **Contadores invitados antes de abrir**, para que las dudas de impuestos
    tengan quien las conteste bien.
 4. **Los primeros grupos chicos, armados por el equipo**, con quienes ya
@@ -251,10 +254,20 @@ permisos que se ganan:
   nombra a los primeros (dueños y profesionales que ya ayudaron en las guías),
   con un tope de cuántos. Es su única intervención de arranque, y termina
   cuando los guardianes los elige la propia comunidad.
-- **El botón rojo**: Coddvisor se reserva una sola acción, retirar lo que
-  ordena una autoridad o lo que expone datos personales de un tercero. Cada uso
-  queda registrado y se publica un conteo al año. No es moderar: es cumplir la
-  ley.
+- **Coddvisor, solo a pedido**: el equipo no patrulla. Entra en dos casos:
+  cuando alguien se lo pide con **«Pedir ayuda a Coddvisor»** y cuando lo ordena
+  una autoridad.
+  - Pueden pedir ayuda quien no está de acuerdo con lo que los guardianes
+    decidieron sobre lo suyo (una apelación) y cualquier miembro ante algo
+    grave que no puede esperar a la comunidad: una amenaza, una extorsión,
+    datos personales de otra persona o algo que involucra a un menor.
+  - Al entrar, el equipo puede lo mismo que un guardián (ocultar, restaurar,
+    mover) y, si la ley lo pide, retirar. Entra con su cuenta identificada y
+    con los dos pasos.
+  - Cada intervención queda registrada, y cada año se publica cuántas hubo y
+    por qué.
+  - Pedir ayuda tiene un tope por persona (un ajuste), para que no se vuelva
+    el camino de todo.
 - **Mal consejo de impuestos o leyes**: lo que no responde un profesional
   verificado lleva «Respuesta de otro dueño, no revisada. Revísela con su
   contador».
@@ -280,7 +293,8 @@ permisos que se ganan:
   dueño que dejó la comunidad», o se borra si trae datos suyos.
 - **El tiempo del equipo**: el equipo no modera. Antes de abrir arma el
   contenido inicial, invita a los contadores y nombra a los primeros
-  guardianes. Después, solo usa el botón rojo cuando lo pide la ley.
+  guardianes. Después, entra solo cuando alguien se lo pide o lo ordena una
+  autoridad.
 
 ## Cómo se construye: dos caminos a la vez
 
@@ -379,7 +393,7 @@ del negocio?».
   de Supabase para las copias de seguridad, si la fundadora lo ordena.
 - **El costo real es el tiempo** del equipo antes de abrir: el contenido
   inicial, invitar a los contadores y nombrar a los primeros guardianes.
-  Después no modera.
+  Después, solo atiende lo que le piden.
 
 ## Datos personales (Ley 29733)
 
@@ -398,12 +412,7 @@ Lo revisa el abogado que revisará `/privacidad/`. Esto es una interpretación:
 
 1. Quién guía los primeros grupos chicos: la fundadora, alguien del equipo o
    dueños con experiencia. Puede esperar hasta que la comunidad esté por abrir.
-2. **Si la cuenta de Coddvisor responde lo que cumple 24 horas sin respuesta**
-   mientras la comunidad crece. Es activar, no moderar: vuelve el 56 % de
-   quien recibe respuesta a su primer mensaje y el 44 % de quien no.
-   Recomendación: sí, solo los primeros tres meses (un ajuste). La decisión del
-   27-nov («la comunidad se cuida sola») lo deja fuera mientras la fundadora no
-   diga otra cosa.
-3. El plan pagado de Supabase, antes de abrir.
-4. Los umbrales de los niveles de confianza y cuántos guardianes nombra
-   Coddvisor al arrancar. Se proponen con la etapa 4 y se ajustan con el uso.
+2. El plan pagado de Supabase, antes de abrir.
+3. Los umbrales de los niveles de confianza, cuántos guardianes nombra
+   Coddvisor al arrancar y el tope de pedidos de ayuda. Se proponen con la
+   etapa 4 y se ajustan con el uso.
