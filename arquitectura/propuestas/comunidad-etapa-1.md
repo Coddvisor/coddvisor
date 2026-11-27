@@ -17,7 +17,10 @@ comprueba quién entra (tramo 2b). Ver
 
 - **La comunidad se construye en ocho etapas**, cada una en su solicitud de
   revisión y con sus pruebas. **Se abre al público al terminar la cuarta**
-  (moderación), porque abre a todos desde el primer día.
+  (convivencia), porque abre a todos desde el primer día.
+- **La comunidad se modera sola** (decisión del 27-nov). La etapa 4 trae los
+  niveles de confianza, los reportes que pesan según el nivel y los primeros
+  guardianes, no una cola del equipo.
 - **Las conversaciones no son de ningún negocio.** Por eso no caben en ninguna
   de las seis clases de tabla que hay hoy. Se propone una séptima, `comun`:
   datos de todos, que la aplicación lee y que solo escriben las puertas del
@@ -43,7 +46,7 @@ comprueba quién entra (tramo 2b). Ver
 | **1. Perfiles y espacios** | La clase `comun`, el módulo `comunidad`, el perfil, la descripción que se achica, los espacios y sus catálogos | Nada a la vista todavía: crear su perfil en un entorno de pruebas | Tramo 2 de la identidad (ya unido) |
 | **2. Publicar, responder y «Me sirvió»** | Publicaciones (pregunta y algo corto), respuestas en hilo, «Me sirvió», la respuesta elegida, «Publicar sin firma», las vistas «Lo que más sirvió», «Lo nuevo» y «Sin responder», la búsqueda en español y la copia de las preguntas de las guías | Leer, preguntar, responder y marcar lo que le sirvió | Etapa 1 |
 | **3. Seguir y avisos** | Seguir a una persona, un espacio o una pregunta; «Lo que sigo»; avisos dentro de la comunidad y por correo, que se apagan con un botón | Enterarse cuando le responden | Etapa 2 y el servicio de correo de la decisión 4 de identidad |
-| **4. Moderación y reportes** | Normas de convivencia que se aceptan al entrar, frenos para cuentas nuevas, aviso de datos personales en el texto, reportes que ocultan, la cola del equipo, el espacio «Ofrezco» y la marca «Respuesta de otro dueño, no revisada» | Reportar. El equipo modera. **Aquí se abre al público** | Etapa 2 |
+| **4. Convivencia por la comunidad** | Normas de convivencia que se aceptan al entrar, frenos para cuentas nuevas, aviso de datos personales en el texto, el freno de acusaciones, los niveles de confianza y su libro de evidencia, reportes que pesan según el nivel, la cola de lo oculto que revisan los miembros de nivel alto, los primeros guardianes, el botón rojo, el espacio «Oportunidades» y la marca «Respuesta de otro dueño, no revisada» | Reportar y, con nivel, revisar lo oculto. La comunidad modera. **Aquí se abre al público** | Etapa 2 |
 | **5. Encuestas** | Encuestas con el resultado escondido hasta un mínimo de respuestas, que es un dato | Preguntar «¿cuánto paga usted…?» y ver el resultado | Etapa 4 |
 | **6. Grupos chicos** | Grupos de 8 a 12, abiertos o por invitación, con su conversación, su reunión del mes y el compromiso de cada persona | Armar o unirse a un grupo | Etapa 4 |
 | **7. Consejo de alguien de su rubro** | Dueños con experiencia que se ofrecen; tres conversaciones, una al mes; «¿quieren seguir?» al final | Pedir consejo a alguien de su mismo rubro | Etapa 6 |
@@ -123,7 +126,7 @@ una persona marcados `[personal]` y sin resúmenes (BD-17).
 | `comunidad.region` | Las regiones del país | Lleva `pais_codigo`. Un segundo país suma filas, no programa. Nunca provincia ni distrito |
 | `comunidad.tamano` | Solo yo, 2 a 5, 6 a 15, 16 o más | `se_muestra`: los tamaños grandes se guardan y no se publican, como ya hace el sitio |
 | `comunidad.escalon` | Los escalones con que se achica la descripción, en orden | Ver «La descripción que se achica sola» |
-| `comunidad.espacio` | Los espacios: los 9 temas del blog, uno por rubro, uno por región y «Ofrezco» | `tipo_codigo` (`tema`, `rubro`, `region`, `ofrezco`). Los temas usan los mismos códigos que `web/src/datos/temas.ts` (`planilla`, `caja`, `sunat` y los demás). `archivado_en` en vez de borrar |
+| `comunidad.espacio` | Los espacios: los 9 temas del blog, uno por rubro, uno por región y «Oportunidades» | `tipo_codigo` (`tema`, `rubro`, `region`, `oportunidades`). Los temas usan los mismos códigos que `web/src/datos/temas.ts` (`planilla`, `caja`, `sunat` y los demás). `archivado_en` en vez de borrar |
 | `comunidad.ajuste` | Los números de la comunidad, con su fecha desde la que rigen | El mínimo de la descripción, cada cuánto se puede cambiar el perfil, los topes por día y los que traigan las etapas siguientes. Un ajuste nuevo es una fila con fecha; el anterior no se pisa |
 
 Los espacios empiezan como catálogo porque los crea el equipo, pocas veces. Los
@@ -177,8 +180,10 @@ negocio. Hace falta que el hook deje pasar también las altas que vienen del
 botón «Entrar a la comunidad». La cuenta que nace así no tiene ninguna
 membresía: no entra a ningún negocio hasta que abra el suyo o la inviten.
 
-- La comunidad **no pide los dos pasos** a quien solo publica. Los pide al
-  equipo que modera, como ya pide la identidad al personal de Coddvisor.
+- La comunidad **no pide los dos pasos** a quien solo publica. Los pide a
+  quien tiene nivel para ocultar o mover lo de otros (los guardianes) y al
+  personal de Coddvisor que usa el botón rojo, como ya pide la identidad al
+  personal de Coddvisor.
 - **Se rompe si** una cuenta nacida en la comunidad puede abrir un negocio sin
   pasar por las protecciones de «Abrir su negocio» (prueba de que no es un
   robot, límites por día, negocio en prueba). Se prueba en el proyecto de
@@ -257,9 +262,14 @@ nacen en la etapa 2, con las publicaciones.
   publicar sin firma, editar lo propio, ver «mis publicaciones sin firma» y
   borrar sus datos. Así un error del servicio, o alguien que lea las tablas
   que la aplicación ve, no puede saber quién escribió.
-- **El equipo la revisa antes de mostrarla.** Entra como «en revisión» y la
-  publica alguien del equipo. Esa espera también ayuda: la hora en que aparece
-  no coincide con la hora en que la persona estuvo conectada.
+- **Un guardián la revisa antes de mostrarla.** Entra como «en revisión» y la
+  publica un miembro de nivel alto, que ve el texto pero nunca a su autor.
+  Mientras no haya guardianes elegidos por la comunidad, la revisan los
+  primeros guardianes. Si nadie la revisa en un plazo (un ajuste), se publica
+  sola: los frenos automáticos ya la pasaron. Esa espera también ayuda: la hora
+  en que aparece no coincide con la hora en que la persona estuvo conectada.
+  (Hasta el 27-nov la revisaba el equipo; cambió con la decisión de que la
+  comunidad se modere sola.)
 - **No suma a su perfil.** Ni a la insignia «Ayudó a 50 dueños» ni a ningún
   contador público. Si no, el número que sube delataría al autor.
 - **Los frenos valen igual.** Los topes por día y los reportes de la etapa 4
@@ -337,6 +347,68 @@ recibe los avisos. El enlace viejo sigue mostrando la respuesta.
 - **Ningún valor fijo**: el mínimo *k*, el margen, los días entre cambios, los
   escalones, los topes y los textos de la firma son datos.
 
+## Lo que se aprendió al probar un modelo completo
+
+La solicitud Coddvisor/coddvisor#85 diseñó otra versión de la comunidad
+completa en SQL y la probó en PGlite: 293 pruebas, y cuatro revisores que
+buscaron cómo romperla encontraron 42 problemas. Ese modelo no se usa, porque
+suponía una base y cuentas aparte, pero sus errores valen para este diseño. Son
+requisitos de las etapas 2 y 4, cada uno con el problema que se encontró:
+
+1. **«Mis publicaciones sin firma» no puede responder solo con la firma del
+   servicio.** En la #85, el servidor podía preguntar por cada persona y
+   descubrir quién escribió cada publicación sin firma. Si esa puerta exige
+   solo la firma del servicio, aquí pasa lo mismo: un servicio con un error o
+   comprometido firma la pregunta por cada cuenta. Hace falta una prueba que el
+   servicio no pueda fabricar (el pase de la persona, verificado en la base o
+   por un rol aparte) o, como mínimo, un registro de cada consulta con un tope
+   por ventana que delate el recorrido.
+2. **Publicar sin firma no deja rastro técnico que nombre a la persona.**
+   Postgres muestra a cualquier conexión los candados consultivos
+   (`pg_locks`), y una fila que se actualiza en una transacción queda marcada
+   con ella. Al publicar sin firma, el tope por cuenta se cuenta con un bloqueo
+   de fila dentro de la tabla reservada, nunca con un candado consultivo con el
+   id de la cuenta, y no se escribe ninguna fila legible que nombre a la persona.
+3. **Los avisos no delatan.** En la #85, cuando quien preguntó sin firma
+   respondía en su propio hilo, faltaba el aviso que recibe quien pregunta, y
+   ese hueco lo delataba. Toda respuesta genera los mismos avisos, la escriba
+   quien la escriba, y el texto del aviso por correo o WhatsApp es genérico.
+4. **Lo público de una persona nunca mira lo publicado sin firma.** Contadores,
+   insignias y la protección del recién llegado («su primera publicación»)
+   cuentan solo lo firmado. Si no, un cambio visible delata al autor.
+5. **Los borradores de lo sin firma viven en lo reservado.** Un borrador
+   guardado con la cuenta, el espacio y la hora une para siempre a la persona
+   con su publicación.
+6. **Olvidar a una persona no puede fallar.** En la #85, la baja fallaba
+   apenas a la persona se le había enviado un aviso: un registro que solo se
+   anexa apuntaba a una fila que la baja borraba, y nadie habría podido ejercer
+   su derecho (Ley 29733). Una tabla que `olvidar_perfil` vacía o borra no
+   puede ser citada por una que solo se anexa, y se prueba olvidar después de
+   cada tipo de actividad.
+7. **Cada rol, un solo oficio.** El programa que manda los correos podía unir
+   una dirección con el autor de una publicación sin firma. Quien envía lee
+   solo las columnas de su oficio, nunca la autoría.
+8. **El nivel lo decide la base, desde su evidencia.** Cualquiera podía bajar
+   de nivel a otra persona «por inactividad». El nivel de destino lo calcula la
+   base desde el libro de evidencia, solo se pierde un nivel que el catálogo
+   dice que se pierde, y una auditoría compara cada nivel con su evidencia.
+9. **Guardianes y personal se revocan con fecha, no borrando.** Quien usó el
+   botón rojo quedaba citado por el registro de moderación y no se le podía
+   quitar el rol.
+10. **Lo oculto o retirado sale de circulación en un solo lugar.** No recibe
+    respuestas, «Me sirvió» ni la marca de respuesta elegida, y nadie elige su
+    propia respuesta. Una sola función dice qué está fuera de circulación.
+11. **El freno mira todo texto público**, también las encuestas y sus opciones.
+12. **Un ajuste que falta rechaza la acción; no apaga la regla.** En la #85,
+    algunas funciones sin su ajuste dejaban pasar todo.
+13. **Lo que una prueba en memoria no ve.** PGlite tiene una sola conexión. Los
+    topes contados, el cierre de una pregunta mientras alguien responde y el
+    reenvío de una publicación desde un celular sin señal se prueban en un
+    Postgres real con dos conexiones.
+
+El modelo completo, con su SQL y sus pruebas, queda como referencia en la rama
+`claude/coddvisor-community-app-484cc3` (carpeta `arquitectura/comunidad/`).
+
 ## Lo que no se decide aquí
 
 - **Dónde corre la página.** La comunidad se ve en `www.coddvisor.com/comunidad/`
@@ -344,9 +416,11 @@ recibe los avisos. El enlace viejo sigue mostrando la respuesta.
   `coddvisor-sistema`. Qué programa la sirve se decide con
   [donde-corre-el-sistema.md](donde-corre-el-sistema.md), antes de la etapa 2.
   La sesión de la comunidad es aparte de la del panel del sistema.
-- **Cómo se nombra al primer moderador.** Hace falta una puerta para darle a
-  alguien del equipo la función de moderar, y alguien tiene que ser el primero.
-  Va con la etapa 4.
+- **Cómo se nombran los primeros guardianes.** Los nombra Coddvisor, con un
+  tope de cuántos (un ajuste). Hacen falta una puerta para nombrarlos y otra
+  para que, después, los elijan los propios guardianes. Va con la etapa 4.
+- **Los umbrales de los niveles de confianza.** Cuánta constancia pide cada
+  nivel y qué permiso desbloquea. Son ajustes con fecha. Van con la etapa 4.
 - **El plan pagado de Supabase con copias diarias**, antes de abrir. Lo decide
   la fundadora; esta propuesta no contrata nada.
 
@@ -370,8 +444,20 @@ Eligió las cuatro recomendaciones:
 | ¿Cuándo se abre la comunidad al público? | **Al terminar la etapa 4**, con la moderación y los reportes listos | Abrir con la etapa 2 (sin avisos y con moderación a mano) y esperar las ocho (meses sin que nadie la use) |
 | ¿Cómo se ve lo publicado sin firma? | **«Alguien de la comunidad»**, como ya lo muestra el sitio | «Un dueño de la comunidad» (no vale para vendedores ni contadores) y solo el rol (ayuda a adivinar en temas delicados) |
 
-Una pregunta que llega sin cuenta desde una guía entra como las de hoy: en
-revisión, y se muestra cuando el equipo la responde. Lleva la firma que la
+Una pregunta que llega sin cuenta desde una guía entra en revisión, igual que
+lo publicado sin firma: la publica un guardián y la responde la comunidad.
+(Hasta el 27-nov decía que se mostraba cuando el equipo la respondía; cambió
+con la decisión de que la comunidad se modere sola.) Lleva la firma que la
 persona escribió en el formulario, que pasa por la misma regla de los
 escalones. Los frenos de la etapa 4 la cuentan por guía y por día, como hace
 hoy el sitio, porque no tiene una cuenta.
+
+## Lo que decidió la fundadora (27 de noviembre de 2026)
+
+Elegida esta propuesta como base frente a la #85, decidió además:
+
+| Pregunta | Decisión | Qué descartó |
+|---|---|---|
+| ¿Quién modera? | **La comunidad, desde el primer día**, con niveles de confianza y los primeros guardianes que nombra Coddvisor | Que modere el equipo, al inicio o siempre |
+| ¿Dónde se ofrece algo? | **En un espacio aparte, «Oportunidades»** | Prohibir toda oferta |
+| ¿Cómo se presenta cada persona? | **Se confirma**: nombre de pila y negocio descrito | Nombre real y RUC declarado, de la #85 |
