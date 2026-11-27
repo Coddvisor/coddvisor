@@ -33,12 +33,14 @@ concurrency:
   queue: max
 
 jobs:
-  desplegar:
-    name: Desplegar el repartidor
+  # Lo mismo que se revisa al unir: si algo no pasa, no se publica nada. Corre
+  # sin el entorno y sin ningún secreto, porque instala y corre todas las
+  # dependencias del sistema: si una viniera dañada, no tiene tokens que leer.
+  revisar:
+    name: Revisar el sistema
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    environment: base-real
     defaults:
       run:
         working-directory: sistema
@@ -50,11 +52,30 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: sistema/.nvmrc
-      # Lo mismo que se revisa al unir: si algo no pasa, no se publica nada.
       - name: Revisar el sistema
         run: |
           npm ci --ignore-scripts
           npm run verificar
+
+  # El que ve los tokens no instala nada del sistema: el armado y la publicación
+  # solo usan Node y archivos del repositorio, y Wrangler sale de su candado.
+  desplegar:
+    name: Desplegar el repartidor
+    needs: revisar
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: base-real
+    defaults:
+      run:
+        working-directory: sistema
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: sistema/.nvmrc
       # Wrangler en la versión exacta de su candado (herramientas/repartidor/wrangler/),
       # instalado fuera del repositorio y sin correr programas al instalarse.
       - name: Instalar Wrangler

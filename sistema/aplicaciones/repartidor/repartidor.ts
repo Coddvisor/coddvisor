@@ -1,7 +1,7 @@
 /**
  * El repartidor: el Worker de Cloudflare que atiende app.coddvisor.com
- * (donde-corre-el-sistema.md, decisión 1). No guarda nada y no consulta la
- * base: solo reparte.
+ * (donde-corre-el-sistema.md, decisión 1). No consulta la base ni guarda lo que
+ * pasa por él: solo reparte (el freno cuenta pedidos por IP durante un minuto).
  *
  * - Las páginas de la oficina las sirve Cloudflare desde sus archivos fijos,
  *   sin correr este código (run_worker_first solo para /api/*). Sus
@@ -13,9 +13,12 @@
  *   (x-coddvisor-ip). La función no puede leer la IP de cf-connecting-ip: en
  *   un pedido de un Worker a otro sitio de Cloudflare, ahí llega la del Worker
  *   (developers.cloudflare.com/fundamentals/reference/http-headers/).
- * - Antes de reenviar, un freno por IP: uno ancho para todo /api y uno corto
- *   para entrar y abrir un negocio. El que pasa el freno recibe 429
- *   «demasiados_intentos», lo mismo que responde el servicio.
+ * - /api solo por https: un pedido sin cifrar no se reenvía (403 «origen»).
+ *   Las páginas y las respuestas llevan strict-transport-security.
+ * - Antes de reenviar, un freno por IP (por red /64 con IPv6): uno ancho para
+ *   todo /api y uno corto para entrar y abrir un negocio. El que pasa el freno
+ *   recibe 429 «demasiados_intentos», lo mismo que responde el servicio. Si el
+ *   freno mismo falla, 503 «interno», nunca la página de error de Cloudflare.
  *
  * Si falta algo de su configuración, no reenvía nada (503 «interno») y anota
  * qué falta, sin escribir ningún valor. Así un despliegue a medias no deja la
@@ -25,8 +28,8 @@
  * propio de Cloudflare son las dos piezas de `env` que se describen abajo.
  */
 import {
-  CAMINOS_DE_ENTRAR, ENCABEZADOS, ERRORES, FRENOS, LIMITES_DEL_REPARTIDOR, NO_SE_REENVIAN, PREFIJO_DE_LA_API,
-  SEGURIDAD_DE_LAS_PAGINAS, SIN_IP, VARIABLES,
+  CAMINOS_DE_ENTRAR, ENCABEZADOS, ERRORES, LIMITES_DEL_REPARTIDOR, NO_SE_REENVIAN, PARTES_DE_LA_RED_IPV6, PREFIJO_DE_LA_API,
+  PROTOCOLO_DE_LA_API, SEGURIDAD_DE_LAS_PAGINAS, SIN_IP, SOLO_CON_CIFRADO, VARIABLES,
 } from "./configuracion.ts";
 
 /** Los archivos fijos del Worker (Workers static assets, el enlace ASSETS). */
@@ -103,8 +106,63 @@ function fallo(estado: number, error: string, extra: Readonly<Record<string, str
 }
 
 const esDeLaApi = (camino: string): boolean => camino.startsWith(PREFIJO_DE_LA_API);
-const esDeEntrar = (camino: string): boolean => CAMINOS_DE_ENTRAR.some((prefijo) => camino.startsWith(prefijo));
+/** Entrar y abrir: el camino solo, o lo que cuelga de él (`/api/abrir` y `/api/abrir/...`, nunca `/api/abrirx`). */
+export const esDeEntrar = (camino: string): boolean => CAMINOS_DE_ENTRAR.some((base) => camino === base || camino.startsWith(`${base}/`));
 const ipDe = (pedido: Request): string => pedido.headers.get(ENCABEZADOS.ipDeCloudflare)?.trim() || SIN_IP;
+
+const PARTE_IPV6 = /^[0-9a-f]{1,4}$/;
+const IPV4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+const PARTES_IPV6 = 8;
+
+/** Los cuatro números de una IPv4, o null si no lo es. */
+function partesIpv4(texto: string): number[] | null {
+  const m = IPV4.exec(texto);
+  if (m === null) return null;
+  const numeros = m.slice(1).map(Number);
+  return numeros.every((n) => n <= 255) ? numeros : null;
+}
+
+/** Las ocho partes de una IPv6 (con «::» o con una IPv4 al final), o null si no lo es. */
+function partesIpv6(texto: string): number[] | null {
+  let ip = texto;
+  const ultimo = ip.lastIndexOf(":");
+  const cola = ip.slice(ultimo + 1);
+  if (cola.includes(".")) {
+    const v4 = partesIpv4(cola);
+    if (v4 === null) return null;
+    const [a = 0, b = 0, c = 0, d = 0] = v4;
+    ip = `${ip.slice(0, ultimo + 1)}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;
+  }
+  const mitades = ip.split("::");
+  if (mitades.length > 2) return null;
+  const partir = (s: string | undefined): string[] => (s === undefined || s === "" ? [] : s.split(":"));
+  const cabeza = partir(mitades[0]);
+  const resto = partir(mitades[1]);
+  const faltan = PARTES_IPV6 - cabeza.length - resto.length;
+  if (mitades.length === 1 ? faltan !== 0 : faltan < 1) return null;
+  const partes = [...cabeza, ...Array.from({ length: mitades.length === 1 ? 0 : faltan }, () => "0"), ...resto];
+  if (!partes.every((p) => PARTE_IPV6.test(p))) return null;
+  return partes.map((p) => Number.parseInt(p, 16));
+}
+
+/**
+ * La clave con que el freno cuenta a quien pide: la IPv4 entera, o la red /64
+ * de una IPv6 (PARTES_DE_LA_RED_IPV6). Una IPv4 escrita como IPv6
+ * (::ffff:192.0.2.1) cuenta como la IPv4. Lo que no se entiende se cuenta tal
+ * cual. A la función siempre le llega la IP entera, no esta clave.
+ */
+export function claveDelFreno(ip: string): string {
+  const limpia = ip.trim().toLowerCase();
+  if (!limpia.includes(":")) return limpia;
+  const partes = partesIpv6(limpia.split("%")[0] ?? "");
+  if (partes === null) return limpia;
+  const esIpv4 = partes.slice(0, 5).every((p) => p === 0) && partes[5] === 0xffff;
+  if (esIpv4) {
+    const [, , , , , , alto = 0, bajo = 0] = partes;
+    return [alto >> 8, alto & 0xff, bajo >> 8, bajo & 0xff].join(".");
+  }
+  return `${partes.slice(0, PARTES_DE_LA_RED_IPV6).map((p) => p.toString(16).padStart(4, "0")).join(":")}::/${String(PARTES_DE_LA_RED_IPV6 * 16)}`;
+}
 
 /** La dirección de la función para un camino de /api: la de la función, más el camino y la consulta. */
 export function direccionEnLaFuncion(funcion: URL, pedida: URL): URL {
@@ -118,16 +176,50 @@ export function direccionEnLaFuncion(funcion: URL, pedida: URL): URL {
 async function servirPagina(pedido: Request, paginas: ArchivosFijos): Promise<Response> {
   const original = await paginas.fetch(pedido);
   const respuesta = new Response(original.body, original);
-  for (const [nombre, valor] of Object.entries(SEGURIDAD_DE_LAS_PAGINAS)) respuesta.headers.set(nombre, valor);
+  for (const [nombre, valor] of Object.entries({ ...SEGURIDAD_DE_LAS_PAGINAS, ...SOLO_CON_CIFRADO })) respuesta.headers.set(nombre, valor);
   return respuesta;
 }
 
-/** El cuerpo del pedido, con tope. null si pasa del tope. */
+/**
+ * El cuerpo del pedido, con tope. null si pasa del tope. Se lee por trozos y se
+ * corta apenas pasa: un largo declarado falso o un cuerpo sin largo no llenan la
+ * memoria del Worker.
+ */
 async function cuerpoConTope(pedido: Request): Promise<ArrayBuffer | null> {
+  const tope = LIMITES_DEL_REPARTIDOR.largoMaximoDelPedido;
   const declarado = Number(pedido.headers.get("content-length") ?? "0");
-  if (Number.isFinite(declarado) && declarado > LIMITES_DEL_REPARTIDOR.largoMaximoDelPedido) return null;
-  const cuerpo = await pedido.arrayBuffer();
-  return cuerpo.byteLength > LIMITES_DEL_REPARTIDOR.largoMaximoDelPedido ? null : cuerpo;
+  if (Number.isFinite(declarado) && declarado > tope) return null;
+  if (pedido.body === null) return new ArrayBuffer(0);
+  const lector = pedido.body.getReader();
+  const trozos: Uint8Array[] = [];
+  let largo = 0;
+  for (;;) {
+    const { done, value } = await lector.read();
+    if (done) break;
+    largo += value.byteLength;
+    if (largo > tope) {
+      await lector.cancel();
+      return null;
+    }
+    trozos.push(value);
+  }
+  const cuerpo = new Uint8Array(largo);
+  let desde = 0;
+  for (const trozo of trozos) {
+    cuerpo.set(trozo, desde);
+    desde += trozo.byteLength;
+  }
+  return cuerpo.buffer;
+}
+
+/** Pregunta a un freno sin dejar que su falla tumbe al Worker: null si el freno falló. */
+async function pasaElFreno(freno: Freno, clave: string, nombre: string, anotar: (mensaje: string) => void): Promise<boolean | null> {
+  try {
+    return (await freno.limit({ key: clave })).success;
+  } catch (error) {
+    anotar(`El freno ${nombre} no respondió: ${error instanceof Error ? error.name : "error"}`);
+    return null;
+  }
 }
 
 /** Lo que se le manda a la función: el mismo pedido, con lo del contrato puesto por el repartidor. */
@@ -166,16 +258,22 @@ export async function repartir(pedido: Request, env: EntornoDelRepartidor, opcio
     return fallo(503, ERRORES.interno);
   }
   const configuracion = lectura.valor;
-  const camino = new URL(pedido.url).pathname;
+  const direccion = new URL(pedido.url);
+  const camino = direccion.pathname;
   if (!esDeLaApi(camino)) return servirPagina(pedido, configuracion.paginas);
+  // Sin cifrar, la contraseña ya viajó en claro hasta aquí; al menos no sigue.
+  if (direccion.protocol !== PROTOCOLO_DE_LA_API) return fallo(403, ERRORES.sinCifrar);
 
   const ip = ipDe(pedido);
+  const clave = claveDelFreno(ip);
   const esperar = { "retry-after": String(LIMITES_DEL_REPARTIDOR.esperaTrasElFrenoS) };
-  const ancho = await configuracion.frenoDeLaApi.limit({ key: ip });
-  if (!ancho.success) return fallo(429, ERRORES.demasiados, esperar);
+  const ancho = await pasaElFreno(configuracion.frenoDeLaApi, clave, VARIABLES.frenoDeLaApi, anotar);
+  if (ancho === null) return fallo(503, ERRORES.interno);
+  if (!ancho) return fallo(429, ERRORES.demasiados, esperar);
   if (esDeEntrar(camino)) {
-    const corto = await configuracion.frenoDeEntrar.limit({ key: ip });
-    if (!corto.success) return fallo(429, ERRORES.demasiados, esperar);
+    const corto = await pasaElFreno(configuracion.frenoDeEntrar, clave, VARIABLES.frenoDeEntrar, anotar);
+    if (corto === null) return fallo(503, ERRORES.interno);
+    if (!corto) return fallo(429, ERRORES.demasiados, esperar);
   }
 
   const reenviado = await pedidoParaLaFuncion(pedido, configuracion, ip);
@@ -188,6 +286,8 @@ export async function repartir(pedido: Request, env: EntornoDelRepartidor, opcio
     return fallo(502, ERRORES.interno);
   }
   // Una copia con encabezados que se pueden tocar; las cookies (Set-Cookie) pasan todas.
-  return new Response(respuesta.body, respuesta);
+  const copia = new Response(respuesta.body, respuesta);
+  for (const [nombre, valor] of Object.entries(SOLO_CON_CIFRADO)) copia.headers.set(nombre, valor);
+  return copia;
 }
 

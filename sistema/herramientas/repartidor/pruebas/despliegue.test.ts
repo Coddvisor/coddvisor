@@ -8,7 +8,7 @@ import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, before, describe, it } from "node:test";
-import { FRENOS, SEGURIDAD_DE_LAS_PAGINAS, VARIABLES as DEL_WORKER } from "../../../aplicaciones/repartidor/publico.ts";
+import { FRENOS, SEGURIDAD_DE_LAS_PAGINAS, SOLO_CON_CIFRADO, VARIABLES as DEL_WORKER } from "../../../aplicaciones/repartidor/publico.ts";
 import { armarElDespliegue, configuracionDeWrangler, DESPLIEGUE, publicar, revisarProyecto, secretoNuevo, SISTEMA, VARIABLES, type Programa } from "../despliegue.ts";
 
 const PROYECTO = "abcdefghijklmnopqrst";
@@ -51,7 +51,7 @@ describe("lo que se arma para Cloudflare", () => {
   it("_headers pone en toda página los encabezados de seguridad, y _redirects lleva la raíz a entrar", async () => {
     const encabezados = await leer(path.join(armado.paginas, "_headers"));
     assert.match(encabezados, /^\/\*$/m);
-    for (const [nombre, valor] of Object.entries(SEGURIDAD_DE_LAS_PAGINAS)) assert.ok(encabezados.includes(`  ${nombre}: ${valor}\n`), nombre);
+    for (const [nombre, valor] of Object.entries({ ...SEGURIDAD_DE_LAS_PAGINAS, ...SOLO_CON_CIFRADO })) assert.ok(encabezados.includes(`  ${nombre}: ${valor}\n`), nombre);
     for (const linea of encabezados.split("\n")) assert.ok(linea.length <= 2000, "Cloudflare acepta líneas de hasta 2.000 caracteres");
     assert.match(await leer(path.join(armado.paginas, "_redirects")), /^\/ \/entrar\/ 303$/m);
   });
@@ -194,9 +194,25 @@ describe("el flujo de GitHub", () => {
     const f = await flujo("desplegar-repartidor.yml");
     assert.match(f, /^on:\n {2}workflow_dispatch:/m);
     assert.ok(!/^\s+(push|pull_request|schedule):/m.test(f), "no corre solo");
-    assert.match(f, /if: github\.ref == 'refs\/heads\/main'/);
     assert.match(f, /environment: base-real/);
     assert.match(f, /npm run verificar/);
+  });
+
+  it("revisa en un trabajo sin secretos, y el que ve los tokens no instala nada del sistema", async () => {
+    const f = await flujo("desplegar-repartidor.yml");
+    const inicioRevisar = f.indexOf("\n  revisar:\n");
+    const inicioDesplegar = f.indexOf("\n  desplegar:\n");
+    assert.ok(inicioRevisar > 0 && inicioDesplegar > inicioRevisar, "dos trabajos: revisar y después desplegar");
+    const revisar = f.slice(inicioRevisar, inicioDesplegar);
+    const desplegar = f.slice(inicioDesplegar);
+    for (const trabajo of [revisar, desplegar]) assert.match(trabajo, /if: github\.ref == 'refs\/heads\/main'/);
+    assert.match(revisar, /npm ci --ignore-scripts\n/);
+    assert.match(revisar, /npm run verificar/);
+    assert.ok(!/environment:|secrets\.|vars\./.test(revisar), "revisar no ve el entorno ni sus secretos");
+    assert.match(desplegar, /needs: revisar/);
+    assert.match(desplegar, /environment: base-real/);
+    assert.ok(!desplegar.includes("npm run"), "desplegar no corre los programas del sistema");
+    for (const linea of desplegar.split("\n").filter((l) => l.includes("npm ci"))) assert.match(linea, /--ignore-scripts .*--prefix "\$RUNNER_TEMP\/wrangler"/, "desplegar solo instala Wrangler, fuera del repositorio");
   });
 
   it("usa la misma CLI de Supabase y la misma acción que la ceremonia de la llave, fijadas por su huella", async () => {

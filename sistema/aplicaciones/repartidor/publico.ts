@@ -7,8 +7,8 @@
  */
 import { repartir, type EntornoDelRepartidor } from "./repartidor.ts";
 
-export { direccionEnLaFuncion, leerEntorno, repartir, type ArchivosFijos, type Configuracion, type EntornoDelRepartidor, type Freno, type LecturaDelEntorno, type OpcionesDelRepartidor } from "./repartidor.ts";
-export { CAMINOS_DE_ENTRAR, ENCABEZADOS, ERRORES, FRENOS, LIMITES_DEL_REPARTIDOR, PREFIJO_DE_LA_API, SEGURIDAD_DE_LAS_PAGINAS, VARIABLES } from "./configuracion.ts";
+export { claveDelFreno, direccionEnLaFuncion, esDeEntrar, leerEntorno, repartir, type ArchivosFijos, type Configuracion, type EntornoDelRepartidor, type Freno, type LecturaDelEntorno, type OpcionesDelRepartidor } from "./repartidor.ts";
+export { CAMINOS_DE_ENTRAR, ENCABEZADOS, ERRORES, FRENOS, LIMITES_DEL_REPARTIDOR, PREFIJO_DE_LA_API, SEGURIDAD_DE_LAS_PAGINAS, SOLO_CON_CIFRADO, VARIABLES } from "./configuracion.ts";
 
 /** El Worker: cada pedido a app.coddvisor.com que no es una página fija llega aquí. */
 export default {

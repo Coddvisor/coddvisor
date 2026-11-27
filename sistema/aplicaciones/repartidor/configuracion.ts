@@ -55,9 +55,11 @@ export const PREFIJO_DE_LA_API = "/api/";
 /**
  * Los caminos del freno corto: entrar (contraseña, Google, segundo paso) y
  * abrir un negocio (el permiso de alta, la cuenta). Son los que un programa
- * prueba a la fuerza.
+ * prueba a la fuerza. Cada uno vale solo (`/api/abrir`, la ruta que abre el
+ * negocio) y con todo lo que cuelga de él (`/api/abrir/...`), nunca con otro
+ * nombre que empiece igual (`/api/abrirx`).
  */
-export const CAMINOS_DE_ENTRAR: readonly string[] = ["/api/entrar/", "/api/abrir/"];
+export const CAMINOS_DE_ENTRAR: readonly string[] = ["/api/entrar", "/api/abrir"];
 
 /**
  * Nada de afuera, nada en línea. Lo leen el Worker y el archivo _headers de las
@@ -71,12 +73,27 @@ export const SEGURIDAD_DE_LAS_PAGINAS: Readonly<Record<string, string>> = {
   "cache-control": "no-cache",
 };
 
+/**
+ * Lo que solo dice app.coddvisor.com, y no el modo local (que corre sin cifrar en
+ * la computadora): el navegador que ya entró una vez por https no vuelve a pedir
+ * por http durante un año. Sin includeSubDomains a propósito: no toca a www ni a
+ * nada más de coddvisor.com. Lo leen el Worker y el archivo _headers.
+ */
+export const SOLO_CON_CIFRADO: Readonly<Record<string, string>> = {
+  "strict-transport-security": "max-age=31536000",
+};
+
 /** Lo que responde el repartidor cuando no reenvía. La página lo busca en su catálogo, como los del servicio. */
 export const ERRORES = {
   demasiados: "demasiados_intentos",
   interno: "interno",
   largo: "pedido_invalido",
+  /** Un pedido a /api sin cifrar (http). Es el mismo que da la función cuando el origen no es el del panel. */
+  sinCifrar: "origen",
 } as const;
+
+/** El único protocolo por el que /api se reenvía. */
+export const PROTOCOLO_DE_LA_API = "https:";
 
 export const LIMITES_DEL_REPARTIDOR = {
   /**
@@ -104,3 +121,11 @@ export const FRENOS = {
 
 /** La clave del freno cuando Cloudflare no dijo la IP (no debería pasar detrás de Cloudflare). */
 export const SIN_IP = "sin-ip";
+
+/**
+ * Con IPv6, el freno cuenta por la red de la conexión y no por la dirección: una
+ * casa, un celular o un servidor alquilado suelen tener un /64 entero (millones
+ * de direcciones) y podrían cambiar de dirección en cada pedido. Son las cuatro
+ * primeras partes de las ocho de una dirección IPv6.
+ */
+export const PARTES_DE_LA_RED_IPV6 = 4;

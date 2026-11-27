@@ -17,7 +17,7 @@ import { copyFile, mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promis
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { FRENOS, PREFIJO_DE_LA_API, SEGURIDAD_DE_LAS_PAGINAS, VARIABLES as DEL_WORKER } from '../../aplicaciones/repartidor/publico.ts';
+import { FRENOS, PREFIJO_DE_LA_API, SEGURIDAD_DE_LAS_PAGINAS, SOLO_CON_CIFRADO, VARIABLES as DEL_WORKER } from '../../aplicaciones/repartidor/publico.ts';
 
 export const SISTEMA = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -92,8 +92,8 @@ async function copiarCarpeta(desde: string, hacia: string, recursiva: boolean, f
 
 /** El archivo _headers: los encabezados de seguridad en toda página (developers.cloudflare.com/workers/static-assets/headers/). */
 export function textoDeLosEncabezados(): string {
-  const lineas = Object.entries(SEGURIDAD_DE_LAS_PAGINAS).map(([nombre, valor]) => `  ${nombre}: ${valor}`);
-  return `# Lo arma herramientas/repartidor/despliegue.ts desde SEGURIDAD_DE_LAS_PAGINAS. No se edita a mano.\n/*\n${lineas.join('\n')}\n`;
+  const lineas = Object.entries({ ...SEGURIDAD_DE_LAS_PAGINAS, ...SOLO_CON_CIFRADO }).map(([nombre, valor]) => `  ${nombre}: ${valor}`);
+  return `# Lo arma herramientas/repartidor/despliegue.ts desde SEGURIDAD_DE_LAS_PAGINAS y SOLO_CON_CIFRADO. No se edita a mano.\n/*\n${lineas.join('\n')}\n`;
 }
 
 /** El archivo _redirects: la raíz lleva a entrar, como en el modo de prueba local. */

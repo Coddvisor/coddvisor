@@ -103,8 +103,13 @@ developers.cloudflare.com/rules/url-forwarding/examples/redirect-root-to-www/):
 2. **Rules → Redirect Rules → Create rule** (o la plantilla «Redirect from root
    to WWW», si aparece):
    - Nombre: `coddvisor.com a www`.
-   - Cuándo: **Wildcard pattern**, Request URL `https://coddvisor.com/*`.
-   - A dónde: `https://www.coddvisor.com/${1}`.
+   - Cuándo: **Wildcard pattern**, Request URL `http*://coddvisor.com/*`. El
+     asterisco después de `http` hace que atrape `http` y `https` en un solo
+     paso: con `https://coddvisor.com/*`, quien escriba `coddvisor.com` en el
+     navegador (que pide por `http`) llegaría a la dirección `192.0.2.1`, que no
+     existe, y vería una página de error.
+   - A dónde: `https://www.coddvisor.com/${2}` (el `${2}` es lo que va después
+     de la barra; el `${1}` sería la `s` de `https`).
    - Código: **301**. **Preserve query string**: encendido.
    - **Deploy**.
 
@@ -120,7 +125,25 @@ developers.cloudflare.com/rules/url-forwarding/examples/redirect-root-to-www/):
    escribe cuando el dominio queda **Active**: suele ser en minutos u horas, y
    puede tardar hasta un día.
 
-### 5. Comprobar con `dig`
+### 5. Cifrado: siempre `https`
+
+Cuando Cloudflare diga **Active**, en **SSL/TLS** de `coddvisor.com`:
+
+1. **Overview**: el modo de cifrado en **Full (strict)**. Si dice «Automatic»
+   y muestra **Full (strict)**, déjelo así.
+2. **Edge Certificates → Always Use HTTPS**: **encendido**. Así todo pedido por
+   `http` a `app.coddvisor.com` (y a cualquier nombre con la nube naranja) se
+   manda a `https` antes de llegar al Worker. Sin esto, quien escriba
+   `http://app.coddvisor.com/entrar/` vería la página sin cifrar y su
+   contraseña viajaría en claro hasta Cloudflare (el Worker la frena ahí, pero
+   ya viajó).
+
+La documentación no dice si **Always Use HTTPS** viene encendido en una zona
+nueva: compruébelo siempre. **No** encienda **HSTS** en ese mismo menú: el
+Worker ya lo pide solo para `app.coddvisor.com`, y el de la zona tocaría a
+todos los nombres de `coddvisor.com`.
+
+### 6. Comprobar con `dig`
 
 En una terminal (en Mac viene `dig`), cuando Cloudflare diga **Active**:
 
@@ -132,6 +155,7 @@ dig +short TXT zmail._domainkey.coddvisor.com
 dig +short TXT _dmarc.coddvisor.com
 dig +short CNAME www.coddvisor.com
 curl -sI https://coddvisor.com | head -3
+curl -sI http://coddvisor.com | head -3
 curl -sI https://www.coddvisor.com | head -3
 ```
 
@@ -144,12 +168,17 @@ Lo que tiene que salir:
 - `www`: con el proxy encendido, `dig` puede mostrar direcciones de Cloudflare
   en vez del CNAME. Lo que importa es que `curl -sI https://www.coddvisor.com`
   responda **200**.
-- `https://coddvisor.com`: **301** con `location: https://www.coddvisor.com/`.
+- `https://coddvisor.com` y `http://coddvisor.com`: **301** con
+  `location: https://www.coddvisor.com/`. Si el de `http` no responde o da error,
+  revise el patrón de la regla del paso 3 (`http*://`).
+- Cuando exista `app.coddvisor.com` (paso 8), `curl -sI
+  http://app.coddvisor.com/entrar/ | head -3` tiene que dar **301** (o 308)
+  hacia `https`.
 
 Para mirar desde afuera de su red, también:
 `dig +short MX coddvisor.com @1.1.1.1` y `@8.8.8.8`.
 
-### 6. Probar el correo
+### 7. Probar el correo
 
 1. Desde una cuenta de otro dominio (por ejemplo, un Gmail personal), escriba a
    `equipo@coddvisor.com`. Tiene que llegar a Zoho.
@@ -161,7 +190,7 @@ Para mirar desde afuera de su red, también:
 
 Si las tres cosas salen bien, el DNS quedó mudado.
 
-### 7. Después: el dominio del Worker
+### 8. Después: el dominio del Worker
 
 Recién ahora, con el primer despliegue del repartidor hecho, se agrega
 `app.coddvisor.com` como dominio propio del Worker: pasos 5 y 6 de

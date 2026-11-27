@@ -252,7 +252,8 @@ una página que dice que esa parte llega pronto. Cloudflare publica solo desde
 `main`, como la web. Nadie sube nada a mano. Ese día no se abre ninguna otra
 cuenta: ni Fly.io, ni Vercel, ni nada en Supabase fuera de lo que ya hay.
 
-(27-nov-2026, plan de despliegue, pasos 25 y 26; lo aprueba el fundador.) El
+(Propuesto el 27-nov-2026, plan de despliegue, pasos 25 y 26. Cambia esta
+decisión: queda aprobado solo si el fundador aprueba la solicitud que lo trae.) El
 Worker se adelanta a la caja: las pantallas de entrar ya existen y Google
 necesita volver a `app.coddvisor.com`. Vive en `sistema/aplicaciones/repartidor/`,
 con sus pruebas, y también frena por IP. Cambia cómo se publica: en vez de

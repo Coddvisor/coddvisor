@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import Worker, {
-  ENCABEZADOS, ERRORES, FRENOS, LIMITES_DEL_REPARTIDOR, repartir, SEGURIDAD_DE_LAS_PAGINAS, VARIABLES,
+  claveDelFreno, ENCABEZADOS, ERRORES, esDeEntrar, FRENOS, LIMITES_DEL_REPARTIDOR, repartir, SEGURIDAD_DE_LAS_PAGINAS, SOLO_CON_CIFRADO, VARIABLES,
   type EntornoDelRepartidor, type Freno,
 } from "../publico.ts";
 
@@ -144,6 +144,72 @@ describe("el repartidor reenvía /api a la función", () => {
     assert.equal(r.status, 413);
     assert.equal(m.pedidos.length, 0);
   });
+
+  for (const [nombre, encabezados] of [["con un largo declarado falso", { "content-length": "10" }], ["sin largo declarado (por partes)", {}]] as const) {
+    it(`un cuerpo por partes ${nombre} se corta apenas pasa el tope, sin leerlo entero`, async () => {
+      const trozo = 64 * 1024;
+      const total = 20 * LIMITES_DEL_REPARTIDOR.largoMaximoDelPedido;
+      let entregados = 0;
+      const cuerpo = new ReadableStream<Uint8Array>({
+        pull(control) {
+          if (entregados * trozo >= total) {
+            control.close();
+            return;
+          }
+          entregados += 1;
+          control.enqueue(new Uint8Array(trozo));
+        },
+      }, { highWaterMark: 0 });
+      const m = montar();
+      const r = await m.pedir(new Request(`${APP}/api/negocios`, { method: "POST", body: cuerpo, headers: encabezados, duplex: "half" } as RequestInit));
+      assert.equal(r.status, 413);
+      assert.equal(m.pedidos.length, 0);
+      assert.ok(entregados * trozo <= LIMITES_DEL_REPARTIDOR.largoMaximoDelPedido + 4 * trozo, `leyó ${String(entregados)} trozos`);
+    });
+  }
+
+  it("un cuerpo por partes dentro del tope llega entero", async () => {
+    const m = montar();
+    const partes = ["{\"a\":", "1}"];
+    const cuerpo = new ReadableStream<Uint8Array>({
+      pull(control) {
+        const p = partes.shift();
+        if (p === undefined) control.close();
+        else control.enqueue(new TextEncoder().encode(p));
+      },
+    });
+    const r = await m.pedir(new Request(`${APP}/api/negocios`, { method: "POST", body: cuerpo, duplex: "half" } as RequestInit));
+    assert.equal(r.status, 200);
+    assert.deepEqual(await m.pedidos[0]?.json(), { a: 1 });
+  });
+
+  it("un POST sin cuerpo se reenvía con el cuerpo vacío", async () => {
+    const m = montar();
+    const r = await m.pedir(new Request(`${APP}/api/salir`, { method: "POST" }));
+    assert.equal(r.status, 200);
+    assert.equal(await m.pedidos[0]?.text(), "");
+  });
+});
+
+describe("solo con cifrado", () => {
+  it("un pedido a /api por http no se reenvía ni pasa por el freno: 403 «origen»", async () => {
+    const m = montar();
+    const r = await m.pedir(new Request("http://app.coddvisor.test/api/entrar/correo", { method: "POST", body: "{\"contrasena\":\"x\"}", headers: { "cf-connecting-ip": "203.0.113.7" } }));
+    assert.equal(r.status, 403);
+    assert.deepEqual(await r.json(), { error: ERRORES.sinCifrar });
+    assert.equal(m.pedidos.length, 0);
+    assert.deepEqual(m.frenoDeLaApi.claves, []);
+  });
+
+  it("las páginas y las respuestas de /api piden al navegador quedarse en https, sin tocar otros subdominios", async () => {
+    const m = montar();
+    const pagina = await m.pedir(new Request(`${APP}/entrar/`));
+    const api = await m.pedir(new Request(`${APP}/api/negocios`));
+    for (const r of [pagina, api]) {
+      for (const [nombre, valor] of Object.entries(SOLO_CON_CIFRADO)) assert.equal(r.headers.get(nombre), valor);
+    }
+    assert.ok(!Object.values(SOLO_CON_CIFRADO).some((v) => v.toLowerCase().includes("includesubdomains")));
+  });
 });
 
 describe("las páginas", () => {
@@ -192,6 +258,65 @@ describe("el freno por IP", () => {
     assert.equal(segunda.status, 429);
     assert.deepEqual(m.frenoDeEntrar.claves, ["203.0.113.7", "203.0.113.7"]);
     assert.equal(m.pedidos.length, 2);
+  });
+
+  it("/api/abrir y /api/entrar, solos o con lo que cuelga, pasan por el freno corto; un nombre parecido no", () => {
+    for (const c of ["/api/abrir", "/api/abrir/permiso", "/api/entrar", "/api/entrar/correo"]) assert.ok(esDeEntrar(c), c);
+    for (const c of ["/api/abrirx", "/api/entrarlo", "/api/negocios", "/api/abri"]) assert.ok(!esDeEntrar(c), c);
+  });
+
+  it("el POST que abre el negocio (/api/abrir) cuenta en el freno corto", async () => {
+    const m = montar({ frenoDeEntrar: freno(0) });
+    const r = await m.pedir(new Request(`${APP}/api/abrir`, { method: "POST", body: "{}", headers: { "cf-connecting-ip": "203.0.113.7" } }));
+    assert.equal(r.status, 429);
+    assert.deepEqual(m.frenoDeEntrar.claves, ["203.0.113.7"]);
+    assert.equal(m.pedidos.length, 0);
+  });
+
+  it("si un freno falla, responde 503 «interno» en JSON y anota solo el nombre del error", async () => {
+    const roto: Freno = { limit: () => Promise.reject(new RangeError("sin enlace 203.0.113.7")) };
+    for (const cambios of [{ [VARIABLES.frenoDeLaApi]: roto }, { [VARIABLES.frenoDeEntrar]: roto }]) {
+      const m = montar({ cambios });
+      const r = await m.pedir(new Request(`${APP}/api/entrar/correo`, { method: "POST", body: "{}", headers: { "cf-connecting-ip": "203.0.113.7" } }));
+      assert.equal(r.status, 503);
+      assert.deepEqual(await r.json(), { error: ERRORES.interno });
+      assert.equal(m.pedidos.length, 0);
+      assert.equal(m.anotado.length, 1);
+      assert.match(m.anotado[0] ?? "", /RangeError$/);
+      assert.ok(!(m.anotado[0] ?? "").includes("203.0.113.7"), "lo anotado no lleva la IP");
+    }
+  });
+
+  it("con IPv6 cuenta por la red /64: dos direcciones de la misma red comparten cupo, y la función recibe la IP entera", async () => {
+    const m = montar({ frenoDeEntrar: freno(1) });
+    const primera = await m.pedir(new Request(`${APP}/api/entrar/correo`, { method: "POST", body: "{}", headers: { "cf-connecting-ip": "2001:db8:1:2::1" } }));
+    const segunda = await m.pedir(new Request(`${APP}/api/entrar/correo`, { method: "POST", body: "{}", headers: { "cf-connecting-ip": "2001:db8:1:2:ffff:abcd:1234:5678" } }));
+    assert.equal(primera.status, 200);
+    assert.equal(segunda.status, 429);
+    assert.deepEqual(m.frenoDeEntrar.claves, ["2001:0db8:0001:0002::/64", "2001:0db8:0001:0002::/64"]);
+    assert.equal(m.pedidos[0]?.headers.get(ENCABEZADOS.ip), "2001:db8:1:2::1");
+  });
+
+  it("la clave del freno: IPv4 entera, IPv6 por su /64, y la IPv4 escrita como IPv6 cuenta como IPv4", () => {
+    const casos: ReadonlyArray<readonly [string, string]> = [
+      ["203.0.113.7", "203.0.113.7"],
+      ["2001:db8::1", "2001:0db8:0000:0000::/64"],
+      ["2001:DB8:0:0:1:2:3:4", "2001:0db8:0000:0000::/64"],
+      ["2001:db8:a:b:c:d:e:f", "2001:0db8:000a:000b::/64"],
+      ["::1", "0000:0000:0000:0000::/64"],
+      ["::", "0000:0000:0000:0000::/64"],
+      ["fe80::1%eth0", "fe80:0000:0000:0000::/64"],
+      ["::ffff:192.0.2.1", "192.0.2.1"],
+      ["::ffff:c000:201", "192.0.2.1"],
+      ["64:ff9b::192.0.2.1", "0064:ff9b:0000:0000::/64"],
+      ["sin-ip", "sin-ip"],
+      ["1:2:3", "1:2:3"],
+      ["1::2::3", "1::2::3"],
+      ["1:2:3:4:5:6:7:8:9", "1:2:3:4:5:6:7:8:9"],
+      ["::ffff:300.0.0.1", "::ffff:300.0.0.1"],
+    ];
+    for (const [ip, clave] of casos) assert.equal(claveDelFreno(ip), clave, ip);
+    assert.notEqual(claveDelFreno("2001:db8:0:1::1"), claveDelFreno("2001:db8:0:2::1"));
   });
 
   it("sin IP de Cloudflare todos comparten una clave, y la función recibe esa misma", async () => {

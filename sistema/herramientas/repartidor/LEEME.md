@@ -2,7 +2,8 @@
 
 El repartidor es el programa chico de Cloudflare que recibe todo lo que llega a
 `app.coddvisor.com` y lo reparte (`arquitectura/propuestas/donde-corre-el-sistema.md`,
-decisión 1). No guarda nada y no consulta la base.
+decisión 1). No consulta la base y no guarda lo que pasa por él: solo cuenta
+los pedidos de cada IP durante un minuto, para el freno.
 
 | Lo que se pide | Quién lo atiende |
 |---|---|
@@ -46,6 +47,14 @@ Si la persona manda alguno de esos tres, el Worker lo descarta y pone el suyo.
 Lo demás (las cookies, el `origin`, el cuerpo) pasa igual, y la respuesta vuelve
 igual: el Worker no sigue las redirecciones, las sigue el navegador.
 
+`/api` solo se reenvía por `https`: un pedido por `http` recibe 403 «origen» (lo
+mismo que responde la función cuando el origen no es el del panel). Las páginas
+y las respuestas llevan `strict-transport-security: max-age=31536000`, sin
+`includeSubDomains` para no tocar a `www` ni al correo: el navegador que entró una
+vez por `https` no vuelve a probar `http` en un año. Lo que de verdad cierra
+`http` es **Always Use HTTPS** en Cloudflare (paso 5 de
+[mudar-el-dns.md](mudar-el-dns.md)).
+
 Si al Worker le falta algo de su configuración (el secreto, la dirección de la
 función, la región o los frenos), **no reenvía nada**: responde 503 y anota en
 su registro qué falta, sin escribir ningún valor.
@@ -58,11 +67,19 @@ límite de velocidad de Workers (rate limiting binding):
 | Freno | A qué | Cuántos, por minuto |
 |---|---|---|
 | `FRENO_DE_LA_API` | Todo `/api` | 600 |
-| `FRENO_DE_ENTRAR` | Además, `/api/entrar/...` y `/api/abrir/...` | 30 |
+| `FRENO_DE_ENTRAR` | Además, `/api/entrar` y `/api/abrir`, solos o con lo que cuelga de ellos (`/api/entrar/correo`) | 30 |
 
 Quien pasa el freno recibe 429 con `{"error":"demasiados_intentos"}` (lo mismo
 que responde el servicio, así la pantalla ya sabe qué decir) y `retry-after: 60`.
 Los números están en `aplicaciones/repartidor/configuracion.ts` (`FRENOS`).
+
+Con IPv4 el freno cuenta por la dirección entera. Con IPv6 cuenta por la red
+`/64` (las cuatro primeras partes de la dirección): una casa, un celular o un
+servidor alquilado suelen tener una red así entera, con millones de direcciones,
+y un programa podría estrenar una en cada pedido para no llegar nunca al tope.
+Una IPv4 escrita como IPv6 (`::ffff:192.0.2.1`) cuenta como la IPv4. A la
+función le llega siempre la IP entera. Si el freno mismo falla, el Worker
+responde 503 «interno» y lo anota, en vez de la página de error de Cloudflare.
 
 Lo que este freno es y lo que no es, según la documentación de Cloudflare
 (developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/, leída el
@@ -151,10 +168,13 @@ termine.** Con «conservar» no hace falta.
 
 1. **Actions → Desplegar el repartidor → Run workflow**, rama `main`. «El
    secreto»: **nuevo**. **Run workflow**.
-2. Apruebe la corrida (**Review deployments**, marque `base-real`, **Approve and
-   deploy**).
-3. El flujo corre `npm run verificar`, instala Wrangler, arma las páginas, hace
-   un ensayo sin publicar y publica. Con «nuevo»:
+2. Cuando «Revisar el sistema» termine bien, apruebe la corrida (**Review
+   deployments**, marque `base-real`, **Approve and deploy**).
+3. El flujo tiene dos trabajos. «Revisar el sistema» corre `npm run verificar`
+   sin ver ningún secreto. Solo si pasa, «Desplegar el repartidor» le pide su
+   aprobación, instala Wrangler, arma las páginas, hace un ensayo sin publicar y
+   publica. Ese segundo trabajo no instala las dependencias del sistema: así
+   ninguna de ellas puede leer los tokens. Con «nuevo»:
    1. genera en la máquina de GitHub 32 bytes al azar y le pide a GitHub que los
       tape en el registro;
    2. los guarda en Supabase como `CODDVISOR_REPARTIDOR_SECRETO` (desde ese
@@ -191,7 +211,15 @@ curl -sI https://app.coddvisor.com/entrar/
 ```
 
 Tiene que responder 200 con `content-security-policy`, `x-content-type-options:
-nosniff` y `referrer-policy: same-origin`.
+nosniff`, `referrer-policy: same-origin` y `strict-transport-security`.
+
+```bash
+curl -sI http://app.coddvisor.com/entrar/ | head -3
+```
+
+Tiene que responder 301 (o 308) hacia `https://app.coddvisor.com/entrar/`. Si
+responde 200, falta encender **Always Use HTTPS** (paso 5 de
+[mudar-el-dns.md](mudar-el-dns.md)).
 
 ```bash
 curl -sI https://app.coddvisor.com/
@@ -246,3 +274,8 @@ curl -s -o /dev/null -w '%{http_code}\n' https://<ref>.supabase.co/functions/v1/
   pone los encabezados.
 - Que `wrangler deploy --secrets-file` deje intactos otros secretos del Worker.
   Hoy el Worker tiene uno solo.
+- Que **Always Use HTTPS** venga encendido en una zona nueva. La documentación no
+  lo dice: por eso la guía del DNS pide encenderlo y comprobarlo con `curl`.
+- Que el Worker vea `http:` en la dirección de un pedido sin cifrar (la prueba lo
+  supone, como lo dice la documentación de `request.url`). Con **Always Use
+  HTTPS** encendido, ese pedido ni siquiera llega al Worker.
