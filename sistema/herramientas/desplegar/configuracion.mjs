@@ -8,15 +8,11 @@
 import { VARIABLES } from '../../aplicaciones/servicio/configuracion.ts';
 import { RUTAS } from '../../aplicaciones/servicio/rutas/rutas.ts';
 
-// El nombre de la función en supabase/config.toml ([functions.servicio]).
-export const FUNCION = 'servicio';
-
-// Las variables del entorno de GitHub «base-real» que lee el flujo. Ninguna es
-// un secreto: el identificador del proyecto y la región en que corre.
-export const DEL_ENTORNO = {
-  proyecto: 'SUPABASE_PROYECTO_REF',
-  region: 'SUPABASE_REGION',
-};
+// El nombre de la función, las dos variables del entorno que no son del servicio
+// (el proyecto y la región) y el formato de las direcciones de Supabase. Los
+// comparte con el despliegue del repartidor, para que el Worker llame a la misma
+// función y pida la misma región que este flujo comprueba.
+export { DEL_ENTORNO, FORMA_DE_LA_REGION, FORMA_DEL_PROYECTO, FUNCION, SUPABASE } from './supabase.ts';
 
 // Lo que el servicio lee de su entorno y no es un secreto: el flujo lo toma de
 // las variables del entorno de GitHub y lo guarda en los secretos de la función
@@ -58,22 +54,10 @@ export const NUNCA_LOS_CARGA_EL_FLUJO = [
   VARIABLES.certificadoDeLaBase,
 ];
 
-// Supabase: la dirección de cada proyecto y lo que la acompaña. Es su formato,
-// el mismo para todos los proyectos: no cambia por cliente ni por país.
-export const SUPABASE = {
-  dominio: 'supabase.co',
-  caminoDeAuth: '/auth/v1',
-  caminoDeLasLlaves: '/.well-known/jwks.json',
-  caminoDeLasFunciones: '/functions/v1',
-  // El encabezado que pide la región y el que dice dónde corrió
-  // (supabase.com/docs/guides/functions/regional-invocation).
-  pedirRegion: 'x-region',
-  regionEnQueCorrio: 'x-sb-edge-region',
-};
-
-// La comprobación del final: una ruta cualquiera del servicio, llamada directo,
-// sin el secreto del Worker. Tiene que responder 403 (la puerta está puesta) y
-// decir la región pedida.
+// La primera comprobación del final: una ruta cualquiera del servicio, llamada
+// directo, sin el secreto del Worker. Tiene que responder 403 (la puerta está
+// puesta) y decir la región pedida. Ese 403 sale antes de mirar la ruta: no
+// prueba la base ni Supabase Auth. Eso lo prueba la segunda.
 export const COMPROBACION = {
   ruta: RUTAS.entrarConGoogle,
   estadoEsperado: 403,
@@ -84,6 +68,25 @@ export const COMPROBACION = {
   esperaPorRespuestaMs: 20_000,
 };
 
-// El identificador de un proyecto de Supabase y el nombre de una región de AWS.
-export const FORMA_DEL_PROYECTO = /^[a-z0-9]{20}$/;
-export const FORMA_DE_LA_REGION = /^[a-z]{2}-[a-z]+-[0-9]$/;
+// La segunda: entrar con contraseña por app.coddvisor.com, como una persona,
+// con un correo que no es de nadie (example.com está reservado para ejemplos,
+// RFC 2606) y una prueba de Turnstile inventada. Así pasa por el Worker, por la
+// puerta, por los cupos de la base (se gastan y se devuelven) y por Supabase
+// Auth. Si llegó a todo, responde una de las dos de abajo y nunca 500: un 500 es
+// la base que no responde, una migración que falta o el certificado.
+export const COMPROBACION_POR_EL_REPARTIDOR = {
+  ruta: RUTAS.entrarConCorreo,
+  correo: 'comprobacion-del-despliegue@example.com',
+  contrasena: 'esta no es la contrasena de nadie',
+  captcha: 'comprobacion-del-despliegue',
+  // Supabase Auth miró la prueba inventada y la negó: su protección CAPTCHA está encendida.
+  conLaProteccion: { estado: 400, error: 'captcha' },
+  // Supabase Auth no miró la prueba y negó la contraseña: la base y Auth responden,
+  // pero falta encender su protección (sistema/supabase/turnstile.md, paso 2).
+  sinLaProteccion: { estado: 401, error: 'credenciales' },
+  // Solo se vuelve a intentar si no respondió o respondió 502, 503 o 504.
+  intentos: 3,
+  esperaEntreIntentosMs: 10_000,
+  esperaPorRespuestaMs: 20_000,
+  sigueIntentando: [502, 503, 504],
+};

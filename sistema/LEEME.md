@@ -186,16 +186,16 @@ Supabase Auth falso, en memoria, que responde como GoTrue. La función ya habla
 con la base por el controlador de Postgres (`aplicaciones/servicio/base/postgres.ts`,
 regla SV-02), probado contra la base en memoria detrás de un puerto que imita el
 repartidor de Supabase en modo transacción; lo que falta probar en el proyecto
-real está en `supabase/LEEME.md`, y no se despliega todavía. La barrera de
+real está en `supabase/LEEME.md`. Todavía no se desplegó: lo que va antes, en
+orden, está en `herramientas/desplegar/LEEME.md`. La barrera de
 altas (decisión 8 bis) es el gancho `ganchos.antes_de_crear_cuenta`: deja crear
 una cuenta solo con Google y solo si su correo pasó antes por «Abra su negocio»
-(`POST /api/abrir/permiso`). Falta la pantalla que pide ese correo antes de ir a
-Google, la que inscribe la app de códigos (las rutas ya están), el alta con
+(`POST /api/abrir/permiso`). Ya están la pantalla que pide ese correo antes de
+ir a Google y la que inscribe la app de códigos. Falta el alta con
 correo y su enlace de un solo uso (la hace el programa aparte con la llave de
 administrador, que el servicio no tiene; decisiones 8 bis y 10). Lo que el fundador hace en el
 panel de Supabase está en `supabase/LEEME.md`. El registro de Supabase, el
-botón público «Abra su negocio» y el despliegue de la función no se encienden
-antes de la prueba de que no es un robot y de un límite compartido de permisos y
-altas por día. Las dos ya están en el código: Cloudflare Turnstile y los cupos
+botón público «Abra su negocio» no se encienden antes de la prueba de que no es
+un robot y de un límite compartido de permisos y altas por día. Las dos ya están en el código: Cloudflare Turnstile y los cupos
 compartidos en la base (`supabase/turnstile.md`). La lista de lo pendiente
 está al final de `arquitectura/bases/02-base-de-datos.md`.

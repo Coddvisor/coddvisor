@@ -108,9 +108,13 @@ GitHub, el secreto `SUPABASE_ACCESS_TOKEN` del entorno → **Remove**.
 - **verify-full** (recomendado): cifra y revisa que el servidor sea de verdad el
   de Supabase. Que la función reconozca el certificado del repartidor todavía no
   está probado (punto 3 de «Lo que falta probar» en `sistema/supabase/LEEME.md`).
-  Si la función desplegada dice que no reconoce el certificado, primero se
-  agrega `CODDVISOR_BASE_CERTIFICADO` como dice esa guía, sin volver a correr
-  esta ceremonia.
+  Si la función desplegada no reconoce el certificado (la comprobación del
+  final de «Desplegar el servicio» falla con un 500, y los registros de la
+  función hablan del certificado), se para ahí: `CODDVISOR_BASE_CERTIFICADO`
+  no se pega a mano, y su camino se pide por solicitud de revisión
+  (`sistema/herramientas/desplegar/LEEME.md`, «Lo que tiene que estar antes
+  del primer despliegue», al final). No hace falta volver a correr esta
+  ceremonia.
 - **require**: cifra, pero no revisa con quién habla. Solo como último recurso:
   alguien en medio podría hacerse pasar por la base. Y si además tuviera la
   forma SCRAM (que puede quedar a la vista, ver abajo), podría entrar como

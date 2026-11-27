@@ -13,8 +13,12 @@ import { leerConfiguracion, VARIABLES as DE_LA_FUNCION } from "../../../aplicaci
 import { ENCABEZADOS_DEL_WORKER, puertaDelWorker } from "../../../aplicaciones/servicio/rutas/puerta.ts";
 import { RUTAS } from "../../../aplicaciones/servicio/rutas/rutas.ts";
 import { armarElDespliegue, configuracionDeWrangler, DESPLIEGUE, publicar, revisarProyecto, secretoNuevo, SISTEMA, VARIABLES, type Programa } from "../despliegue.ts";
+import { DEL_ENTORNO, direccionDeLaFuncion } from "../../desplegar/supabase.ts";
 
 const PROYECTO = "abcdefghijklmnopqrst";
+// Una región con la forma de las de AWS, que no es la de la base: si algo la
+// escribiera a mano en vez de leerla, estas pruebas lo verían.
+const REGION = "xx-ejemplo-9";
 const leer = (archivo: string): Promise<string> => readFile(archivo, "utf8");
 
 describe("lo que se arma para Cloudflare", () => {
@@ -22,7 +26,7 @@ describe("lo que se arma para Cloudflare", () => {
   let armado: Awaited<ReturnType<typeof armarElDespliegue>>;
   before(async () => {
     salida = await mkdtemp(path.join(tmpdir(), "coddvisor-armado-"));
-    armado = await armarElDespliegue({ salida, proyecto: PROYECTO });
+    armado = await armarElDespliegue({ salida, proyecto: PROYECTO, region: REGION });
   });
   after(async () => {
     await rm(salida, { recursive: true, force: true });
@@ -67,15 +71,28 @@ describe("lo que se arma para Cloudflare", () => {
     assert.ok(existsSync(String(c["main"])));
     assert.deepEqual(c["assets"], { directory: armado.paginas, binding: DEL_WORKER.paginas, run_worker_first: ["/api/*"], html_handling: "auto-trailing-slash", not_found_handling: "none" });
     assert.deepEqual(c["ratelimits"], Object.values(FRENOS).map((f) => ({ name: f.binding, namespace_id: f.espacio, simple: { limit: f.pedidos, period: f.periodoS } })));
-    assert.deepEqual(c["vars"], { [DEL_WORKER.funcion]: `https://${PROYECTO}.supabase.co/functions/v1/servicio`, [DEL_WORKER.region]: "sa-east-1" });
+    assert.deepEqual(c["vars"], { [DEL_WORKER.funcion]: `https://${PROYECTO}.supabase.co/functions/v1/servicio`, [DEL_WORKER.region]: REGION });
     assert.ok(!JSON.stringify(c).includes(DEL_WORKER.secreto), "el secreto no va en la configuración");
   });
 
   it("sin un proyecto de Supabase con su forma, no se arma", () => {
     for (const malo of ["", "CAYLA", "abc", `${PROYECTO}x`, "abcdefghijklmnopqrs/"]) {
       assert.throws(() => revisarProyecto(malo), /SUPABASE_PROYECTO_REF/);
-      assert.throws(() => configuracionDeWrangler({ sistema: SISTEMA, paginas: "/x", proyecto: malo }), /SUPABASE_PROYECTO_REF/);
+      assert.throws(() => configuracionDeWrangler({ sistema: SISTEMA, paginas: "/x", proyecto: malo, region: REGION }), /SUPABASE_PROYECTO_REF/);
     }
+  });
+
+  it("sin una región con su forma, tampoco", () => {
+    for (const mala of ["", "Sao Paulo", "sa-east", "sa-east-1/"]) {
+      assert.throws(() => configuracionDeWrangler({ sistema: SISTEMA, paginas: "/x", proyecto: PROYECTO, region: mala }), /SUPABASE_REGION/);
+    }
+  });
+
+  it("lee el proyecto y la región de las mismas variables que «Desplegar el servicio», y la dirección del mismo lugar", () => {
+    assert.equal(VARIABLES.proyectoDeSupabase, DEL_ENTORNO.proyecto);
+    assert.equal(VARIABLES.regionDeSupabase, DEL_ENTORNO.region);
+    const vars = configuracionDeWrangler({ sistema: SISTEMA, paginas: "/x", proyecto: PROYECTO, region: REGION })["vars"] as Record<string, string>;
+    assert.equal(vars[DEL_WORKER.funcion], direccionDeLaFuncion(PROYECTO));
   });
 });
 

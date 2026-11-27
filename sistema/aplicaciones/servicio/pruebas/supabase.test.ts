@@ -8,7 +8,7 @@
 // salir (también con el pase vencido), alta con Google por «Abra su negocio» y
 // rechazo de un alta por otro camino. Y lo que protege el cupo compartido de
 // Supabase: un 429 suyo no borra la sesión, y los cupos compartidos por IP, por
-// correo y por sesión (en la base) cortan antes de llamarlo. Y la prueba de que
+// correo y por cuenta (en la base) cortan antes de llamarlo. Y la prueba de que
 // es una persona (Turnstile): la de la contraseña la revisa Supabase, la del
 // permiso de alta el servicio.
 
@@ -43,6 +43,8 @@ const cuenta = (correo: string, nombre: string, cambios: Partial<CuentaDelFalso>
 });
 const CUENTAS = {
   duena: cuenta("duena@ejemplo.test", "Dueña de Ejemplo", { conSegundoPaso: true }),
+  // Solo para la prueba del cupo de códigos: al llenarlo, su cuenta queda cortada unos minutos.
+  conCodigos: cuenta("con.codigos@ejemplo.test", "Cajera de Ejemplo", { conSegundoPaso: true }),
   vendedor: cuenta("vendedor@ejemplo.test", "Vendedor de Ejemplo"),
   sinConfirmar: cuenta("sin.confirmar@ejemplo.test", "Sin Confirmar de Ejemplo", { confirmada: false }),
   conGoogle: cuenta("con.google@ejemplo.test", "Persona con Google", { contrasena: null, proveedor: "google" }),
@@ -386,16 +388,29 @@ describe("los cupos compartidos de intentos", () => {
     assert.equal((await entrarConCorreo(CUENTAS.duena.correo, CONTRASENA, "192.0.2.8")).r.status, 200);
   });
 
-  it("muchos códigos malos con una sesión cortan el segundo paso de esa sesión", async () => {
+  it("muchos códigos malos cortan el segundo paso de esa cuenta, aunque renueve el pase o entre otra vez", async () => {
     const ip = "192.0.2.20";
-    const tope = await topeDe(db, "codigos_fallidos_por_sesion");
+    const tope = await topeDe(db, "codigos_fallidos_por_cuenta");
     await esperarLejosDelBorde(tope.ventanaS);
-    const { jarro } = await entrarConCorreo(CUENTAS.duena.correo, CONTRASENA, ip);
+    const { jarro } = await entrarConCorreo(CUENTAS.conCodigos.correo, CONTRASENA, ip);
     for (let i = 0; i < tope.maximo; i += 1) {
       assert.equal((await pedir(RUTAS.segundoPaso, { metodo: "POST", cuerpo: { codigo: "000000" }, jarro, ip })).status, 401);
     }
     const r = await pedir(RUTAS.segundoPaso, { metodo: "POST", cuerpo: { codigo: CODIGO_DE_LA_APP }, jarro, ip });
     assert.deepEqual([r.status, await json(r)], [429, { error: "demasiados_intentos" }]);
+    // Un pase renovado trae otra firma, pero es de la misma cuenta: no da intentos nuevos.
+    const antes = jarro.get(COOKIES.sesion);
+    const renovado = await pedir(RUTAS.renovar, { metodo: "POST", jarro, ip });
+    assert.equal(renovado.status, 200);
+    guardar(jarro, renovado);
+    assert.notEqual(jarro.get(COOKIES.sesion), antes);
+    const conElRenovado = await pedir(RUTAS.segundoPaso, { metodo: "POST", cuerpo: { codigo: CODIGO_DE_LA_APP }, jarro, ip });
+    assert.deepEqual([conElRenovado.status, await json(conElRenovado)], [429, { error: "demasiados_intentos" }]);
+    // Ni entrar otra vez, con otra sesión y desde otra IP.
+    const otra = await entrarConCorreo(CUENTAS.conCodigos.correo, CONTRASENA, "192.0.2.21");
+    assert.equal(otra.r.status, 200);
+    const conOtraSesion = await pedir(RUTAS.segundoPaso, { metodo: "POST", cuerpo: { codigo: CODIGO_DE_LA_APP }, jarro: otra.jarro, ip: "192.0.2.21" });
+    assert.deepEqual([conOtraSesion.status, await json(conOtraSesion)], [429, { error: "demasiados_intentos" }]);
   });
 
   it("los permisos de alta tienen su cupo por IP, y un correo con permiso vigente no anota otro", async () => {

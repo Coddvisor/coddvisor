@@ -49,9 +49,9 @@ describe("los cupos ante una ráfaga de pedidos a la vez", () => {
     assert.equal(n.get(429), RAFAGA - tope.maximo);
   });
 
-  it("de muchos códigos malos a la vez con una sesión, al proveedor llegan como mucho los del tope", async () => {
+  it("de muchos códigos malos a la vez para una cuenta, al proveedor llegan como mucho los del tope", async () => {
     const ip = "198.51.100.90";
-    const tope = await topeDe(m.db, "codigos_fallidos_por_sesion");
+    const tope = await topeDe(m.db, "codigos_fallidos_por_cuenta");
     await esperarLejosDelBorde(tope.ventanaS);
     const entrada = await m.manejador(post(RUTAS.entrarConCorreo, { correo: m.ejemplo.cuentas.duena.correo, contrasena: CONTRASENA_DE_EJEMPLO, captcha: TURNSTILE_DE_PRUEBA.prueba }, ip));
     assert.equal(entrada.status, 200);

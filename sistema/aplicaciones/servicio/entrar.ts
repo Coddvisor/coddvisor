@@ -82,6 +82,18 @@ async function pase(piezas: Piezas, textoDelPase: string): Promise<Result<Afirma
   return await verificarPase(textoDelPase, piezas.llavero, piezas.esperado, Math.floor(piezas.reloj() / MILISEGUNDOS_POR_SEGUNDO));
 }
 
+/**
+ * La cuenta del proveedor (sub) de un pase que vale, o null si no vale. Es la
+ * clave con que se cuentan los códigos fallidos: es la misma en todas las
+ * sesiones de una cuenta, así que renovar el pase o entrar otra vez no da
+ * intentos nuevos. El código se prueba con ese mismo pase, así que la cuenta que
+ * se cuenta es la que se intenta.
+ */
+export async function cuentaDelPase(piezas: Piezas, textoDelPase: string): Promise<string | null> {
+  const verificado = await pase(piezas, textoDelPase);
+  return verificado.ok ? verificado.value.cuentaDelProveedor : null;
+}
+
 export interface NegociosDeLaPersona {
   readonly cuenta: Cuenta;
   readonly pagina: PaginaDeNegocios;

@@ -18,13 +18,18 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FRENOS, PREFIJO_DE_LA_API, SEGURIDAD_DE_LAS_PAGINAS, SOLO_CON_CIFRADO, VARIABLES as DEL_WORKER } from '../../aplicaciones/repartidor/publico.ts';
+// La dirección de la función y la forma del proyecto y de la región salen del
+// mismo lugar que usa «Desplegar el servicio» para comprobarla.
+import { DEL_ENTORNO, direccionDeLaFuncion, FORMA_DE_LA_REGION, FORMA_DEL_PROYECTO } from '../desplegar/supabase.ts';
 
 export const SISTEMA = fileURLToPath(new URL('../../', import.meta.url));
 
 /** Los nombres de las variables del flujo. Ninguna lleva un valor aquí. */
 export const VARIABLES = {
   /** El identificador del proyecto coddvisor-sistema (no es secreto). */
-  proyectoDeSupabase: 'SUPABASE_PROYECTO_REF',
+  proyectoDeSupabase: DEL_ENTORNO.proyecto,
+  /** La región de la base, la misma que pide y comprueba «Desplegar el servicio» (no es secreto). */
+  regionDeSupabase: DEL_ENTORNO.region,
   /** El token de Supabase, solo para guardar el secreto nuevo («supabase secrets set»). */
   tokenDeSupabase: 'SUPABASE_ACCESS_TOKEN',
   /** El token de Cloudflare, limitado a Workers Scripts: Edit. Lo lee Wrangler con este nombre. */
@@ -41,10 +46,6 @@ export const DESPLIEGUE = {
    * comporta el entorno: va en su propio cambio, con las pruebas del repartidor.
    */
   fechaDeCompatibilidad: '2026-11-01',
-  /** La región de la función: la de la base coddvisor-sistema (D30, São Paulo). */
-  region: 'sa-east-1',
-  /** La función del servicio en Supabase, por el identificador del proyecto. */
-  direccionDeLaFuncion: (proyecto: string): string => `https://${proyecto}.supabase.co/functions/v1/servicio`,
   /** Cuánto se espera a Wrangler o a la CLI de Supabase, en milisegundos. */
   esperaPorUnProgramaMs: 300_000,
 } as const;
@@ -66,11 +67,15 @@ const NUNCA = new Set(['pruebas', 'node_modules']);
 /** De marca/ solo va lo que usan las páginas: los colores y los logos en SVG. */
 const DE_LA_MARCA = (relativa: string): boolean => relativa === 'colores.css' || relativa.endsWith('.svg');
 
-const PROYECTO = /^[a-z0-9]{20}$/;
-
 export function revisarProyecto(proyecto: string): string {
-  if (!PROYECTO.test(proyecto)) throw new Error(`Falta la variable ${VARIABLES.proyectoDeSupabase}, o no tiene la forma de un proyecto de Supabase (20 letras y números).`);
+  if (!FORMA_DEL_PROYECTO.test(proyecto)) throw new Error(`Falta la variable ${VARIABLES.proyectoDeSupabase}, o no tiene la forma de un proyecto de Supabase (20 letras y números).`);
   return proyecto;
+}
+
+/** La región de la base (D30, São Paulo): la lee de SUPABASE_REGION, como «Desplegar el servicio». */
+export function revisarRegion(region: string): string {
+  if (!FORMA_DE_LA_REGION.test(region)) throw new Error(`Falta la variable ${VARIABLES.regionDeSupabase}, o no tiene la forma de una región (como la de la base, xx-nombre-1).`);
+  return region;
 }
 
 async function copiarCarpeta(desde: string, hacia: string, recursiva: boolean, filtro: (relativa: string) => boolean, base = desde): Promise<string[]> {
@@ -102,7 +107,7 @@ export function textoDeLasRedirecciones(): string {
 }
 
 /** La configuración de Wrangler, con caminos absolutos para que no dependa de dónde se corre. */
-export function configuracionDeWrangler({ sistema, paginas, proyecto }: { sistema: string; paginas: string; proyecto: string }): Record<string, unknown> {
+export function configuracionDeWrangler({ sistema, paginas, proyecto, region }: { sistema: string; paginas: string; proyecto: string; region: string }): Record<string, unknown> {
   return {
     name: DESPLIEGUE.nombre,
     main: path.join(sistema, 'aplicaciones/repartidor/publico.ts'),
@@ -125,14 +130,14 @@ export function configuracionDeWrangler({ sistema, paginas, proyecto }: { sistem
       simple: { limit: f.pedidos, period: f.periodoS },
     })),
     vars: {
-      [DEL_WORKER.funcion]: DESPLIEGUE.direccionDeLaFuncion(revisarProyecto(proyecto)),
-      [DEL_WORKER.region]: DESPLIEGUE.region,
+      [DEL_WORKER.funcion]: direccionDeLaFuncion(revisarProyecto(proyecto)),
+      [DEL_WORKER.region]: revisarRegion(region),
     },
   };
 }
 
 /** Arma en `salida` las páginas (salida/paginas) y la configuración (salida/wrangler.json). */
-export async function armarElDespliegue({ sistema = SISTEMA, salida, proyecto }: { sistema?: string; salida: string; proyecto: string }): Promise<{ configuracion: string; paginas: string; archivos: string[] }> {
+export async function armarElDespliegue({ sistema = SISTEMA, salida, proyecto, region }: { sistema?: string; salida: string; proyecto: string; region: string }): Promise<{ configuracion: string; paginas: string; archivos: string[] }> {
   const paginas = path.join(salida, 'paginas');
   await rm(paginas, { recursive: true, force: true });
   const archivos: string[] = [];
@@ -143,7 +148,7 @@ export async function armarElDespliegue({ sistema = SISTEMA, salida, proyecto }:
   await writeFile(path.join(paginas, '_headers'), textoDeLosEncabezados());
   await writeFile(path.join(paginas, '_redirects'), textoDeLasRedirecciones());
   const configuracion = path.join(salida, 'wrangler.json');
-  await writeFile(configuracion, `${JSON.stringify(configuracionDeWrangler({ sistema, paginas, proyecto }), null, 2)}\n`);
+  await writeFile(configuracion, `${JSON.stringify(configuracionDeWrangler({ sistema, paginas, proyecto, region }), null, 2)}\n`);
   return { configuracion, paginas, archivos: archivos.map((a) => path.relative(paginas, a).split(path.sep).join('/')) };
 }
 

@@ -39,7 +39,7 @@ Es el contrato entre las dos piezas. Cada pedido a `/api/...` llega a
 
 | Encabezado | Qué lleva |
 |---|---|
-| `x-region` | `sa-east-1`: Supabase corre la función en São Paulo, junto a la base (supabase.com/docs/guides/functions/regional-invocation) |
+| `x-region` | La región de `SUPABASE_REGION` (hoy `sa-east-1`): Supabase corre la función en São Paulo, junto a la base (supabase.com/docs/guides/functions/regional-invocation) |
 | `x-coddvisor-repartidor` | El secreto `CODDVISOR_REPARTIDOR_SECRETO`, el mismo que tiene la función. Sin él, o con otro, la función responde 403 |
 | `x-coddvisor-ip` | La IP de la persona, leída de `cf-connecting-ip`. La función no puede leerla de ahí: en un pedido de un Worker a otro sitio de Cloudflare, `cf-connecting-ip` llega con la IP del Worker (developers.cloudflare.com/fundamentals/reference/http-headers/). La función la cree solo si el secreto vale |
 
@@ -150,7 +150,10 @@ En GitHub, `Coddvisor/coddvisor` → **Settings → Environments → base-real**
 - **Add environment variable**: `CLOUDFLARE_ACCOUNT_ID`, el identificador de la
   cuenta de Cloudflare (no es secreto). Está en Cloudflare, **Workers & Pages**,
   a la derecha («Account ID»), o en la página de inicio de la cuenta.
-- `SUPABASE_PROYECTO_REF` ya está.
+- `SUPABASE_PROYECTO_REF` ya está, y `SUPABASE_REGION` la pone la guía del
+  servicio (`herramientas/desplegar/LEEME.md`, punto 1). El flujo lee las dos:
+  con ellas le dice al Worker adónde llamar y qué región pedir, las mismas que
+  comprueba «Desplegar el servicio».
 
 Nunca en **Repository secrets**: un secreto del repositorio lo lee cualquier
 flujo, sin aprobación.
@@ -243,6 +246,13 @@ Worker, tiene que responder 403:
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' https://<ref>.supabase.co/functions/v1/servicio/api/negocios
 ```
+
+Estos dos solo prueban que el Worker llega a la función con su secreto: el 401 de
+`/api/negocios` sale antes de tocar la base. Que la función llegue a la base y a
+Supabase Auth lo prueba la comprobación del final del flujo «Desplegar el
+servicio», que entra con contraseña por `app.coddvisor.com`
+(`herramientas/desplegar/LEEME.md`, «Qué hace el flujo», paso 6). Esa es la que
+vale antes de abrir el registro.
 
 ## Después
 

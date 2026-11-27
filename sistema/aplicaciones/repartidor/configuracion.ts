@@ -101,8 +101,10 @@ export const PROTOCOLO_DE_LA_API = "https:";
 
 export const LIMITES_DEL_REPARTIDOR = {
   /**
-   * El cuerpo más largo que se reenvía, en bytes. El servicio lee hasta 4 KiB por
-   * pedido; un lote de la caja (100 sobres) cabe de sobra en esto.
+   * El cuerpo más largo que se reenvía, en bytes. Es un freno grueso, mucho más
+   * ancho que lo que lee el servicio por pedido (LIMITES_DEL_SERVICIO.largoMaximoDelPedido,
+   * en aplicaciones/servicio/configuracion.ts), para que quepa un lote de la caja
+   * (100 sobres) cuando llegue. El tope fino lo pone el servicio.
    */
   largoMaximoDelPedido: 1_048_576,
   /** Cuántos segundos se le pide a la persona que espere cuando el freno corta. Es el periodo del freno. */

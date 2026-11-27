@@ -20,8 +20,11 @@ export const CUPOS = {
   intentosFallidosPorIp: "intentos_fallidos_por_ip",
   /** Contraseñas fallidas para un mismo correo, vengan de donde vengan. */
   intentosFallidosPorCorreo: "intentos_fallidos_por_correo",
-  /** Códigos de seis dígitos fallidos con una misma sesión. */
-  codigosFallidosPorSesion: "codigos_fallidos_por_sesion",
+  /**
+   * Códigos de seis dígitos fallidos para una misma cuenta, en todas sus
+   * sesiones: renovar el pase o entrar otra vez no da intentos nuevos.
+   */
+  codigosFallidosPorCuenta: "codigos_fallidos_por_cuenta",
   /** Permisos de alta («Abra su negocio») desde una misma IP. Cuentan todos. */
   permisosDeAltaPorIp: "permisos_de_alta_por_ip",
   /** Permisos de alta de todo el sistema: el tope de altas por día. */
@@ -30,7 +33,7 @@ export const CUPOS = {
 
 export type Cupo = (typeof CUPOS)[keyof typeof CUPOS];
 
-/** Un cupo y la clave por la que se cuenta (una IP, un correo en minúsculas, la firma de un pase). */
+/** Un cupo y la clave por la que se cuenta (una IP, un correo en minúsculas, la cuenta del proveedor). */
 export interface UsoDeCupo {
   readonly cupo: Cupo;
   readonly clave: string;
