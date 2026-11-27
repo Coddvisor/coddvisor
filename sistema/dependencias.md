@@ -25,7 +25,10 @@ programas que corren solo en GitHub Actions:
 |---|---|---|---|
 | `psql` | La que trae el runner `ubuntu-24.04` (cliente de PostgreSQL 16) | Habla con la base: el migrador y la ceremonia de la llave | El runner de GitHub. No se instala nada |
 | Postgres | Imagen `postgres:17.6` | El ensayo del migrador antes de tocar la base real. Vive solo durante esa corrida | Docker Hub, como servicio del flujo |
-| CLI de Supabase | 2.108.0, con `supabase/setup-cli` v3.2.0 fijada por su huella | `supabase secrets set` en la ceremonia de la llave del portero | La acción la descarga en cada corrida de la ceremonia |
+| CLI de Supabase | 2.108.0, con `supabase/setup-cli` v3.2.0 fijada por su huella | `supabase secrets set` en la ceremonia de la llave del portero; `secrets list`, `secrets set` y `functions deploy` en el despliegue del servicio (`herramientas/desplegar/`) | La acción la descarga en cada corrida |
+| Imagen `supabase/edge-runtime` | v1.74.2, la que fija la CLI 2.108.0 | Arma la función al desplegarla (la CLI la corre con Docker) | `public.ecr.aws` (el registro público de Supabase en AWS), y si falla, `ghcr.io` y Docker Hub: es el orden por omisión de la CLI 2.108.0. La baja la CLI en la corrida |
+| Deno | 2.1.4, con `denoland/setup-deno` v2.0.5 fijada por su huella | Genera y revisa el candado de la función (`supabase/functions/servicio/deno.lock`) | La acción lo descarga en las corridas de «Candado de Deno» y «Desplegar el servicio» |
+| `actions/upload-artifact` | v7.0.2, fijada por su huella | Deja el `deno.lock` generado como artefacto de la corrida | GitHub |
 
 Fechas de publicación, comprobadas en GitHub el 26-nov-2026 para la regla de
 los siete días: `supabase/setup-cli` v3.2.0 salió el 2-nov-2026 y su etiqueta
@@ -33,6 +36,16 @@ apunta a `689adcfb80d947100a1eab127289b97d1fb07b13`, la misma huella que fija el
 flujo. La CLI 2.108.0 salió el 25-jun-2026. Las dos cumplen la regla. La CLI ya
 va en 3.4.0 (24-nov-2026, todavía dentro de los siete días); pasar a una 3.x es
 un cambio aparte, que se prueba con una ceremonia.
+
+Para el despliegue del servicio, comprobado en GitHub el 27-nov-2026:
+`denoland/setup-deno` v2.0.5 salió el 3-jul-2026 y su etiqueta apunta a
+`22d081ff2d3a40755e97629de92e3bcbfa7cf2ed`; `actions/upload-artifact` v7.0.2
+salió el 7-oct-2026 y apunta a `cf430e030ddbb5b0abf93d22962f4752f3646cd9`. Deno
+2.1.4 es de diciembre de 2024. Se usa ese Deno y no uno más nuevo porque es el
+que trae la imagen `supabase/edge-runtime:v1.74.2` (su `deno/Cargo.toml` dice
+`version = "2.1.4"`), la que la CLI 2.108.0 usa para armar la función
+(`pkg/config/templates/Dockerfile` de esa versión): un Deno más nuevo escribe un
+candado de otra versión. Al subir la CLI se revisa también este número.
 
 - **Se descartó un controlador de Postgres en Node (`pg`, `postgres` y
   parecidos)** para el migrador: `psql` ya está en el runner, aplica un archivo

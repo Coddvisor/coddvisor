@@ -167,9 +167,11 @@ pasó antes por el botón «Abra su negocio».
 - **Los tiempos de sesión del plan Pro** (time-box, inactividad): los aplica el
   servicio por rol (decisión 8), no Supabase.
 - **Desplegar la función** y cargar sus secretos (`CODDVISOR_*`, en **Edge
-  Functions → Secrets**): espera que las migraciones lleguen a la base por su
-  camino, la contraseña de `coddvisor_entrada` y las pruebas de abajo («Lo que
-  falta probar en el proyecto real»). La llave del portero no se pega a mano:
+  Functions → Secrets**). El camino ya existe, por GitHub Actions y con la
+  aprobación del fundador: `herramientas/desplegar/LEEME.md`. El primer
+  despliegue espera que las migraciones lleguen a la base por su camino, la
+  contraseña de `coddvisor_entrada` y las pruebas de abajo («Lo que falta
+  probar en el proyecto real»). La llave del portero no se pega a mano:
   la guarda la ceremonia «Llave del portero» de GitHub Actions
   (`sistema/herramientas/migrador/LEEME.md`), que puede correr antes del
   despliegue, después de la primera corrida de las migraciones.
@@ -189,17 +191,21 @@ las personas juntas**. Lo que ya hace el servicio:
   sesión de nadie;
 - un límite propio antes de llamar a Supabase: contraseñas fallidas por IP y por
   correo, códigos fallidos por IP y por sesión, permisos de alta por IP
-  (`LIMITES_DEL_SERVICIO`). La IP es la del encabezado `cf-connecting-ip`, que
-  pone el Worker de Cloudflare.
+  (`LIMITES_DEL_SERVICIO`). La IP es la del encabezado `x-coddvisor-ip`, que
+  pone el Worker de Cloudflare, y se cree solo si el pedido trae el secreto del
+  Worker;
+- solo atiende al Worker: la función de Supabase se puede llamar directo, pero
+  responde 403 a todo pedido sin el secreto del Worker
+  (`x-coddvisor-repartidor`, `CODDVISOR_REPARTIDOR_SECRETO`), y solo con él cree
+  la IP (`aplicaciones/servicio/rutas/puerta.ts`).
 
 Lo que falta, y no se resuelve sin el fundador:
 
 - Ese límite vive en la memoria de cada copia de la función: no es compartido.
   Hace falta uno compartido (una regla de límite en el Worker de Cloudflare o
   una tabla en la base) antes de abrir al público.
-- La función de Supabase se puede llamar directo, sin pasar por el Worker, con
-  un `cf-connecting-ip` inventado. Falta que la función acepte solo pedidos del
-  Worker (un secreto compartido en un encabezado).
+- El Worker de Cloudflare todavía no existe. Hasta que ponga los dos
+  encabezados, la función niega todo.
 - Para que Supabase cuente por la IP de cada persona hay que mandarle esa IP
   (`Sb-Forwarded-For`), y eso exige la llave secreta, que el servicio no puede
   tener (decisión 10). Mientras no se resuelva, el límite por IP de Supabase no

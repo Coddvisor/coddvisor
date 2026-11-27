@@ -1,0 +1,122 @@
+# Despliega la función «servicio» de Supabase (la que atiende /api de
+# app.coddvisor.com) en el proyecto de la base real, y carga en sus secretos las
+# variables que no son secretas. Nadie despliega desde su computadora
+# (donde-corre-el-sistema.md, decisión 8).
+#
+# Solo a mano (pestaña Actions), solo desde main y en el entorno protegido
+# «base-real», que exige la aprobación del fundador. Va en la misma fila que las
+# migraciones y la llave del portero: una corrida a la vez sobre la base real.
+#
+# Dos pasos:
+#   1. «verificar», sin secretos: npm run verificar, y que el candado de Deno
+#      (deno.lock) exista y coincida con deno.json.
+#   2. «desplegar», en el entorno «base-real»: revisa las variables, mira que los
+#      secretos de sus ceremonias ya estén en Supabase, guarda las variables,
+#      despliega y comprueba que la función niega lo que no viene del Worker y
+#      que corre en la región de la base.
+#
+# La guía para el fundador está en sistema/herramientas/desplegar/LEEME.md.
+name: Desplegar el servicio
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# La misma fila que migraciones.yml y llave-del-portero.yml. Con «queue: max» las
+# que llegan esperan (hasta 100) y ninguna cancela a otra que espera su aprobación.
+concurrency:
+  group: base-real
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  verificar:
+    name: Verificar y revisar el candado de Deno
+    # A mano también se puede elegir otra rama: aquí no pasa.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: sistema
+    steps:
+      # Las acciones van fijadas a una versión exacta por su huella.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: sistema/.nvmrc
+          cache: npm
+          cache-dependency-path: sistema/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run verificar
+      # El Deno de la imagen con que la CLI arma la función (edge-runtime v1.74.2 trae Deno 2.1.4).
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: 2.1.4
+      - name: El candado de Deno existe y coincide con deno.json
+        working-directory: sistema/supabase/functions/servicio
+        env:
+          # Deno no lee el package.json de sistema/: la función usa solo deno.json.
+          DENO_NO_PACKAGE_JSON: '1'
+        run: |
+          if [ ! -f deno.lock ]; then
+            echo "::error::Falta sistema/supabase/functions/servicio/deno.lock. Se genera con el flujo «Candado de Deno» y entra por una solicitud de revisión (herramientas/desplegar/LEEME.md)."
+            exit 1
+          fi
+          deno install --frozen --entrypoint index.ts
+
+  desplegar:
+    name: Desplegar la función
+    needs: verificar
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    # El entorno protegido: exige la aprobación del fundador y guarda el token.
+    environment: base-real
+    defaults:
+      run:
+        working-directory: sistema
+    env:
+      SUPABASE_PROYECTO_REF: ${{ vars.SUPABASE_PROYECTO_REF }}
+      SUPABASE_REGION: ${{ vars.SUPABASE_REGION }}
+      CODDVISOR_ORIGEN: ${{ vars.CODDVISOR_ORIGEN }}
+      CODDVISOR_PASE_EMISOR: ${{ vars.CODDVISOR_PASE_EMISOR }}
+      CODDVISOR_PASE_AUDIENCIA: ${{ vars.CODDVISOR_PASE_AUDIENCIA }}
+      CODDVISOR_PASE_LLAVES: ${{ vars.CODDVISOR_PASE_LLAVES }}
+      CODDVISOR_CUENTAS_DIRECCION: ${{ vars.CODDVISOR_CUENTAS_DIRECCION }}
+      CODDVISOR_CUENTAS_CLAVE_PUBLICA: ${{ vars.CODDVISOR_CUENTAS_CLAVE_PUBLICA }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: sistema/.nvmrc
+      # La CLI de Supabase, en la misma versión exacta que la ceremonia de la llave.
+      - uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13 # v3.2.0
+        with:
+          version: 2.108.0
+      # Antes de tocar nada: si falta una variable, la corrida termina aquí.
+      - name: Revisar las variables del entorno
+        run: node herramientas/desplegar/desplegar.mjs revisar
+      - name: Revisar que los secretos de las ceremonias ya estén en Supabase
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node herramientas/desplegar/desplegar.mjs secretos
+      - name: Guardar las variables en los secretos de la función
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node herramientas/desplegar/desplegar.mjs guardar
+      # Sin revisión del pase de Supabase en el encabezado, como pide config.toml:
+      # las rutas revisan la cookie. La CLI arma la función con Docker, que trae el runner.
+      - name: Desplegar la función servicio
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy servicio --project-ref "$SUPABASE_PROYECTO_REF" --no-verify-jwt --use-docker --yes
+      - name: Comprobar la puerta y la región
+        run: node herramientas/desplegar/desplegar.mjs comprobar

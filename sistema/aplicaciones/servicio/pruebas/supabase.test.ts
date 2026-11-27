@@ -21,6 +21,7 @@ import { COOKIES } from "../rutas/http.ts";
 import { crearManejador, PAGINAS, RUTAS, type Manejador } from "../rutas/rutas.ts";
 import { crearBase, ESPERADO, EMISOR, fundar, llaveDelPortero, registrar, uuid7, type Base } from "../../../modulos/identidad/pruebas/apoyo.ts";
 import { repartidorDePrueba } from "./repartidor-de-prueba.ts";
+import { ENCABEZADO_DE_LA_IP, puertaSinWorker } from "./puerta-sin-worker.ts";
 import { crearSupabaseFalso, type CuentaDelFalso, type SupabaseFalso } from "./supabase-falso.ts";
 
 const ORIGEN = "https://app.ejemplo.test";
@@ -82,7 +83,7 @@ before(async () => {
   };
   piezasBase = piezas;
   const proveedor = crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: falso.pedir });
-  manejador = crearManejador({ piezas, proveedor, origen: ORIGEN });
+  manejador = crearManejador({ piezas, proveedor, origen: ORIGEN, puerta: puertaSinWorker });
 });
 after(async () => {
   await db.close();
@@ -114,7 +115,7 @@ function peticion(ruta: string, cuerpo?: unknown, jarro?: Jarro): Request {
 
 async function pedir(ruta: string, { metodo = "GET", cuerpo, jarro, ip }: { metodo?: string; cuerpo?: unknown; jarro?: Jarro; ip?: string } = {}): Promise<Response> {
   const h = new Headers();
-  if (ip !== undefined) h.set("cf-connecting-ip", ip);
+  if (ip !== undefined) h.set(ENCABEZADO_DE_LA_IP, ip);
   if (metodo !== "GET") {
     h.set("origin", ORIGEN);
     h.set("content-type", "application/json");
@@ -246,7 +247,7 @@ describe("el segundo paso con la app de códigos", () => {
   it("volver a pedir la inscripción (recargar la pantalla) da otro QR, no un error", async () => {
     const persona = cuenta("recarga@ejemplo.test", "Recarga de Ejemplo");
     const otro = await crearSupabaseFalsoCon([persona]);
-    const m = crearManejador({ piezas: piezasDe(otro), proveedor: crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: otro.pedir }), origen: ORIGEN });
+    const m = crearManejador({ piezas: piezasDe(otro), proveedor: crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: otro.pedir }), origen: ORIGEN, puerta: puertaSinWorker });
     const entrada = await m(peticion(RUTAS.entrarConCorreo, { correo: persona.correo, contrasena: CONTRASENA }));
     const jarro = guardar(new Map(), entrada);
     const primera = await m(peticion(RUTAS.inscribirSegundoPaso, undefined, jarro));
@@ -270,7 +271,7 @@ describe("el segundo paso con la app de códigos", () => {
       emisor: EMISOR, audiencia: ESPERADO.audiencia, clavePublica: CLAVE_PUBLICA, codigoDeLaApp: CODIGO_DE_LA_APP,
       vueltasPermitidas: [ORIGEN], duracionDelPaseS: 3600, reloj: () => ahora, cuentas: [persona], antesDeCrearUnaCuenta: ganchoDeLaBase,
     });
-    const m = crearManejador({ piezas: piezasDe(otro), proveedor: crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: otro.pedir }), origen: ORIGEN });
+    const m = crearManejador({ piezas: piezasDe(otro), proveedor: crearProveedorDeSupabase({ direccion: EMISOR, clavePublica: CLAVE_PUBLICA, pedir: otro.pedir }), origen: ORIGEN, puerta: puertaSinWorker });
     const jarro = guardar(new Map(), await m(peticion(RUTAS.entrarConCorreo, { correo: persona.correo, contrasena: CONTRASENA })));
     const TOPE_DE_SUPABASE = 10;
     for (let i = 0; i < TOPE_DE_SUPABASE; i += 1) assert.equal((await m(peticion(RUTAS.inscribirSegundoPaso, undefined, jarro))).status, 200);

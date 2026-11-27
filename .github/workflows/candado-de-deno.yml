@@ -1,0 +1,69 @@
+# Genera el candado de Deno (deno.lock) de la función «servicio», con la huella de
+# cada librería que trae por npm: (hoy, postgres.js). En esta computadora no hay
+# Deno, así que se genera aquí, con el mismo Deno de la imagen con que la CLI de
+# Supabase arma la función, y se deja como artefacto de la corrida.
+#
+# No usa secretos ni el entorno «base-real»: no toca nada fuera de la corrida.
+#
+# - A mano (pestaña Actions, cualquier rama): deja el artefacto «deno-lock».
+# - En cada solicitud de revisión que toque deno.json o deno.lock: lo vuelve a
+#   generar y falla si el que trae la solicitud no es igual.
+#
+# Cómo entra al repositorio, por solicitud de revisión: sistema/herramientas/desplegar/LEEME.md.
+name: Candado de Deno
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'sistema/supabase/functions/servicio/deno.json'
+      - 'sistema/supabase/functions/servicio/deno.lock'
+      - '.github/workflows/candado-de-deno.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  candado:
+    name: Generar el candado de Deno
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: sistema/supabase/functions/servicio
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # El Deno de la imagen con que la CLI 2.108.0 arma la función (edge-runtime v1.74.2 trae Deno 2.1.4).
+      # Un Deno más nuevo escribe un candado de otra versión, que esa imagen no lee.
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: 2.1.4
+      - name: Generar deno.lock desde cero
+        env:
+          # Deno no lee el package.json de sistema/: la función usa solo deno.json.
+          DENO_NO_PACKAGE_JSON: '1'
+        run: |
+          if [ -f deno.lock ]; then cp deno.lock "$RUNNER_TEMP/deno.lock.del-repositorio"; fi
+          rm -f deno.lock
+          deno install --entrypoint index.ts
+          echo "El candado nuevo:"
+          cat deno.lock
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: deno-lock
+          path: sistema/supabase/functions/servicio/deno.lock
+          if-no-files-found: error
+          retention-days: 7
+      - name: Comparar con el del repositorio
+        run: |
+          if [ ! -f "$RUNNER_TEMP/deno.lock.del-repositorio" ]; then
+            echo "::warning::El repositorio todavía no tiene deno.lock. Descargue el artefacto «deno-lock» de esta corrida y súmelo por una solicitud de revisión (herramientas/desplegar/LEEME.md)."
+            exit 0
+          fi
+          if ! diff -u "$RUNNER_TEMP/deno.lock.del-repositorio" deno.lock; then
+            echo "::error::El deno.lock del repositorio no es el que genera deno.json. Reemplácelo por el artefacto «deno-lock» de esta corrida."
+            exit 1
+          fi
+          echo "El deno.lock del repositorio coincide."

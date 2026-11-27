@@ -97,6 +97,8 @@ export const LIMITES_DEL_SERVICIO = {
   vidaDeUnaConexionS: 1800,
   /** Al cerrar todas las conexiones de una copia, cuánto se espera a los pedidos en curso, en segundos. */
   esperaAlDescartarConexionesS: 5,
+  /** La IP más larga que se lee del encabezado del Worker: el largo de una IPv6 escrita entera. */
+  largoMaximoDeUnaIp: 45,
 } as const;
 
 /** El nombre de cada variable de entorno que lee el servicio. */
@@ -111,6 +113,10 @@ export const VARIABLES = {
   clavePublicaDeLasCuentas: "CODDVISOR_CUENTAS_CLAVE_PUBLICA",
   direccionDeLaBase: "CODDVISOR_BASE_DIRECCION",
   certificadoDeLaBase: "CODDVISOR_BASE_CERTIFICADO",
+  // El secreto que comparte con el Worker de Cloudflare que está delante (rutas/puerta.ts).
+  // El nombre dice «repartidor» porque así se llama ese Worker en la propuesta; no es
+  // el repartidor de conexiones a la base.
+  secretoDelWorker: "CODDVISOR_REPARTIDOR_SECRETO",
 } as const;
 
 export interface Configuracion {
@@ -135,6 +141,13 @@ export interface Configuracion {
     readonly direccion: string;
     readonly clavePublica: string;
   };
+  /**
+   * El Worker de Cloudflare que reenvía los pedidos de app.coddvisor.com: el
+   * secreto que pone en cada uno (rutas/puerta.ts). Sin él, la función no atiende.
+   */
+  readonly worker: {
+    readonly secreto: string;
+  };
 }
 
 export type Entorno = Readonly<Record<string, string | undefined>>;
@@ -152,6 +165,12 @@ const CLAVE_DE_SERVICIO = /^sb_secret_/;
 const ROL_DE_SERVICIO = "service_role";
 const PARTES_DE_UN_JWT = 3;
 const UTF8 = new TextDecoder("utf-8", { fatal: true });
+// El secreto del Worker es parte del contrato con él: solo letras de base64, base64url o
+// hex, que llegan iguales por todos los caminos (un archivo --env-file de la CLI de
+// Supabase cambia $, comillas y barras invertidas; Wrangler no), y largo como para no
+// adivinarlo: se genera con 32 bytes al azar (43 o 44 letras de base64, 64 de hex).
+// El tope evita leer un encabezado enorme.
+const SECRETO_DEL_WORKER = /^[A-Za-z0-9+/=_-]{32,1024}$/;
 
 /** Si la clave es un JWT de Supabase con el rol de servicio (la llave antigua «service_role»). */
 function esJwtDeServicio(clave: string): boolean {
@@ -193,6 +212,7 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
   const secreto = valor(VARIABLES.secretoDeLaLlaveDelPortero);
   const direccionDeLasCuentas = valor(VARIABLES.direccionDeLasCuentas);
   const clavePublica = valor(VARIABLES.clavePublicaDeLasCuentas);
+  const secretoDelWorker = valor(VARIABLES.secretoDelWorker);
 
   const urlDelOrigen = origen === "" ? null : direccionSegura(origen);
   if (origen !== "" && (urlDelOrigen === null || urlDelOrigen.origin !== origen)) {
@@ -225,6 +245,9 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
   if (secreto !== "" && (bytes === null || bytes.length < BYTES_MINIMOS_DE_LA_LLAVE)) {
     faltas.push(`${VARIABLES.secretoDeLaLlaveDelPortero} debe ser base64 de al menos ${String(BYTES_MINIMOS_DE_LA_LLAVE)} bytes.`);
   }
+  if (secretoDelWorker !== "" && !SECRETO_DEL_WORKER.test(secretoDelWorker)) {
+    faltas.push(`${VARIABLES.secretoDelWorker} debe tener de 32 a 1024 letras de base64, base64url o hex (32 bytes al azar).`);
+  }
   if (LIMITES_DEL_SERVICIO.negociosPorPagina > LIMITES_DE_IDENTIDAD.maximoDeNegociosPorPagina) {
     faltas.push("La página de negocios del servicio es más grande que el tope de la puerta.");
   }
@@ -235,6 +258,7 @@ export function leerConfiguracion(entorno: Entorno): Result<Configuracion, reado
     pase: { emisor, audiencia, direccionDeLasLlaves: llaves },
     llaveDelPortero: { numero: Number.parseInt(numero, 10), secreto: bytes },
     cuentas: { direccion: direccionDeLasCuentas, clavePublica },
+    worker: { secreto: secretoDelWorker },
   });
 }
 

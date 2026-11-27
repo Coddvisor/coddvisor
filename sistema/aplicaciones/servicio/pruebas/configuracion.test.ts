@@ -12,6 +12,7 @@ const jwtDePrueba = (cuerpo: Readonly<Record<string, unknown>>): string =>
   [{ alg: "HS256", typ: "JWT" }, cuerpo].map((p) => Buffer.from(JSON.stringify(p)).toString("base64url")).join(".") + ".firma-de-prueba";
 
 const secreto = randomBytes(32).toString("base64");
+const secretoDelWorker = randomBytes(32).toString("base64url");
 const bueno: Entorno = {
   [VARIABLES.origenDelPanel]: "https://app.ejemplo.test",
   [VARIABLES.emisorDelPase]: "https://proyecto-de-prueba.supabase.test/auth/v1",
@@ -21,6 +22,7 @@ const bueno: Entorno = {
   [VARIABLES.secretoDeLaLlaveDelPortero]: secreto,
   [VARIABLES.direccionDeLasCuentas]: "https://proyecto-de-prueba.supabase.test/auth/v1",
   [VARIABLES.clavePublicaDeLasCuentas]: "sb_publishable_clave-de-prueba-0123456789",
+  [VARIABLES.secretoDelWorker]: secretoDelWorker,
 };
 
 describe("la configuración del servicio", () => {
@@ -32,6 +34,7 @@ describe("la configuración del servicio", () => {
     assert.equal(r.value.origen, "https://app.ejemplo.test");
     assert.deepEqual(Buffer.from(r.value.llaveDelPortero.secreto), Buffer.from(secreto, "base64"));
     assert.deepEqual(r.value.cuentas, { direccion: "https://proyecto-de-prueba.supabase.test/auth/v1", clavePublica: "sb_publishable_clave-de-prueba-0123456789" });
+    assert.equal(r.value.worker.secreto, secretoDelWorker);
   });
   it("dice cada variable que falta", () => {
     const r = leerConfiguracion({});
@@ -61,8 +64,21 @@ describe("la configuración del servicio", () => {
       { [VARIABLES.clavePublicaDeLasCuentas]: "sb_secret_esto-no-va-nunca-aqui-0123" },
       // La llave antigua «service_role» es un JWT: se reconoce por su rol.
       { [VARIABLES.clavePublicaDeLasCuentas]: jwtDePrueba({ iss: "supabase", role: "service_role" }) },
+      // El secreto del Worker: largo como para no adivinarlo, sin espacios, sin letras invisibles.
+      { [VARIABLES.secretoDelWorker]: "corto-0123456789" },
+      { [VARIABLES.secretoDelWorker]: `${"a".repeat(20)} ${"b".repeat(20)}` },
+      { [VARIABLES.secretoDelWorker]: `${"a".repeat(40)}\u0000` },
+      { [VARIABLES.secretoDelWorker]: "ñ".repeat(40) },
+      { [VARIABLES.secretoDelWorker]: "a".repeat(1025) },
+      // Lo que un archivo --env-file cambiaría en el camino: el Worker y Supabase tendrían otro valor.
+      ...["$", '"', "'", "\\", "`", "#", "!", "%"].map((letra) => ({ [VARIABLES.secretoDelWorker]: `${"a".repeat(40)}${letra}` })),
     ]) {
       assert.equal(leerConfiguracion({ ...bueno, ...cambio }).ok, false, JSON.stringify(cambio));
+    }
+  });
+  it("acepta el secreto del Worker en base64, base64url o hex", () => {
+    for (const forma of ["base64", "base64url", "hex"] as const) {
+      assert.equal(leerConfiguracion({ ...bueno, [VARIABLES.secretoDelWorker]: randomBytes(32).toString(forma) }).ok, true, forma);
     }
   });
   it("acepta la clave «anon» antigua, que también es un JWT", () => {
@@ -73,6 +89,10 @@ describe("la configuración del servicio", () => {
     const r = leerConfiguracion({ ...bueno, [VARIABLES.secretoDeLaLlaveDelPortero]: corto });
     assert.ok(!r.ok);
     assert.ok(!r.error.join(" ").includes(corto));
+    const delWorker = `${"x".repeat(20)} secreto-que-no-sirve`;
+    const w = leerConfiguracion({ ...bueno, [VARIABLES.secretoDelWorker]: delWorker });
+    assert.ok(!w.ok);
+    assert.ok(!w.error.join(" ").includes(delWorker));
   });
   it("la página del servicio cabe en el tope de la puerta", () => {
     assert.ok(LIMITES_DEL_SERVICIO.negociosPorPagina <= LIMITES_DE_IDENTIDAD.maximoDeNegociosPorPagina);
