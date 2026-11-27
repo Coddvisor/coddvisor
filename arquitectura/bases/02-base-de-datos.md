@@ -529,4 +529,7 @@ Ninguna migración se aplicó a una base real. El camino ya existe
 (`sistema/herramientas/migrador/`: GitHub Actions al unir a `main`, en el entorno
 protegido `base-real`, con la aprobación del fundador), pero antes de la primera
 corrida hay que cerrar la región y el inventario de datos personales
-(decisiones D27 y D30).
+(decisiones D27 y D30). La región ya está elegida; el inventario y la lista de
+quién más trata los datos están en
+[../propuestas/datos-personales.md](../propuestas/datos-personales.md), para
+que el fundador los apruebe.
