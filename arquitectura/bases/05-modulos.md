@@ -96,6 +96,8 @@ sistema/
                             (textos/es-PE.json). Los colores siguen en marca/colores.css.
   herramientas/
     probar-entrar/          El modo de prueba local de entrar. Solo para la computadora.
+    migrador/               El camino de las migraciones a la base real y la ceremonia de
+                            la llave del portero, que corre GitHub Actions. Su guía: LEEME.md.
   supabase/                 Lo que pide Supabase para desplegar: config.toml y el arranque
     functions/servicio/     del servicio como función (index.ts, en Deno), que solo entra
                             por la puerta del servicio. Su guía: supabase/LEEME.md.
