@@ -8,7 +8,8 @@
 export { arrancarElServicio, type OpcionesDelArranque } from "./arranque.ts";
 export { crearProveedorDeSupabase, type OpcionesDeSupabase } from "./proveedor/supabase.ts";
 export { prestar, type ConexionDeLaBase, type Repartidor } from "./base/conexion.ts";
-export { exigirConfiguracion, leerConfiguracion, LIMITES_DEL_SERVICIO, VARIABLES, type Configuracion, type Entorno } from "./configuracion.ts";
+export { crearRepartidorDePostgres, type OpcionesDelRepartidor } from "./base/postgres.ts";
+export { exigirConfiguracion, exigirLaBase, leerConfiguracion, leerLaBase, LIMITES_DEL_SERVICIO, ROL_DE_ENTRADA, VARIABLES, type CifradoDeLaBase, type Configuracion, type DireccionDeLaBase, type Entorno } from "./configuracion.ts";
 export { abrirElNegocio, opcionesParaAbrir, revisarElRuc, type OpcionesParaAbrir, type PedidoDeAbrir, type RechazoAlAbrirElNegocio } from "./abrir.ts";
 export { armarPiezas, negociosDeLaPersona, paquetesPorPais, trabajarEnNegocio, type NegociosDeLaPersona, type Piezas, type RechazoAlEntrar } from "./entrar.ts";
 export { crearManejador, PAGINAS, RUTAS, type CodigoDeError, type InicioDelNegocio, type Manejador, type OpcionesDeLasRutas } from "./rutas/rutas.ts";

@@ -137,13 +137,36 @@ reemplazar, y que se vacía sola al terminar la transacción.
   sentencia preparada sobreviven al fin de la transacción, y pueden llevar
   datos de un negocio a la transacción siguiente, que quizá es de otro negocio,
   en la misma conexión. Por eso:
-  - el servicio, o el administrador de conexiones, ejecuta `DISCARD ALL` cada
-    vez que devuelve una conexión, antes de que la use otro pedido;
+  - el servicio limpia la sesión al final de cada pedido, **dentro de su
+    transacción**: `close all`, `reset all`, `deallocate all`, `unlisten *`,
+    `pg_advisory_unlock_all()` y `discard sequences`, las partes de
+    `DISCARD ALL` que se pueden dar ahí. Detrás del repartidor de Supabase en
+    modo transacción (Supavisor, puerto 6543) la sesión de Postgres no es de la
+    conexión del servicio: apenas termina la transacción, el repartidor se la
+    presta a otra, quizá de otra copia del servicio. `DISCARD ALL` no puede ir
+    dentro de una transacción, y fuera de ella cae en cualquier sesión. Si el
+    pedido falló, primero se vuelve a un punto de guardado del comienzo, se
+    limpia y recién se deshace, porque una sentencia preparada o un candado
+    consultivo no se deshacen con la transacción. Cuando la conexión es una
+    sesión solo suya (directa o en modo sesión), además ejecuta `DISCARD ALL`
+    al devolverla. Una conexión nueva por pedido no reemplaza esto: detrás del
+    modo transacción, cerrar la conexión no limpia la sesión del servidor. Por
+    lo mismo, si la limpieza falla, el pedido no se confirma y la conexión se
+    retira, pero eso protege solo al servicio: la sesión del servidor que usaba
+    puede volver al repartidor con lo que no se limpió. Qué hace Supavisor en
+    ese caso está entre lo que falta probar (`sistema/supabase/LEEME.md`);
   - el servicio manda las firmas como parámetros de la consulta, nunca dentro
     del texto: otra conexión con el mismo rol ve el texto de cada consulta en
-    `pg_stat_activity`, pero no sus parámetros.
+    `pg_stat_activity`, pero no sus parámetros. Y cada orden va sola, por el
+    protocolo extendido: dos órdenes en un mismo texto se rechazan. Por cada
+    conexión sale una orden a la vez, sin encadenarlas, como pide la
+    documentación de Supabase para el modo transacción.
 
-  La base no lo puede exigir: es parte del contrato del servicio.
+  La base no lo puede exigir: es parte del contrato del servicio. Lo cumplen
+  `aplicaciones/servicio/base/conexion.ts` y su repartidor de Postgres
+  (`base/postgres.ts`), el único archivo que importa el controlador (SV-02).
+  (Cambio del 26-nov-2026, la función con base: antes decía solo `DISCARD ALL`
+  al devolver la conexión.)
 
 ## Las puertas de identidad
 
@@ -483,7 +506,7 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 | Revocar todos los pases de una cuenta (cambiar la contraseña, suspender a alguien) con una puerta que fije `control.cuenta.pases_revocados_en`. Cerrar una sesión al salir ya existe (`control.sesion_cerrada`, tramo 3, parte 2) | Recuperar la contraseña y suspender membresías (decisiones 5 y 9) |
 | Archivar las filas de `control.sesion_cerrada` cuyo pase ya venció: solo importan una hora, y la tabla crece con cada salida | Primer trabajo de fondo (decisión 7) |
 | Copiar el índice de accesos (su estado y la copia de los roles) con un trabajo que se puede repetir, en vez de en la misma transacción, y el trabajo que revisa que coincida con lo de adentro | Enrutador de celdas, cuando haya más de una |
-| Que el estado de la sesión no cruce de un negocio a otro: `DISCARD ALL` al devolver cada conexión (cursores `WITH HOLD`, ajustes de sesión, sentencias preparadas) y las firmas siempre como parámetros, nunca en el texto de la consulta, que otra conexión del mismo rol ve en `pg_stat_activity`. La regla de un solo negocio por transacción cubre el contexto del portero, no esto. Desde el tramo 3 (parte 1) lo cumple `aplicaciones/servicio/base/conexion.ts`, con su prueba contra la base en memoria, y la guardia revisa que el texto de toda consulta sea un literal (SV-01). Falta el controlador de Postgres de verdad y que solo esa conexión lo importe (SV-02) | Tramo 3 de la identidad, parte 2 |
+| Confirmar en el proyecto real lo que la base en memoria no puede probar del controlador de Postgres: el portero y la limpieza detrás de Supavisor en modo transacción (la tabla temporal del contexto en una sesión que comparten varias conexiones), el cifrado con `sslmode=verify-full`, la contraseña de `coddvisor_entrada` y el usuario `coddvisor_entrada.<proyecto>`. La lista está en `sistema/supabase/LEEME.md`. El controlador ya existe (`aplicaciones/servicio/base/postgres.ts`, postgres.js), solo él lo importa (SV-02) y lo prueban `postgres.test.ts` y la prueba de la función contra la base en memoria detrás de un puerto que se comporta como el modo transacción | Primera base real (decisiones D27 y D30) y la contraseña de `coddvisor_entrada`, que pone el fundador |
 | El enrutador de celdas para más de una celda, los intentos fallidos y los códigos de respaldo en el esquema `control`. La lista de en qué celda vive cada negocio ya existe (`control.negocio`, tramo 3, parte 1) | Propuesta de identidad, decisiones 13 y 14 |
 | Auditoría por disparador y su partición por fecha | Primer módulo de negocio |
 | Una clase de tabla para los saldos: los lee la aplicación y solo los escriben las funciones de los libros | Primer libro (tesorería o inventario) |

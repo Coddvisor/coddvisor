@@ -98,7 +98,7 @@ dentro de Node (con PGlite) y desaparece al terminar.
 | `paquetes/pe/`                            | El paquete del Perú: la revisión del RUC (11 números, su inicio y su dígito verificador). Los módulos y las aplicaciones no lo importan: lo reciben como un `PaqueteDePais` del núcleo |
 | `modulos/configuracion/`                  | Lo que se puede elegir al abrir un negocio: los rubros y los regímenes de un país, leídos de sus catálogos |
 | `modulos/identidad/`                      | Verificar el pase de Supabase (ES256) y firmar como el servicio, con WebCrypto, que traen igual Node y Deno; llamar a las puertas de identidad para entrar y leer el negocio abierto. Su puerta es `publico.ts` |
-| `aplicaciones/servicio/`                  | El programa del servidor: la conexión con la base (transacción por pedido y `DISCARD ALL` al devolverla), la configuración del entorno, cómo entra una persona y sus rutas bajo `/api` (`rutas/`), escritas con Request y Response para correr igual en Node y en una función de Supabase |
+| `aplicaciones/servicio/`                  | El programa del servidor: la conexión con la base (transacción por pedido, con la sesión limpia antes de terminarla, y el controlador de Postgres en `base/postgres.ts`), la configuración del entorno, cómo entra una persona y sus rutas bajo `/api` (`rutas/`), escritas con Request y Response para correr igual en Node y en una función de Supabase |
 | `aplicaciones/oficina/`                   | Las páginas del sistema en el navegador. Hoy: entrar, el segundo paso, elegir negocio, abrir un negocio y un inicio provisional. HTML, CSS y poco JavaScript, sin construir |
 | `diseno/`                                 | Lo que comparten las pantallas: las medidas (`medidas.css`) y el catálogo de textos (`textos/es-PE.json`). Los colores siguen en `marca/colores.css` |
 | `aplicaciones/servicio/proveedor/`        | El proveedor de cuentas real: Supabase Auth por su API HTTP, con `fetch` y sin librerías (contraseña, Google con PKCE, el segundo paso y su inscripción, renovar y salir). Se prueba contra un Supabase Auth falso (`pruebas/supabase-falso.ts`) |
@@ -169,8 +169,11 @@ la caja es un borrador: ninguna caja real selló nada.
 El proveedor de cuentas real ya existe (`aplicaciones/servicio/proveedor/supabase.ts`)
 y el arranque como función de Supabase también (`supabase/functions/servicio/`),
 pero ninguno habló todavía con el Supabase de verdad: se prueban contra un
-Supabase Auth falso, en memoria, que responde como GoTrue. La función no se
-despliega hasta que exista el controlador de Postgres (SV-02). La barrera de
+Supabase Auth falso, en memoria, que responde como GoTrue. La función ya habla
+con la base por el controlador de Postgres (`aplicaciones/servicio/base/postgres.ts`,
+regla SV-02), probado contra la base en memoria detrás de un puerto que imita el
+repartidor de Supabase en modo transacción; lo que falta probar en el proyecto
+real está en `supabase/LEEME.md`, y no se despliega todavía. La barrera de
 altas (decisión 8 bis) es el gancho `ganchos.antes_de_crear_cuenta`: deja crear
 una cuenta solo con Google y solo si su correo pasó antes por «Abra su negocio»
 (`POST /api/abrir/permiso`). Falta la pantalla que pide ese correo antes de ir a

@@ -1,6 +1,7 @@
 // Un repartidor sobre la base en memoria: una sola conexión, que se presta de a
-// una. Es el controlador de la parte 1 del tramo 3; el de Postgres llega en la
-// parte 2.
+// una. Lo usan las pruebas del servicio y el modo de prueba local. El de
+// Postgres de verdad (base/postgres.ts) se prueba en postgres.test.ts, con la
+// misma base en memoria detrás de un puerto (servidor-de-la-base.ts).
 //
 // Lo que no es igual que en producción, y se acepta aquí: la base en memoria
 // entra como superusuario, así que cada préstamo empieza con
@@ -22,7 +23,12 @@ export interface RepartidorDePrueba extends Repartidor {
  * `enFila`: si la conexión está prestada, el siguiente espera su turno en vez de
  * fallar. Es lo que usa el modo de prueba local, donde llegan pedidos a la vez.
  */
-export function repartidorDePrueba(db: Base, { fallarAlLimpiar = false, enFila = false }: { fallarAlLimpiar?: boolean; enFila?: boolean } = {}): RepartidorDePrueba {
+/**
+ * `fallarEn`: la orden con que la conexión «se corta» (lanza sin llegar a la base).
+ * `sesionPropia`: lo que declara el repartidor; con false se prueba la limpieza
+ * sola, sin DISCARD ALL, como detrás del repartidor en modo transacción.
+ */
+export function repartidorDePrueba(db: Base, { fallarEn = null, enFila = false, sesionPropia = true }: { fallarEn?: string | null; enFila?: boolean; sesionPropia?: boolean } = {}): RepartidorDePrueba {
   let prestada = false;
   const turnos: Array<() => void> = [];
   const devoluciones: boolean[] = [];
@@ -30,13 +36,14 @@ export function repartidorDePrueba(db: Base, { fallarAlLimpiar = false, enFila =
   const conexion: ConexionDeLaBase = {
     consultar: async (texto, parametros) => {
       ordenes.push(texto);
-      if (fallarAlLimpiar && texto === "discard all") throw new Error("se cortó la conexión");
+      if (texto === fallarEn) throw new Error("se cortó la conexión");
       return (await db.query(texto, [...parametros])).rows;
     },
   };
   return {
     devoluciones,
     ordenes,
+    sesionPropia,
     async sacar() {
       if (prestada && enFila) {
         await new Promise<void>((turno) => {

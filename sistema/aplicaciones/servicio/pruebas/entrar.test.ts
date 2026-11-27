@@ -5,7 +5,7 @@
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import { campoTexto, campoUuid, campoUuidOpcional, type Firmador } from "#modulos/identidad";
-import { prestar } from "../base/conexion.ts";
+import { ABRIR_LA_TRANSACCION, LIMPIEZA_DE_LA_SESION, prestar, PUNTO_DEL_PEDIDO } from "../base/conexion.ts";
 import { negociosDeLaPersona, trabajarEnNegocio, type Piezas } from "../entrar.ts";
 import {
   ahoraS, crearBase, cuerpoDePase, ESPERADO, firmarConHs256, firmarPase, fundar, llaveDelPortero, llaveroDe, nuevaCuenta,
@@ -154,8 +154,9 @@ describe("las cuentas y los negocios que no entran", () => {
   it("un dueño con un pase aal1: faltan los dos pasos, y se deshace todo", async () => {
     const antes = repartidor.ordenes.length;
     assert.deepEqual(await trabajarEnNegocio(piezas, pase(ana, { aal: "aal1" }), bodega.tenant, async () => await Promise.resolve(null)), { ok: false, error: "faltan_dos_pasos" });
-    const ordenes = repartidor.ordenes.slice(antes).filter((o) => !o.startsWith("select"));
-    assert.deepEqual(ordenes, ["begin isolation level read committed", "rollback", "discard all"]);
+    const ordenes = repartidor.ordenes.slice(antes).filter((o) => !o.startsWith("select") || o === "select pg_advisory_unlock_all()");
+    // Se vuelve al punto del comienzo, se limpia la sesión y recién se deshace: nada se confirma.
+    assert.deepEqual(ordenes, [ABRIR_LA_TRANSACCION, PUNTO_DEL_PEDIDO, "rollback to savepoint antes_del_pedido", ...LIMPIEZA_DE_LA_SESION, "rollback", "discard all"]);
     assert.equal(repartidor.devoluciones.at(-1), true);
   });
 

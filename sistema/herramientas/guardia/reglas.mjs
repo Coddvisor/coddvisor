@@ -14,7 +14,8 @@
 //   Promise.all cuando una falla: dentro de una transacción se usa una a la vez;
 // - una consulta escrita como literal que arma su propio texto en la base (format y
 //   execute dentro de una función): eso lo mira quien revisa la migración;
-// - un texto de consulta que llega por la conexión del servicio, la única que lo recibe como dato;
+// - un texto de consulta que llega por la conexión del servicio o por su repartidor de Postgres,
+//   los únicos que lo reciben como dato (para pasárselo al controlador);
 // - una pieza de Node pedida por un nombre armado al correr (globalThis[nombre]) o una que
 //   Deno no trae y no está en la lista de PO-01: la prueba en Deno, cuando exista, la atrapa.
 
@@ -47,12 +48,28 @@ export const REGLAS = {
   'PR-02': 'Dentro de try, una promesa se devuelve con await',
   'PR-03': 'Una función asíncrona no se pasa donde nadie la espera',
   'SV-01': 'El texto de una consulta es un literal, nunca se arma: los datos y las firmas viajan como parámetros',
+  'SV-02': 'Solo el repartidor de Postgres del servicio importa un controlador de Postgres',
 };
 
 // El único archivo que recibe el texto de una consulta como dato y se lo pasa al
 // controlador de la base: la conexión del servicio. Todos los demás escriben el suyo.
 const CASA_DE_LA_CONSULTA = 'aplicaciones/servicio/base/conexion.ts';
 const METODO_DE_CONSULTA = 'consultar';
+
+// SV-02. El único archivo que importa el controlador de Postgres: el repartidor del
+// servicio. Así la limpieza de cada conexión (conexion.ts) y las órdenes de una en
+// una no se saltan con una conexión abierta por otro lado. La lista nombra los
+// controladores conocidos, también como los escribe Deno (npm:, jsr:), para que
+// ninguno entre por otra puerta aunque no esté instalado.
+const CASA_DEL_CONTROLADOR = 'aplicaciones/servicio/base/postgres.ts';
+const CONTROLADORES_DE_POSTGRES = new Set(['postgres', 'pg', 'pg-native', 'pg-promise', '@db/postgres', '@neondatabase/serverless', '@vercel/postgres', 'postgres-js', 'slonik', 'kysely', 'drizzle-orm', 'knex', '@electric-sql/pglite']);
+/** El nombre del paquete de una importación: sin npm: ni jsr:, sin versión y sin camino adentro. */
+function paqueteDe(texto) {
+  const sinPrefijo = texto.replace(/^(?:npm|jsr):\/?/, '');
+  const partes = sinPrefijo.split('/');
+  const nombre = sinPrefijo.startsWith('@') ? `${partes[0]}/${partes[1] ?? ''}` : partes[0];
+  return nombre.replace(/(.)@.*$/, '$1');
+}
 
 // Qué archivo puede fabricar cada tipo con marca.
 const CASA_DE_LA_MARCA = { MarcaDinero: 'nucleo/dinero.ts', MarcaMoneda: 'nucleo/moneda.ts', MarcaDatos: 'contratos/caja/verbos/verbo.ts' };
@@ -198,6 +215,7 @@ function revisarImportaciones({ fuente, archivo, anotar, capas, capaDe, esArranq
   const una = (nodo, literal) => {
     if (literal === undefined || !ts.isStringLiteralLike(literal)) { anotar('FR-07', nodo, 'la ruta de una importación no se arma al vuelo'); return; }
     const texto = literal.text;
+    if (CONTROLADORES_DE_POSTGRES.has(paqueteDe(texto)) && archivo !== CASA_DEL_CONTROLADOR) { anotar('SV-02', nodo, `${texto}: el controlador de Postgres lo importa solo ${CASA_DEL_CONTROLADOR}`); return; }
     if (capa !== null && NODE_PROHIBIDO.has(texto)) { anotar('FR-07', nodo, `${texto} permite importar sin que se vea`); return; }
     if (texto.startsWith('node:')) {
       if (pura) anotar('PU-03', nodo, texto);
@@ -208,7 +226,10 @@ function revisarImportaciones({ fuente, archivo, anotar, capas, capaDe, esArranq
     const resuelto = ts.resolveModuleName(texto, fuente.fileName, options, host, undefined, undefined, modo).resolvedModule;
     if (resuelto === undefined) { anotar('FR-07', nodo, `no se encuentra ${texto}`); return; }
     if (resuelto.resolvedFileName.includes('/node_modules/')) {
-      if (pura || (capa !== null && !capa.npm.some((p) => texto === p || texto.startsWith(`${p}/`)))) anotar('PU-03', nodo, texto);
+      const admitida = (lista) => lista.some((p) => texto === p || texto.startsWith(`${p}/`));
+      if (pura || (capa !== null && !admitida(capa.npm))) anotar('PU-03', nodo, texto);
+      // Un arranque usa solo las librerías que capas.json le da («arranques.npm»).
+      else if (capa === null && esArranque(archivo) && !admitida(capas.arranques.npm ?? [])) anotar('FR-01', nodo, `un arranque no usa ${texto}`);
       return;
     }
     const destino = relativa(resuelto.resolvedFileName);
@@ -379,7 +400,7 @@ function plata(n, archivo, anotar, tipos) {
 const esDelSistema = (simbolo) => simbolo?.declarations?.some((d) => !d.getSourceFile().fileName.includes('/node_modules/')) ?? false;
 
 function consultas(n, archivo, anotar, tipos) {
-  if (archivo === CASA_DE_LA_CONSULTA) return;
+  if (archivo === CASA_DE_LA_CONSULTA || archivo === CASA_DEL_CONTROLADOR) return;
   if (ts.isCallExpression(n)) {
     const declaracion = tipos.getResolvedSignature(n)?.declaration;
     const nombre = declaracion?.name !== undefined && (ts.isIdentifier(declaracion.name) || ts.isStringLiteralLike(declaracion.name)) ? declaracion.name.text : undefined;

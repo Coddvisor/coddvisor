@@ -110,7 +110,8 @@ pantallas son archivos fijos. Las rutas que ellas llaman sí son del servicio.
 proveedor de cuentas real; lo aprueba el fundador): Supabase exige el archivo de
 entrada de su función en `supabase/functions/<nombre>/`. Un arranque no tiene
 lógica, nadie lo importa, corre en Deno como las aplicaciones (PO-01) y entra
-solo por la puerta de una aplicación o de un paquete de país (FR-03). Lo declara
+solo por la puerta de una aplicación o de un paquete de país (FR-03). No importa
+librerías: su lista de npm está vacía (FR-01). Lo declara
 `herramientas/guardia/capas.json`, en «arranques».
 
 Esto es lo que existe hoy. Lo que sigue es la estructura de destino; cada
@@ -213,8 +214,15 @@ otro negocio. Por eso:
   argumento de todo método `consultar` del sistema es un texto o una plantilla sin
   huecos, y ese método no se saca de su objeto. Los datos y las firmas viajan como
   parámetros. Solo la conexión del servicio (`aplicaciones/servicio/base/conexion.ts`)
-  recibe el texto como dato, para pasárselo a la base. (Regla nueva del
+  recibe el texto como dato, para pasárselo a la base, y su repartidor de Postgres
+  (`base/postgres.ts`) se lo pasa al controlador. (Regla nueva del
   26-nov-2026: antes era un acuerdo del servicio que la base no podía exigir.)
+- **SV-02.** Solo el repartidor de Postgres del servicio
+  (`aplicaciones/servicio/base/postgres.ts`) importa un controlador de Postgres
+  (postgres.js, o cualquier otro conocido, también escrito como lo pide Deno:
+  `npm:`, `jsr:`). Así nadie abre una conexión que se salte la limpieza de la
+  sesión y las órdenes de una en una de `conexion.ts`. (Regla nueva del
+  26-nov-2026, la función con base.)
 
 Lo que estas reglas aceptan no ver está escrito al inicio de
 `sistema/herramientas/guardia/reglas.mjs`, y lo mira quien revisa.

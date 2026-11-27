@@ -124,6 +124,8 @@ const ARRANQUE = { en: 'supabase/functions/caso' };
 mal('FR-03', ['import { LIMITES } from "../../../modulos/identidad/limites.ts"; export const a = LIMITES;', 'import { verificarPase } from "../../../modulos/identidad/publico.ts"; export const a = verificarPase;', 'import { crearManejador } from "../../../aplicaciones/servicio/rutas/rutas.ts"; export const a = crearManejador;', 'import { cosa } from "../../../herramientas/cosa.ts"; export const a = cosa;'], ARRANQUE);
 mal('PO-01', ['import { createServer } from "node:http"; export const a = createServer;', 'export const a = process.env;'], ARRANQUE);
 bien(['import { crearManejador } from "../../../aplicaciones/servicio/publico.ts"; export const a = crearManejador;', 'import { pais } from "../../../paquetes/pais/publico.ts"; export const a = pais;'], ARRANQUE);
+// Una librería, ni siquiera una de la revisión: su lista «npm» está vacía.
+mal('FR-01', ['import ts from "typescript"; export const a = ts;'], ARRANQUE);
 
 // ---------- Servicio: el texto de una consulta ----------
 const CONSULTA = { en: 'modulos/ventas/datos', cabeza: 'import type { Transaccion } from "#nucleo";\n' };
@@ -131,6 +133,13 @@ const q = (cuerpo, firma = 't: Transaccion, x: string') => `export const f = asy
 mal('SV-01', [q('await t.consultar(x, [])'), q('await t.consultar(`select ${x}`, [])'), q('await t.consultar("select " + x, [])'), q('await t["consultar"](x, [])'), q('await t.consultar(...[x, []] as [string, []])'), q('await (t.consultar)(x, [])'), q('await t.consultar.call(t, "select 1", [])'), q('await t.consultar.bind(t)("select 1", [])'), 'export const f = (t: Transaccion): unknown => t.consultar;', 'export const f = (t: Transaccion): unknown => { const { consultar } = t; return consultar; };', 'export const f = (t: Transaccion): unknown => { const { consultar: c } = t; return c; };', q('await Object.values(t)[0](`select ${x}`, [])'), q('await Object.getOwnPropertyDescriptor(t, "consultar")?.value(`select ${x}`, [])'), q('await Reflect.get(t, "consultar")(x, [])'), 'export const f = (t: Transaccion): unknown => ({ ...t });', 'export const f = (t: Transaccion): unknown => { const o: object = t; return o; };', 'export const f = (t: Transaccion): unknown => t as unknown;'], CONSULTA);
 mal('SV-01', ['interface Propia { consultar(texto: string): Promise<void> }\nexport const f = async (p: Propia, x: string): Promise<void> => { await p.consultar(x); };'], { en: 'modulos/ventas/datos' });
 mal('SV-01', [q('await t.consultar(x, [])')], { ...CONSULTA, en: 'aplicaciones/servicio' });
+// SV-02: el controlador de Postgres, solo en aplicaciones/servicio/base/postgres.ts (desde el 26-nov-2026,
+// la función con base). Ni en otro archivo del servicio, ni en un módulo, ni en el arranque, ni otro controlador.
+const CONTROLADOR = ['import postgres from "postgres"; export const a = postgres;', 'import type { Sql } from "postgres"; export type A = Sql;', 'export const a = async (): Promise<unknown> => await import("postgres");', 'import { Pool } from "pg"; export const a = Pool;', 'import { Pool } from "jsr:@db/postgres@0.19.5"; export const a = Pool;', 'import p from "npm:postgres@3.4.9"; export const a = p;', 'import { PGlite } from "@electric-sql/pglite"; export const a = PGlite;'];
+mal('SV-02', CONTROLADOR, { en: 'aplicaciones/servicio/base' });
+mal('SV-02', CONTROLADOR.slice(0, 2), { en: 'aplicaciones/servicio/rutas' });
+mal('SV-02', CONTROLADOR.slice(0, 1), SERVIDOR);
+mal('SV-02', CONTROLADOR.slice(0, 1), ARRANQUE);
 bien([q('await t.consultar("select $1::text as v", [x])'), q('await t.consultar(`select $1::text as v\n  from nucleo.moneda`, [x])'), q('await (t.consultar("select 1", []))'), 'export const f = (consultar: string): string => consultar;'], CONSULTA);
 
 const CIRCULO = { 'nucleo/circulo_a.ts': 'import { b } from "./circulo_b.ts"; export const a = (): number => b();\n', 'nucleo/circulo_b.ts': 'import { c } from "./circulo_c.ts"; export const b = (): number => c();\n', 'nucleo/circulo_c.ts': 'import { a } from "./circulo_a.ts"; export const c = (): number => a();\n' };

@@ -5,13 +5,16 @@ Esta carpeta tiene lo que pide Supabase para desplegar el servicio:
 | Archivo | Qué es |
 |---|---|
 | `config.toml` | La configuración que lee la CLI de Supabase. Solo dice cómo se arma la función `servicio`: sin revisión del pase de Supabase en el encabezado (las rutas revisan la cookie), con su `deno.json` y su archivo de entrada |
-| `functions/servicio/index.ts` | El arranque del servicio como función de Supabase, en Deno: `Deno.serve` delante del mismo manejador que prueban las pruebas en Node. No tiene lógica |
-| `functions/servicio/deno.json` | Traduce los nombres con `#` de `package.json`, que Deno no lee. Una prueba exige que digan lo mismo |
-| `functions/servicio/pruebas/` | La prueba del arranque en Node, con un Deno de mentira |
+| `functions/servicio/index.ts` | El arranque del servicio como función de Supabase, en Deno: `Deno.serve` delante del mismo manejador que prueban las pruebas en Node, con el repartidor de Postgres de verdad. No tiene lógica |
+| `functions/servicio/deno.json` | Traduce los nombres con `#` de `package.json`, que Deno no lee, y trae el controlador de Postgres por `npm:postgres@3.4.9`. Una prueba exige que digan lo mismo que `package.json`, versión incluida |
+| `functions/servicio/pruebas/` | La prueba del arranque en Node, con un Deno de mentira y la base en memoria detrás de un puerto |
 
-Todavía **no se despliega**: falta el controlador de Postgres del servicio (SV-02,
-`arquitectura/bases/02-base-de-datos.md`). Hoy la función responde lo que no
-toca la base (ir a Google, salir) y todo lo demás responde «interno».
+La función ya habla con la base: el repartidor de Postgres
+(`aplicaciones/servicio/base/postgres.ts`, con postgres.js) entra con el rol
+`coddvisor_entrada` por la dirección de `CODDVISOR_BASE_DIRECCION`. Sin esa
+variable, la función no arranca y dice qué revisar. Todavía **no se despliega**:
+espera las protecciones de abajo («Lo que NO se enciende todavía») y que ninguna
+migración llegó a una base real.
 
 La región no se fija al desplegar. Supabase la elige en cada llamada: el Worker
 de Cloudflare manda cada pedido a `/api` con el encabezado `x-region: sa-east-1`
@@ -163,7 +166,9 @@ pasó antes por el botón «Abra su negocio».
 - **Los tiempos de sesión del plan Pro** (time-box, inactividad): los aplica el
   servicio por rol (decisión 8), no Supabase.
 - **Desplegar la función** y cargar sus secretos (`CODDVISOR_*`, en **Edge
-  Functions → Secrets**): espera el controlador de Postgres (SV-02).
+  Functions → Secrets**): espera que las migraciones lleguen a la base por su
+  camino, la contraseña de `coddvisor_entrada` y las pruebas de abajo («Lo que
+  falta probar en el proyecto real»).
 - **La llave de servicio** (`service_role` o `sb_secret_...`) en cualquier
   lugar del servicio. Solo la tendrá el programa aparte que crea las cuentas con
   correo (decisión 10), que todavía no existe.
@@ -196,6 +201,127 @@ Lo que falta, y no se resuelve sin el fundador:
   tener (decisión 10). Mientras no se resuelva, el límite por IP de Supabase no
   frena a nadie en particular: solo corta a todos a la vez.
 
+## La conexión a la base
+
+El servicio entra con `coddvisor_entrada` (`02-base-de-datos.md`, el portero),
+nunca con `postgres`. Por eso no usa la `SUPABASE_DB_URL` que Supabase pone sola
+en cada función: esa entra como `postgres`, y el servicio la rechaza si se la ponen.
+
+Cómo se conecta, y por qué:
+
+- **Por el repartidor compartido (Supavisor) en modo transacción**, el puerto
+  6543: es IPv4, no cuesta aparte y es el que Supabase recomienda para funciones
+  que nacen y mueren rápido (`donde-corre-el-sistema.md`). El usuario se escribe
+  `coddvisor_entrada.<ref del proyecto>`.
+- **Sin sentencias preparadas con nombre**: el modo transacción no las admite.
+  Los parámetros (las firmas) igual viajan aparte del texto.
+- **La limpieza de la sesión va dentro de cada transacción**, no con `DISCARD
+  ALL` al devolver la conexión: en modo transacción la sesión de Postgres no es
+  de la conexión del servicio, y `DISCARD ALL` caería en otra. El porqué está en
+  `aplicaciones/servicio/base/conexion.ts` y en `02-base-de-datos.md`.
+- **Una conexión nueva por pedido no es la alternativa**: en modo transacción,
+  cerrar la conexión del servicio no limpia la sesión del servidor, que el
+  repartidor le presta a otro. Sí lo sería con la conexión directa o el modo
+  sesión, pero esas cuestan (IPv6 solo, o la dirección IPv4 pagada) o tienen
+  un tope bajo de conexiones a la vez.
+- **Una orden a la vez por conexión**: postgres.js encadena las órdenes sin
+  esperar respuesta, y la documentación de Supabase
+  (supabase.com/docs/guides/database/postgres-js) advierte que con el modo
+  transacción eso puede colgar consultas o cruzar filas. El servicio manda cada
+  orden cuando volvió la anterior. Cada orden y cada espera por una conexión
+  libre tienen tope (`esperaPorUnaOrdenALaBaseS`, `esperaPorUnaConexionALaBaseS`).
+- **Cifrada**: la dirección termina en `?sslmode=verify-full` (revisa el
+  certificado) o `?sslmode=require` (cifra sin revisarlo). Sin cifrar no se
+  acepta, salvo con una base en la misma computadora. Para revisar el
+  certificado, Supabase pide descargar el de su autoridad en **Database Settings
+  → SSL Configuration** y confiar en él
+  (supabase.com/docs/guides/platform/ssl-enforcement); la página de Edge
+  Functions dice que las funciones desplegadas «are pre-configured to use SSL»
+  (supabase.com/docs/guides/functions/connect-to-postgres). Si el almacén de la
+  función no trae esa autoridad, el certificado va en
+  `CODDVISOR_BASE_CERTIFICADO` (PEM; no es un secreto, es un dato del
+  proyecto), que exige `verify-full`. Bajar a `require` es el último recurso:
+  cifra, pero no revisa con quién habla, y alguien en medio podría llevarse la
+  contraseña de `coddvisor_entrada`.
+
+Qué hace el fundador, cuando llegue el momento (no antes de que las migraciones
+lleguen a la base por su camino):
+
+1. Ponerle una contraseña larga y al azar a `coddvisor_entrada`. Ninguna
+   migración la pone (la contraseña no va en el repositorio), y nadie ejecuta SQL
+   a mano en una base real: el camino para hacerlo se decide con el de las
+   migraciones.
+2. En **Project Settings → Database → Connection string**, copiar la del
+   **Transaction pooler**, cambiar el usuario `postgres.<ref>` por
+   `coddvisor_entrada.<ref>`, poner su contraseña y agregar `?sslmode=verify-full`.
+3. Guardarla como el secreto `CODDVISOR_BASE_DIRECCION` en **Edge Functions →
+   Secrets**. Nunca en el chat, en un correo ni en el repositorio.
+4. Si `verify-full` no reconoce el certificado (punto 3 de lo que falta probar),
+   descargar el certificado de Supabase de **Database Settings → SSL Configuration** y
+   guardarlo como `CODDVISOR_BASE_CERTIFICADO`.
+
+## Lo que falta probar en el proyecto real
+
+La base en memoria detrás de un puerto (`aplicaciones/servicio/pruebas/servidor-de-la-base.ts`)
+imita el modo transacción: una sola sesión de Postgres compartida por todas las
+conexiones, que pasa de una a otra al terminar cada transacción. Con ella se
+probó el controlador de verdad: el rol, el portero, que la firma nunca viaja en
+el texto, que lo que un pedido deja en la sesión no llega al siguiente (bien y
+mal terminado, y por otra conexión), los tipos de los parámetros, dos órdenes en
+un texto, muchos pedidos a la vez, la red que se corta (también con más pedidos
+que conexiones), los topes de espera y que el entorno (PGDEBUG y parecidos) no
+cambia al controlador. La imitación atiende una orden a la vez y no encadena:
+no puede mostrar el problema de las órdenes encadenadas que advierte Supabase. Lo que esa imitación no
+puede probar, y hay que probar en un proyecto de pruebas antes de desplegar:
+
+1. **El portero detrás de Supavisor en modo transacción, con varias sesiones de
+   verdad.** Dos pedidos seguidos de negocios distintos que caen en la misma
+   sesión del servidor y en sesiones distintas; que la tabla temporal del
+   contexto (`pg_temp.contexto_activo`, del portero) sobrevive vacía entre uno y
+   otro y el portero la vuelve a usar (su dueño es el portero, CV015); que una
+   sentencia suelta, sin transacción, no ve ningún negocio (falla cerrada); y que
+   el candado de `portero.marca` se suelta al terminar cada transacción.
+2. **La limpieza en el Postgres de Supabase**: que `close all`, `reset all`,
+   `deallocate all`, `unlisten *`, `pg_advisory_unlock_all()` y
+   `discard sequences` corren dentro de una transacción con `coddvisor_entrada`,
+   también en una de solo lectura (el soporte), y que no hace falta nada más:
+   mirar en `pg_stat_activity` y `pg_locks`, desde otra conexión, que no queda
+   nada del pedido anterior. Y si Supavisor limpia algo por su cuenta entre
+   transacciones (no está en su documentación). En la base en memoria, la
+   limpieza ya corre dentro de una transacción de solo lectura.
+   Y qué hace Supavisor con la sesión del servidor cuando el cliente falla o se
+   va a mitad de una transacción (un corte, una orden vencida, una limpieza que
+   falló): si la deshace y la limpia, o si la presta a otro con lo que quedó (un
+   candado consultivo, una sentencia preparada). Si la deja viva, hay que
+   proponer otra salida: por ejemplo, que ante una limpieza fallida el servicio
+   no termine la transacción y pida al repartidor cerrar esa sesión.
+3. **El cifrado**: qué certificado presenta el repartidor en el puerto 6543 y
+   si `sslmode=verify-full` lo reconoce desde la función con el almacén de
+   Deno. Si no, con el de Supabase en `CODDVISOR_BASE_CERTIFICADO`, que se le da
+   a postgres.js como `ssl: { ca }` (que eso funcione en el Node de Deno tampoco
+   está probado). `sslmode=require` queda solo como último recurso, con el riesgo
+   anotado (supabase.com/docs/guides/platform/ssl-enforcement).
+4. **El usuario `coddvisor_entrada.<ref>` y su contraseña** ante Supavisor, y
+   que la función no puede volverse otro rol.
+5. **Los tiempos**: cuánto suma cada pedido por mandar sus órdenes una a la vez
+   (abrir la transacción y el punto de guardado son dos viajes, la limpieza seis
+   y confirmar uno), cuántas conexiones abre cada copia (`conexionesALaBasePorCopia`)
+   frente al tope de Supavisor y de la base, si los topes de espera
+   (`esperaPorUnaConexionALaBaseS`, `esperaPorUnaOrdenALaBaseS`) alcanzan, y qué
+   pasa cuando una copia de la función se apaga con conexiones abiertas. Y una
+   orden colgada sin que la red se corte: el tope la da por cortada del lado del
+   servicio, pero la orden puede seguir corriendo en la base.
+7. **Las órdenes encadenadas detrás de Supavisor**: muchos pedidos a la vez desde
+   varias copias, comprobando que ninguna orden se cuelga y que cada pedido recibe
+   sus propias filas.
+6. **postgres.js en Deno** (`npm:postgres@3.4.9`): que carga en el Edge Runtime
+   y lee lo que necesita de su entorno sin pedir permisos de más. Y que el Edge
+   Runtime respeta lo que pide `index.ts` ante una promesa rechazada sin esperar
+   o un error sin atrapar (`preventDefault` en `unhandledrejection` y `error`):
+   que anota y sigue, en vez de apagar la copia. En esta
+   computadora no hay Deno; falta también el `deno.lock` con la huella del
+   paquete, que se genera con Deno.
+
 ## Qué variables lee el servicio
 
 Están en `sistema/.env.example`. Las de Supabase Auth:
@@ -209,3 +335,13 @@ Están en `sistema/.env.example`. Las de Supabase Auth:
 
 La clave pública no es un secreto, pero tampoco se escribe en el código: es un
 dato del proyecto. El servicio no arranca si le ponen una llave `sb_secret_...`.
+
+Y la de la base:
+
+| Variable | Qué va | Dónde se ve en el panel |
+|---|---|---|
+| `CODDVISOR_BASE_DIRECCION` | `postgresql://coddvisor_entrada.<ref>:<contraseña>@<servidor del repartidor>:6543/postgres?sslmode=verify-full` | **Project Settings → Database → Connection string → Transaction pooler**, con el usuario y la contraseña de `coddvisor_entrada` (ver «La conexión a la base») |
+| `CODDVISOR_BASE_CERTIFICADO` (opcional) | El certificado raíz de la base en PEM, solo si `verify-full` no reconoce el del repartidor. Exige `sslmode=verify-full` | **Database Settings → SSL Configuration** |
+
+Es un secreto: lleva la contraseña. El servicio no arranca si el usuario no es
+`coddvisor_entrada`, si falta `sslmode` o si trae otra opción.

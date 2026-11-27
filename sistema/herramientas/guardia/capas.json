@@ -60,8 +60,10 @@
         "contratos",
         "modulos"
       ],
-      "npm": [],
-      "porque": "Una aplicación es un programa que se arranca (el servicio, la oficina, la caja): arma los módulos, lee el entorno y habla con el exterior. Usa el núcleo, los contratos y los módulos por su puerta. No importa el paquete de un país por su nombre, por lo mismo que un módulo. Ninguna otra capa usa a las aplicaciones: un módulo que importara una quedaría atado a un programa (cambio de frontera del 26-nov-2026, tramo 3 de identidad).",
+      "npm": [
+        "postgres"
+      ],
+      "porque": "Una aplicación es un programa que se arranca (el servicio, la oficina, la caja): arma los módulos, lee el entorno y habla con el exterior. Usa el núcleo, los contratos y los módulos por su puerta. No importa el paquete de un país por su nombre, por lo mismo que un módulo. Ninguna otra capa usa a las aplicaciones: un módulo que importara una quedaría atado a un programa (cambio de frontera del 26-nov-2026, tramo 3 de identidad). La única librería es el controlador de Postgres (postgres.js, sistema/dependencias.md), y solo lo importa el repartidor del servicio, aplicaciones/servicio/base/postgres.ts (regla SV-02; cambio de frontera del 26-nov-2026, la función con base; lo aprueba el fundador).",
       "del_navegador": {
         "carpetas": [
           "oficina"
@@ -78,7 +80,8 @@
       "aplicaciones",
       "paquetes"
     ],
-    "porque": "Un arranque es la capa delgada que pone un programa en marcha en su lugar de despliegue: hoy, la función de Supabase (supabase/functions/servicio/index.ts, en Deno), que Supabase exige en su carpeta propia. Lee el entorno, quita el nombre de la función del camino y le pasa cada pedido al manejador de la aplicación. No tiene lógica: solo importa la puerta de una aplicación o de un paquete de país, y es portátil como ellas (PO-01). Ninguna capa lo importa (cambio de frontera del 26-nov-2026, proveedor de cuentas real; lo aprueba el fundador)."
+    "npm": [],
+    "porque": "Un arranque es la capa delgada que pone un programa en marcha en su lugar de despliegue: hoy, la función de Supabase (supabase/functions/servicio/index.ts, en Deno), que Supabase exige en su carpeta propia. Lee el entorno, quita el nombre de la función del camino y le pasa cada pedido al manejador de la aplicación. No tiene lógica: solo importa la puerta de una aplicación o de un paquete de país, ninguna librería (su lista «npm» está vacía: el controlador de Postgres lo trae la aplicación), y es portátil como ellas (PO-01). Ninguna capa lo importa (cambio de frontera del 26-nov-2026, proveedor de cuentas real; lo aprueba el fundador)."
   },
   "fuera_del_producto": {
     "carpetas": [
