@@ -588,7 +588,9 @@ decisión 7, y espera la aprobación del fundador; lo que falta probar está en
 6. **Sumar Cloudflare a la lista de subencargados** de datos personales
    (D27), antes de la entrega 4, y confirmar que Supabase ya está en ella. Por
    el Worker pasan ventas, DNI y sueldos, aunque no los guarde. Supabase los
-   procesa en Brasil, con la transferencia justificada.
+   procesa en Brasil, con la transferencia justificada. (27-nov-2026: la
+   lista está en [datos-personales.md](datos-personales.md), con Cloudflare y
+   Supabase.)
 7. **Decidir la dirección IPv4 solo si la pide PowerSync**, el día de su
    entrega.
 8. **Medir el tiempo de respuesta real** desde celulares con datos móviles en

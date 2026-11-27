@@ -76,7 +76,9 @@ Una migración tampoco debe escribir datos en sus avisos (`raise notice`).
 ## Antes de la primera corrida
 
 `arquitectura/bases/02-base-de-datos.md` pide cerrar antes la región de la base
-(D30, São Paulo, ya elegida) y el inventario de datos personales (D27). El
+(D30, São Paulo, ya elegida) y el inventario de datos personales (D27), que
+está en `arquitectura/propuestas/datos-personales.md` con la lista de quién
+más trata esos datos. El
 flujo no corre sin su aprobación: mientras no apruebe la primera corrida,
 ninguna migración llega a la base.
 
