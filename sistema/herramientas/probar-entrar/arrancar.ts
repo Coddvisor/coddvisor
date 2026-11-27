@@ -6,10 +6,11 @@
 // con una base PGlite en memoria cargada con datos de ejemplo y un emisor de
 // pases de prueba en lugar de Supabase. Al cerrarlo (Ctrl+C) todo desaparece.
 //
-// «Abra su negocio» crea una cuenta nueva de ejemplo (como la simulación de
-// Google), con su app de códigos ya inscrita, y sigue a las cuatro preguntas.
-// Al crear el negocio, el inicio pide el código del segundo paso, que es el
-// mismo de las demás cuentas.
+// «Abra su negocio» pide un correo (aquí cualquiera sirve: el gancho de
+// Supabase que lo compara no existe en esta computadora), crea una cuenta nueva
+// de ejemplo (como la simulación de Google), le hace inscribir su app de códigos
+// con el código de ejemplo y sigue a las cuatro preguntas. Al crear el negocio,
+// entra a su inicio sin pedir otra vez el código.
 //
 // Las rutas son las mismas del producto (crearManejador): aquí solo se pone
 // delante un servidor de Node que traduce sus pedidos a Request y Response, como
@@ -195,7 +196,7 @@ async function atender(pedido: IncomingMessage, salida: ServerResponse): Promise
   if (url.pathname === RUTA_DEL_ALTA_DE_PRUEBA) {
     // Hace de proveedor al abrir un negocio: crea una cuenta nueva de ejemplo y vuelve.
     const vuelta = montaje.proveedor.simularAlta(url, ORIGEN);
-    responderTexto(salida, 303, vuelta ?? "/entrar/?error=abrir");
+    responderTexto(salida, 303, vuelta ?? "/entrar/abrir-con-google?error=correo");
     return;
   }
   if (url.pathname === "/prueba/datos") {
@@ -238,10 +239,13 @@ Cuentas de ejemplo (la contraseña y el código están en sistema/LEEME.md y en 
   ${cuentas.duena.correo}       dueña de la bodega, con segundo paso
   ${cuentas.contador.correo}    contador de los dos negocios, con segundo paso (también es la de Google)
   ${cuentas.vendedor.correo}    vendedor de la bodega, sin segundo paso
-  ${cuentas.sinCodigo.correo}  dueño de la ferretería que no inscribió su app: no puede abrirla
+  ${cuentas.sinCodigo.correo}  dueño de la ferretería que no inscribió su app: al abrir su negocio, el segundo
+                            paso lo lleva a inscribirla (código ${CODIGO_DE_PRUEBA}) y vuelve a la ferretería
 
-«Abra su negocio» crea una cuenta nueva de ejemplo (nueva.1@ejemplo.test, nueva.2...),
-con el mismo código del segundo paso, y lleva a las cuatro preguntas.
+«Abra su negocio» pide un correo (cualquiera sirve aquí), crea una cuenta nueva de ejemplo
+(nueva.1@ejemplo.test, nueva.2...), le hace inscribir su app de códigos con el mismo código
+y lleva a las cuatro preguntas. El aviso de un correo que no coincide se ve en
+${ORIGEN}/entrar/abrir-con-google?error=correo
 
 Para cerrar: Ctrl+C. La base y las llaves desaparecen al cerrar.
 `);

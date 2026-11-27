@@ -26,6 +26,7 @@
   --superficie: #EEF1F7;
   --fondo: #F7F9FC;
   --tarjeta: #FFFFFF;
+  --blanco: #FFFFFF;         /* blanco fijo: no cambia en el modo oscuro */
 
   /* Estados: nunca dependen solo del color; siempre llevan ícono y texto */
   --correcto: #0B6B41;  --correcto-fondo: #DDF3E8;
@@ -38,6 +39,9 @@
   --boton: var(--ambar);            --boton-texto: var(--cobalto);
   --boton-2: var(--hielo);          --boton-2-texto: var(--azul-real);
   --grafico: var(--celeste-oscuro); --grafico-hoy: var(--ambar);
+  /* El código QR: oscuro sobre claro también en el modo oscuro, porque las apps
+     de códigos leen mal un QR al revés. Por eso estos dos no cambian abajo. */
+  --qr: var(--cobalto);             --qr-fondo: var(--blanco);
   color-scheme: light;
 }
 

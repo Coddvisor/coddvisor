@@ -41,6 +41,19 @@ Nada de esto viaja al negocio del cliente.
   (en el navegador o en sus cookies) y la decisión 8 pide que solo la guarde el
   servicio, en su cookie `__Host-`. Se prueba contra un Supabase Auth falso en
   memoria (`aplicaciones/servicio/pruebas/supabase-falso.ts`). (26-nov-2026.)
+- **Una librería de códigos QR, y el QR que da Supabase.** El código QR de la app
+  de códigos se dibuja en el navegador de la persona, a partir del enlace
+  `otpauth://`: `aplicaciones/oficina/comun/qr.js`, unos 14 KiB que siguen la
+  norma (bytes, nivel M, la versión más chica y la mejor máscara). Su
+  corrección de errores da la del ejemplo de la norma
+  (`oficina/pruebas/paginas.test.ts`), y sus códigos de las versiones 1 a 38 se
+  leyeron con el lector de QR de macOS (CoreImage) el 26-nov-2026. La API HTTP
+  de Supabase Auth también devuelve el QR (`totp.qr_code`), como un SVG en
+  texto; el prefijo `data:` lo pone su librería supabase-js, que aquí no se usa.
+  No se muestra porque obligaría a meter marcado ajeno en la página con
+  `innerHTML`; `qr.js` arma cada elemento del dibujo él mismo. No es para
+  esconder el secreto: lo genera Supabase y pasa por el servicio de todos modos.
+  El proveedor de prueba no da QR. (26-nov-2026.)
 - **Un validador de datos.** Lo que acepta un contrato publicado no debe depender
   de la versión de una librería en cada lado.
 - **TypeScript 7.** La guardia se apoya en la forma del compilador 6. Subir de

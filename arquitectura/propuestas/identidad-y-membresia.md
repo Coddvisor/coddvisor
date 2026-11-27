@@ -420,6 +420,23 @@ pedidos no la tiene.
   > horas, dentro de la puerta (CV220, el servicio responde 429).
   > «El negocio nace en prueba y no emite ante SUNAT hasta validarse» todavía
   > no tiene dato propio: llega con la emisión.
+  >
+  > **Nota del 26-nov-2026 (las pantallas de Google y de la app):** «Abra su
+  > negocio» lleva primero a `entrar/abrir-con-google.html`, que pide el correo
+  > de Google, dice por qué y lo manda a `/api/abrir/permiso` antes de ir a
+  > Google. Si la vuelta no trae una cuenta, el servicio vuelve ahí con uno de
+  > tres avisos: el gancho negó el alta (lo más probable: en Google se eligió
+  > otro correo), la persona canceló en Google, o Supabase la negó por otra
+  > razón. Una cuenta que vuelve del
+  > alta sin app de códigos la inscribe antes de las preguntas
+  > (`entrar/app-de-codigos.html`: QR, enlace para el mismo celular, clave para
+  > copiar y el primer código), así entra a su negocio nuevo con los dos pasos
+  > hechos. El segundo paso lleva ahí a quien todavía no tiene la app. Los diez
+  > códigos de respaldo todavía no existen: la pantalla dice que llegan después.
+  > Por ahora la cuenta inscribe una sola app: si ya tiene una confirmada, el
+  > servicio responde 409 `ya_inscrita`. La recomendación de inscribir dos
+  > celulares espera a que el segundo paso sepa elegir entre varias apps
+  > confirmadas.
 - **Aceptar una invitación**: el dueño invita desde el panel. La membresía
   queda pendiente hasta que el invitado la acepte con su sesión abierta y con el
   mismo correo. El enlace es de un solo uso y vence. El panel responde igual

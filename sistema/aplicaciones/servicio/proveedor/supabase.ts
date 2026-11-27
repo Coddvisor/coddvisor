@@ -27,7 +27,20 @@
  *     cuenta, aunque el otro factor no esté confirmado (422
  *     mfa_factor_name_conflict): por eso cada inscripción lleva uno nuevo. Y niega
  *     inscribir con una sesión aal1 si la cuenta ya tiene un factor confirmado
- *     («AAL2 required to enroll a new factor», 403 insufficient_aal).
+ *     («AAL2 required to enroll a new factor», 403 insufficient_aal). Antes de
+ *     inscribir borra los factores sin confirmar de más de FactorExpiryDuration
+ *     (300 s por omisión), y niega con 422 too_many_enrolled_mfa_factors si la
+ *     cuenta ya tiene MaxEnrolledFactors factores, confirmados o no (10 por
+ *     omisión; MaxVerifiedFactors, también 10, cuenta solo los confirmados).
+ *     Ese 422 aquí es «demasiados_intentos»: pasa si la persona pidió diez QR
+ *     en cinco minutos. Al verificar un factor, borra los demás sin confirmar de
+ *     la cuenta (internal/api/mfa.go, internal/conf/configuration.go). Con aal2,
+ *     GoTrue deja inscribir otro factor aunque ya haya uno confirmado; aquí no:
+ *     factorListo toma el primero confirmado, así que una segunda app no
+ *     serviría. Por eso, con un pase aal2, se lee GET /user antes y una cuenta
+ *     con su app responde «ya_inscrita».
+ *     El QR que devuelve (totp.qr_code) es un SVG en texto; no se usa (ver
+ *     dependencias.md).
  *   - POST /factors/{id}/challenge            → { id, type, expires_at }
  *   - POST /factors/{id}/verify               { challenge_id, code } → una sesión aal2
  *   - POST /logout?scope=local                con el pase: cierra solo esta sesión
@@ -78,6 +91,7 @@ const METODO_DEL_DESAFIO = "s256";
 const TIPO_DEL_FACTOR = "totp";
 const FACTOR_LISTO = "verified";
 const SIN_SEGUNDO_PASO = "aal1";
+const CON_SEGUNDO_PASO = "aal2";
 const ESTADO = "state";
 const TIPO_JSON = "application/json";
 const UTF8 = new TextDecoder("utf-8", { fatal: true });
@@ -87,10 +101,13 @@ const DESDE_ERROR_DEL_PEDIDO = 400;
 const SIN_AUTORIZACION = 401;
 const PROHIBIDO = 403;
 const PIDE_ESPERAR = 429;
+const NO_SE_PUEDE_PROCESAR = 422;
 // Los «no» de Supabase Auth: el pedido no valía. Lo demás que no es 2xx es un fallo suyo.
-const ESTADOS_DE_UN_NO: ReadonlySet<number> = new Set([400, SIN_AUTORIZACION, PROHIBIDO, 404, 422]);
+const ESTADOS_DE_UN_NO: ReadonlySet<number> = new Set([400, SIN_AUTORIZACION, PROHIBIDO, 404, NO_SE_PUEDE_PROCESAR]);
 // El código con que GoTrue niega inscribir un factor con una sesión aal1 si ya hay uno confirmado.
 const FALTA_EL_SEGUNDO_PASO = "insufficient_aal";
+// El código con que GoTrue niega inscribir un factor si la cuenta llegó a su tope de factores.
+const DEMASIADOS_FACTORES = "too_many_enrolled_mfa_factors";
 
 interface Respuesta {
   readonly estado: number;
@@ -261,10 +278,19 @@ export function crearProveedorDeSupabase(opciones: OpcionesDeSupabase): Proveedo
     },
 
     async inscribirSegundoPaso(sesion): Promise<Result<InscripcionDelSegundoPaso, RechazoDeLaInscripcion>> {
+      // Con los dos pasos hechos, GoTrue dejaría inscribir otra app, que no
+      // serviría (factorListo usa la primera confirmada): antes se mira si ya tiene una.
+      if (nivelDelPase(sesion.pase) === CON_SEGUNDO_PASO) {
+        const usuario = await llamar("/user", "GET", undefined, sesion.pase);
+        if (esUnNo(usuario)) return err("sin_sesion");
+        exigirBien(usuario, "leer la cuenta");
+        if (tieneSegundoPaso(objeto(usuario.cuerpo))) return err("ya_inscrita");
+      }
       // Un nombre nuevo en cada intento: GoTrue niega uno repetido, aunque el
       // factor anterior siga sin confirmar (la persona recargó la pantalla).
       const r = await llamar("/factors", "POST", { factor_type: TIPO_DEL_FACTOR, friendly_name: crypto.randomUUID() }, sesion.pase);
       if (r.estado === PROHIBIDO && codigoDelError(r) === FALTA_EL_SEGUNDO_PASO) return err("faltan_dos_pasos");
+      if (r.estado === NO_SE_PUEDE_PROCESAR && codigoDelError(r) === DEMASIADOS_FACTORES) return err("demasiados_intentos");
       if (sesionQueNoVale(r)) return err("sin_sesion");
       exigirBien(r, "inscribir la app de códigos");
       const c = objeto(r.cuerpo);

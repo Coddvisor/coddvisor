@@ -166,6 +166,8 @@ export const PAGINAS = {
   segundoPaso: "/entrar/segundo-paso",
   negocios: "/entrar/negocios",
   abrir: "/entrar/abrir",
+  abrirConGoogle: "/entrar/abrir-con-google",
+  appDeCodigos: "/entrar/app-de-codigos",
   inicio: "/inicio/",
 };
 

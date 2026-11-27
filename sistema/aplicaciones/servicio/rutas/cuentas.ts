@@ -39,9 +39,14 @@ export class ProveedorOcupado extends Error {
  * Por qué no se pudo empezar a inscribir la app de códigos. `sin_sesion`: la
  * sesión ya no vale. `faltan_dos_pasos`: la cuenta ya tiene una app confirmada y
  * esta sesión todavía no hizo el segundo paso (aal1): para inscribir otra, antes
- * el código de la que tiene.
+ * el código de la que tiene. `ya_inscrita`: la cuenta ya tiene una app
+ * confirmada y esta sesión ya hizo los dos pasos (por ejemplo, recargó la
+ * pantalla después de «Listo»): no se inscribe otra, porque el segundo paso usa
+ * la primera app confirmada y una segunda no serviría. `demasiados_intentos`:
+ * el proveedor no acepta más apps sin confirmar por ahora (Supabase Auth tiene
+ * un tope de factores por cuenta y borra los sin confirmar a los cinco minutos).
  */
-export type RechazoDeLaInscripcion = "sin_sesion" | "faltan_dos_pasos";
+export type RechazoDeLaInscripcion = "sin_sesion" | "faltan_dos_pasos" | "ya_inscrita" | "demasiados_intentos";
 
 /** `sin_segundo_paso`: la cuenta no tiene una app de códigos inscrita. */
 export type RechazoDelSegundoPaso = "codigo_incorrecto" | "sin_segundo_paso";
