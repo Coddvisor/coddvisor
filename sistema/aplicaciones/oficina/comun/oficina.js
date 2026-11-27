@@ -157,6 +157,8 @@ export async function pedir(ruta, cuerpo) {
 export function avisarFallo(r) {
   if (r.estado === 0) avisar("comun.error.red");
   else if (r.datos["error"] === "demasiados_intentos") avisar("comun.error.demasiados");
+  else if (r.datos["error"] === "altas_del_dia") avisar("comun.error.altas-del-dia");
+  else if (r.datos["error"] === "captcha") avisar("comun.captcha.fallo");
   else avisar("comun.error.general");
 }
 

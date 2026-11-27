@@ -62,12 +62,16 @@ export const PREFIJO_DE_LA_API = "/api/";
 export const CAMINOS_DE_ENTRAR: readonly string[] = ["/api/entrar", "/api/abrir"];
 
 /**
- * Nada de afuera, nada en línea. Lo leen el Worker y el archivo _headers de las
- * páginas. El modo local de la computadora pide lo mismo, y una prueba del
- * repartidor exige que los dos digan igual: se cambian juntos.
+ * Nada de afuera ni en línea, salvo Cloudflare Turnstile, la prueba de que es una
+ * persona en /entrar/ y en «Abra su negocio con Google»: su script y su marco
+ * piden script-src y frame-src https://challenges.cloudflare.com
+ * (developers.cloudflare.com/turnstile/reference/content-security-policy, leída
+ * el 27-nov-2026). Lo leen el Worker y el archivo _headers de las páginas. El
+ * modo local de la computadora pide lo mismo, y una prueba del repartidor exige
+ * que los dos digan igual: se cambian juntos.
  */
 export const SEGURIDAD_DE_LAS_PAGINAS: Readonly<Record<string, string>> = {
-  "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+  "content-security-policy": "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
   "x-content-type-options": "nosniff",
   "referrer-policy": "same-origin",
   "cache-control": "no-cache",

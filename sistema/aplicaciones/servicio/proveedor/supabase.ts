@@ -17,7 +17,11 @@
  *     error llega en la consulta (error, error_code, error_description) y
  *     también en el fragmento.
  *   - POST /token?grant_type=pkce            { auth_code, code_verifier }
- *   - POST /token?grant_type=password        { email, password }
+ *   - POST /token?grant_type=password        { email, password, gotrue_meta_security: { captcha_token } }
+ *     Con la protección CAPTCHA encendida en el panel, GoTrue exige la prueba
+ *     solo en /token con grant_type password (y web3): pkce, refresh_token e
+ *     id_token no la piden (isIgnoreCaptchaRoute, internal/api/middleware.go,
+ *     leído el 27-nov-2026). Si no la acepta, responde 400 «captcha_failed».
  *   - POST /token?grant_type=refresh_token   { refresh_token }
  *     Las tres responden la sesión con user, y user.factors viene cargado
  *     (findUser lo trae con tx.Eager(), internal/models/user.go).
@@ -64,7 +68,7 @@
 import { err, esUuid, ok, type Result } from "#nucleo";
 import { deBase64url, leerConTope } from "#modulos/identidad";
 import { LIMITES_DEL_SERVICIO } from "../configuracion.ts";
-import { ProveedorOcupado } from "../rutas/cuentas.ts";
+import { ProveedorOcupado, PruebaDePersonaRechazada } from "../rutas/cuentas.ts";
 import type {
   AltaDelProveedor,
   EntradaDelProveedor,
@@ -108,6 +112,8 @@ const ESTADOS_DE_UN_NO: ReadonlySet<number> = new Set([400, SIN_AUTORIZACION, PR
 const FALTA_EL_SEGUNDO_PASO = "insufficient_aal";
 // El código con que GoTrue niega inscribir un factor si la cuenta llegó a su tope de factores.
 const DEMASIADOS_FACTORES = "too_many_enrolled_mfa_factors";
+// El código con que GoTrue niega una prueba de CAPTCHA que falta o no vale (ErrorCodeCaptchaFailed).
+const CAPTCHA_RECHAZADO = "captcha_failed";
 
 interface Respuesta {
   readonly estado: number;
@@ -249,10 +255,12 @@ export function crearProveedorDeSupabase(opciones: OpcionesDeSupabase): Proveedo
   }
 
   return {
-    async entrarConContrasena(correo, contrasena) {
+    async entrarConContrasena(correo, contrasena, captcha) {
       // Un correo sin cuenta, una contraseña equivocada y un correo sin confirmar
-      // responden 400 en Supabase: aquí los tres son el mismo null.
-      const r = await llamar("/token?grant_type=password", "POST", { email: correo, password: contrasena });
+      // responden 400 en Supabase: aquí los tres son el mismo null. La prueba de
+      // Turnstile la revisa Supabase antes de mirar la contraseña.
+      const r = await llamar("/token?grant_type=password", "POST", { email: correo, password: contrasena, gotrue_meta_security: { captcha_token: captcha } });
+      if (r.estado === 400 && codigoDelError(r) === CAPTCHA_RECHAZADO) throw new PruebaDePersonaRechazada();
       if (esUnNo(r)) return null;
       exigirBien(r, "entrar con contraseña");
       return entradaDe(r.cuerpo);

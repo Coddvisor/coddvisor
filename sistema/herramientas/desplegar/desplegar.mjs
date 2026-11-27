@@ -10,8 +10,9 @@
 //   node herramientas/desplegar/desplegar.mjs guardar     las variables, en los secretos de la función
 //   node herramientas/desplegar/desplegar.mjs comprobar   la función desplegada: la puerta y la región
 //
-// Ninguna parte escribe un valor en la salida: solo nombres. Las variables que
-// guarda no son secretos, pero tampoco hace falta mostrarlas.
+// Ninguna parte escribe un valor en la salida: solo nombres. La mayoría de lo que
+// guarda no son secretos, pero tampoco hace falta mostrarlo; el secreto que carga
+// (la llave secreta de Turnstile) lo tapa además GitHub en el registro.
 
 import { spawnSync } from 'node:child_process';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
@@ -21,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { leerConfiguracion, VARIABLES } from '../../aplicaciones/servicio/configuracion.ts';
 import {
   COMPROBACION, DEL_ENTORNO, FORMA_DE_LA_REGION, FORMA_DEL_PROYECTO, FUNCION,
-  NUNCA_LOS_CARGA_EL_FLUJO, SECRETOS_QUE_DEBEN_ESTAR, SUPABASE, VARIABLES_QUE_CARGA_EL_FLUJO,
+  NUNCA_LOS_CARGA_EL_FLUJO, SECRETOS_QUE_CARGA_EL_FLUJO, SECRETOS_QUE_DEBEN_ESTAR, SUPABASE, VARIABLES_QUE_CARGA_EL_FLUJO,
 } from './configuracion.mjs';
 
 // Lo que va en el archivo para «supabase secrets set»: sin espacios, comillas ni
@@ -47,9 +48,9 @@ export const direccionDelProyecto = (proyecto) => `https://${proyecto}.${SUPABAS
  */
 export function revisarVariables(entorno) {
   const faltas = [];
-  const leer = (nombre) => {
+  const leer = (nombre, que = 'la variable') => {
     const v = entorno[nombre]?.trim() ?? '';
-    if (v === '') faltas.push(`Falta la variable ${nombre} en el entorno base-real.`);
+    if (v === '') faltas.push(`Falta ${que} ${nombre} en el entorno base-real.`);
     return v;
   };
   const proyecto = leer(DEL_ENTORNO.proyecto);
@@ -58,12 +59,16 @@ export function revisarVariables(entorno) {
   if (region !== '' && !FORMA_DE_LA_REGION.test(region)) faltas.push(`${DEL_ENTORNO.region} debe ser el nombre de una región, como la de la base (por ejemplo, xx-nombre-1).`);
 
   const valores = {};
-  for (const nombre of VARIABLES_QUE_CARGA_EL_FLUJO) {
+  const cargados = [
+    ...VARIABLES_QUE_CARGA_EL_FLUJO.map((nombre) => [nombre, 'la variable']),
+    ...SECRETOS_QUE_CARGA_EL_FLUJO.map((nombre) => [nombre, 'el secreto']),
+  ];
+  for (const [nombre, que] of cargados) {
     if (NUNCA_LOS_CARGA_EL_FLUJO.includes(nombre)) {
       faltas.push(`${nombre} es un secreto o tiene su propio camino: este flujo no lo guarda.`);
       continue;
     }
-    const v = leer(nombre);
+    const v = leer(nombre, que);
     if (v !== '' && !VALOR_SIMPLE.test(v)) faltas.push(`${nombre} no puede llevar espacios, comillas ni barras invertidas.`);
     valores[nombre] = v;
   }

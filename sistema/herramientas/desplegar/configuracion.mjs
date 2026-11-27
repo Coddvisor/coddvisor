@@ -29,6 +29,16 @@ export const VARIABLES_QUE_CARGA_EL_FLUJO = [
   VARIABLES.llavesDelPase,
   VARIABLES.direccionDeLasCuentas,
   VARIABLES.clavePublicaDeLasCuentas,
+  // La llave del sitio de Turnstile es pública: el servicio se la da a las páginas.
+  VARIABLES.llaveDelSitioDelCaptcha,
+];
+
+// Los secretos que no tienen ceremonia propia: el fundador los deja en los
+// secretos del entorno de GitHub «base-real» (supabase/turnstile.md, paso 3) y el
+// flujo los guarda en los de la función, por el mismo archivo que las variables.
+// GitHub los tapa en el registro.
+export const SECRETOS_QUE_CARGA_EL_FLUJO = [
+  VARIABLES.secretoDelCaptcha,
 ];
 
 // Los secretos de verdad: los guardan sus ceremonias, nunca este flujo, y la

@@ -17,12 +17,14 @@ la misma fila que las migraciones y la llave del portero: una corrida a la vez.
 1. **Verificar**, sin secretos: `npm run verificar` y que el candado de Deno
    (`deno.lock`, ver abajo) exista y coincida.
 2. **Desplegar**, en el entorno protegido `base-real`, después de su aprobación:
-   1. Revisa que estén todas las variables del entorno y que sirvan. Si falta
-      una, termina sin tocar nada y dice cuál.
+   1. Revisa que estén todas las variables del entorno, y la llave secreta de
+      Turnstile, y que sirvan. Si falta una, termina sin tocar nada y dice cuál.
    2. Mira en Supabase que ya estén los secretos que guardan las ceremonias. Si
       falta uno, termina sin desplegar: sin ellos la función no arranca.
-   3. Guarda las variables que no son secretas en **Edge Functions → Secrets**
-      de Supabase, para que nadie las escriba a mano en el panel.
+   3. Guarda las variables que no son secretas, y las dos llaves de Turnstile
+      (`CODDVISOR_CAPTCHA_LLAVE_DEL_SITIO` y `CODDVISOR_CAPTCHA_SECRETO`), en
+      **Edge Functions → Secrets** de Supabase, para que nadie las escriba a mano
+      en el panel.
    4. Despliega la función, sin la revisión del pase de Supabase en el
       encabezado (lo pide `supabase/config.toml`: las rutas revisan la cookie).
    5. Llama a la función directo, como lo haría un extraño, pidiendo la región
@@ -83,6 +85,17 @@ mismo que ya está en la variable `SUPABASE_PROYECTO_REF` (20 letras y números)
 | `CODDVISOR_PASE_LLAVES` | `https://<ref>.supabase.co/auth/v1/.well-known/jwks.json` |
 | `CODDVISOR_CUENTAS_DIRECCION` | `https://<ref>.supabase.co/auth/v1` |
 | `CODDVISOR_CUENTAS_CLAVE_PUBLICA` | La clave pública del proyecto: en Supabase, **Project Settings → API Keys**, la que empieza con `sb_publishable_`. Nunca la que empieza con `sb_secret_`: el flujo y el servicio la rechazan |
+| `CODDVISOR_CAPTCHA_LLAVE_DEL_SITIO` | La **Site Key** (llave del sitio) del widget de Turnstile de Coddvisor: `sistema/supabase/turnstile.md`, pasos 1 y 3. Es pública |
+
+Y un solo **secreto** del entorno (**Environment secrets → Add environment
+secret**), porque no tiene ceremonia propia:
+
+| Nombre | Valor |
+|---|---|
+| `CODDVISOR_CAPTCHA_SECRETO` | La **Secret Key** (llave secreta) del mismo widget de Turnstile (`sistema/supabase/turnstile.md`, paso 3). GitHub la tapa en el registro y el flujo la guarda en Supabase sin mostrarla |
+
+El flujo no despliega con las llaves de prueba de Cloudflare (`1x...`, `2x...`,
+`3x...`) ni con las dos cruzadas: lo dice en su primer paso.
 
 `SUPABASE_PROYECTO_REF` ya está desde el 27-nov-2026. El flujo comprueba que las
 tres direcciones de Auth sean exactamente las de ese proyecto, sin barra al
@@ -187,8 +200,9 @@ Desplegar no abre nada al público: el registro sigue apagado
 
 ## Si algo falla
 
-- **«Falta la variable ...»** o **«... debe ser exactamente la dirección de
-  Auth...»**: corrija esa variable en el entorno y corra de nuevo. Nada cambió.
+- **«Falta la variable ...»**, **«Falta el secreto ...»** o **«... debe ser
+  exactamente la dirección de Auth...»**: corrija esa variable (o ese secreto)
+  en el entorno y corra de nuevo. Nada cambió.
 - **«Falta deno.lock»**: falta el paso 2 de «Lo que se prepara una sola vez».
 - **«Faltan en los secretos de Supabase: ...»**: falta la ceremonia de ese
   secreto. Nada cambió.

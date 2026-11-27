@@ -11,10 +11,12 @@
 // con ?error=correo, y el aviso dice lo más probable (otro correo en Google) y
 // qué hacer. Si la persona canceló en Google, vuelve con ?error=cancelado, y el
 // aviso dice solo eso. Si Supabase no dejó crear la cuenta por otra razón,
-// vuelve con ?error=otro. El correo escrito se guarda en esta pestaña para no escribirlo de
+// vuelve con ?error=otro. Con el correo va la prueba de que es una persona
+// (comun/captcha.js), que revisa el servicio. El correo escrito se guarda en esta pestaña para no escribirlo de
 // nuevo (EX-12): vive solo en este navegador y se borra al cerrar la pestaña.
 
 import { arrancar, avisar, avisarFallo, callar, irA, mientras, pedir } from "../comun/oficina.js";
+import { prepararCaptcha, pruebaLista, renovarCaptcha } from "../comun/captcha.js";
 
 /** La ida a Google para crear la cuenta: una ruta del servicio, no una página. */
 const IR_A_GOOGLE = "/api/abrir/cuenta";
@@ -51,6 +53,9 @@ arrancar(async () => {
   const formulario = /** @type {HTMLFormElement} */ (document.getElementById("formulario"));
   const correo = /** @type {HTMLInputElement} */ (document.getElementById("correo"));
   const boton = /** @type {HTMLButtonElement} */ (document.getElementById("seguir"));
+  // Se prepara mientras la persona escribe: no se espera aquí.
+  const captcha = prepararCaptcha(/** @type {HTMLElement} */ (document.getElementById("captcha")));
+  captcha.catch(() => undefined);
 
   correo.value = correoGuardado();
   const motivo = new URLSearchParams(window.location.search).get("error");
@@ -80,7 +85,10 @@ arrancar(async () => {
       return;
     }
     void mientras(boton, "abrir.google.preparando", async () => {
-      const r = await pedir("/api/abrir/permiso", { correo: escrito });
+      const prueba = await pruebaLista(captcha);
+      if (prueba === null) return;
+      const r = await pedir("/api/abrir/permiso", { correo: escrito, captcha: prueba });
+      renovarCaptcha(captcha);
       if (r.estado === 200) {
         guardarCorreo(escrito);
         irA(IR_A_GOOGLE);

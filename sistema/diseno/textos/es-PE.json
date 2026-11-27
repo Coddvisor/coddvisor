@@ -5,7 +5,11 @@
   "comun.error.red": "No hay conexión. Revise su internet y vuelva a intentar.",
   "comun.error.general": "Algo falló de nuestro lado. Vuelva a intentar en un momento.",
   "comun.error.sesion": "Su sesión terminó. Vuelva a entrar.",
-  "comun.error.demasiados": "Hubo muchos intentos seguidos. Espere unos minutos y vuelva a intentar.",
+  "comun.error.demasiados": "Hubo muchos intentos seguidos. Espere unos minutos y vuelva a intentar. Si el aviso sigue, inténtelo mañana.",
+  "comun.error.altas-del-dia": "Por hoy no podemos abrir más negocios nuevos. Vuelva a intentarlo mañana.",
+  "comun.captcha.espere": "Estamos comprobando que usted es una persona. Espere un momento y vuelva a tocar el botón.",
+  "comun.captcha.fallo": "No pudimos comprobar que usted es una persona. Espere un momento y vuelva a intentar.",
+  "comun.captcha.no-cargo": "No cargó la comprobación de que usted es una persona. Revise su internet y vuelva a abrir la página.",
 
   "entrar.titulo-de-la-pagina": "Entrar a Coddvisor",
   "entrar.titulo": "Entre a su negocio",

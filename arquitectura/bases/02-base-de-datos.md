@@ -340,7 +340,11 @@ no pueden saltarse la seguridad por fila. Además:
   que acaba de abrir; la de identidad incluye anexar al registro de entradas
   y, desde abrir un negocio, crear y leer la primera empresa y el primer local
   y leer el país y sus regímenes. (Cambios del 26-nov-2026, tramo 2b de la
-  identidad y abrir un negocio.)
+  identidad y abrir un negocio.) Desde los cupos compartidos, la de identidad
+  lee el catálogo `identidad.tope_de_cupo` y lee, anexa y actualiza
+  `control.cupo_usado`, solo por su puerta `identidad.usar_cupos`, que el
+  servicio ejecuta con su firma. (Cambio del 27-nov-2026, pendiente de la
+  aprobación del fundador.)
 - Una tabla de custodia, la aplicación y el rol de los libros solo la leen. La
   escribe una puerta, y nadie por su clase. Las de identidad las escriben las
   puertas de `coddvisor_identidad`, que la aplicación ejecuta con la firma del
@@ -450,7 +454,9 @@ un negocio (`portero.marca`, sin filas) y los permisos de alta que anota «Abra 
 para que el gancho de Supabase Auth deje crear la cuenta (`control.alta_permitida`,
 solo la huella del correo y su vencimiento) y el registro de las migraciones
 que el migrador aplicó a la base, con su huella (`control.migracion_aplicada`,
-que solo se anexa). Lo
+que solo se anexa) y lo usado de cada cupo compartido de intentos y de permisos
+de alta, por la huella de su clave y por ventana (`control.cupo_usado`: la IP, el
+correo o la sesión que se cuentan no tienen negocio todavía). Lo
 que es de un negocio vive dentro del negocio, donde lo cuidan el aislamiento y
 los sellos. La lista está en la configuración del verificador
 (`tablasDeControl`). Una tabla de control que no figura en ella es una falta, y
@@ -459,7 +465,8 @@ la lista con su porqué, y lo aprueba el fundador. (`control.negocio` entra el
 26-nov-2026, con el tramo 3 de la identidad; `control.alta_permitida`, el mismo
 día, con la barrera de altas, pendiente de la aprobación del fundador;
 `control.migracion_aplicada`, el mismo día, con el camino de las migraciones,
-también pendiente de su aprobación.)
+también pendiente de su aprobación; `control.cupo_usado`, el 27-nov-2026, con
+los cupos compartidos, pendiente de su aprobación.)
 
 **BD-17. Los datos personales no dejan rastro en los resúmenes de la base.**
 La base guarda resúmenes de cada columna (los valores más frecuentes, los
@@ -506,7 +513,7 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 | La tarea anotada de la que nace cada trabajo automático, y que el portero compruebe que el negocio firmado es el de esa tarea. Trae un propósito nuevo, con el id de la tarea en la firma, y el programa de los trabajos cambia su firma | Primer trabajo de fondo (decisión 7) |
 | La tabla de cajas, a la que apunten la caja del contexto y la de cada entrada. Y si el sello guarda también la caja (hoy guarda solo `actor_actual()`, así que una fila escrita desde la caja no se distingue de una escrita desde el panel): se decide antes de crear la primera tabla de la caja, porque un libro no se corrige hacia atrás | Contrato de la caja, al publicarse (decisiones 6 y 11) |
 | Cuánto se guardan las entradas (al menos dos años, como dato) y los intentos fallidos (`control.intento`) | Conservación de datos y propuesta de identidad, decisiones 13 y 14 |
-| El freno de intentos del servicio para la contraseña y el código del segundo paso: un tope con nombre en `LIMITES_DEL_SERVICIO`, contado por sesión y por cuenta en `control.intento` (no en memoria, para que valga con varias funciones), que al pasarse cierra la sesión aal1. Hasta entonces solo frena el proveedor de cuentas, y Supabase frena por IP | Proveedor de cuentas real y `control.intento` (decisiones 13 y 14) |
+| Que pasarse del cupo de códigos fallidos cierre la sesión aal1, y contar también por cuenta. Los cupos compartidos ya cuentan en la base, para todas las copias del servicio, por IP, por correo y por sesión (`control.cupo_usado`, con sus topes como datos en `identidad.tope_de_cupo`; cupos compartidos, 27-nov-2026) | Proveedor de cuentas real y `control.intento` (decisiones 13 y 14) |
 | Revocar todos los pases de una cuenta (cambiar la contraseña, suspender a alguien) con una puerta que fije `control.cuenta.pases_revocados_en`. Cerrar una sesión al salir ya existe (`control.sesion_cerrada`, tramo 3, parte 2) | Recuperar la contraseña y suspender membresías (decisiones 5 y 9) |
 | Archivar las filas de `control.sesion_cerrada` cuyo pase ya venció: solo importan una hora, y la tabla crece con cada salida | Primer trabajo de fondo (decisión 7) |
 | Copiar el índice de accesos (su estado y la copia de los roles) con un trabajo que se puede repetir, en vez de en la misma transacción, y el trabajo que revisa que coincida con lo de adentro | Enrutador de celdas, cuando haya más de una |
@@ -519,10 +526,11 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 | Campos propios y su definición | Módulo de configuración (D16) |
 | Valores legales del Perú en `parametro_legal`, entre ellos los topes, categorías y tasas de cada régimen tributario, y la norma y la fecha legal de cada régimen (`nucleo.regimen_tributario.norma_fuente` está vacía, y su `vigente_desde`, 2017-01-01, es la fecha desde la que el sistema ofrece la opción, no el inicio legal), y la nota de la primera pregunta de «Abra su negocio» sobre qué comprobantes entrega cada régimen | Confirmación del contador asesor, con norma y fecha |
 | El historial del régimen de una empresa (el perfil fiscal con vigencia): hoy `nucleo.empresa.regimen_codigo` guarda el que eligió al abrir | La primera pantalla que deje cambiar de régimen |
-| Abrir un negocio con una cuenta real. Ya existen el proveedor real, el gancho que deja pasar solo las altas con Google cuyo correo pasó por «Abra su negocio» (`ganchos.antes_de_crear_cuenta` y `control.alta_permitida`) y las rutas para inscribir la app de códigos. Falta: la pantalla que pide el correo de Google antes de ir a Google, la de inscribir la app, el alta con correo y su enlace de un solo uso (el programa aparte con la llave de administrador, que usa `POST /admin/users` y nunca `/invite`: según el código de GoTrue, las invitaciones pasan por el gancho y las altas del administrador no; se confirma en el proyecto de pruebas), la prueba de que no es un robot, el límite compartido de permisos y de altas de cuentas por día (hoy el servicio pone solo uno propio, en memoria, por IP; el de negocios abiertos por cuenta ya lo pone `abrir_negocio`). La pantalla que pide el correo dice que use exactamente el de su cuenta de Google: el permiso se compara con la huella exacta, y Google devuelve el correo principal (sin los puntos o el googlemail.com que la persona pueda escribir) | Pantallas de «Abra su negocio» y programa de administrador (decisiones 8 bis y 10) |
+| Abrir un negocio con una cuenta real. Ya existen el proveedor real, el gancho que deja pasar solo las altas con Google cuyo correo pasó por «Abra su negocio» (`ganchos.antes_de_crear_cuenta` y `control.alta_permitida`) y las rutas para inscribir la app de códigos. Falta: la pantalla que pide el correo de Google antes de ir a Google, la de inscribir la app, el alta con correo y su enlace de un solo uso (el programa aparte con la llave de administrador, que usa `POST /admin/users` y nunca `/invite`: según el código de GoTrue, las invitaciones pasan por el gancho y las altas del administrador no; se confirma en el proyecto de pruebas), y que el programa de administrador revise él mismo la prueba de que no es un robot (Supabase no la pide a `POST /admin/users`). La prueba (Cloudflare Turnstile) y los cupos compartidos de permisos y de altas por día ya existen (`sistema/supabase/turnstile.md`); el de negocios abiertos por cuenta lo pone `abrir_negocio`. La pantalla que pide el correo dice que use exactamente el de su cuenta de Google: el permiso se compara con la huella exacta, y Google devuelve el correo principal (sin los puntos o el googlemail.com que la persona pueda escribir) | Pantallas de «Abra su negocio» y programa de administrador (decisiones 8 bis y 10) |
 | Aceptar una invitación entrando con Google, para alguien que todavía no tiene cuenta: el gancho la niega porque su correo no tiene un permiso de «Abra su negocio». La invitación tendrá que anotar su propio permiso (la huella del correo en `control.alta_permitida` o en una tabla hermana). La decisión 8 bis lo pone como condición: la barrera no está completa sin esto | Invitaciones (decisión 8 bis) |
-| Un límite de intentos compartido entre las copias del servicio, que la función acepte solo pedidos del Worker, y cómo pasar a Supabase la IP de la persona sin la llave secreta (decisión 10) | Fundador, antes de abrir al público (`sistema/supabase/LEEME.md`) |
+| Que la función acepte solo pedidos del Worker, y cómo pasar a Supabase la IP de la persona sin la llave secreta (decisión 10) | Fundador, antes de abrir al público (`sistema/supabase/LEEME.md`) |
 | Archivar los permisos de alta vencidos (`control.alta_permitida`): solo importan diez minutos | Primer trabajo de fondo (decisión 7) |
+| Archivar las filas de `control.cupo_usado` cuya ventana ya venció: solo importan cinco minutos o un día, y la tabla crece con cada clave y cada ventana | Primer trabajo de fondo (decisión 7) |
 | Que cada rubro proponga sus plantillas (la tabla que une `configuracion.rubro` con `plantilla`) | La primera plantilla publicada (`molde-de-rubro.md`) |
 
 Ninguna migración se aplicó a una base real. El camino ya existe

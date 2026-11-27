@@ -60,6 +60,12 @@ export const configuracion = {
     // D24: las migraciones solo desde la revisión automática). Es de la base
     // entera, no de un negocio. Camino de las migraciones, 26-nov-2026.
     'control.migracion_aplicada',
+    // Lo usado de cada cupo compartido (intentos fallidos, permisos de alta),
+    // por la huella de su clave y por ventana de tiempo: la IP, el correo o la
+    // sesión que se cuentan todavía no tienen negocio, o no se sabe de cuál son.
+    // Va en la base porque es lo único que ven todas las copias de la función
+    // (plan de despliegue, paso 22; decisión 8 bis). Cupos compartidos, 27-nov-2026.
+    'control.cupo_usado',
   ],
 
   // Lista cerrada, tabla por tabla, para un rol que no trabaja por clase. Si
@@ -105,6 +111,10 @@ export const configuracion = {
       // El botón «Abra su negocio» anota un permiso de alta y el gancho de
       // Supabase Auth lo lee. Solo se anexa (barrera de altas, decisión 8 bis).
       'control.alta_permitida': ['SELECT', 'INSERT'],
+      // Los cupos compartidos: la puerta lee los topes y suma lo usado en la
+      // fila de cada ventana (cupos compartidos, 27-nov-2026).
+      'identidad.tope_de_cupo': ['SELECT'],
+      'control.cupo_usado': ['SELECT', 'INSERT', 'UPDATE'],
     },
   },
 
@@ -155,6 +165,8 @@ export const configuracion = {
     // de esta lista que no es de Coddvisor. Ese rol no recibe ninguna tabla.
     'identidad.permitir_alta': ['coddvisor_app'],
     'ganchos.antes_de_crear_cuenta': ['supabase_auth_admin'],
+    // Los cupos compartidos de intentos y de permisos de alta (27-nov-2026).
+    'identidad.usar_cupos': ['coddvisor_app'],
     // La única que anexa el rubro elegido. Es del rol de los libros y solo la
     // ejecuta la puerta que abre un negocio, dentro del negocio que abrió.
     'configuracion.anotar_rubro': ['coddvisor_identidad'],

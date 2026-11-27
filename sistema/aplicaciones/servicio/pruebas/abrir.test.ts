@@ -9,6 +9,7 @@ import { after, before, describe, it } from "node:test";
 import { abrirNegocio, campoTexto, campoTextoOpcional, campoUuid, LIMITES_DE_IDENTIDAD } from "#modulos/identidad";
 import { COOKIES } from "../rutas/http.ts";
 import { PAGINAS, RUTAS } from "../rutas/rutas.ts";
+import { TURNSTILE_DE_PRUEBA } from "./turnstile-falso.ts";
 import { montarEntrar, type Montaje } from "./montaje.ts";
 import { CODIGO_DE_PRUEBA, CONTRASENA_DE_EJEMPLO } from "./ejemplo.ts";
 import { codigoDeError, comoServicio, uuid7 } from "../../../modulos/identidad/pruebas/apoyo.ts";
@@ -142,7 +143,7 @@ describe("la cuenta nueva", () => {
 
 describe("la app de códigos se inscribe una sola vez", () => {
   async function entrarCon(correo: string): Promise<Jarro> {
-    const r = await pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo, contrasena: CONTRASENA_DE_EJEMPLO } });
+    const r = await pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo, contrasena: CONTRASENA_DE_EJEMPLO, captcha: TURNSTILE_DE_PRUEBA.prueba } });
     assert.equal(r.status, 200);
     return guardar(new Map(), r);
   }

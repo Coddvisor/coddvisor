@@ -8,6 +8,7 @@ Esta carpeta tiene lo que pide Supabase para desplegar el servicio:
 | `functions/servicio/index.ts` | El arranque del servicio como función de Supabase, en Deno: `Deno.serve` delante del mismo manejador que prueban las pruebas en Node, con el repartidor de Postgres de verdad. No tiene lógica |
 | `functions/servicio/deno.json` | Traduce los nombres con `#` de `package.json`, que Deno no lee, y trae el controlador de Postgres por `npm:postgres@3.4.9`. Una prueba exige que digan lo mismo que `package.json`, versión incluida |
 | `functions/servicio/pruebas/` | La prueba del arranque en Node, con un Deno de mentira y la base en memoria detrás de un puerto |
+| `turnstile.md` | La prueba de que es una persona (Cloudflare Turnstile) y los cupos compartidos: qué protegen y qué hace el fundador, paso a paso |
 
 La función ya habla con la base: el repartidor de Postgres
 (`aplicaciones/servicio/base/postgres.ts`, con postgres.js) entra con el rol
@@ -143,10 +144,9 @@ de pruebas):
 **Authentication → Sign In / Providers → Allow new users to sign up**:
 **encendido**, pero solo cuando el paso 5 está hecho **y** cuando existan la
 prueba de que no es un robot y un límite compartido de permisos y de altas por
-día (decisión 8 bis: «las mismas protecciones que el alta con correo»). Hoy
-`POST /api/abrir/permiso` tiene solo un límite propio en la memoria de cada
-copia de la función, por IP, y la base no anota otro permiso mientras un correo
-tenga uno vigente: no alcanza para una puerta pública. Sin el gancho, cualquiera
+día (decisión 8 bis: «las mismas protecciones que el alta con correo»). Las dos
+ya existen en el código (`turnstile.md`): falta que usted cree el widget y ponga
+sus llaves, y desplegar la función. Sin el gancho, cualquiera
 podría crear una cuenta con «Continuar con Google» o con correo y contraseña.
 Con el gancho, Supabase crea una cuenta solo con Google y solo si ese correo
 pasó antes por el botón «Abra su negocio».
@@ -157,8 +157,9 @@ pasó antes por el botón «Abra su negocio».
   que no es un robot y del límite compartido de permisos y altas por día.
 - **El botón público «Abra su negocio» y el despliegue de la función**, por lo
   mismo: ninguno llega antes de esas dos protecciones.
-- **La prueba de que no es un robot (CAPTCHA)**: necesita una cuenta en un
-  servicio aparte; la decide el fundador con su costo.
+- **La prueba de que no es un robot (CAPTCHA)** en **Attack Protection**: se
+  enciende después de desplegar la función que manda la prueba
+  (`turnstile.md`, paso 2).
 - **Un servidor de correo propio (custom SMTP)**: es un servicio que se contrata.
 - **Otros proveedores** (Apple, Facebook, GitHub...), **teléfono**, **Web3** y
   **llaves de acceso (passkeys)**: fuera de la decisión 8.
@@ -190,21 +191,20 @@ las personas juntas**. Lo que ya hace el servicio:
 
 - un 429 de Supabase se responde «demasiados_intentos» (503) y **no** borra la
   sesión de nadie;
-- un límite propio antes de llamar a Supabase: contraseñas fallidas por IP y por
-  correo, códigos fallidos por IP y por sesión, permisos de alta por IP
-  (`LIMITES_DEL_SERVICIO`). La IP es la del encabezado `x-coddvisor-ip`, que
-  pone el Worker de Cloudflare, y se cree solo si el pedido trae el secreto del
-  Worker;
+- cupos compartidos antes de llamar a Supabase, contados en la base para todas
+  las copias de la función: contraseñas fallidas por IP y por correo, códigos
+  fallidos por IP y por sesión, permisos de alta por IP y de todo el sistema, en
+  ventanas de cinco minutos y de un día (`turnstile.md`). Los topes son datos de
+  `identidad.tope_de_cupo`. La IP es la que el Worker de Cloudflare pone en
+  `x-coddvisor-ip` (no `cf-connecting-ip`, que detrás del Worker trae la IP del
+  Worker), y se cree solo si el pedido trae el secreto del Worker;
 - solo atiende al Worker: la función de Supabase se puede llamar directo, pero
   responde 403 a todo pedido sin el secreto del Worker
-  (`x-coddvisor-repartidor`, `CODDVISOR_REPARTIDOR_SECRETO`), y solo con él cree
-  la IP (`aplicaciones/servicio/rutas/puerta.ts`).
+  (`x-coddvisor-repartidor`, `CODDVISOR_REPARTIDOR_SECRETO`), antes de mirar la
+  ruta, y solo con él cree la IP (`aplicaciones/servicio/rutas/puerta.ts`).
 
 Lo que falta, y no se resuelve sin el fundador:
 
-- Ese límite vive en la memoria de cada copia de la función: no es compartido.
-  Hace falta uno compartido (una regla de límite en el Worker de Cloudflare o
-  una tabla en la base) antes de abrir al público.
 - El Worker de Cloudflare ya está en el repositorio
   (`aplicaciones/repartidor/`) y pone los dos encabezados, pero se publica
   aparte, con el flujo «Desplegar el repartidor»
@@ -355,3 +355,10 @@ Y la de la base:
 
 Es un secreto: lleva la contraseña. El servicio no arranca si el usuario no es
 `coddvisor_entrada`, si falta `sslmode` o si trae otra opción.
+
+Y las de Cloudflare, que nadie pega a mano en el panel:
+
+| Variable | Qué va | Quién la pone |
+|---|---|---|
+| `CODDVISOR_CAPTCHA_LLAVE_DEL_SITIO` y `CODDVISOR_CAPTCHA_SECRETO` | Las dos llaves del widget de Turnstile | El fundador las deja en el entorno `base-real` de GitHub (`turnstile.md`, paso 3) y el flujo «Desplegar el servicio» las guarda aquí (`sistema/herramientas/desplegar/LEEME.md`) |
+| `CODDVISOR_REPARTIDOR_SECRETO` | El secreto que comparte con el Worker | El flujo «Desplegar el repartidor» con «nuevo», que lo guarda aquí y en el Worker (`sistema/herramientas/repartidor/LEEME.md`, paso 5) |

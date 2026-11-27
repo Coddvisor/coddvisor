@@ -22,7 +22,7 @@
  * que no vive aquí para que el arranque de verdad no la pueda elegir.
  */
 import { deTexto, igualesSinPrisa } from "#modulos/identidad";
-import { LIMITES_DEL_SERVICIO } from "../configuracion.ts";
+import { ENCABEZADO_DE_LA_IP, ipDe } from "./ip.ts";
 
 /**
  * Los encabezados que pone el Worker. Son el contrato entre las dos piezas: si
@@ -30,16 +30,17 @@ import { LIMITES_DEL_SERVICIO } from "../configuracion.ts";
  */
 export const ENCABEZADOS_DEL_WORKER = {
   secreto: "x-coddvisor-repartidor",
-  ip: "x-coddvisor-ip",
+  ip: ENCABEZADO_DE_LA_IP,
 } as const;
-
-/** La IP con que se cuentan los pedidos que no traen una que se pueda creer. Todos ellos comparten esta clave. */
-export const SIN_IP = "sin-ip";
 
 /** Lo que la puerta sabe de un pedido que dejó pasar. */
 export interface EntradaPorLaPuerta {
-  /** La IP de la persona, para los límites por IP. SIN_IP si no vino o no sirve. */
-  readonly ip: string;
+  /**
+   * La IP de la persona, tal como la mandó el Worker (rutas/ip.ts, ipDe): la que
+   * va a Turnstile y de la que salen las claves de los cupos. null si no vino o no
+   * se entiende: entonces cuenta como «sin-ip», una sola clave para todos.
+   */
+  readonly ip: string | null;
 }
 
 /** Revisa de dónde viene un pedido. null: no vino por el Worker, y se responde 403. */
@@ -49,13 +50,6 @@ async function huella(texto: string): Promise<Uint8Array> {
   return new Uint8Array(await crypto.subtle.digest("SHA-256", deTexto(texto)));
 }
 
-/** La IP que trae el encabezado, si parece una: sin espacios por dentro y con el largo de una IPv6 como mucho. */
-export function ipDelEncabezado(valor: string | null): string {
-  const ip = valor?.trim() ?? "";
-  if (ip === "" || ip.length > LIMITES_DEL_SERVICIO.largoMaximoDeUnaIp || /\s/.test(ip)) return SIN_IP;
-  return ip;
-}
-
 /** La puerta de verdad: exige el secreto del Worker en cada pedido. */
 export function puertaDelWorker(secreto: string): Puerta {
   return async (pedido) => {
@@ -63,6 +57,7 @@ export function puertaDelWorker(secreto: string): Puerta {
     // Las dos huellas se calculan siempre, también cuando el encabezado falta: el «no» tarda lo mismo.
     const [a, b] = await Promise.all([huella(secreto), huella(recibido ?? "")]);
     if (recibido === null || !igualesSinPrisa(a, b)) return null;
-    return { ip: ipDelEncabezado(pedido.headers.get(ENCABEZADOS_DEL_WORKER.ip)) };
+    // Solo aquí, con el secreto ya revisado, se lee la IP que mandó el Worker.
+    return { ip: ipDe(pedido) };
   };
 }

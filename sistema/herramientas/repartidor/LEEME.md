@@ -211,7 +211,10 @@ curl -sI https://app.coddvisor.com/entrar/
 ```
 
 Tiene que responder 200 con `content-security-policy`, `x-content-type-options:
-nosniff`, `referrer-policy: same-origin` y `strict-transport-security`.
+nosniff`, `referrer-policy: same-origin` y `strict-transport-security`. La
+política deja cargar solo lo de `app.coddvisor.com` y, para la prueba de que es
+una persona (Turnstile, `sistema/supabase/turnstile.md`),
+`https://challenges.cloudflare.com` en `script-src` y `frame-src`.
 
 ```bash
 curl -sI http://app.coddvisor.com/entrar/ | head -3

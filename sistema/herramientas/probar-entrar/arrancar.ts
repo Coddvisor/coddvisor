@@ -50,9 +50,14 @@ const TIPOS: Readonly<Record<string, string>> = {
   ".png": "image/png",
 };
 
-/** Lo mismo que pedirán las páginas en Cloudflare: nada de afuera, nada en línea. */
+/**
+ * Lo mismo que pedirán las páginas en Cloudflare: nada de afuera ni en línea,
+ * salvo Turnstile (su script y su marco), que pide script-src y frame-src
+ * https://challenges.cloudflare.com
+ * (developers.cloudflare.com/turnstile/reference/content-security-policy, 27-nov-2026).
+ */
 const SEGURIDAD_DE_LAS_PAGINAS: Readonly<Record<string, string>> = {
-  "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+  "content-security-policy": "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
   "x-content-type-options": "nosniff",
   "referrer-policy": "same-origin",
   "cache-control": "no-cache",
@@ -78,7 +83,10 @@ const PUERTO = puertoPedido(argumentos);
 const ORIGEN = `http://localhost:${String(PUERTO)}`;
 
 console.log("\nPreparando la base en memoria y los datos de ejemplo...");
-const montaje = await montarEntrar({ origen: ORIGEN, anotarFallo: (error) => { console.error("Falló un pedido:", error); } });
+// Turnstile con sus llaves de prueba oficiales (aplicaciones/servicio/pruebas/turnstile-falso.ts):
+// el widget y siteverify son los de Cloudflare, así que la prueba de que es una
+// persona necesita internet, como la página.
+const montaje = await montarEntrar({ origen: ORIGEN, anotarFallo: (error) => { console.error("Falló un pedido:", error); }, pedirAlCaptcha: async (pedido) => await fetch(pedido) });
 const { cuentas } = montaje.ejemplo;
 
 /** Lo que muestra el aviso de prueba en cada página. Solo existe aquí. */

@@ -8,9 +8,10 @@ import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, before, describe, it } from "node:test";
-import { ENCABEZADOS, FRENOS, SEGURIDAD_DE_LAS_PAGINAS, SOLO_CON_CIFRADO, VARIABLES as DEL_WORKER } from "../../../aplicaciones/repartidor/publico.ts";
+import { ENCABEZADOS, esDeEntrar, FRENOS, SEGURIDAD_DE_LAS_PAGINAS, SOLO_CON_CIFRADO, VARIABLES as DEL_WORKER } from "../../../aplicaciones/repartidor/publico.ts";
 import { leerConfiguracion, VARIABLES as DE_LA_FUNCION } from "../../../aplicaciones/servicio/configuracion.ts";
 import { ENCABEZADOS_DEL_WORKER, puertaDelWorker } from "../../../aplicaciones/servicio/rutas/puerta.ts";
+import { RUTAS } from "../../../aplicaciones/servicio/rutas/rutas.ts";
 import { armarElDespliegue, configuracionDeWrangler, DESPLIEGUE, publicar, revisarProyecto, secretoNuevo, SISTEMA, VARIABLES, type Programa } from "../despliegue.ts";
 
 const PROYECTO = "abcdefghijklmnopqrst";
@@ -207,6 +208,18 @@ describe("el contrato con la función", () => {
     const entrada = await puerta(new Request("https://servicio.ejemplo.test/api/negocios", { headers: { [ENCABEZADOS.secreto]: secreto, [ENCABEZADOS.ip]: "203.0.113.7" } }));
     assert.deepEqual(entrada, { ip: "203.0.113.7" });
     assert.equal(await puerta(new Request("https://servicio.ejemplo.test/api/negocios", { headers: { [ENCABEZADOS.ip]: "203.0.113.7" } })), null);
+  });
+
+  it("el freno corto del Worker cubre todas las rutas de la función que cuentan cupos o piden la prueba de Turnstile", () => {
+    for (const ruta of [RUTAS.entrarConCorreo, RUTAS.segundoPaso, RUTAS.confirmarInscripcion, RUTAS.permisoDeAlta, RUTAS.captcha]) assert.ok(esDeEntrar(ruta), ruta);
+  });
+
+  it("las páginas del Worker dejan cargar el script y el marco de Turnstile", () => {
+    const politica = SEGURIDAD_DE_LAS_PAGINAS["content-security-policy"] ?? "";
+    for (const directiva of ["script-src", "frame-src"]) {
+      const valor = politica.split(";").map((d) => d.trim()).find((d) => d.startsWith(`${directiva} `)) ?? "";
+      assert.ok(valor.split(" ").includes("https://challenges.cloudflare.com"), directiva);
+    }
   });
 });
 

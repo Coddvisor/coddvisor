@@ -38,8 +38,15 @@ const ENTORNO: Record<string, string> = {
   [VARIABLES.numeroDeLaLlaveDelPortero]: String(NUMERO_DE_LA_LLAVE),
   [VARIABLES.direccionDeLasCuentas]: AUTH,
   [VARIABLES.clavePublicaDeLasCuentas]: "sb_publishable_clave-de-prueba-0123456789",
+  [VARIABLES.llaveDelSitioDelCaptcha]: "0x4AAAAAAAsitio-de-ejemplo",
+  [VARIABLES.secretoDelCaptcha]: "0x4AAAAAAAsecreto-de-ejemplo-0123456789",
   [VARIABLES.secretoDelWorker]: SECRETO_DEL_WORKER,
 };
+/** La prueba de Turnstile que acepta el siteverify de mentira de abajo. */
+const PRUEBA_BUENA = "prueba-de-una-persona";
+/** Lo que recibió siteverify: la función le pregunta con fetch, como en Deno. */
+const alCaptcha: Array<Record<string, unknown>> = [];
+const fetchDeVerdad = globalThis.fetch;
 
 type Atender = (pedido: Request) => Promise<Response>;
 let atender: Atender | null = null;
@@ -66,11 +73,21 @@ before(async () => {
   };
   // Node no tiene los avisos de Deno en globalThis: se dan de mentira.
   (globalThis as Record<string, unknown>)["addEventListener"] = (tipo: string, a: (typeof avisos)[number]["atender"]) => { avisos.push({ tipo, atender: a }); };
+  // siteverify de Turnstile, de mentira: la función lo llama con el fetch global.
+  globalThis.fetch = async (entrada: string | URL | Request, init?: RequestInit): Promise<Response> => {
+    const pedido = new Request(entrada, init);
+    if (pedido.url !== "https://challenges.cloudflare.com/turnstile/v0/siteverify") return await fetchDeVerdad(entrada, init);
+    const cuerpo = JSON.parse(await pedido.text()) as Record<string, unknown>;
+    alCaptcha.push(cuerpo);
+    // Como el de verdad: dice el dominio de la página y la acción del widget.
+    return Response.json({ success: cuerpo["secret"] === ENTORNO[VARIABLES.secretoDelCaptcha] && cuerpo["response"] === PRUEBA_BUENA, hostname: new URL(ORIGEN).hostname, action: "abrir_con_google" });
+  };
   const entrada = (await import("../index.ts")) as { sinElNombreDeLaFuncion: (pedido: Request) => Request };
   sinElNombre = entrada.sinElNombreDeLaFuncion;
 });
 
 after(async () => {
+  globalThis.fetch = fetchDeVerdad;
   delete (globalThis as Record<string, unknown>)["addEventListener"];
   await servidor.cerrar();
   await db.close();
@@ -115,14 +132,19 @@ describe("la función de Supabase", () => {
     const r = await pedir("/api/abrir/permiso", {
       method: "POST",
       headers: { origin: ORIGEN, "content-type": "application/json", "sec-fetch-site": "same-origin", [ENCABEZADOS_DEL_WORKER.ip]: "203.0.113.7" },
-      body: JSON.stringify({ correo: "alguien@ejemplo.test" }),
+      body: JSON.stringify({ correo: "alguien@ejemplo.test", captcha: PRUEBA_BUENA }),
     });
     assert.deepEqual([r.status, await r.json()], [200, { siguiente: "abrir_cuenta" }]);
+    // La prueba de que es una persona se revisó con siteverify, con la llave secreta del entorno y la IP.
+    assert.deepEqual(alCaptcha.at(-1), { secret: ENTORNO[VARIABLES.secretoDelCaptcha], response: PRUEBA_BUENA, remoteip: "203.0.113.7" });
     assert.deepEqual(fallos, []);
     const textos = servidor.textos.slice(antes);
     assert.ok(textos.includes("begin isolation level read committed") && textos.includes("commit"), textos.join(" | "));
     const anotados = await servidor.comoDueno(async () => (await db.query("select count(*)::int as n from control.alta_permitida")).rows[0]?.["n"]);
     assert.equal(anotados, 1);
+    // Y sus cupos compartidos, por la IP y de todos, en la misma transacción y por el controlador de verdad.
+    const cupos = await servidor.comoDueno(async () => (await db.query("select cupo_codigo, usados from control.cupo_usado order by cupo_codigo, ventana_segundos")).rows);
+    assert.deepEqual(cupos.map((f) => [f["cupo_codigo"], f["usados"]]), [["permisos_de_alta_de_todos", 1], ["permisos_de_alta_por_ip", 1], ["permisos_de_alta_por_ip", 1]]);
   });
 
   it("una promesa rechazada sin esperar o un error sin atrapar no tumban la copia: se anotan en el registro", () => {

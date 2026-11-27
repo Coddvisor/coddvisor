@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import { COOKIES } from "../rutas/http.ts";
 import { crearManejador, PAGINAS, RUTAS } from "../rutas/rutas.ts";
+import { TURNSTILE_DE_PRUEBA } from "./turnstile-falso.ts";
 import { montarEntrar, type Montaje } from "./montaje.ts";
 import { puertaSinWorker } from "./puerta-sin-worker.ts";
 import { CODIGO_DE_PRUEBA, CONTRASENA_DE_EJEMPLO, NOMBRES_DE_EJEMPLO } from "./ejemplo.ts";
@@ -71,7 +72,7 @@ function nivelDe(jarro: Jarro): unknown {
 
 async function entrar(c: CuentaDeEjemplo, { segundoPaso = true } = {}): Promise<Jarro> {
   const jarro: Jarro = new Map();
-  const r = await pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo: c.correo, contrasena: c.contrasena } });
+  const r = await pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo: c.correo, contrasena: c.contrasena, captcha: TURNSTILE_DE_PRUEBA.prueba } });
   assert.equal(r.status, 200);
   guardar(jarro, r);
   if (segundoPaso && c.segundoPaso) {
@@ -84,7 +85,7 @@ async function entrar(c: CuentaDeEjemplo, { segundoPaso = true } = {}): Promise<
 
 describe("entrar con correo y contraseña", () => {
   it("con la contraseña correcta deja la sesión en una cookie __Host-, HttpOnly, Secure y SameSite=Strict", async () => {
-    const r = await pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo: m.ejemplo.cuentas.duena.correo, contrasena: CONTRASENA_DE_EJEMPLO } });
+    const r = await pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo: m.ejemplo.cuentas.duena.correo, contrasena: CONTRASENA_DE_EJEMPLO, captcha: TURNSTILE_DE_PRUEBA.prueba } });
     assert.equal(r.status, 200);
     assert.deepEqual(await cuerpo(r), { siguiente: "segundo_paso" });
     const sesion = r.headers.getSetCookie().find((c) => c.startsWith(`${COOKIES.sesion}=`));
@@ -95,14 +96,14 @@ describe("entrar con correo y contraseña", () => {
   });
 
   it("una cuenta sin segundo paso sigue directo a sus negocios", async () => {
-    const r = await pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo: m.ejemplo.cuentas.vendedor.correo, contrasena: CONTRASENA_DE_EJEMPLO } });
+    const r = await pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo: m.ejemplo.cuentas.vendedor.correo, contrasena: CONTRASENA_DE_EJEMPLO, captcha: TURNSTILE_DE_PRUEBA.prueba } });
     assert.deepEqual(await cuerpo(r), { siguiente: "negocios" });
   });
 
   it("una contraseña equivocada y un correo que no existe responden exactamente lo mismo", async () => {
     const respuestas = await Promise.all([
-      pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo: m.ejemplo.cuentas.duena.correo, contrasena: "otra frase que no es la de ella" } }),
-      pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo: "nadie@ejemplo.test", contrasena: CONTRASENA_DE_EJEMPLO } }),
+      pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo: m.ejemplo.cuentas.duena.correo, contrasena: "otra frase que no es la de ella", captcha: TURNSTILE_DE_PRUEBA.prueba } }),
+      pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo: "nadie@ejemplo.test", contrasena: CONTRASENA_DE_EJEMPLO, captcha: TURNSTILE_DE_PRUEBA.prueba } }),
     ]);
     const vistas = await Promise.all(respuestas.map(async (r) => ({ estado: r.status, cuerpo: await r.text(), cookies: r.headers.getSetCookie() })));
     assert.deepEqual(vistas[0], vistas[1]);
@@ -111,7 +112,7 @@ describe("entrar con correo y contraseña", () => {
   });
 
   it("acepta el correo con mayúsculas y espacios alrededor", async () => {
-    const r = await pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo: `  ${m.ejemplo.cuentas.vendedor.correo.toUpperCase()} `, contrasena: CONTRASENA_DE_EJEMPLO } });
+    const r = await pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: { correo: `  ${m.ejemplo.cuentas.vendedor.correo.toUpperCase()} `, contrasena: CONTRASENA_DE_EJEMPLO, captcha: TURNSTILE_DE_PRUEBA.prueba } });
     assert.equal(r.status, 200);
   });
 
@@ -127,7 +128,7 @@ describe("entrar con correo y contraseña", () => {
 });
 
 describe("el origen de todo pedido que cambia algo", () => {
-  const buenCuerpo = () => ({ correo: m.ejemplo.cuentas.vendedor.correo, contrasena: CONTRASENA_DE_EJEMPLO });
+  const buenCuerpo = () => ({ correo: m.ejemplo.cuentas.vendedor.correo, contrasena: CONTRASENA_DE_EJEMPLO, captcha: TURNSTILE_DE_PRUEBA.prueba });
   it("un pedido desde otro sitio, sin Origin o marcado como de otro sitio no entra", async () => {
     for (const p of [{ origen: "https://otro.ejemplo.test" }, { origen: null }, { origen: "https://app.ejemplo.test.otro.test" }, { sitio: "cross-site" }, { sitio: "same-site" }] satisfies Pedido[]) {
       const r = await pedir(RUTAS.entrarConCorreo, { metodo: "POST", cuerpo: buenCuerpo(), ...p });
@@ -278,7 +279,7 @@ describe("salir", () => {
   it("si anotar la sesión falla, la cookie se borra igual y el fallo queda en el registro", async () => {
     const fallos: unknown[] = [];
     const firmarRoto = async (): Promise<never> => { throw new Error("la base no responde"); };
-    const roto = crearManejador({ piezas: { ...m.piezas, firmar: firmarRoto }, proveedor: m.proveedor, origen: ORIGEN, puerta: puertaSinWorker, anotarFallo: (e) => { fallos.push(e); } });
+    const roto = crearManejador({ piezas: { ...m.piezas, firmar: firmarRoto }, proveedor: m.proveedor, origen: ORIGEN, captcha: m.captcha, puerta: puertaSinWorker, anotarFallo: (e) => { fallos.push(e); } });
     const jarro = await entrar(m.ejemplo.cuentas.vendedor);
     const h = new Headers({ origin: ORIGEN, "content-type": "application/json", "sec-fetch-site": "same-origin", cookie: `${COOKIES.sesion}=${encodeURIComponent(jarro.get(COOKIES.sesion) ?? "")}` });
     const r = await roto(new Request(new URL(RUTAS.salir, ORIGEN), { method: "POST", headers: h, body: "{}" }));

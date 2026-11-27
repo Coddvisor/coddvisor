@@ -6,8 +6,8 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
-import { VARIABLES } from '../../../aplicaciones/servicio/configuracion.ts';
-import { COMPROBACION, DEL_ENTORNO, FUNCION, NUNCA_LOS_CARGA_EL_FLUJO, SECRETOS_QUE_DEBEN_ESTAR, SUPABASE, VARIABLES_QUE_CARGA_EL_FLUJO } from '../configuracion.mjs';
+import { leerConfiguracion, VARIABLES } from '../../../aplicaciones/servicio/configuracion.ts';
+import { COMPROBACION, DEL_ENTORNO, FUNCION, NUNCA_LOS_CARGA_EL_FLUJO, SECRETOS_QUE_CARGA_EL_FLUJO, SECRETOS_QUE_DEBEN_ESTAR, SUPABASE, VARIABLES_QUE_CARGA_EL_FLUJO } from '../configuracion.mjs';
 import { archivoDeVariables, comprobar, guardarVariables, revisarVariables, secretosQueFaltan } from '../desplegar.mjs';
 
 const PROYECTO = 'abcdefghij0123456789';
@@ -22,7 +22,12 @@ const bueno = {
   [VARIABLES.llavesDelPase]: `${AUTH}/.well-known/jwks.json`,
   [VARIABLES.direccionDeLasCuentas]: AUTH,
   [VARIABLES.clavePublicaDeLasCuentas]: 'sb_publishable_clave-de-prueba-0123456789',
+  // Con la forma de las llaves de Turnstile, sin ser las de prueba (que el servicio no acepta).
+  [VARIABLES.llaveDelSitioDelCaptcha]: '0x4AAAAAAAsitio-de-ejemplo',
+  [VARIABLES.secretoDelCaptcha]: '0x4AAAAAAAsecreto-de-ejemplo-0123456789',
 };
+/** Todo lo que el flujo guarda en los secretos de la función: las variables y los secretos sin ceremonia. */
+const CARGADOS = [...VARIABLES_QUE_CARGA_EL_FLUJO, ...SECRETOS_QUE_CARGA_EL_FLUJO];
 
 const leer = (relativo) => readFileSync(new URL(relativo, import.meta.url), 'utf8');
 const flujo = (nombre) => leer(`../../../../.github/workflows/${nombre}`);
@@ -34,20 +39,33 @@ describe('las variables del despliegue', () => {
     assert.deepEqual(r.faltas, []);
     assert.equal(r.proyecto, PROYECTO);
     assert.equal(r.region, REGION);
-    assert.deepEqual(Object.keys(r.valores).sort(), [...VARIABLES_QUE_CARGA_EL_FLUJO].sort());
+    assert.deepEqual(Object.keys(r.valores).sort(), [...CARGADOS].sort());
   });
 
   test('dice cada variable que falta', () => {
     const r = revisarVariables({});
-    for (const nombre of [DEL_ENTORNO.proyecto, DEL_ENTORNO.region, ...VARIABLES_QUE_CARGA_EL_FLUJO]) {
+    for (const nombre of [DEL_ENTORNO.proyecto, DEL_ENTORNO.region, ...CARGADOS]) {
       assert.ok(r.faltas.some((f) => f.includes(nombre)), nombre);
     }
   });
 
+  test('lo que el flujo carga y lo que miran las ceremonias es todo lo que la función exige al arrancar', () => {
+    const r = revisarVariables(bueno);
+    const ceremonias = Object.fromEntries(SECRETOS_QUE_DEBEN_ESTAR.map((nombre) => [nombre, 'x']));
+    const leida = leerConfiguracion({ ...r.valores, ...ceremonias });
+    // Sin las ceremonias, solo faltan ellas; con ellas, ninguna dice que falta algo.
+    const sin = leerConfiguracion(r.valores);
+    assert.ok(!sin.ok);
+    for (const falta of sin.error.filter((f) => f.startsWith('Falta '))) {
+      assert.ok(SECRETOS_QUE_DEBEN_ESTAR.some((nombre) => falta === `Falta ${nombre}.`), falta);
+    }
+    if (!leida.ok) assert.deepEqual(leida.error.filter((f) => f.startsWith('Falta ')), []);
+  });
+
   test('no guarda nunca un secreto ni lo que tiene su propio camino', () => {
-    for (const nombre of NUNCA_LOS_CARGA_EL_FLUJO) assert.ok(!VARIABLES_QUE_CARGA_EL_FLUJO.includes(nombre), nombre);
+    for (const nombre of NUNCA_LOS_CARGA_EL_FLUJO) assert.ok(!CARGADOS.includes(nombre), nombre);
     // Y el servicio no lee ninguna variable que no tenga dueño: o la carga el flujo, o es un secreto con su ceremonia.
-    const conDueno = new Set([...VARIABLES_QUE_CARGA_EL_FLUJO, ...NUNCA_LOS_CARGA_EL_FLUJO]);
+    const conDueno = new Set([...CARGADOS, ...NUNCA_LOS_CARGA_EL_FLUJO]);
     for (const nombre of Object.values(VARIABLES)) assert.ok(conDueno.has(nombre), nombre);
     // Los secretos que la función necesita para arrancar se miran antes de desplegar.
     for (const nombre of [VARIABLES.direccionDeLaBase, VARIABLES.secretoDeLaLlaveDelPortero, VARIABLES.secretoDelWorker]) {
@@ -66,6 +84,9 @@ describe('las variables del despliegue', () => {
       { [VARIABLES.origenDelPanel]: 'https://app.ejemplo.test/panel' },
       { [VARIABLES.clavePublicaDeLasCuentas]: 'sb_secret_esto-no-va-nunca-aqui-0123' },
       { [VARIABLES.audienciaDelPase]: 'con "comillas"' },
+      // Las llaves de Turnstile: la de prueba, que deja pasar a todos, y las dos cruzadas.
+      { [VARIABLES.llaveDelSitioDelCaptcha]: '1x00000000000000000000AA' },
+      { [VARIABLES.llaveDelSitioDelCaptcha]: '0x4AAAAAAAsecreto-de-ejemplo-0123456789', [VARIABLES.secretoDelCaptcha]: '0x4AAAAAAAsitio-de-ejemplo' },
     ]) {
       assert.notDeepEqual(revisarVariables({ ...bueno, ...cambio }).faltas, [], JSON.stringify(cambio));
     }
@@ -76,6 +97,9 @@ describe('las variables del despliegue', () => {
     const r = revisarVariables({ ...bueno, [VARIABLES.clavePublicaDeLasCuentas]: raro });
     assert.ok(r.faltas.length > 0);
     assert.ok(!r.faltas.join(' ').includes(raro));
+    const secreto = revisarVariables({ ...bueno, [VARIABLES.secretoDelCaptcha]: 'secreto con espacios' });
+    assert.ok(secreto.faltas.length > 0);
+    assert.ok(!secreto.faltas.join(' ').includes('secreto con espacios'));
   });
 });
 
@@ -97,7 +121,7 @@ describe('lo que recibe la CLI de Supabase', () => {
         return '';
       },
     });
-    assert.deepEqual(nombres.sort(), [...VARIABLES_QUE_CARGA_EL_FLUJO].sort());
+    assert.deepEqual(nombres.sort(), [...CARGADOS].sort());
     assert.deepEqual(visto.slice(0, 4), ['secrets', 'set', '--project-ref', PROYECTO]);
     assert.ok(visto.includes('--yes'));
     for (const valor of Object.values(valores)) {
@@ -216,9 +240,14 @@ describe('el flujo que despliega', () => {
     for (const nombre of [DEL_ENTORNO.proyecto, DEL_ENTORNO.region, ...VARIABLES_QUE_CARGA_EL_FLUJO]) {
       assert.match(desplegar, new RegExp(`${nombre}: \\$\\{\\{ vars\\.${nombre} \\}\\}`), nombre);
     }
-    // Las variables del servicio nunca se toman de los secretos de GitHub: los secretos tienen su ceremonia.
+    // Los secretos sin ceremonia salen de los secretos del entorno, con su mismo nombre.
+    for (const nombre of SECRETOS_QUE_CARGA_EL_FLUJO) {
+      assert.match(desplegar, new RegExp(`${nombre}: \\$\\{\\{ secrets\\.${nombre} \\}\\}`), nombre);
+    }
+    // Ningún otro secreto de GitHub: los que tienen ceremonia los guarda ella, nunca este flujo.
     const secretos = [...texto.matchAll(/secrets\.([A-Z_]+)/g)].map((m) => m[1]);
-    assert.deepEqual([...new Set(secretos)], ['SUPABASE_ACCESS_TOKEN']);
+    assert.deepEqual([...new Set(secretos)].sort(), ['SUPABASE_ACCESS_TOKEN', ...SECRETOS_QUE_CARGA_EL_FLUJO].sort());
+    for (const nombre of SECRETOS_QUE_DEBEN_ESTAR) assert.ok(!secretos.includes(nombre), nombre);
     // La comprobación final no lleva el token: llama como cualquiera desde afuera.
     const ultimo = desplegar.slice(desplegar.indexOf('Comprobar la puerta'));
     assert.ok(!ultimo.includes('SUPABASE_ACCESS_TOKEN'));

@@ -1,6 +1,7 @@
 # Despliega la función «servicio» de Supabase (la que atiende /api de
 # app.coddvisor.com) en el proyecto de la base real, y carga en sus secretos las
-# variables que no son secretas. Nadie despliega desde su computadora
+# variables que no son secretas y la llave secreta de Turnstile, que no tiene
+# ceremonia propia. Nadie despliega desde su computadora
 # (donde-corre-el-sistema.md, decisión 8).
 #
 # Solo a mano (pestaña Actions), solo desde main y en el entorno protegido
@@ -90,6 +91,10 @@ jobs:
       CODDVISOR_PASE_LLAVES: ${{ vars.CODDVISOR_PASE_LLAVES }}
       CODDVISOR_CUENTAS_DIRECCION: ${{ vars.CODDVISOR_CUENTAS_DIRECCION }}
       CODDVISOR_CUENTAS_CLAVE_PUBLICA: ${{ vars.CODDVISOR_CUENTAS_CLAVE_PUBLICA }}
+      # Turnstile (sistema/supabase/turnstile.md, paso 3): la llave del sitio es
+      # pública; la secreta va en los secretos del entorno, y GitHub la tapa en el registro.
+      CODDVISOR_CAPTCHA_LLAVE_DEL_SITIO: ${{ vars.CODDVISOR_CAPTCHA_LLAVE_DEL_SITIO }}
+      CODDVISOR_CAPTCHA_SECRETO: ${{ secrets.CODDVISOR_CAPTCHA_SECRETO }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -108,7 +113,7 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: node herramientas/desplegar/desplegar.mjs secretos
-      - name: Guardar las variables en los secretos de la función
+      - name: Guardar las variables y la llave de Turnstile en los secretos de la función
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: node herramientas/desplegar/desplegar.mjs guardar
