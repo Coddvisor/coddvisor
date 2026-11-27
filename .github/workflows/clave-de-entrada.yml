@@ -1,0 +1,63 @@
+# La ceremonia de la contraseña de la entrada: le pone una contraseña nueva y al
+# azar al rol coddvisor_entrada de la base real, prueba que entra por el
+# repartidor y guarda la dirección completa (CODDVISOR_BASE_DIRECCION) en los
+# secretos de las funciones de Supabase. Nadie ve la contraseña, ni en el
+# registro de la corrida; a la base llega solo su forma SCRAM. Antes de cambiar
+# nada revisa el rol, el token y el repartidor. También sirve para cambiarla
+# otra vez (lea antes «Cambiar la contraseña otra vez» en la guía).
+#
+# Solo a mano (pestaña Actions), solo desde main y en el entorno protegido
+# «base-real», que exige la aprobación del fundador. Nunca corre sola.
+#
+# La guía está en sistema/herramientas/migrador/CLAVE-DE-ENTRADA.md.
+name: Contraseña de la entrada
+
+on:
+  workflow_dispatch:
+    inputs:
+      cifrado:
+        description: 'Cómo se cifra la conexión del servicio (verify-full revisa el certificado; require solo cifra)'
+        type: choice
+        options: [verify-full, require]
+        default: verify-full
+
+permissions:
+  contents: read
+
+# Una corrida a la vez sobre la base real, compartida con las migraciones y la
+# llave del portero. Con «queue: max» las que llegan esperan en fila (hasta 100)
+# y ninguna cancela a otra que espera su aprobación.
+concurrency:
+  group: base-real
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  clave:
+    name: Contraseña de la entrada
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: base-real
+    defaults:
+      run:
+        working-directory: sistema
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: sistema/.nvmrc
+      # La CLI de Supabase, en la misma versión exacta que la llave del portero.
+      - uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13 # v3.2.0
+        with:
+          version: 2.108.0
+      # La ceremonia no usa librerías: no hace falta npm ci. psql viene con ubuntu-24.04.
+      - name: Poner la contraseña y guardar la dirección
+        env:
+          CODDVISOR_MIGRAR_CONEXION: ${{ secrets.CODDVISOR_MIGRAR_CONEXION }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROYECTO_REF: ${{ vars.SUPABASE_PROYECTO_REF }}
+          CIFRADO: ${{ inputs.cifrado }}
+        run: node herramientas/migrador/clave-de-entrada.mjs "$CIFRADO"
