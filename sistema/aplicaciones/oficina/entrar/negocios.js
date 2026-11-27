@@ -14,6 +14,15 @@ import { fraseDeLosRoles } from "./roles.js";
 /** El texto de cada estado del acceso que no es «activa». */
 const ESTADOS = { pendiente: "negocios.estado.pendiente", suspendida: "negocios.estado.suspendida" };
 
+/** Las notas que trae la dirección, cuando se llega a la lista por algo. */
+const NOTAS_DE_LA_DIRECCION = { "ya-abierto": "negocios.ya-abierto" };
+
+/** @param {string | null} motivo */
+function notaDeLaDireccion(motivo) {
+  if (motivo === "ya-abierto") return NOTAS_DE_LA_DIRECCION["ya-abierto"];
+  return null;
+}
+
 /** @param {unknown} estado */
 function claveDelEstado(estado) {
   if (estado === "pendiente") return ESTADOS.pendiente;
@@ -68,6 +77,13 @@ arrancar(async () => {
   botonSalir.addEventListener("click", () => {
     void salir();
   });
+
+  // Si «Abra su negocio» trae aquí porque el negocio ya estaba creado, se dice.
+  const nota = notaDeLaDireccion(new URLSearchParams(window.location.search).get("motivo"));
+  if (nota !== null) {
+    /** @type {HTMLElement} */ (document.getElementById("nota-de-la-direccion-texto")).textContent = texto(nota);
+    /** @type {HTMLElement} */ (document.getElementById("nota-de-la-direccion")).hidden = false;
+  }
 
   /** @type {string | null} */
   let despues = null;

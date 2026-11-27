@@ -34,8 +34,14 @@ un aviso amarillo, «Modo de prueba», con las cuentas y el código.
 - **Código del segundo paso:** `123456`. Se muestra también en pantalla.
 - **«Continuar con Google»** simula la vuelta de Google y entra como
   `contador@ejemplo.test`.
-- «Olvidé mi contraseña», «Abra su negocio» y los códigos de respaldo llevan a
-  una página que dice que llegan pronto.
+- **«Abra su negocio»** crea una cuenta nueva de ejemplo (`nueva.1@ejemplo.test`,
+  `nueva.2@ejemplo.test`...), como la simulación de Google, y lleva a las cuatro
+  preguntas: si tiene RUC (pruebe `20600000005` o `10123456781`; con
+  `20600000004` el dígito verificador no cuadra), su régimen (solo con RUC), a qué
+  se dedica y su primer local. «Crear mi negocio» lo crea y va a su inicio, que
+  pide el código `123456`: el rol de dueño pide el segundo paso.
+- «Olvidé mi contraseña» y los códigos de respaldo llevan a una página que dice
+  que llegan pronto.
 - **«Salir»** borra la cookie y anota la sesión como cerrada en la base
   (`control.sesion_cerrada`): un pase copiado de esa sesión ya no entra, aunque
   no haya vencido.
@@ -89,9 +95,11 @@ dentro de Node (con PGlite) y desaparece al terminar.
 | `nucleo/`                                 | Dinero exacto con su moneda, identificadores, `Result` y la interfaz de una transacción (`Transaccion`). Su puerta es `publico.ts` |
 | `contratos/caja/`                         | Lo que la caja y el servidor se dicen. Está en **borrador** |
 | `contratos/caja/vectores/` y `candado.json` | Los casos que fijan el contrato, y su huella              |
+| `paquetes/pe/`                            | El paquete del Perú: la revisión del RUC (11 números, su inicio y su dígito verificador). Los módulos y las aplicaciones no lo importan: lo reciben como un `PaqueteDePais` del núcleo |
+| `modulos/configuracion/`                  | Lo que se puede elegir al abrir un negocio: los rubros y los regímenes de un país, leídos de sus catálogos |
 | `modulos/identidad/`                      | Verificar el pase de Supabase (ES256) y firmar como el servicio, con WebCrypto, que traen igual Node y Deno; llamar a las puertas de identidad para entrar y leer el negocio abierto. Su puerta es `publico.ts` |
 | `aplicaciones/servicio/`                  | El programa del servidor: la conexión con la base (transacción por pedido y `DISCARD ALL` al devolverla), la configuración del entorno, cómo entra una persona y sus rutas bajo `/api` (`rutas/`), escritas con Request y Response para correr igual en Node y en una función de Supabase |
-| `aplicaciones/oficina/`                   | Las páginas del sistema en el navegador. Hoy: entrar, el segundo paso, elegir negocio y un inicio provisional. HTML, CSS y poco JavaScript, sin construir |
+| `aplicaciones/oficina/`                   | Las páginas del sistema en el navegador. Hoy: entrar, el segundo paso, elegir negocio, abrir un negocio y un inicio provisional. HTML, CSS y poco JavaScript, sin construir |
 | `diseno/`                                 | Lo que comparten las pantallas: las medidas (`medidas.css`) y el catálogo de textos (`textos/es-PE.json`). Los colores siguen en `marca/colores.css` |
 | `herramientas/probar-entrar/`             | El modo de prueba local de entrar (`npm run probar:entrar`): solo para esta computadora |
 | `base-de-datos/migraciones/`              | Cada cambio de la base, con fecha en el nombre. Solo se agregan archivos |
@@ -157,9 +165,10 @@ camino para llevarle las migraciones, y nadie las aplica a mano. El contrato de
 la caja es un borrador: ninguna caja real selló nada. Las rutas de entrar todavía no
 hablan con Supabase Auth: el proveedor de cuentas real (contraseña, Google con
 PKCE y el segundo paso) y el arranque de la función de Supabase son el paso
-siguiente; hoy solo existe el proveedor de prueba. El servicio todavía no frena los
-intentos de contraseña ni de código: hoy los frena solo el proveedor. La lista
-de «¿A qué negocio entra?» muestra el nombre y el estado de cada negocio, sin
-el rol: el índice de afuera no guarda roles (decisión 2), y cómo mostrarlo
-espera la decisión del fundador. La lista de lo pendiente
+siguiente; hoy solo existe el proveedor de prueba. Abrir un negocio crea la cuenta solo
+en el proveedor de prueba: con Supabase falta el alta de verdad (Google con el
+hook que deja pasar solo las altas de «Abra su negocio», o el correo con su
+enlace de un solo uso), su prueba de que no es un robot, su límite por día y la
+inscripción de la app de códigos (decisiones 8 bis y 10). El servicio todavía no frena los
+intentos de contraseña ni de código: hoy los frena solo el proveedor. La lista de lo pendiente
 está al final de `arquitectura/bases/02-base-de-datos.md`.

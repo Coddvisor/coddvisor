@@ -30,6 +30,11 @@
       <span id="aviso-texto"></span>
     </p>
 
+    <p class="aviso aviso-nota" id="nota-de-la-direccion" role="status" hidden>
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
+      <span id="nota-de-la-direccion-texto"></span>
+    </p>
+
     <ul class="negocios" id="negocios" data-texto-aria="negocios.lista"></ul>
 
     <button class="boton boton-secundario boton-ancho" id="mas" type="button" data-texto="negocios.mas" hidden></button>
@@ -37,7 +42,7 @@
     <section class="tarjeta" id="vacio" hidden>
       <h2 data-texto="negocios.vacio.titulo"></h2>
       <p data-texto="negocios.vacio.texto"></p>
-      <p><a class="boton boton-principal boton-ancho" href="/entrar/pronto?tema=abrir&amp;desde=negocios" data-texto="negocios.vacio.boton"></a></p>
+      <p><a class="boton boton-principal boton-ancho" href="/entrar/abrir" data-texto="negocios.vacio.boton"></a></p>
     </section>
 
     <template id="plantilla-negocio">

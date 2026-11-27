@@ -152,8 +152,13 @@ aplicación ni el portero: los escribe `coddvisor_identidad`, un rol que no
 inicia sesión, no hereda, no se salta la seguridad por fila y solo es dueño de
 sus funciones. Toca solo las tablas de su lista cerrada (`permisosPorTabla` en
 la configuración del verificador): crear el negocio, crear y leer cuentas,
-escribir membresías, asignaciones y el índice, y copiar el nombre y la celda de
-cada negocio a `control.negocio`. Ninguna otra tabla de negocio.
+escribir membresías, asignaciones y el índice, copiar el nombre y la celda de
+cada negocio a `control.negocio` y, al abrir un negocio, crear y leer su primera
+empresa y su primer local y leer el país y sus regímenes. Ninguna otra tabla de
+negocio, y nunca edita la empresa ni el local. (La empresa y el local entran el
+26-nov-2026, con abrir un negocio: fundar y escribir la empresa en dos pedidos
+dejaría un negocio sin empresa que su dueño, sin los dos pasos todavía, no
+puede abrir para completar.)
 
 La aplicación llega a esas tablas solo por sus puertas, en el esquema
 `identidad`. Cada una:
@@ -196,11 +201,20 @@ contador con 40 negocios tiene que salir rápido en funciones con poco tiempo.
 | `leer_acceso` | La membresía viva de una cuenta en un negocio y su estado. Nunca listas ni correos | `identidad_leer_acceso` | No |
 | `listar_negocios` | Los negocios de una cuenta que no están de baja, con su membresía, su estado, su nombre (de `control.negocio`) y la copia de sus roles (`rol_codigos`, solo para mostrar), ordenados por negocio y por cursor. El tamaño de la página va de 1 a un tope con nombre dentro de la puerta (50); fuera de eso falla (CV217). Nunca correos ni una lista sin límite. Una cuenta sin membresías recibe una lista vacía. Lista lo mismo que deja entrar `leer_acceso`: quién entra lo dice solo `control.acceso`, y la puerta que archive un negocio dará de baja sus accesos en la misma transacción | `identidad_listar_negocios`, sobre la cuenta, el cursor (vacío en la primera página) y el tamaño | No |
 | `fundar_negocio` | El negocio, su dueño activo en todo el negocio, su membresía automática, el índice y su fila en `control.negocio`, juntos. Se puede repetir | `identidad_fundar` | No: lo abre mientras escribe y lo cierra |
+| `abrir_negocio` | Lo mismo que fundar y, en la misma transacción, la primera empresa (con o sin número tributario, con su régimen o sin régimen elegido, en la moneda del país), el primer local (con su localidad y la zona horaria del país) y el rubro elegido por esa empresa, que anexa `configuracion.anotar_rubro`. Se puede repetir con los mismos datos; si el negocio ya existe, solo acepta su propia repetición (el dueño firmado con el rol del fundador, su membresía automática y la empresa firmada ya creada), y con otra cuenta, otro miembro, otra empresa u otros datos falla (CV209). Una cuenta abre a lo más 5 negocios en 24 horas, un tope con nombre dentro de la puerta (CV220, que el servicio responde 429); la repetición no cuenta. El tope de altas de cuentas queda para el proveedor real. La forma del número la revisa antes el paquete del país | `identidad_abrir_negocio`, sobre todos los datos | No: lo abre mientras escribe y lo cierra |
 | `invitar` | Una membresía pendiente para una cuenta ya registrada, con un rol que puede dar el dueño | `identidad_invitar` | Sí, `identidad.invitar` |
 | `aceptar_invitacion` | La cuenta invitada activa su propia membresía | `identidad_aceptar` | No: lo abre mientras escribe y lo cierra |
 | `cambiar_estado` | Suspender, reactivar o dar de baja. La firma lleva la versión de la membresía | `identidad_cambiar_estado` | Sí, `identidad.administrar` en todo el negocio |
 | `dar_asignacion`, `archivar_asignacion` | Dar o quitar un rol. La firma de archivar lleva la versión de la asignación | `identidad_dar_asignacion`, `identidad_archivar_asignacion` | Sí, `identidad.administrar` en ese lugar |
 | `registrar_entrada` | Anota en el libro `identidad.entrada` quién entró, cuándo, desde qué caja o dirección de internet y cómo (`contrasena`, `google`, `pin`, `soporte`, `automatico`). Una vez por sesión y negocio, aparte del pedido. Se puede repetir. Las entradas `automatico` las firma el programa de los trabajos con su llave; las demás, el servicio | `identidad_registrar_entrada` | No: lo abre mientras anota y lo cierra. Si ya hay un negocio abierto, no anota (CV014). Que vaya en su propia transacción, y no antes del pedido en la misma, lo cumple el servicio |
+
+**El rubro lo anexa su módulo.** `configuracion.rubro_elegido` es un libro de
+`configuracion`, por empresa (`empresa_id`, como dice hoy 03; la decisión 1
+del molde de rubro, que lo llevaría a la cuenta, sigue sin aprobar). Lo
+escribe solo `configuracion.anotar_rubro`, del rol de los
+libros, que corre con sus permisos, anexa en el negocio abierto y se puede
+repetir con el mismo id. La ejecuta solo `coddvisor_identidad`, desde
+`abrir_negocio`: la aplicación no la puede llamar.
 
 Dos reglas valen en todas: **un negocio nunca se queda sin dueño**, es decir,
 sin una membresía activa con `identidad.administrar` en todo el negocio; y **la
@@ -300,8 +314,10 @@ no pueden saltarse la seguridad por fila. Además:
   portero es la llave, `portero.marca` (solo `SELECT`, para trabarla en el modo
   más suave) y, para comprobar quién entra, la membresía, la
   asignación, los roles y sus permisos, solo para leer y solo en el negocio
-  que acaba de abrir; la de identidad incluye anexar al registro de entradas.
-  (Cambio del 26-nov-2026, tramo 2b de la identidad.)
+  que acaba de abrir; la de identidad incluye anexar al registro de entradas
+  y, desde abrir un negocio, crear y leer la primera empresa y el primer local
+  y leer el país y sus regímenes. (Cambios del 26-nov-2026, tramo 2b de la
+  identidad y abrir un negocio.)
 - Una tabla de custodia, la aplicación y el rol de los libros solo la leen. La
   escribe una puerta, y nadie por su clase. Las de identidad las escriben las
   puertas de `coddvisor_identidad`, que la aplicación ejecuta con la firma del
@@ -459,7 +475,10 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 | Tablas de intercambio entre dos clientes, con regla de dos partes | Red entre negocios (después del primer alcance) |
 | Identificador de operación (`op_id`) en las tablas. El contrato de la caja ya existe, en borrador, en `sistema/contratos/caja/` | Protocolo de sincronización (D12) |
 | Campos propios y su definición | Módulo de configuración (D16) |
-| Valores legales del Perú en `parametro_legal` | Confirmación del contador asesor, con norma y fecha |
+| Valores legales del Perú en `parametro_legal`, entre ellos los topes, categorías y tasas de cada régimen tributario, y la norma y la fecha legal de cada régimen (`nucleo.regimen_tributario.norma_fuente` está vacía, y su `vigente_desde`, 2017-01-01, es la fecha desde la que el sistema ofrece la opción, no el inicio legal), y la nota de la primera pregunta de «Abra su negocio» sobre qué comprobantes entrega cada régimen | Confirmación del contador asesor, con norma y fecha |
+| El historial del régimen de una empresa (el perfil fiscal con vigencia): hoy `nucleo.empresa.regimen_codigo` guarda el que eligió al abrir | La primera pantalla que deje cambiar de régimen |
+| Abrir un negocio con una cuenta real: el alta en Supabase (Google con el hook que deja pasar solo las altas de «Abra su negocio», o el correo con su enlace de un solo uso), la prueba de que no es un robot, el límite de altas de cuentas por día (el de negocios abiertos por cuenta ya lo pone `abrir_negocio`) y la inscripción de la app de códigos antes de entrar al negocio. Hoy la cuenta nace solo en el proveedor de prueba | Proveedor de cuentas real (decisiones 8 bis y 10) |
+| Que cada rubro proponga sus plantillas (la tabla que une `configuracion.rubro` con `plantilla`) | La primera plantilla publicada (`molde-de-rubro.md`) |
 
 Ninguna migración se aplicó a una base real. Antes de hacerlo hay que cerrar
 la región y el inventario de datos personales (decisiones D27 y D30).

@@ -59,6 +59,7 @@ permisos (ver [02-base-de-datos.md](02-base-de-datos.md)).
 
 | Módulo         | Tablas de negocio                                           | Libros (solo se anexan)        |
 |----------------|-------------------------------------------------------------|--------------------------------|
+| `configuracion` | Catálogo `rubro` (existe desde el 26-nov-2026); las plantillas de rubro de `molde-de-rubro.md` | `rubro_elegido` (existe), `plantilla_aplicada` |
 | `terceros`     | `tercero`, `tercero_identificacion`, `tercero_rol`          |                                |
 | `catalogo`     | `producto`, `variante`, `precio`                            |                                |
 | `tesoreria`    | `lugar_dinero`, `cobro`, `pago`, `aplicacion_pago`, `cuenta_por_cobrar`, `cuenta_por_pagar`, `cuota`, `sesion_caja`, `extracto_linea` | `movimiento_dinero` |
@@ -67,7 +68,8 @@ permisos (ver [02-base-de-datos.md](02-base-de-datos.md)).
 | `compras`      | `compra`, `compra_linea`, `comprobante_recibido`            |                                |
 | `contabilidad` | `cuenta`, `regla_contabilizacion`, `periodo_contable`       | `asiento`, `asiento_linea`     |
 
-Catálogos con vigencia en el paquete Perú: tipos de documento, impuestos y
+Catálogos con vigencia en el paquete Perú: regímenes tributarios
+(`nucleo.regimen_tributario`, existe desde el 26-nov-2026, sin sus cifras), tipos de documento, impuestos y
 afectaciones, tipos de lugar de dinero, medios de cobro, parámetros de
 detracción, retención, percepción y honorarios, calendario de días hábiles y
 tipo de cambio diario.

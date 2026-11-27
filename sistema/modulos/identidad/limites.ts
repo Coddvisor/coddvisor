@@ -38,6 +38,20 @@ export const LIMITES = {
   /** Cuánto se espera al proveedor de cuentas al pedirle las llaves. */
   esperaAlPedirLlavesMs: 5_000,
 
+  /**
+   * La celda donde nace un negocio nuevo. Hoy hay una sola, en la misma base;
+   * cuando haya varias, la elige el enrutador de celdas (decisión 14) y esto se va.
+   */
+  celdaDeLosNegociosNuevos: "principal",
+
   /** El tope de una página de negocios. Es el de identidad.listar_negocios: una prueba exige que coincidan. */
   maximoDeNegociosPorPagina: 50,
+
+  /**
+   * Cuántos negocios abre una cuenta en 24 horas. Es el de identidad.abrir_negocio
+   * (c_maximo_por_dia): una prueba exige que coincidan. Frena a quien abre
+   * negocios en serie con una sola cuenta; el tope de altas de cuentas lo pone el
+   * proveedor real.
+   */
+  maximoDeNegociosNuevosPorDia: 5,
 } as const;

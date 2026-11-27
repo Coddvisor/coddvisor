@@ -47,7 +47,7 @@ before(async () => {
   panaderia = await fundar(db, firmar, beto.id, "Panadería de Beto");
   await db.exec("reset role");
   repartidor = repartidorDePrueba(db);
-  piezas = { repartidor, llavero: llaveroDe(supabase), esperado: ESPERADO, firmar, reloj: Date.now, negociosPorPagina: 20 };
+  piezas = { repartidor, llavero: llaveroDe(supabase), esperado: ESPERADO, firmar, reloj: Date.now, negociosPorPagina: 20, paquetes: new Map() };
 });
 after(async () => {
   await db.close();

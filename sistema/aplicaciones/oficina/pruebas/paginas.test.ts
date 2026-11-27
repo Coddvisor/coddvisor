@@ -30,9 +30,14 @@ const colores = leer(SISTEMA, "../marca/colores.css");
 /** Los roles del catálogo de la base: cada uno necesita su nombre en el catálogo de textos. */
 const roles = [...leer(SISTEMA, "base-de-datos/migraciones/20261126180200_identidad.sql").matchAll(/\('([a-z_]+)', '[^']+', (?:true|false), (?:true|false)\)/g)].map((m) => m[1] ?? "");
 
-/** Las familias de claves que se eligen por un dato (el código del rol). */
-const FAMILIAS = ["rol."];
-const CLAVE = /^(?:marca|comun|entrar|segundo|negocios|inicio|pronto|rol)\.[a-z0-9.-]+$/;
+/** Los rubros y los regímenes de los catálogos de la base: cada uno necesita su nombre en el catálogo de textos. */
+const sqlDe = (archivo: string): string => leer(SISTEMA, "base-de-datos/migraciones", archivo);
+const rubros = [...sqlDe("20261126231200_configuracion_rubros.sql").matchAll(/\('([a-z_]+)', \d+\)/g)].map((m) => m[1] ?? "");
+const regimenes = [...sqlDe("20261126231100_paquete_peru_regimenes.sql").matchAll(/\('([A-Z]{2})', '([a-z_]+)', \d+, '[0-9-]+'\)/g)].map((m) => `${(m[1] ?? "").toLowerCase()}.${m[2] ?? ""}`);
+
+/** Las familias de claves que se eligen por un dato (el código del rol, del rubro o del régimen). */
+const FAMILIAS = ["rol.", "rubro.", "regimen."];
+const CLAVE = /^(?:marca|comun|entrar|segundo|negocios|inicio|pronto|abrir|rol)\.[a-z0-9.-]+$/;
 
 const sinCodigo = (html: string): string => html.replace(/<!--[\s\S]*?-->/g, "").replace(/<(script|style)\b[\s\S]*?<\/\1>/g, "");
 const clavesDelHtml = (html: string): string[] => [...html.matchAll(/data-texto(?:-alt|-aria)?="([^"]*)"/g)].map((m) => m[1] ?? "");
@@ -65,6 +70,13 @@ describe("el catálogo de textos (EX-19)", () => {
   it("cada rol de la base tiene su nombre en el catálogo", () => {
     assert.ok(roles.length >= 5);
     assert.deepEqual(roles.filter((r) => !(`rol.${r}` in catalogo)), []);
+  });
+
+  it("cada rubro y cada régimen de la base tiene su nombre en el catálogo", () => {
+    assert.equal(rubros.length, 8);
+    assert.deepEqual(rubros.filter((r) => !(`rubro.${r}` in catalogo)), []);
+    assert.equal(regimenes.length, 4);
+    assert.deepEqual(regimenes.filter((r) => !(`regimen.${r}` in catalogo)), []);
   });
 
   it("no sobra ninguna clave", () => {
@@ -101,7 +113,7 @@ describe("cómo se ve y cómo se toca", () => {
     assert.ok(px("toque") >= 48);
     assert.ok(px("toque-minimo") >= 24);
     assert.match(estilos, /a, button, input \{ min-height: var\(--toque-minimo\); \}/);
-    for (const componente of [".enlace", ".boton", ".campo input", ".negocio"]) {
+    for (const componente of [".enlace", ".boton", ".campo input", ".negocio", ".opcion"]) {
       const regla = new RegExp(`(^|\\n)${componente.replace(".", "\\.")} \\{[^}]*min-height: var\\(--toque\\)`);
       assert.match(estilos, regla, componente);
     }
@@ -148,6 +160,8 @@ describe("cómo se ve y cómo se toca", () => {
     ["tinta", "fondo", 4.5], ["tinta", "tarjeta", 4.5], ["texto-2", "fondo", 4.5], ["texto-2", "tarjeta", 4.5],
     ["enlace", "fondo", 4.5], ["enlace", "tarjeta", 4.5], ["boton-texto", "boton", 4.5], ["boton-2-texto", "boton-2", 4.5],
     ["error", "error-fondo", 4.5], ["aviso", "aviso-fondo", 4.5], ["texto-3", "tarjeta", 3], ["texto-3", "fondo", 3], ["boton-2-texto", "fondo", 3],
+    // El relleno de la barra de avance sobre su riel (un indicador: 3 a 1).
+    ["enlace", "borde", 3],
   ];
 
   it("cada pareja de texto y fondo pasa AA, en claro y en oscuro (EX-18)", () => {
@@ -163,6 +177,38 @@ describe("cómo se ve y cómo se toca", () => {
     const medidos = new Set(PAREJAS.flatMap(([a, b]) => [a, b]).concat(["borde"]));
     const usados = new Set([...estilos.matchAll(/var\(--([a-z0-9-]+)\)/g)].map((m) => m[1] ?? "").filter((p) => claro.has(p)));
     assert.deepEqual([...usados].filter((p) => !medidos.has(p)), []);
+  });
+});
+
+describe("abrir un negocio", () => {
+  const abrir = paginas.find((p) => p.archivo === path.join("entrar", "abrir.html"))?.html ?? "";
+
+  it("una pregunta por pantalla, con el avance dicho en texto y no solo con la barra", () => {
+    assert.deepEqual([...abrir.matchAll(/data-paso="([a-z]+)"/g)].map((m) => m[1]), ["ruc", "regimen", "rubro", "local"]);
+    // Solo la primera se ve al llegar; las demás las muestra el programa.
+    assert.equal((abrir.match(/<section class="paso"[^>]*\bhidden\b/g) ?? []).length, 3);
+    assert.match(abrir, /id="avance-texto"/);
+    assert.match(abrir, /role="progressbar"[^>]*aria-labelledby="avance-texto"/);
+    assert.match(catalogo["abrir.avance"] ?? "", /\{paso\}.*\{total\}/);
+  });
+
+  it("lo que se escribe no lleva name: si el formulario se enviara solo, el RUC no iría en la dirección", () => {
+    for (const id of ["ruc", "local", "distrito"]) {
+      const campo = new RegExp(`<input id="${id}"[^>]*>`).exec(abrir)?.[0] ?? "";
+      assert.ok(campo !== "", id);
+      assert.doesNotMatch(campo, /\bname=/, id);
+    }
+  });
+
+  it("cada grupo de respuestas se nombra con su pregunta", () => {
+    for (const m of abrir.matchAll(/role="radiogroup" aria-labelledby="([a-z-]+)"/g)) assert.match(abrir, new RegExp(`<h1 id="${m[1] ?? ""}"`));
+  });
+
+  it("«Abra su negocio» lleva al alta de la cuenta, y la lista vacía, a las preguntas", () => {
+    const entrar = paginas.find((p) => p.archivo === path.join("entrar", "index.html"))?.html ?? "";
+    const negocios = paginas.find((p) => p.archivo === path.join("entrar", "negocios.html"))?.html ?? "";
+    assert.match(entrar, /href="\/api\/abrir\/cuenta" data-texto="entrar.abrir"/);
+    assert.match(negocios, /href="\/entrar\/abrir" data-texto="negocios.vacio.boton"/);
   });
 });
 

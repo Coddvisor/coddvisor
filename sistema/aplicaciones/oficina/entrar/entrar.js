@@ -1,16 +1,18 @@
 // @ts-check
 // Entrar: con Google (un enlace al servicio, que hace el ida y vuelta) o con
-// correo y contraseña. Un correo que no existe y una contraseña equivocada
+// correo y contraseña. «Abra su negocio» es otro enlace al servicio, que crea la
+// cuenta y vuelve a las cuatro preguntas (abrir.js). Un correo que no existe y una contraseña equivocada
 // reciben el mismo aviso: el servicio no dice cuál de los dos fue.
 
 import { arrancar, avisar, avisarFallo, callar, irA, mientras, PAGINAS, pedir } from "../comun/oficina.js";
 
 /** Los avisos que trae la dirección, cuando se vuelve a esta página por algo. */
-const AVISOS_DE_LA_DIRECCION = { google: "entrar.error.google", sesion: "comun.error.sesion" };
+const AVISOS_DE_LA_DIRECCION = { google: "entrar.error.google", abrir: "entrar.error.abrir", sesion: "comun.error.sesion" };
 
 /** @param {string | null} motivo */
 function avisoDeLaDireccion(motivo) {
   if (motivo === "google") return AVISOS_DE_LA_DIRECCION.google;
+  if (motivo === "abrir") return AVISOS_DE_LA_DIRECCION.abrir;
   if (motivo === "sesion") return AVISOS_DE_LA_DIRECCION.sesion;
   return null;
 }

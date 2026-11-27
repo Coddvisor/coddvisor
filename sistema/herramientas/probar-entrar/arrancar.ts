@@ -6,6 +6,11 @@
 // con una base PGlite en memoria cargada con datos de ejemplo y un emisor de
 // pases de prueba en lugar de Supabase. Al cerrarlo (Ctrl+C) todo desaparece.
 //
+// «Abra su negocio» crea una cuenta nueva de ejemplo (como la simulación de
+// Google), con su app de códigos ya inscrita, y sigue a las cuatro preguntas.
+// Al crear el negocio, el inicio pide el código del segundo paso, que es el
+// mismo de las demás cuentas.
+//
 // Las rutas son las mismas del producto (crearManejador): aquí solo se pone
 // delante un servidor de Node que traduce sus pedidos a Request y Response, como
 // hará Deno.serve en la función de Supabase.
@@ -17,7 +22,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { montarEntrar } from "../../aplicaciones/servicio/pruebas/montaje.ts";
 import { CODIGO_DE_PRUEBA, CONTRASENA_DE_EJEMPLO, NOMBRES_DE_EJEMPLO } from "../../aplicaciones/servicio/pruebas/ejemplo.ts";
-import { RUTA_DE_GOOGLE_DE_PRUEBA } from "../../aplicaciones/servicio/pruebas/proveedor-de-prueba.ts";
+import { RUTA_DE_GOOGLE_DE_PRUEBA, RUTA_DEL_ALTA_DE_PRUEBA } from "../../aplicaciones/servicio/pruebas/proveedor-de-prueba.ts";
 import { esPedidoLocal, revisarModoDePrueba } from "./candado.ts";
 
 const ANFITRION = "127.0.0.1";
@@ -187,6 +192,12 @@ async function atender(pedido: IncomingMessage, salida: ServerResponse): Promise
     responderTexto(salida, 303, vuelta ?? "/entrar/?error=google");
     return;
   }
+  if (url.pathname === RUTA_DEL_ALTA_DE_PRUEBA) {
+    // Hace de proveedor al abrir un negocio: crea una cuenta nueva de ejemplo y vuelve.
+    const vuelta = montaje.proveedor.simularAlta(url, ORIGEN);
+    responderTexto(salida, 303, vuelta ?? "/entrar/?error=abrir");
+    return;
+  }
   if (url.pathname === "/prueba/datos") {
     await enviar(Response.json(DATOS_DE_PRUEBA, { headers: { "cache-control": "no-store" } }), salida);
     return;
@@ -228,6 +239,9 @@ Cuentas de ejemplo (la contraseña y el código están en sistema/LEEME.md y en 
   ${cuentas.contador.correo}    contador de los dos negocios, con segundo paso (también es la de Google)
   ${cuentas.vendedor.correo}    vendedor de la bodega, sin segundo paso
   ${cuentas.sinCodigo.correo}  dueño de la ferretería que no inscribió su app: no puede abrirla
+
+«Abra su negocio» crea una cuenta nueva de ejemplo (nueva.1@ejemplo.test, nueva.2...),
+con el mismo código del segundo paso, y lleva a las cuatro preguntas.
 
 Para cerrar: Ctrl+C. La base y las llaves desaparecen al cerrar.
 `);

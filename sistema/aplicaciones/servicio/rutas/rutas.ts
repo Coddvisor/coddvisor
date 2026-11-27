@@ -20,7 +20,8 @@ import { err, ok, type Result } from "#nucleo";
 import { aBase64url, deTexto, igualesSinPrisa, leerNegocioAbierto, type NegocioEnPalabras, type Nivel } from "#modulos/identidad";
 import { LIMITES_DEL_SERVICIO } from "../configuracion.ts";
 import { cerrarLaSesion, negociosDeLaPersona, trabajarEnNegocio, type Piezas, type RechazoAlEntrar } from "../entrar.ts";
-import type { EntradaDelProveedor, ProveedorDeCuentas, SesionDelProveedor } from "./cuentas.ts";
+import { abrirElNegocio, opcionesParaAbrir, registrarLaCuentaNueva, revisarElRuc, type PedidoDeAbrir, type RechazoAlAbrirElNegocio } from "../abrir.ts";
+import type { EntradaDelProveedor, ProveedorDeCuentas, SesionDelProveedor, VueltaDeGoogle } from "./cuentas.ts";
 import { borrarCookie, COOKIES, leerCookies, leerCuerpo, llevarA, llevarAfuera, ponerCookie, responder, vieneDelPanel } from "./http.ts";
 
 export interface OpcionesDeLasRutas {
@@ -43,6 +44,12 @@ export const RUTAS = {
   negocios: "/api/negocios",
   negocio: "/api/negocio",
   salir: "/api/salir",
+  // «Abra su negocio»: crear la cuenta, lo que se puede elegir, revisar el RUC y abrirlo.
+  abrirCuenta: "/api/abrir/cuenta",
+  vueltaDelAlta: "/api/abrir/cuenta/vuelta",
+  opcionesParaAbrir: "/api/abrir/opciones",
+  revisarRuc: "/api/abrir/ruc",
+  abrir: "/api/abrir",
 } as const;
 
 /** Las páginas del panel a las que se vuelve después de Google. Son las de aplicaciones/oficina. */
@@ -50,12 +57,14 @@ export const PAGINAS = {
   entrar: "/entrar/",
   segundoPaso: "/entrar/segundo-paso",
   negocios: "/entrar/negocios",
+  abrir: "/entrar/abrir",
 } as const;
 
 /** Lo que responde cada ruta cuando no puede: un código que la página busca en su catálogo. */
 export type CodigoDeError =
   | "origen" | "pedido_invalido" | "credenciales" | "sin_sesion" | "codigo_incorrecto" | "sin_segundo_paso"
-  | "faltan_dos_pasos" | "sin_acceso" | "no_existe" | "metodo" | "interno";
+  | "faltan_dos_pasos" | "sin_acceso" | "no_existe" | "metodo" | "interno" | "ruc_invalido" | "ya_usado"
+  | "demasiados_negocios";
 
 type Siguiente = "segundo_paso" | "negocios" | "entrar";
 
@@ -108,6 +117,23 @@ async function desafioDe(verificador: string): Promise<string> {
 
 const alAzar = (bytes: number): string => aBase64url(crypto.getRandomValues(new Uint8Array(bytes)));
 
+/** Un texto del pedido que puede venir como null. undefined si no es ni texto ni null, o si pasa del tope. */
+function textoONulo(valor: unknown, tope: number): string | null | undefined {
+  if (valor === null) return null;
+  return typeof valor === "string" && valor.length <= tope ? valor : undefined;
+}
+
+/** Cómo se responde un «no» al abrir un negocio. */
+function responderRechazoAlAbrir(r: RechazoAlAbrirElNegocio): Response {
+  if (r.tipo === "sesion") return responderRechazo(r.rechazo);
+  if (r.tipo === "ruc") return responder(400, { error: "ruc_invalido" satisfies CodigoDeError, motivo: r.motivo });
+  if (r.tipo === "pedido") return fallo(400, "pedido_invalido");
+  if (r.rechazo === "ya_usado") return fallo(409, "ya_usado");
+  if (r.rechazo === "demasiados_negocios") return fallo(429, "demasiados_negocios");
+  if (r.rechazo === "cuenta_desconocida") return fallo(401, "sin_sesion", BORRAR_LA_SESION);
+  return fallo(400, "pedido_invalido");
+}
+
 export interface InicioDelNegocio {
   readonly negocio: { readonly id: string; readonly nombre: string };
   readonly roles: NegocioEnPalabras["roles"];
@@ -130,26 +156,102 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     return responder(200, { siguiente: siguienteDe(entrada) }, cookiesDeLaSesion(entrada.sesion));
   }
 
-  async function entrarConGoogle(): Promise<Response> {
+  // El ida y vuelta con el proveedor (Google o el alta de una cuenta nueva): el
+  // estado y el verificador PKCE viajan en una cookie Lax que vive diez minutos.
+  async function irAlProveedor(ruta: string, direccionDe: (vuelta: VueltaDeGoogle) => string): Promise<Response> {
     const estado = alAzar(BYTES_DEL_ESTADO);
     const verificador = alAzar(BYTES_DEL_VERIFICADOR);
-    const direccion = proveedor.direccionDeGoogle({ vuelta: new URL(RUTAS.vueltaDeGoogle, origen).href, estado, desafio: await desafioDe(verificador) });
+    const direccion = direccionDe({ vuelta: new URL(ruta, origen).href, estado, desafio: await desafioDe(verificador) });
     const cookie = ponerCookie(COOKIES.google, `${estado}${SEPARADOR_DE_GOOGLE}${verificador}`, "Lax", LIMITES_DEL_SERVICIO.duracionDeLaVueltaDeGoogleS);
     return llevarAfuera(direccion, [cookie]);
   }
 
-  async function vueltaDeGoogle(pedido: Request, url: URL): Promise<Response> {
+  /** El código y el verificador de una vuelta, si el estado cuadra con el de la cookie. */
+  function vueltaValida(pedido: Request, url: URL): { readonly codigo: string; readonly verificador: string } | null {
     const guardado = leerCookies(pedido).get(COOKIES.google) ?? "";
     const [estado, verificador] = guardado.split(SEPARADOR_DE_GOOGLE);
     const traido = url.searchParams.get("state") ?? "";
     const codigo = url.searchParams.get("code") ?? "";
+    if (estado === undefined || verificador === undefined || estado === "" || codigo === "" || !igualesSinPrisa(deTexto(estado), deTexto(traido))) return null;
+    return { codigo, verificador };
+  }
+
+  async function entrarConGoogle(): Promise<Response> {
+    return await irAlProveedor(RUTAS.vueltaDeGoogle, (vuelta) => proveedor.direccionDeGoogle(vuelta));
+  }
+
+  async function vueltaDeGoogle(pedido: Request, url: URL): Promise<Response> {
     const sinGoogle = borrarCookie(COOKIES.google);
     const volverConError = llevarA(origen, `${PAGINAS.entrar}?error=google`, [sinGoogle]);
-    if (estado === undefined || verificador === undefined || estado === "" || codigo === "" || !igualesSinPrisa(deTexto(estado), deTexto(traido))) return volverConError;
-    const entrada = await proveedor.canjearGoogle(codigo, verificador);
+    const vuelta = vueltaValida(pedido, url);
+    if (vuelta === null) return volverConError;
+    const entrada = await proveedor.canjearGoogle(vuelta.codigo, vuelta.verificador);
     if (entrada === null) return volverConError;
     const pagina = entrada.faltaSegundoPaso ? PAGINAS.segundoPaso : PAGINAS.negocios;
     return llevarA(origen, pagina, [sinGoogle, ...cookiesDeLaSesion(entrada.sesion)]);
+  }
+
+  // «Abra su negocio»: la cuenta nueva nace en el proveedor, vuelve aquí, se
+  // registra en Coddvisor y sigue a las cuatro preguntas.
+  async function abrirCuenta(): Promise<Response> {
+    return await irAlProveedor(RUTAS.vueltaDelAlta, (vuelta) => proveedor.direccionParaAbrir(vuelta));
+  }
+
+  async function vueltaDelAlta(pedido: Request, url: URL): Promise<Response> {
+    const sinGoogle = borrarCookie(COOKIES.google);
+    const volverConError = llevarA(origen, `${PAGINAS.entrar}?error=abrir`, [sinGoogle]);
+    const vuelta = vueltaValida(pedido, url);
+    if (vuelta === null) return volverConError;
+    const alta = await proveedor.canjearAlta(vuelta.codigo, vuelta.verificador);
+    if (alta === null) return volverConError;
+    await registrarLaCuentaNueva(piezas, { proveedorCuentaId: alta.proveedorCuentaId, correo: alta.correo, nombre: alta.nombre });
+    return llevarA(origen, PAGINAS.abrir, [sinGoogle, ...cookiesDeLaSesion(alta.entrada.sesion)]);
+  }
+
+  async function opcionesDeAbrir(pedido: Request, url: URL): Promise<Response> {
+    const sesion = sesionDe(pedido);
+    if (sesion === null) return fallo(401, "sin_sesion");
+    const r = await opcionesParaAbrir(piezas, sesion.pase, url.searchParams.get("pais") ?? "");
+    if (!r.ok) return responderRechazoAlAbrir(r.error);
+    return responder(200, { pais: r.value.pais, rubros: r.value.rubros.map((codigo) => ({ codigo })), regimenes: r.value.regimenes.map((codigo) => ({ codigo })) });
+  }
+
+  async function revisarRuc(pedido: Request): Promise<Response> {
+    const sesion = sesionDe(pedido);
+    if (sesion === null) return fallo(401, "sin_sesion");
+    const cuerpo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido));
+    const pais = cuerpo?.["pais"];
+    const ruc = cuerpo?.["ruc"];
+    if (!esTexto(pais, LIMITES_DEL_SERVICIO.largoMaximoDeUnCodigo) || typeof ruc !== "string" || ruc.length > LIMITES_DEL_SERVICIO.largoMaximoDelNumeroTributario) {
+      return fallo(400, "pedido_invalido");
+    }
+    const r = await revisarElRuc(piezas, sesion.pase, pais, ruc);
+    return r.ok ? responder(200, { ruc: r.value }) : responderRechazoAlAbrir(r.error);
+  }
+
+  /** Lo que la pantalla manda al tocar «Crear mi negocio», revisado en su forma. null si no se entiende. */
+  function pedidoDeAbrir(cuerpo: Readonly<Record<string, unknown>> | null): PedidoDeAbrir | null {
+    const L = LIMITES_DEL_SERVICIO;
+    const operacion = cuerpo?.["operacion"];
+    const pais = cuerpo?.["pais"];
+    const rubro = cuerpo?.["rubro"];
+    const local = cuerpo?.["local"];
+    const ruc = textoONulo(cuerpo?.["ruc"], L.largoMaximoDelNumeroTributario);
+    const regimen = textoONulo(cuerpo?.["regimen"], L.largoMaximoDeUnCodigo);
+    const localidad = textoONulo(cuerpo?.["localidad"] ?? null, L.largoMaximoDeUnNombre);
+    if (!esTexto(operacion, L.largoMaximoDeUnCodigo) || !esTexto(pais, L.largoMaximoDeUnCodigo) || !esTexto(rubro, L.largoMaximoDeUnCodigo)
+      || typeof local !== "string" || local.length > L.largoMaximoDeUnNombre
+      || ruc === undefined || regimen === undefined || localidad === undefined) return null;
+    return { operacion, pais, ruc, regimen, rubro, local, localidad };
+  }
+
+  async function abrir(pedido: Request): Promise<Response> {
+    const sesion = sesionDe(pedido);
+    if (sesion === null) return fallo(401, "sin_sesion");
+    const datos = pedidoDeAbrir(campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido)));
+    if (datos === null) return fallo(400, "pedido_invalido");
+    const r = await abrirElNegocio(piezas, sesion.pase, datos);
+    return r.ok ? responder(200, { negocio: r.value }) : responderRechazoAlAbrir(r.error);
   }
 
   async function segundoPaso(pedido: Request): Promise<Response> {
@@ -212,12 +314,17 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     [RUTAS.entrarConCorreo, entrarConCorreo],
     [RUTAS.segundoPaso, segundoPaso],
     [RUTAS.salir, salir],
+    [RUTAS.revisarRuc, revisarRuc],
+    [RUTAS.abrir, abrir],
   ]);
   const LEEN: ReadonlyMap<string, Atender> = new Map<string, Atender>([
     [RUTAS.entrarConGoogle, entrarConGoogle],
     [RUTAS.vueltaDeGoogle, vueltaDeGoogle],
     [RUTAS.negocios, negocios],
     [RUTAS.negocio, negocio],
+    [RUTAS.abrirCuenta, abrirCuenta],
+    [RUTAS.vueltaDelAlta, vueltaDelAlta],
+    [RUTAS.opcionesParaAbrir, opcionesDeAbrir],
   ]);
 
   return async (pedido) => {

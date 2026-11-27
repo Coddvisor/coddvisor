@@ -90,8 +90,11 @@ export function avisar(clave, valores, campo) {
   lugar.replaceChildren();
   aviso.hidden = false;
   if (campo !== undefined) {
+    // El aviso se suma a lo que ya describe el campo (su nota de ayuda), sin reemplazarlo.
+    if (!campo.hasAttribute("data-describedby-original")) campo.setAttribute("data-describedby-original", campo.getAttribute("aria-describedby") ?? "");
+    const original = campo.getAttribute("data-describedby-original") ?? "";
     campo.setAttribute("aria-invalid", "true");
-    campo.setAttribute("aria-describedby", lugar.id);
+    campo.setAttribute("aria-describedby", original === "" ? lugar.id : `${original} ${lugar.id}`);
   }
   window.requestAnimationFrame(() => {
     lugar.textContent = frase;
@@ -104,7 +107,11 @@ export function callar() {
   if (aviso !== null) aviso.hidden = true;
   document.querySelectorAll("[aria-invalid]").forEach((campo) => {
     campo.removeAttribute("aria-invalid");
-    campo.removeAttribute("aria-describedby");
+    // El campo vuelve a decir solo su nota de ayuda, si la tenía.
+    const original = campo.getAttribute("data-describedby-original") ?? "";
+    campo.removeAttribute("data-describedby-original");
+    if (original === "") campo.removeAttribute("aria-describedby");
+    else campo.setAttribute("aria-describedby", original);
   });
 }
 
@@ -156,6 +163,7 @@ export const PAGINAS = {
   entrar: "/entrar/",
   segundoPaso: "/entrar/segundo-paso",
   negocios: "/entrar/negocios",
+  abrir: "/entrar/abrir",
   inicio: "/inicio/",
 };
 

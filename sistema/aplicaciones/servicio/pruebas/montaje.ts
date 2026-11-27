@@ -4,7 +4,8 @@
 // de las rutas y el modo de prueba local, así que los dos prueban lo mismo.
 
 import { crearManejador, type Manejador } from "../rutas/rutas.ts";
-import type { Piezas } from "../entrar.ts";
+import { paquetesPorPais, type Piezas } from "../entrar.ts";
+import { paquetePeru } from "#paquetes/pe";
 import { LIMITES_DEL_SERVICIO } from "../configuracion.ts";
 import { crearBase, llaveDelPortero, type Base } from "../../../modulos/identidad/pruebas/apoyo.ts";
 import { CODIGO_DE_PRUEBA, cargarEjemplo, cuentasDeEjemplo, type Ejemplo } from "./ejemplo.ts";
@@ -48,7 +49,7 @@ export async function montarEntrar(opciones: OpcionesDelMontaje): Promise<Montaj
     duracionDelPaseS: DURACION_DEL_PASE_S,
     reloj,
   });
-  const piezas: Piezas = { repartidor, llavero: proveedor.llavero, esperado: proveedor.esperado, firmar, reloj, negociosPorPagina: LIMITES_DEL_SERVICIO.negociosPorPagina };
+  const piezas: Piezas = { repartidor, llavero: proveedor.llavero, esperado: proveedor.esperado, firmar, reloj, negociosPorPagina: LIMITES_DEL_SERVICIO.negociosPorPagina, paquetes: paquetesPorPais([paquetePeru]) };
   const ejemplo = await cargarEjemplo(db, firmar, piezas, proveedor, cuentas);
   const manejador = crearManejador({ piezas, proveedor, origen: opciones.origen, ...(opciones.anotarFallo === undefined ? {} : { anotarFallo: opciones.anotarFallo }) });
   return { db, repartidor, proveedor, piezas, manejador, ejemplo, cerrar: async () => { await db.close(); } };

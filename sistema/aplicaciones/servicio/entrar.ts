@@ -7,7 +7,7 @@
  * transacción, con un solo negocio (decisión 4 de identidad). El negocio no va
  * dentro del pase: llega en cada pedido y se comprueba cada vez.
  */
-import { err, esUuid, ok, type Result, type Transaccion } from "#nucleo";
+import { err, esUuid, ok, type PaqueteDePais, type Result, type Transaccion } from "#nucleo";
 import {
   abrirNegocio,
   cerrarSesion,
@@ -41,13 +41,19 @@ export interface Piezas {
   /** La hora en milisegundos. */
   readonly reloj: () => number;
   readonly negociosPorPagina: number;
+  /**
+   * Los paquetes de país que hay, por su código (nucleo.pais). Los entrega quien
+   * arranca el programa: el servicio no importa ningún país por su nombre (FR-01)
+   * y elige el paquete por el país de la empresa.
+   */
+  readonly paquetes: ReadonlyMap<string, PaqueteDePais>;
 }
 
 /** `cursor_invalido`: el «después de» de una página no es el id de un negocio. Llega del pedido, así que se revisa. */
 export type RechazoAlEntrar = RechazoDelPase | RechazoDeLaCuenta | RechazoAlAbrir | "cursor_invalido";
 
 /** Arma las piezas con la configuración del entorno y un repartidor de conexiones. */
-export function armarPiezas(configuracion: Configuracion, repartidor: Repartidor, reloj: () => number): Piezas {
+export function armarPiezas(configuracion: Configuracion, repartidor: Repartidor, reloj: () => number, paquetes: readonly PaqueteDePais[]): Piezas {
   const direccion = configuracion.pase.direccionDeLasLlaves;
   return {
     repartidor,
@@ -56,7 +62,18 @@ export function armarPiezas(configuracion: Configuracion, repartidor: Repartidor
     firmar: crearFirmador(configuracion.llaveDelPortero, reloj),
     reloj,
     negociosPorPagina: LIMITES_DEL_SERVICIO.negociosPorPagina,
+    paquetes: paquetesPorPais(paquetes),
   };
+}
+
+/** Los paquetes por su país. Dos paquetes del mismo país son un error de quien arranca. */
+export function paquetesPorPais(paquetes: readonly PaqueteDePais[]): ReadonlyMap<string, PaqueteDePais> {
+  const porPais = new Map<string, PaqueteDePais>();
+  for (const p of paquetes) {
+    if (porPais.has(p.paisCodigo)) throw new Error(`Hay dos paquetes para el país ${p.paisCodigo}.`);
+    porPais.set(p.paisCodigo, p);
+  }
+  return porPais;
 }
 
 const MILISEGUNDOS_POR_SEGUNDO = 1000;

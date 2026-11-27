@@ -4,6 +4,17 @@ Estado: **propuesta para aprobar**. No es una migración. Es una sección de la
 propuesta de unión de los cimientos, y se escribe antes de crear la primera
 tabla de `catalogo`.
 
+> **Nota del 26-nov-2026:** el módulo `configuracion` nació con la pregunta
+> «¿A qué se dedica?» de abrir un negocio: el catálogo `configuracion.rubro`
+> (ocho rubros, entre ellos «Ropa y calzado», que propondrá las plantillas
+> `ropa` y `calzado`) y el libro `configuracion.rubro_elegido`. El libro va
+> **por empresa** (`empresa_id`), como dice hoy 03-nada-fijo-en-el-codigo.md,
+> porque la decisión 1 de abajo sigue sin aprobar. Si se aprueba «la cuenta»,
+> el rubro del negocio se lee de sus empresas y no hay que migrar nada; el
+> cambio de la línea de perfiles de 03 sigue pendiente, como dice «Lo que pide
+> cambiar en las bases», punto 2. Las plantillas de esta página todavía no
+> existen.
+
 ## El problema, en la tienda
 
 Una tienda de zapatillas de Gamarra y una bodega de Arequipa usan el mismo

@@ -379,6 +379,21 @@ pedidos no la tiene.
   > y el nivel del pase; `portero.abrir` quedó solo para la caja sola. Está en
   > la migración `20261126200000_portero_comprueba_la_membresia.sql` y en
   > `arquitectura/bases/02-base-de-datos.md`.
+  >
+  > **Nota del 26-nov-2026 (abrir un negocio):** la puerta propia existe:
+  > `identidad.abrir_negocio` funda el negocio y, en la misma transacción, su
+  > primera empresa (con o sin RUC y su régimen), su primer local y su rubro
+  > (migración `20261126231300_puerta_para_abrir_un_negocio.sql`). Las cuatro
+  > pantallas están en `sistema/aplicaciones/oficina/entrar/abrir.html`. La
+  > cuenta nueva nace hoy solo en el proveedor de prueba
+  > (`ProveedorDeCuentas.direccionParaAbrir` y `canjearAlta`, listos para
+  > Supabase). Falta, con Supabase: el alta con Google detrás del hook de la
+  > decisión 8 bis, el alta con correo y su enlace de un solo uso, el captcha,
+  > el límite de altas de cuentas por día y la inscripción de la app de códigos
+  > durante el alta. El tope de negocios abiertos por cuenta ya existe: 5 en 24
+  > horas, dentro de la puerta (CV220, el servicio responde 429).
+  > «El negocio nace en prueba y no emite ante SUNAT hasta validarse» todavía
+  > no tiene dato propio: llega con la emisión.
 - **Aceptar una invitación**: el dueño invita desde el panel. La membresía
   queda pendiente hasta que el invitado la acepte con su sesión abierta y con el
   mismo correo. El enlace es de un solo uso y vence. El panel responde igual
