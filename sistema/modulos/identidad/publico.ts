@@ -10,7 +10,7 @@
  */
 export type { AfirmacionesDelPase, EsperadoDelPase, Nivel, RechazoDeLaCuenta, RechazoDelPase } from "./dominio/pase.ts";
 export { crearLlavero, leerConTope, pedirJuegoDeLlaves, verificarPase, type Llavero, type OpcionesDelLlavero } from "./pase/es256.ts";
-export { abrirNegocioNuevo, registrarCuenta, type CuentaNueva, type IdsDelNegocioNuevo, type NegocioNuevo, type RechazoAlAbrirUnNegocio } from "./abrir.ts";
+export { abrirNegocioNuevo, permitirAlta, registrarCuenta, type CuentaNueva, type PermisoDeAlta, type IdsDelNegocioNuevo, type NegocioNuevo, type RechazoAlAbrirUnNegocio } from "./abrir.ts";
 export { campoEntero, campoTexto, campoTextoOpcional, campoUuid, campoUuidOpcional, crearFirmador, mensajeDeFirma, type FirmaDelServicio, type Firmador, type LlaveDelPortero } from "./firma/mensaje.ts";
 export { abrirNegocio, cerrarSesion, leerCuenta, listarNegocios, type Cuenta, type EstadoDelAcceso, type NegocioAbierto, type NegocioDeLaCuenta, type PaginaDeNegocios, type RechazoAlAbrir } from "./entrar.ts";
 export { leerNegocioAbierto, type NegocioEnPalabras, type RolDeLaMembresia } from "./datos/negocio-abierto.ts";

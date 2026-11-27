@@ -14,14 +14,20 @@
  *   - lo que se responde son códigos, nunca textos: la página los busca en su
  *     catálogo (EX-19). Y ninguno dice si una cuenta existe: un correo que no
  *     existe y una contraseña equivocada responden lo mismo;
- *   - el negocio viaja en cada pedido y se comprueba cada vez (decisión 4).
+ *   - el negocio viaja en cada pedido y se comprueba cada vez (decisión 4);
+ *   - las contraseñas, los códigos y los permisos de alta tienen un límite
+ *     propio por IP y por lo que se intenta (rutas/limite.ts), que corta antes
+ *     de llamar a Supabase: sus límites son por IP, y todo le llega desde la IP
+ *     del servicio. Si Supabase igual pide esperar, se responde lo mismo
+ *     («demasiados_intentos») y la sesión no se borra.
  */
 import { err, ok, type Result } from "#nucleo";
 import { aBase64url, deTexto, igualesSinPrisa, leerNegocioAbierto, type NegocioEnPalabras, type Nivel } from "#modulos/identidad";
 import { LIMITES_DEL_SERVICIO } from "../configuracion.ts";
 import { cerrarLaSesion, negociosDeLaPersona, trabajarEnNegocio, type Piezas, type RechazoAlEntrar } from "../entrar.ts";
-import { abrirElNegocio, opcionesParaAbrir, registrarLaCuentaNueva, revisarElRuc, type PedidoDeAbrir, type RechazoAlAbrirElNegocio } from "../abrir.ts";
-import type { EntradaDelProveedor, ProveedorDeCuentas, SesionDelProveedor, VueltaDeGoogle } from "./cuentas.ts";
+import { abrirElNegocio, opcionesParaAbrir, permitirLaAlta, registrarLaCuentaNueva, revisarElRuc, type PedidoDeAbrir, type RechazoAlAbrirElNegocio } from "../abrir.ts";
+import { ProveedorOcupado, type EntradaDelProveedor, type ProveedorDeCuentas, type SesionDelProveedor, type VueltaDeGoogle } from "./cuentas.ts";
+import { crearLimite, type Limite } from "./limite.ts";
 import { borrarCookie, COOKIES, leerCookies, leerCuerpo, llevarA, llevarAfuera, ponerCookie, responder, vieneDelPanel } from "./http.ts";
 
 export interface OpcionesDeLasRutas {
@@ -41,10 +47,18 @@ export const RUTAS = {
   entrarConGoogle: "/api/entrar/google",
   vueltaDeGoogle: "/api/entrar/google/vuelta",
   segundoPaso: "/api/entrar/segundo-paso",
+  // Inscribir la app de códigos: pedir el QR y confirmarlo con el primer código (decisión 8).
+  inscribirSegundoPaso: "/api/entrar/segundo-paso/inscribir",
+  confirmarInscripcion: "/api/entrar/segundo-paso/confirmar",
+  // Un pase nuevo antes de que venza el que tiene, con la renovación de la cookie.
+  renovar: "/api/sesion/renovar",
   negocios: "/api/negocios",
   negocio: "/api/negocio",
   salir: "/api/salir",
   // «Abra su negocio»: crear la cuenta, lo que se puede elegir, revisar el RUC y abrirlo.
+  // El permiso de alta: el correo de Google con que la persona abrirá su negocio.
+  // Sin él, el gancho de Supabase Auth no deja crear la cuenta (decisión 8 bis).
+  permisoDeAlta: "/api/abrir/permiso",
   abrirCuenta: "/api/abrir/cuenta",
   vueltaDelAlta: "/api/abrir/cuenta/vuelta",
   opcionesParaAbrir: "/api/abrir/opciones",
@@ -64,14 +78,25 @@ export const PAGINAS = {
 export type CodigoDeError =
   | "origen" | "pedido_invalido" | "credenciales" | "sin_sesion" | "codigo_incorrecto" | "sin_segundo_paso"
   | "faltan_dos_pasos" | "sin_acceso" | "no_existe" | "metodo" | "interno" | "ruc_invalido" | "ya_usado"
-  | "demasiados_negocios";
+  | "demasiados_negocios" | "demasiados_intentos";
 
-type Siguiente = "segundo_paso" | "negocios" | "entrar";
+type Siguiente = "segundo_paso" | "negocios" | "entrar" | "abrir_cuenta";
 
 const BYTES_DEL_ESTADO = 16;
 const BYTES_DEL_VERIFICADOR = 32;
 const CODIGO_DE_SEIS = /^[0-9]{6}$/;
+// Lo justo para no anotar un permiso con algo que no es un correo. Si no es de Google, el gancho igual niega.
+const PARECE_UN_CORREO = /^[^\s@]+@[^\s@]+$/;
+const LARGO_DE_UN_ID = 36;
 const SEPARADOR_DE_GOOGLE = ".";
+// La IP de la persona. La pone el Worker de Cloudflare que está delante del
+// servicio. Sin ella, todos los pedidos comparten una sola clave.
+const ENCABEZADO_DE_LA_IP = "cf-connecting-ip";
+const SIN_IP = "sin-ip";
+// De un pase, para contar sus códigos fallidos, basta su firma: es distinta en cada pase.
+const LARGO_DE_LA_CLAVE_DEL_PASE = 128;
+const PIDE_ESPERAR = 429;
+const PROVEEDOR_OCUPADO = 503;
 
 const fallo = (estado: number, error: CodigoDeError, cookies: readonly string[] = []): Response => responder(estado, { error }, cookies);
 
@@ -134,6 +159,29 @@ function responderRechazoAlAbrir(r: RechazoAlAbrirElNegocio): Response {
   return fallo(400, "pedido_invalido");
 }
 
+const ipDe = (pedido: Request): string => pedido.headers.get(ENCABEZADO_DE_LA_IP)?.trim() || SIN_IP;
+const claveDelPase = (pase: string): string => pase.slice(pase.lastIndexOf(".") + 1).slice(0, LARGO_DE_LA_CLAVE_DEL_PASE);
+const claveDelCorreo = (correo: string): string => correo.trim().toLowerCase();
+const demasiados = (): Response => fallo(PIDE_ESPERAR, "demasiados_intentos");
+
+interface Limites {
+  readonly fallidosPorIp: Limite;
+  readonly fallidosPorCorreo: Limite;
+  readonly codigosPorSesion: Limite;
+  readonly permisosPorIp: Limite;
+}
+
+function crearLimites(): Limites {
+  const L = LIMITES_DEL_SERVICIO;
+  const limite = (maximo: number): Limite => crearLimite({ maximo, ventanaMs: L.ventanaDeIntentosMs, clavesMaximas: L.clavesMaximasDelLimite });
+  return {
+    fallidosPorIp: limite(L.intentosFallidosPorIp),
+    fallidosPorCorreo: limite(L.intentosFallidosPorCorreo),
+    codigosPorSesion: limite(L.codigosFallidosPorSesion),
+    permisosPorIp: limite(L.permisosDeAltaPorIp),
+  };
+}
+
 export interface InicioDelNegocio {
   readonly negocio: { readonly id: string; readonly nombre: string };
   readonly roles: NegocioEnPalabras["roles"];
@@ -143,6 +191,15 @@ export interface InicioDelNegocio {
 /** Crea el manejador de las rutas de entrar. */
 export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
   const { piezas, proveedor, origen } = opciones;
+  const limites = crearLimites();
+
+  /** Si un código de seis dígitos todavía se puede intentar desde esta IP y con esta sesión. */
+  const quedaCodigo = (ip: string, sesion: SesionDelProveedor, ahora: number): boolean =>
+    limites.fallidosPorIp.queda(ip, ahora) && limites.codigosPorSesion.queda(claveDelPase(sesion.pase), ahora);
+  const contarCodigo = (ip: string, sesion: SesionDelProveedor, ahora: number): void => {
+    limites.fallidosPorIp.contar(ip, ahora);
+    limites.codigosPorSesion.contar(claveDelPase(sesion.pase), ahora);
+  };
 
   async function entrarConCorreo(pedido: Request): Promise<Response> {
     const cuerpo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido));
@@ -151,8 +208,15 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     if (!esTexto(correo, LIMITES_DEL_SERVICIO.largoMaximoDelCorreo) || !esTexto(contrasena, LIMITES_DEL_SERVICIO.largoMaximoDeLaContrasena)) {
       return fallo(400, "pedido_invalido");
     }
+    const ip = ipDe(pedido);
+    const ahora = piezas.reloj();
+    if (!limites.fallidosPorIp.queda(ip, ahora) || !limites.fallidosPorCorreo.queda(claveDelCorreo(correo), ahora)) return demasiados();
     const entrada = await proveedor.entrarConContrasena(correo.trim(), contrasena);
-    if (entrada === null) return fallo(401, "credenciales", BORRAR_LA_SESION);
+    if (entrada === null) {
+      limites.fallidosPorIp.contar(ip, ahora);
+      limites.fallidosPorCorreo.contar(claveDelCorreo(correo), ahora);
+      return fallo(401, "credenciales", BORRAR_LA_SESION);
+    }
     return responder(200, { siguiente: siguienteDe(entrada) }, cookiesDeLaSesion(entrada.sesion));
   }
 
@@ -205,7 +269,10 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     const alta = await proveedor.canjearAlta(vuelta.codigo, vuelta.verificador);
     if (alta === null) return volverConError;
     await registrarLaCuentaNueva(piezas, { proveedorCuentaId: alta.proveedorCuentaId, correo: alta.correo, nombre: alta.nombre });
-    return llevarA(origen, PAGINAS.abrir, [sinGoogle, ...cookiesDeLaSesion(alta.entrada.sesion)]);
+    // Una cuenta que ya existía y tiene su app de códigos no crea nada en
+    // Supabase (el gancho no corre) y vuelve con un pase aal1: antes de abrir, el código.
+    const pagina = alta.entrada.faltaSegundoPaso ? PAGINAS.segundoPaso : PAGINAS.abrir;
+    return llevarA(origen, pagina, [sinGoogle, ...cookiesDeLaSesion(alta.entrada.sesion)]);
   }
 
   async function opcionesDeAbrir(pedido: Request, url: URL): Promise<Response> {
@@ -254,13 +321,71 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     return r.ok ? responder(200, { negocio: r.value }) : responderRechazoAlAbrir(r.error);
   }
 
+  // El permiso de alta se anota igual con cualquier proveedor: el de prueba no lo
+  // mira, y con Supabase lo mira el gancho. Responde igual sea cual sea el correo.
+  // Tiene su límite por IP, y la base no anota otro mientras ese correo tenga
+  // uno vigente: así no se llena control.alta_permitida.
+  async function permisoDeAlta(pedido: Request): Promise<Response> {
+    const correo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido))?.["correo"];
+    if (!esTexto(correo, LIMITES_DEL_SERVICIO.largoMaximoDelCorreo) || !PARECE_UN_CORREO.test(correo.trim())) return fallo(400, "pedido_invalido");
+    const ip = ipDe(pedido);
+    const ahora = piezas.reloj();
+    if (!limites.permisosPorIp.queda(ip, ahora)) return demasiados();
+    limites.permisosPorIp.contar(ip, ahora);
+    await permitirLaAlta(piezas, correo.trim());
+    return responder(200, { siguiente: "abrir_cuenta" satisfies Siguiente });
+  }
+
+  async function inscribirSegundoPaso(pedido: Request): Promise<Response> {
+    const sesion = sesionDe(pedido);
+    if (sesion === null) return fallo(401, "sin_sesion");
+    const inscripcion = await proveedor.inscribirSegundoPaso(sesion);
+    if (!inscripcion.ok) {
+      // Con una app ya confirmada, inscribir otra pide antes el código de esa: la sesión sigue.
+      return inscripcion.error === "faltan_dos_pasos" ? fallo(403, "faltan_dos_pasos") : fallo(401, "sin_sesion", BORRAR_LA_SESION);
+    }
+    return responder(200, inscripcion.value);
+  }
+
+  async function confirmarInscripcion(pedido: Request): Promise<Response> {
+    const sesion = sesionDe(pedido);
+    if (sesion === null) return fallo(401, "sin_sesion");
+    const cuerpo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido));
+    const factor = cuerpo?.["factor"];
+    const codigo = cuerpo?.["codigo"];
+    if (!esTexto(factor, LARGO_DE_UN_ID) || typeof codigo !== "string" || !CODIGO_DE_SEIS.test(codigo)) return fallo(401, "codigo_incorrecto");
+    const ip = ipDe(pedido);
+    const ahora = piezas.reloj();
+    if (!quedaCodigo(ip, sesion, ahora)) return demasiados();
+    const r = await proveedor.confirmarInscripcion(sesion, factor, codigo);
+    if (!r.ok) {
+      contarCodigo(ip, sesion, ahora);
+      return fallo(401, r.error);
+    }
+    return responder(200, { siguiente: "negocios" satisfies Siguiente }, cookiesDeLaSesion(r.value.sesion));
+  }
+
+  async function renovar(pedido: Request): Promise<Response> {
+    const sesion = sesionDe(pedido);
+    if (sesion === null) return fallo(401, "sin_sesion");
+    const entrada = await proveedor.renovar(sesion);
+    if (entrada === null) return fallo(401, "sin_sesion", BORRAR_LA_SESION);
+    return responder(200, { siguiente: siguienteDe(entrada) }, cookiesDeLaSesion(entrada.sesion));
+  }
+
   async function segundoPaso(pedido: Request): Promise<Response> {
     const sesion = sesionDe(pedido);
     if (sesion === null) return fallo(401, "sin_sesion");
     const codigo = campos(await leerCuerpo(pedido, LIMITES_DEL_SERVICIO.largoMaximoDelPedido))?.["codigo"];
     if (typeof codigo !== "string" || !CODIGO_DE_SEIS.test(codigo)) return fallo(401, "codigo_incorrecto");
+    const ip = ipDe(pedido);
+    const ahora = piezas.reloj();
+    if (!quedaCodigo(ip, sesion, ahora)) return demasiados();
     const r = await proveedor.confirmarSegundoPaso(sesion, codigo);
-    if (!r.ok) return fallo(401, r.error);
+    if (!r.ok) {
+      if (r.error === "codigo_incorrecto") contarCodigo(ip, sesion, ahora);
+      return fallo(401, r.error);
+    }
     return responder(200, { siguiente: "negocios" satisfies Siguiente }, cookiesDeLaSesion(r.value.sesion));
   }
 
@@ -313,6 +438,10 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
   const CAMBIAN: ReadonlyMap<string, Atender> = new Map<string, Atender>([
     [RUTAS.entrarConCorreo, entrarConCorreo],
     [RUTAS.segundoPaso, segundoPaso],
+    [RUTAS.inscribirSegundoPaso, inscribirSegundoPaso],
+    [RUTAS.confirmarInscripcion, confirmarInscripcion],
+    [RUTAS.renovar, renovar],
+    [RUTAS.permisoDeAlta, permisoDeAlta],
     [RUTAS.salir, salir],
     [RUTAS.revisarRuc, revisarRuc],
     [RUTAS.abrir, abrir],
@@ -345,6 +474,8 @@ export function crearManejador(opciones: OpcionesDeLasRutas): Manejador {
     } catch (error) {
       // Lo que falló adentro no se cuenta afuera: queda para el registro del servidor.
       opciones.anotarFallo?.(error);
+      // Supabase pidió esperar: no es culpa de la persona, y su sesión sigue.
+      if (error instanceof ProveedorOcupado) return fallo(PROVEEDOR_OCUPADO, "demasiados_intentos");
       return fallo(500, "interno");
     }
   };

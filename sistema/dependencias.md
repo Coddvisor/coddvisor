@@ -34,6 +34,13 @@ Nada de esto viaja al negocio del cliente.
   entiende tal cual. Las rutas usan Request y Response, que traen Node y Deno; el
   modo de prueba local pone delante `node:http`. Un marco se evalúa cuando una
   pantalla de verdad lo pida, con su peso medido contra EX-20.
+- **El cliente de Supabase (`@supabase/supabase-js`, `@supabase/ssr`).** El
+  proveedor de cuentas real (`aplicaciones/servicio/proveedor/supabase.ts`) habla
+  con Supabase Auth por su API HTTP con `fetch`: son nueve llamadas, cada una con
+  su fuente escrita al inicio del archivo. El cliente guarda la sesión a su modo
+  (en el navegador o en sus cookies) y la decisión 8 pide que solo la guarde el
+  servicio, en su cookie `__Host-`. Se prueba contra un Supabase Auth falso en
+  memoria (`aplicaciones/servicio/pruebas/supabase-falso.ts`). (26-nov-2026.)
 - **Un validador de datos.** Lo que acepta un contrato publicado no debe depender
   de la versión de una librería en cada lado.
 - **TypeScript 7.** La guardia se apoya en la forma del compilador 6. Subir de

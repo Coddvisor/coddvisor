@@ -85,6 +85,7 @@ export async function crearProveedorDePrueba(op: OpcionesDelProveedorDePrueba): 
   const altas: CuentaDeEjemplo[] = [];
   const codigosDeAlta = new Map<string, { readonly desafio: string; readonly cuenta: CuentaDeEjemplo }>();
   let salidas = 0;
+  const inscripciones = new Map<string, string>();
 
   async function emitirPase(cuenta: CuentaDeEjemplo, nivel: Nivel, cambios: Readonly<Record<string, unknown>> = {}): Promise<string> {
     const ahora = Math.floor(op.reloj() / MS);
@@ -190,7 +191,11 @@ export async function crearProveedorDePrueba(op: OpcionesDelProveedorDePrueba): 
       codigosDeAlta.delete(codigo);
       if (guardado === undefined || !(await cuadraElDesafio(guardado.desafio, verificador))) return null;
       const { cuenta } = guardado;
-      return { entrada: await entrada(cuenta, "aal1"), proveedorCuentaId: cuenta.proveedor, correo: cuenta.correo, nombre: cuenta.nombre };
+      // La cuenta recién nacida sigue directo a abrir su negocio, como antes: la
+      // app de códigos de ejemplo nace con ella, pero no hay una sesión vieja que
+      // proteger. (Con Supabase, pide el código solo una cuenta que ya existía.)
+      const recien = await entrada(cuenta, "aal1");
+      return { entrada: { ...recien, faltaSegundoPaso: false }, proveedorCuentaId: cuenta.proveedor, correo: cuenta.correo, nombre: cuenta.nombre };
     },
 
     async confirmarSegundoPaso(sesion: SesionDelProveedor, codigo: string) {
@@ -200,6 +205,33 @@ export async function crearProveedorDePrueba(op: OpcionesDelProveedorDePrueba): 
       if (!cuenta.segundoPaso) return err("sin_segundo_paso");
       if (!igualesSinPrisa(deTexto(codigo), deTexto(op.codigoDelSegundoPaso))) return err("codigo_incorrecto");
       return ok(await entrada(cuenta, "aal2", pase.value.sesion));
+    },
+
+    // La inscripción de prueba: cualquier cuenta con sesión recibe un factor
+    // nuevo, que se confirma con el mismo código fijo del segundo paso.
+    async inscribirSegundoPaso(sesion: SesionDelProveedor) {
+      const pase = await verificarPase(sesion.pase, llavero, esperado, Math.floor(op.reloj() / MS));
+      if (!pase.ok) return err("sin_sesion");
+      const factor = uuid7();
+      inscripciones.set(factor, pase.value.cuentaDelProveedor);
+      return ok({ factor, enlace: `otpauth://totp/prueba:${factor}?secret=PRUEBA`, secreto: "PRUEBA" });
+    },
+
+    async confirmarInscripcion(sesion: SesionDelProveedor, factor: string, codigo: string) {
+      const pase = await verificarPase(sesion.pase, llavero, esperado, Math.floor(op.reloj() / MS));
+      const indice = pase.ok ? cuentas.findIndex((c) => c.proveedor === pase.value.cuentaDelProveedor) : -1;
+      const cuenta = cuentas[indice];
+      if (!pase.ok || cuenta === undefined || inscripciones.get(factor) !== cuenta.proveedor) return err("codigo_incorrecto");
+      if (!igualesSinPrisa(deTexto(codigo), deTexto(op.codigoDelSegundoPaso))) return err("codigo_incorrecto");
+      inscripciones.delete(factor);
+      const inscrita: CuentaDeEjemplo = { ...cuenta, segundoPaso: true };
+      cuentas[indice] = inscrita;
+      return ok(await entrada(inscrita, "aal2", pase.value.sesion));
+    },
+
+    // El proveedor de prueba no da renovación (renovacion: null): no hay nada que renovar.
+    async renovar() {
+      return await Promise.resolve(null);
     },
 
     async salir() {

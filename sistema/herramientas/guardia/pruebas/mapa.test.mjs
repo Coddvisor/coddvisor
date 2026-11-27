@@ -35,7 +35,7 @@ describe('el mapa de capas', () => {
     for (const c of capas.capas) assert.ok(dibujadas.includes(c.nombre), `${c.nombre}/ no está en el árbol de 05-modulos.md`);
   });
   it('todo TypeScript vive en una capa o en una carpeta de herramientas', () => {
-    const permitidas = [...capas.capas.map((c) => c.nombre), ...capas.fuera_del_producto.carpetas, 'node_modules'];
+    const permitidas = [...capas.capas.map((c) => c.nombre), ...capas.arranques.carpetas, ...capas.fuera_del_producto.carpetas, 'node_modules'];
     const sueltas = readdirSync(RAIZ, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith('.') && !permitidas.includes(e.name)).map((e) => e.name);
     assert.deepEqual(sueltas.filter((s) => archivosDe(s).some((f) => /\.(ts|mts)$/.test(f))), []);
   });
@@ -56,6 +56,13 @@ describe('el mapa de capas', () => {
     assert.deepEqual(navegador.compilerOptions.target, 'ES2020');
     assert.equal(navegador.compilerOptions.checkJs, true);
     assert.match(JSON.parse(readFileSync(path.join(RAIZ, 'package.json'), 'utf8')).scripts['verificar:tipos'], /tsc -p tsconfig\.navegador\.json/);
+  });
+  it('cada arranque está dibujado en 05-modulos.md, y no tiene JavaScript ni package.json', () => {
+    const dibujadas = leerCarpetasDelDocumento(capas);
+    for (const c of capas.arranques.carpetas) {
+      assert.ok(dibujadas.includes(c), `${c}/ no está en el árbol de 05-modulos.md`);
+      assert.deepEqual(archivosDe(c).filter((f) => /\.[cm]?jsx?$/.test(f) || f.endsWith('package.json')), []);
+    }
   });
   it('ninguna capa tiene un package.json propio: ahí dejarían de existir los nombres con #', () => {
     for (const c of capas.capas) assert.deepEqual(archivosDe(c.nombre).filter((f) => f.endsWith('package.json')), []);

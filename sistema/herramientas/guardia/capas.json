@@ -70,6 +70,16 @@
       }
     }
   ],
+  "arranques": {
+    "carpetas": [
+      "supabase"
+    ],
+    "usan": [
+      "aplicaciones",
+      "paquetes"
+    ],
+    "porque": "Un arranque es la capa delgada que pone un programa en marcha en su lugar de despliegue: hoy, la función de Supabase (supabase/functions/servicio/index.ts, en Deno), que Supabase exige en su carpeta propia. Lee el entorno, quita el nombre de la función del camino y le pasa cada pedido al manejador de la aplicación. No tiene lógica: solo importa la puerta de una aplicación o de un paquete de país, y es portátil como ellas (PO-01). Ninguna capa lo importa (cambio de frontera del 26-nov-2026, proveedor de cuentas real; lo aprueba el fundador)."
+  },
   "fuera_del_producto": {
     "carpetas": [
       "herramientas",

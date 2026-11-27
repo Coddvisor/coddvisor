@@ -155,7 +155,9 @@ export async function pedir(ruta, cuerpo) {
  * @param {Respuesta} r
  */
 export function avisarFallo(r) {
-  avisar(r.estado === 0 ? "comun.error.red" : "comun.error.general");
+  if (r.estado === 0) avisar("comun.error.red");
+  else if (r.datos["error"] === "demasiados_intentos") avisar("comun.error.demasiados");
+  else avisar("comun.error.general");
 }
 
 /** Las páginas de la oficina, por su ruta. */

@@ -77,6 +77,7 @@ export function revisarPrograma({ programa, archivos, tipos, options, host }, { 
   const esPrueba = (r) => patronesDePrueba.some((p) => p.test(r));
   const esPura = (r) => puras.some((p) => p.test(r)) && !esPrueba(r);
   const capaDe = (r) => capas.capas.find((c) => r.startsWith(`${c.nombre}/`)) ?? null;
+  const esArranque = (r) => (capas.arranques?.carpetas ?? []).some((c) => r.startsWith(`${c}/`));
   const hallazgos = [];
   const grafo = new Map();
 
@@ -90,9 +91,10 @@ export function revisarPrograma({ programa, archivos, tipos, options, host }, { 
       hallazgos.push({ regla, archivo, linea, detalle });
     };
     const pura = esPura(archivo);
-    const portatil = !pura && capaDe(archivo)?.portatil === true;
+    // Un arranque corre en Deno igual que las aplicaciones que pone en marcha.
+    const portatil = !pura && (capaDe(archivo)?.portatil === true || esArranque(archivo));
     if (pura) revisarComentarios(fuente, anotar);
-    revisarImportaciones({ fuente, archivo, anotar, capas, capaDe, esPrueba, filas, options, host, grafo, pura, portatil });
+    revisarImportaciones({ fuente, archivo, anotar, capas, capaDe, esArranque, esPrueba, filas, options, host, grafo, pura, portatil });
     const mirar = (n) => {
       if (pura) pureza(n, anotar, tipos, programa);
       if (portatil) portabilidad(n, anotar, tipos);
@@ -189,7 +191,7 @@ function anyEscondido(n, anotar, tipos) {
 
 // ---------- FR ----------
 
-function revisarImportaciones({ fuente, archivo, anotar, capas, capaDe, esPrueba, filas, options, host, grafo, pura, portatil }) {
+function revisarImportaciones({ fuente, archivo, anotar, capas, capaDe, esArranque, esPrueba, filas, options, host, grafo, pura, portatil }) {
   const capa = capaDe(archivo);
   const vecinos = new Set();
   grafo.set(archivo, vecinos);
@@ -212,6 +214,14 @@ function revisarImportaciones({ fuente, archivo, anotar, capas, capaDe, esPrueba
     const destino = relativa(resuelto.resolvedFileName);
     if (capa !== null && !destino.endsWith('.ts') || destino.endsWith('.d.ts')) { anotar('FR-07', nodo, `${destino} no es TypeScript que esta guardia lea`); return; }
     vecinos.add(destino);
+    // Un arranque entra solo por la puerta de una aplicación o de un paquete (capas.json, «arranques»).
+    if (capa === null && esArranque(archivo)) {
+      const otra = capaDe(destino);
+      const puerta = otra !== null && capas.arranques.usan.includes(otra.nombre) && otra.unidades
+        && destino === `${destino.split('/').slice(0, 2).join('/')}/${capas.puerta}`;
+      if (!puerta) anotar('FR-03', nodo, `un arranque usa solo la puerta de una aplicación o de un paquete, no ${destino}`);
+      return;
+    }
     if (capa === null) return;
     if (destino.startsWith('../') || esPrueba(destino) || capas.fuera_del_producto.carpetas.some((c) => destino.startsWith(`${c}/`))) { anotar('FR-03', nodo, destino); return; }
     const otra = capaDe(destino);

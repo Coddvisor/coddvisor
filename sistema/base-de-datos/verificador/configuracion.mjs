@@ -51,6 +51,11 @@ export const configuracion = {
     // cada pedido (propuesta de identidad, decisión 5: «una lista de sesiones
     // cerradas»). Es de la cuenta, no de un negocio. Tramo 3 de identidad, parte 2.
     'control.sesion_cerrada',
+    // Los permisos de alta que anota el botón «Abra su negocio» y que lee el
+    // gancho de Supabase Auth antes de crear una cuenta con Google (propuesta de
+    // identidad, decisión 8 bis). Son de una persona que todavía no tiene cuenta
+    // ni negocio. Barrera de altas, 26-nov-2026.
+    'control.alta_permitida',
   ],
 
   // Lista cerrada, tabla por tabla, para un rol que no trabaja por clase. Si
@@ -93,6 +98,9 @@ export const configuracion = {
       'identidad.permiso_de_rol': ['SELECT'],
       // El registro de entradas: solo anexa, por su puerta (tramo 2b).
       'identidad.entrada': ['SELECT', 'INSERT'],
+      // El botón «Abra su negocio» anota un permiso de alta y el gancho de
+      // Supabase Auth lo lee. Solo se anexa (barrera de altas, decisión 8 bis).
+      'control.alta_permitida': ['SELECT', 'INSERT'],
     },
   },
 
@@ -138,6 +146,11 @@ export const configuracion = {
     'identidad.leer_cuenta_de_sesion': ['coddvisor_app'],
     // Abrir un negocio con su primera empresa, su local y su rubro (26-nov-2026).
     'identidad.abrir_negocio': ['coddvisor_app'],
+    // La barrera de altas (decisión 8 bis, 26-nov-2026): el servicio anota el
+    // permiso, y el gancho lo ejecuta Supabase Auth con su propio rol, el único
+    // de esta lista que no es de Coddvisor. Ese rol no recibe ninguna tabla.
+    'identidad.permitir_alta': ['coddvisor_app'],
+    'ganchos.antes_de_crear_cuenta': ['supabase_auth_admin'],
     // La única que anexa el rubro elegido. Es del rol de los libros y solo la
     // ejecuta la puerta que abre un negocio, dentro del negocio que abrió.
     'configuracion.anotar_rubro': ['coddvisor_identidad'],
