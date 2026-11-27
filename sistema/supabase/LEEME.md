@@ -19,7 +19,7 @@ migración llegó a una base real.
 La región no se fija al desplegar. Supabase la elige en cada llamada: el Worker
 de Cloudflare manda cada pedido a `/api` con el encabezado `x-region: sa-east-1`
 (supabase.com/docs/guides/functions/regional-invocation y
-`arquitectura/propuestas/donde-corre-el-sistema.md`, decisión 3).
+`arquitectura/propuestas/donde-corre-el-sistema.md`, decisión 3). El Worker y su despliegue: `herramientas/repartidor/LEEME.md`.
 
 ## Lo que hace el fundador en el panel de `coddvisor-sistema`
 
@@ -174,7 +174,8 @@ pasó antes por el botón «Abra su negocio».
   probar en el proyecto real»). La llave del portero no se pega a mano:
   la guarda la ceremonia «Llave del portero» de GitHub Actions
   (`sistema/herramientas/migrador/LEEME.md`), que puede correr antes del
-  despliegue, después de la primera corrida de las migraciones.
+  despliegue, después de la primera corrida de las migraciones. La dirección
+  de la base tampoco: la guarda la ceremonia «Contraseña de la entrada».
 - **La llave de servicio** (`service_role` o `sb_secret_...`) en cualquier
   lugar del servicio. Solo la tendrá el programa aparte que crea las cuentas con
   correo (decisión 10), que todavía no existe.
@@ -204,8 +205,11 @@ Lo que falta, y no se resuelve sin el fundador:
 - Ese límite vive en la memoria de cada copia de la función: no es compartido.
   Hace falta uno compartido (una regla de límite en el Worker de Cloudflare o
   una tabla en la base) antes de abrir al público.
-- El Worker de Cloudflare todavía no existe. Hasta que ponga los dos
-  encabezados, la función niega todo.
+- El Worker de Cloudflare ya está en el repositorio
+  (`aplicaciones/repartidor/`) y pone los dos encabezados, pero se publica
+  aparte, con el flujo «Desplegar el repartidor»
+  (`herramientas/repartidor/LEEME.md`). Mientras no esté publicado con el mismo
+  secreto que tiene la función, la función niega todo.
 - Para que Supabase cuente por la IP de cada persona hay que mandarle esa IP
   (`Sb-Forwarded-For`), y eso exige la llave secreta, que el servicio no puede
   tener (decisión 10). Mientras no se resuelva, el límite por IP de Supabase no
@@ -257,16 +261,12 @@ Cómo se conecta, y por qué:
 Qué hace el fundador, cuando llegue el momento (no antes de que las migraciones
 lleguen a la base por su camino):
 
-1. Ponerle una contraseña larga y al azar a `coddvisor_entrada`. Ninguna
-   migración la pone (la contraseña no va en el repositorio), y nadie ejecuta SQL
-   a mano en una base real: el camino para hacerlo se decide con el de las
-   migraciones.
-2. En **Project Settings → Database → Connection string**, copiar la del
-   **Transaction pooler**, cambiar el usuario `postgres.<ref>` por
-   `coddvisor_entrada.<ref>`, poner su contraseña y agregar `?sslmode=verify-full`.
-3. Guardarla como el secreto `CODDVISOR_BASE_DIRECCION` en **Edge Functions →
-   Secrets**. Nunca en el chat, en un correo ni en el repositorio.
-4. Si `verify-full` no reconoce el certificado (punto 3 de lo que falta probar),
+1. Correr la ceremonia «Contraseña de la entrada» de GitHub Actions
+   (`sistema/herramientas/migrador/CLAVE-DE-ENTRADA.md`): le pone a
+   `coddvisor_entrada` una contraseña al azar que nadie ve y guarda
+   `CODDVISOR_BASE_DIRECCION` en **Edge Functions → Secrets**. No se arma ni se
+   pega a mano.
+2. Si `verify-full` no reconoce el certificado (punto 3 de lo que falta probar),
    descargar el certificado de Supabase de **Database Settings → SSL Configuration** y
    guardarlo como `CODDVISOR_BASE_CERTIFICADO`.
 
@@ -350,7 +350,7 @@ Y la de la base:
 
 | Variable | Qué va | Dónde se ve en el panel |
 |---|---|---|
-| `CODDVISOR_BASE_DIRECCION` | `postgresql://coddvisor_entrada.<ref>:<contraseña>@<servidor del repartidor>:6543/postgres?sslmode=verify-full` | **Project Settings → Database → Connection string → Transaction pooler**, con el usuario y la contraseña de `coddvisor_entrada` (ver «La conexión a la base») |
+| `CODDVISOR_BASE_DIRECCION` | `postgresql://coddvisor_entrada.<ref>:<contraseña>@<servidor del repartidor>:6543/postgres?sslmode=verify-full` | La guarda la ceremonia «Contraseña de la entrada» (`sistema/herramientas/migrador/CLAVE-DE-ENTRADA.md`); no se arma ni se pega a mano |
 | `CODDVISOR_BASE_CERTIFICADO` (opcional) | El certificado raíz de la base en PEM, solo si `verify-full` no reconoce el del repartidor. Exige `sslmode=verify-full` | **Database Settings → SSL Configuration** |
 
 Es un secreto: lleva la contraseña. El servicio no arranca si el usuario no es

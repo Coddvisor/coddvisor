@@ -48,11 +48,15 @@ Worker de Cloudflare:
 - El modo de prueba en su computadora (`npm run probar:entrar`) no tiene Worker
   y no lo exige.
 
-El código está en `aplicaciones/servicio/rutas/puerta.ts`. El secreto lo guarda
-el camino del Worker en los dos lados; este flujo solo mira que esté.
+El código está en `aplicaciones/servicio/rutas/puerta.ts`; el del Worker, en
+`aplicaciones/repartidor/`. El secreto lo genera y lo guarda en los dos lados el
+flujo «Desplegar el repartidor» cuando se corre con «nuevo»
+(`herramientas/repartidor/LEEME.md`, paso 5); este flujo solo mira que esté y
+nunca lo escribe.
 
 La forma del secreto es parte del contrato con el Worker: **32 bytes al azar en
-base64url** (43 letras). La función acepta solo letras de base64, base64url o hex
+base64url** (43 letras), que es lo que genera aquel flujo (`secretoNuevo` en
+`herramientas/repartidor/despliegue.ts`). La función acepta solo letras de base64, base64url o hex
 (`A-Z`, `a-z`, `0-9`, `+`, `/`, `=`, `_`, `-`), de 32 a 1024. Si no, no arranca.
 Se excluyen `$`, comillas, barras invertidas y espacios porque un archivo
 `--env-file` de la CLI de Supabase los cambiaría al guardarlo, y Supabase
@@ -125,7 +129,7 @@ si falta algo:
 |---|---|
 | `CODDVISOR_BASE_DIRECCION` | La ceremonia de la contraseña de `coddvisor_entrada` |
 | `CODDVISOR_PORTERO_LLAVE_NUMERO` y `CODDVISOR_PORTERO_LLAVE_SECRETO` | La ceremonia «Llave del portero» (`herramientas/migrador/LEEME.md`) |
-| `CODDVISOR_REPARTIDOR_SECRETO` | El camino del Worker de Cloudflare, que lo guarda en el Worker y en Supabase a la vez |
+| `CODDVISOR_REPARTIDOR_SECRETO` | El flujo «Desplegar el repartidor» con «nuevo» (`herramientas/repartidor/LEEME.md`, paso 5), que lo guarda en Supabase y en el Worker a la vez. Si se corre primero este flujo, para en este paso y no despliega |
 | `CODDVISOR_BASE_CERTIFICADO` (opcional) | Todavía nadie: no tiene flujo. Hace falta solo si la conexión con `sslmode=verify-full` no reconoce el certificado del repartidor. No lo pegue a mano en el panel; su camino se agrega por solicitud de revisión, junto a la ceremonia de la contraseña de `coddvisor_entrada`. Este flujo no lo exige ni lo toca |
 
 Y, antes de esas ceremonias, las migraciones aplicadas a la base por su flujo.
