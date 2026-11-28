@@ -46,8 +46,14 @@ inventario, contabilidad. Cada módulo tiene:
 | `tesoreria`     | Caja, bancos, billeteras, cobros y pagos             | nucleo, terceros, contabilidad                          |
 | `ventas`        | Cotizar, vender, cobrar                              | nucleo, terceros, catalogo, inventario, tesoreria, contabilidad |
 | `compras`       | Comprar, recibir, pagar                              | nucleo, terceros, catalogo, inventario, tesoreria, contabilidad |
+| `comunidad`     | Perfiles, conversaciones y grupos de la comunidad, que no son de ningún negocio | nucleo, identidad |
 
-Nadie usa a ventas ni a compras: están arriba de todo. La identidad vive en la
+Nadie usa a ventas ni a compras: están arriba de todo. Ningún módulo de negocio
+usa a `comunidad`: la comunidad no lee nada de los negocios, y de identidad usa
+solo la cuenta (si está activa, por `identidad.cuenta_activa`). Sus tablas son de
+la clase `comun` (02-base-de-datos.md). Hoy vive solo en la base: sus tablas, su
+esquema y sus puertas; el código que las llama llega con la etapa 2 (cambio del
+27-nov-2026, etapa 1 de la comunidad). La identidad vive en la
 base (sus tablas, en el esquema `identidad` y en el plano de control, y sus
 puertas, que son funciones de la base) y en `modulos/identidad/`, que verifica
 el pase de Supabase, firma como el servicio y llama a esas puertas. La puerta que abre un negocio (`identidad.abrir_negocio`)

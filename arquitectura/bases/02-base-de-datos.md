@@ -284,6 +284,67 @@ membresía automática no se toca** por estas puertas.
 Lo que todavía no hacen: invitar a un correo que no tiene cuenta (tramo 3). Una
 invitación así no es una membresía sin cuenta.
 
+## Las puertas de la comunidad
+
+Las tablas comunes (`comunidad.perfil` y `comunidad.conteo_descripcion`) no las
+escribe la aplicación: las escribe `coddvisor_comunidad`, un rol como el de
+identidad, que no inicia sesión, no hereda, no se salta la seguridad por fila y
+solo es dueño de sus funciones. Toca solo las tablas de su lista cerrada
+(`permisosPorTabla`): el perfil y su proyección, y para leer el rubro, los
+escalones y los ajustes. Ninguna tabla de un negocio y nada del plano de
+control: de una cuenta solo sabe si está activa, por `identidad.cuenta_activa`.
+Con `SELECT` sobre `control.cuenta`, que la propuesta pedía para leer su estado,
+leería también todos los correos: los permisos se dan por tabla.
+
+Cada puerta exige una firma del servicio con un propósito propio, que verifica
+el portero (`portero.exigir_firma_de_comunidad`, solo para propósitos que
+empiezan con `comunidad_`: una firma de identidad no vale en la comunidad, ni al
+revés). Ninguna abre un negocio: si la transacción tiene uno abierto, fallan
+(CV014). Por eso los sellos de lo común no guardan quién actúa; lo dice
+`cuenta_id`.
+
+| Puerta | Qué hace | Propósito firmado |
+|---|---|---|
+| `crear_perfil` | El perfil de una cuenta activa, con su nombre y su negocio descrito (cada parte, opcional), y su descripción sumada a la proyección. Se puede repetir: si la cuenta ya tiene un perfil vivo, devuelve ese | `comunidad_crear_perfil`, sobre todos los datos |
+| `cambiar_perfil` | Reemplaza el nombre, el rol y la descripción. Firma la versión que vio el servicio (CV304 si cambió). Rubro, región, tamaño y país, como mucho una vez cada tantos días (ajuste `dias_entre_cambios_de_descripcion`, CV305); el primer cambio después de crear no espera | `comunidad_cambiar_perfil`, sobre todos los datos y la versión |
+| `archivar_perfil` | La persona deja la comunidad: su perfil se archiva y su descripción se resta. Lo que publicó queda como «Alguien que dejó la comunidad». Se puede siempre y se puede repetir | `comunidad_archivar_perfil`, sobre el perfil y la cuenta |
+| `olvidar_perfil` | La persona pide borrar sus datos (Ley 29733): se vacían el nombre, la descripción y la cuenta, y la fila queda con `olvidado_en` para que nada que la cite falle. No pide la cuenta activa ni ningún ajuste, y se puede repetir: no falla para quien tiene el derecho | `comunidad_olvidar_perfil`, sobre el perfil y la cuenta |
+
+La lectura `comunidad.descripcion_de` (hasta 100 perfiles por llamada, CV308)
+no es una puerta: corre con los permisos de quien la llama.
+
+**La descripción se achica sola.** Se muestra el primer escalón de
+`comunidad.escalon`, por orden, cuya combinación comparten al menos
+`descripcion_minimo` perfiles vivos del mismo país (nace en 10, decisión de la
+fundadora del 26-nov-2026). Se calcula al leer, con los ajustes que rigen ahora,
+sobre la proyección `comunidad.conteo_descripcion`, que las puertas mueven en la
+misma transacción que el perfil y `comunidad.reconstruir_conteo` rehace. Sube
+rápido y baja despacio: la primera vez abre con el mínimo; si cae bajo el
+mínimo, cierra al momento y vuelve recién con el mínimo más `descripcion_margen`.
+Cada escalón muestra lo mismo o menos que el anterior, y si ninguno alcanza la
+descripción no dice nada del negocio: solo el rol. Un tamaño que no es visible
+(`comunidad.tamano.es_visible`) no se muestra nunca. El nombre de pila y el rol
+no se cuentan.
+
+Tres reglas valen en todas, por los requisitos 6, 9 y 12 de
+`comunidad-etapa-1.md`:
+
+- **Olvidar a una persona no puede fallar.** Bajar un conteo nunca falla: sin el
+  mínimo de su país, cierra, y no baja de cero si la proyección se atrasó.
+- **Lo que se revoca se revoca con fecha, no borrando.** Un perfil se archiva o
+  se olvida con su instante, y no vuelve ni pasa a otra cuenta (un disparador lo
+  impide, CV309); un espacio o un escalón se archivan; un ajuste nuevo es una
+  fila nueva, y la tabla de ajustes solo se anexa.
+- **Un ajuste que falta rechaza la acción.** Sumar a la proyección sin el mínimo
+  y el margen del país, o cambiar la descripción sin el ajuste de los días, falla
+  (CV306). Leer sin el mínimo no muestra nada del negocio.
+
+Dos perfiles nuevos de la misma cuenta a la vez dan uno solo (el índice único
+del perfil vivo pone en fila al segundo, que devuelve el primero), y dos puertas
+que mueven la misma combinación se ponen en fila en su fila, que se tocan en el
+orden de su id. PGlite tiene una sola conexión: eso se prueba en un Postgres
+real con dos.
+
 ## Las reglas
 
 ### Aislamiento
@@ -376,6 +437,14 @@ no pueden saltarse la seguridad por fila. Además:
 - Una tabla común, la aplicación solo la lee y el rol de los libros no la toca.
   La escriben las puertas de su módulo, y nadie por su clase. (Cambio del
   27-nov-2026, etapa 1 de la comunidad.)
+- El dueño de las puertas de la comunidad (`coddvisor_comunidad`) es como el de
+  identidad: por clase no tiene nada, toca solo las tablas de su lista cerrada
+  (el perfil y su proyección; para leer, el rubro, los escalones y los ajustes),
+  no inicia sesión ni se salta la seguridad por fila. Ninguna tabla de un negocio
+  ni del plano de control: de una cuenta solo pregunta si está activa, por la
+  puerta `identidad.cuenta_activa`, que solo él ejecuta. Lee el contexto del
+  portero, como todos los sellos. (Cambio del 27-nov-2026, etapa 1 de la
+  comunidad; lo aprueba el fundador.)
 - Los permisos se dan por tabla, nunca por columna.
 - Ningún rol de la aplicación es dueño de una tabla ni crea objetos.
 - La aplicación no crea tablas temporales.
@@ -585,6 +654,10 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 | Archivar los permisos de alta vencidos (`control.alta_permitida`): solo importan diez minutos | Primer trabajo de fondo (decisión 7) |
 | Archivar las filas de `control.cupo_usado` cuya ventana ya venció: solo importan cinco minutos o un día, y la tabla crece con cada clave y cada ventana | Primer trabajo de fondo (decisión 7) |
 | Que cada rubro proponga sus plantillas (la tabla que une `configuracion.rubro` con `plantilla`) | La primera plantilla publicada (`molde-de-rubro.md`) |
+| El código que firma y llama las puertas de la comunidad, sus pantallas y los textos de sus catálogos (la frase de cada rol, rubro, rubro amplio, región y tamaño) en el catálogo de textos | Etapa 2 de la comunidad y dónde corre su página (`../propuestas/donde-corre-el-sistema.md`) |
+| Que la comunidad se entere cuando una cuenta se cierra: hoy su perfil sigue vivo hasta que el servicio lo archive u olvide. La identidad no usa a la comunidad, así que lo hará un trabajo que lea las cuentas cerradas | La puerta que cierre una cuenta (decisión 9 de identidad) y el primer trabajo de fondo (decisión 7) |
+| El trabajo que compara la proyección de la descripción con los perfiles. Hoy `comunidad.reconstruir_conteo` la rehace, y la corre quien migra | Primer trabajo de fondo (decisión 7) |
+| Probar con dos conexiones a la vez lo que PGlite no puede: dos altas de un perfil para la misma cuenta, dos cambios del mismo perfil y dos puertas que mueven la misma combinación | Un Postgres real, antes de abrir la comunidad (etapa 4) |
 
 Ninguna migración se aplicó a una base real. El camino ya existe
 (`sistema/herramientas/migrador/`: GitHub Actions al unir a `main`, en el entorno

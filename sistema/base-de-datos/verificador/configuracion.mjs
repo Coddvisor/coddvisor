@@ -36,6 +36,9 @@ export const configuracion = {
     // El dueño de las puertas de identidad, igual: por clase nada, y su lista
     // cerrada abajo (cambio de BD-05 del 26-nov-2026, tramo 2a de identidad).
     coddvisor_identidad: { raiz: [], negocio: [], libro: [], custodia: [], catalogo: [], control: [], comun: [] },
+    // El dueño de las puertas de la comunidad: por clase nada, y su lista cerrada
+    // abajo (cambio de BD-05 del 27-nov-2026, etapa 1 de la comunidad).
+    coddvisor_comunidad: { raiz: [], negocio: [], libro: [], custodia: [], catalogo: [], control: [], comun: [] },
   },
 
   // BD-16. Las únicas tablas que viven afuera de los negocios (clase control).
@@ -78,7 +81,14 @@ export const configuracion = {
   // todos y no de un negocio (la comunidad). Toda tabla común figura aquí y vive
   // en su esquema; una que no figure es una falta. Entra con su porqué y lo
   // aprueba el fundador (comunidad-etapa-1.md, «Lo que la clase comun exige»).
-  tablasComunes: [],
+  tablasComunes: [
+    // Cómo se presenta cada persona: nombre de pila, rol y negocio descrito.
+    // Es de la persona y se muestra a todos, sin entrar a ningún negocio.
+    'comunidad.perfil',
+    // Cuántos perfiles vivos comparten cada descripción, en cada escalón: la
+    // proyección con que la descripción se achica. Se lee al mostrar.
+    'comunidad.conteo_descripcion',
+  ],
   esquemaDeLoComun: 'comunidad',
 
   // BD-03. Lo único del plano de control que una tabla común puede citar con una
@@ -134,12 +144,26 @@ export const configuracion = {
       'identidad.tope_de_cupo': ['SELECT'],
       'control.cupo_usado': ['SELECT', 'INSERT', 'UPDATE'],
     },
+    // Lo justo para las puertas de la comunidad: escribir el perfil y su
+    // proyección, y leer los catálogos con que se cuenta (el rubro amplio, los
+    // escalones y los ajustes). Ninguna tabla de un negocio y nada del plano de
+    // control: de una cuenta solo sabe si está activa, por identidad.cuenta_activa
+    // (cambio de BD-05 del 27-nov-2026, etapa 1 de la comunidad).
+    coddvisor_comunidad: {
+      'comunidad.perfil': ['SELECT', 'INSERT', 'UPDATE'],
+      'comunidad.conteo_descripcion': ['SELECT', 'INSERT', 'UPDATE'],
+      'comunidad.rubro': ['SELECT'],
+      'comunidad.escalon': ['SELECT'],
+      'comunidad.ajuste': ['SELECT'],
+    },
   },
 
   // Quién puede ejecutar cada función que corre con los permisos de su dueño
   // (SECURITY DEFINER). Cada una es una puerta: se abre con nombre y apellido.
   puertas: {
-    'portero.contexto': ['coddvisor_app', 'coddvisor_libros', 'coddvisor_identidad'],
+    // Las puertas de la comunidad lo leen a través de los sellos y para comprobar
+    // que no hay un negocio abierto (etapa 1 de la comunidad).
+    'portero.contexto': ['coddvisor_app', 'coddvisor_libros', 'coddvisor_identidad', 'coddvisor_comunidad'],
     // Las formas del portero (tramo 2b de identidad). portero.abrir queda para
     // la caja sola; la persona entra por abrir_persona, que comprueba la membresía.
     'portero.abrir': ['coddvisor_app'],
@@ -188,6 +212,15 @@ export const configuracion = {
     // La única que anexa el rubro elegido. Es del rol de los libros y solo la
     // ejecuta la puerta que abre un negocio, dentro del negocio que abrió.
     'configuracion.anotar_rubro': ['coddvisor_identidad'],
+    // La comunidad (etapa 1, 27-nov-2026). Sus puertas las ejecuta solo el
+    // servicio, cada una con su firma, que verifica el portero solo para
+    // propósitos «comunidad_». De una cuenta, la comunidad sabe solo si está activa.
+    'portero.exigir_firma_de_comunidad': ['coddvisor_comunidad'],
+    'identidad.cuenta_activa': ['coddvisor_comunidad'],
+    'comunidad.crear_perfil': ['coddvisor_app'],
+    'comunidad.cambiar_perfil': ['coddvisor_app'],
+    'comunidad.archivar_perfil': ['coddvisor_app'],
+    'comunidad.olvidar_perfil': ['coddvisor_app'],
   },
 
   // Cómo entra el servicio a la base y de dónde sale el cliente activo.
