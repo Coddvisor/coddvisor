@@ -212,6 +212,28 @@ export function guionDeTransaccion(archivos, limites = LIMITES) {
 
 const segundos = (inicio) => `${((Date.now() - inicio) / 1000).toFixed(1).replace('.', ',')} s`;
 
+// Para «Desplegar el servicio»: la versión nueva de la función puede necesitar
+// una migración que la base todavía no tiene (por ejemplo, si llegaron juntas a
+// main y el despliegue corrió antes). Sin tocar la base, devuelve los nombres de
+// lo que falta aplicar. Si algo no cuadra (una huella, un archivo), se detiene
+// igual que migrar.
+export async function migracionesPendientes({ migraciones, candado, ejecutor }) {
+  const estado = await leerEstado(ejecutor);
+  const { faltas, inicio, pendientes } = planear({ migraciones, candado, estado });
+  if (faltas.length > 0) throw new FaltaDelMigrador(faltas);
+  return [...inicio, ...pendientes].map((m) => m.nombre);
+}
+
+// Lo que dice «Desplegar el servicio» cuando a la base le faltan migraciones.
+// Ninguna corrida de la fila se puede aprobar mientras otra la ocupa, así que
+// el orden que se pide es el que de verdad se puede seguir.
+export function avisoDeMigracionesPendientes(faltan) {
+  const cuantas = faltan.length === 1 ? 'le falta 1 migración' : `le faltan ${faltan.length} migraciones`;
+  return `A la base real ${cuantas} de main: ${faltan.join(', ')}. La versión nueva del servicio puede necesitarlas. No se desplegó nada.\n`
+    + 'Qué hacer: apruebe la corrida de «Migraciones a la base real» que quedó esperando (si no hay ninguna, lánzela: Actions → Migraciones a la base real → Run workflow, rama main). '
+    + 'Cuando termine, despliegue a mano: Actions → Desplegar el servicio → Run workflow, rama main.';
+}
+
 // Corre todo. Devuelve los nombres aplicados. Lanza un error si algo no cuadra o
 // si un archivo falla: lo aplicado antes de ese archivo queda, lo demás no.
 export async function migrar({ migraciones, candado, ejecutor, soloMirar = false, informar = console.log }) {

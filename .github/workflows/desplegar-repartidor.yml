@@ -2,18 +2,35 @@
 # sirve las páginas de la oficina y lleva /api a la función «servicio» de
 # Supabase en São Paulo.
 #
-# Solo a mano (pestaña Actions), solo desde main y en el entorno protegido
-# «base-real», que exige la aprobación del fundador. Nadie publica el Worker
-# desde su computadora (donde-corre-el-sistema.md, decisión 8).
+# Corre solo al unir a main un cambio de lo que publica (el Worker o las
+# páginas), o a mano desde la pestaña Actions; solo desde main y en el entorno
+# protegido «base-real», que exige la aprobación del fundador. Nadie publica el
+# Worker desde su computadora (donde-corre-el-sistema.md, decisión 8). Un cambio
+# que solo toca guías (.md) no publica.
 #
 # «Secreto»: «conservar» publica el código y deja el secreto que ya tiene el
 # Worker. «nuevo» genera aquí un secreto al azar, lo guarda en Supabase y en el
-# Worker, y nunca lo escribe en el registro. La primera vez es «nuevo».
+# Worker, y nunca lo escribe en el registro. La primera vez es «nuevo». Al
+# unir a main siempre es «conservar»: un secreto nuevo se pide solo a mano.
 #
 # La guía está en sistema/herramientas/repartidor/LEEME.md.
 name: Desplegar el repartidor
 
 on:
+  # Al unir a main: solo si cambió el Worker, las páginas que sirve
+  # (herramientas/repartidor/despliegue.ts, CARPETAS) o su despliegue.
+  push:
+    branches: [main]
+    paths:
+      - 'sistema/aplicaciones/repartidor/**'
+      - 'sistema/aplicaciones/oficina/**'
+      - 'sistema/diseno/**'
+      - 'marca/**'
+      - 'sistema/herramientas/repartidor/**'
+      # La dirección de la función a la que llama el Worker sale de aquí.
+      - 'sistema/herramientas/desplegar/supabase.ts'
+      - '.github/workflows/desplegar-repartidor.yml'
+      - '!**/*.md'
   workflow_dispatch:
     inputs:
       secreto:
@@ -76,6 +93,17 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: sistema/.nvmrc
+      # Antes de tocar nada: esta corrida tiene que ser de lo último de main. Si
+      # main avanzó mientras esperaba (o si alguien la vuelve a correr después),
+      # publicaría páginas viejas encima de unas nuevas. El repositorio es
+      # público: se lee sin credenciales.
+      - name: Esta corrida es de lo último de main
+        run: |
+          ultimo="$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | cut -f1)"
+          if [ "$ultimo" != "$GITHUB_SHA" ]; then
+            echo "::error::Esta corrida es de una versión anterior de main ($GITHUB_SHA); main ya va en $ultimo. No se publicó nada. Para publicar lo último: Actions → Desplegar el repartidor → Run workflow, rama main."
+            exit 1
+          fi
       # Wrangler en la versión exacta de su candado (herramientas/repartidor/wrangler/),
       # instalado fuera del repositorio y sin correr programas al instalarse.
       - name: Instalar Wrangler
@@ -111,7 +139,8 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           SUPABASE_ACCESS_TOKEN: ${{ inputs.secreto == 'nuevo' && secrets.SUPABASE_ACCESS_TOKEN || '' }}
           SUPABASE_PROYECTO_REF: ${{ vars.SUPABASE_PROYECTO_REF }}
-          SECRETO: ${{ inputs.secreto }}
+          # Al unir a main no hay elección: se conserva el secreto que ya tiene.
+          SECRETO: ${{ inputs.secreto || 'conservar' }}
         run: >-
           node herramientas/repartidor/desplegar.ts "$SECRETO"
           --config "$RUNNER_TEMP/repartidor/wrangler.json"

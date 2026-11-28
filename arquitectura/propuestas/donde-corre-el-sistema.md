@@ -515,12 +515,20 @@ pase `npm run verificar`:
 3. **Pantallas.** Cloudflare las construye y publica desde `main`, como dice
    la decisión 1.
 
+Los flujos que despliegan arrancan solos al unir a `main` un cambio de lo que
+publican, y siempre esperan la aprobación del fundador. El de las Edge Functions
+no despliega mientras a la base le falte una migración de `main`: así el orden
+de arriba se cumple aunque se aprueben al revés. (Cambio del 27-nov-2026,
+aprobado por el fundador: antes corrían solo a mano.)
+
 Dónde vive cada secreto, porque el repositorio es público:
 
 - **La contraseña del rol que migra**: solo en un entorno protegido de GitHub,
-  que exige la aprobación del fundador y que solo usa el flujo que despliega
-  desde `main`. Ninguna solicitud de revisión llega a ella, y ninguna Edge
-  Function la tiene.
+  que exige la aprobación del fundador y que solo usan los flujos que corren
+  desde `main`: las migraciones, las dos ceremonias que guardan secretos en
+  Supabase y el despliegue de las Edge Functions, que solo mira, sin cambiar
+  nada, que no falte una migración. Ninguna solicitud de revisión llega a ella,
+  y ninguna Edge Function la tiene.
 - **La llave del portero y la contraseña del rol de entrada**: solo como
   secretos de las Edge Functions en Supabase. Las carga el fundador con la
   herramienta de Supabase, sin pasar por GitHub ni por un archivo. Se rotan al
@@ -531,8 +539,12 @@ Dónde vive cada secreto, porque el repositorio es público:
   la cuenta.) Supabase deja limitar el token a un solo proyecto y a ciertos
   permisos (supabase.com/docs/guides/platform/personal-access-tokens): se crea
   solo para `coddvisor-sistema`, con Edge Functions y Edge Function Secrets,
-  justo antes de cada despliegue, y se revoca al terminar
-  (`sistema/herramientas/desplegar/LEEME.md`).
+  y queda guardado en el entorno protegido con vencimiento de un año
+  (`sistema/herramientas/desplegar/LEEME.md`, «Los tokens que quedan
+  guardados»). (Cambio del 27-nov-2026, aprobado por el fundador: antes se
+  creaba justo antes de cada despliegue y se revocaba al terminar. El trámite de
+  crearlo, pegarlo y borrarlo en cada despliegue pesaba más que el riesgo que
+  quitaba: el token solo lo usan flujos desde `main` con su aprobación.)
 
 - **Se rompe si** alguien despliega a mano desde su computadora, o si un
   secreto queda al alcance de una solicitud de revisión.

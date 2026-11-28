@@ -4,18 +4,23 @@
 # ceremonia propia. Nadie despliega desde su computadora
 # (donde-corre-el-sistema.md, decisión 8).
 #
-# Solo a mano (pestaña Actions), solo desde main y en el entorno protegido
-# «base-real», que exige la aprobación del fundador. Va en la misma fila que las
-# migraciones y la llave del portero: una corrida a la vez sobre la base real.
+# Corre solo al unir a main un cambio de lo que lleva la función (o a mano, desde
+# la pestaña Actions), solo desde main y en el entorno protegido «base-real», que
+# exige la aprobación del fundador: nada llega a producción sin su visto bueno.
+# Va en la misma fila que las migraciones y la llave del portero: una corrida a
+# la vez sobre la base real. Un cambio que solo toca guías (.md) no despliega.
 #
 # Dos pasos:
 #   1. «verificar», sin secretos: npm run verificar, y que el candado de Deno
 #      (deno.lock) exista y coincida con deno.json.
-#   2. «desplegar», en el entorno «base-real»: revisa las variables, mira que los
-#      secretos de sus ceremonias ya estén en Supabase, guarda las variables,
-#      despliega y comprueba que la función niega lo que no viene del Worker, que
-#      corre en la región de la base y que, entrando por app.coddvisor.com como
-#      una persona, llega a la base y a Supabase Auth.
+#   2. «desplegar», en el entorno «base-real»: primero mira que la base real ya
+#      tenga todas las migraciones de main (si llegaron junto con este cambio y
+#      todavía no se aprobaron, se detiene sin desplegar y dice qué hacer); revisa
+#      las variables, mira que los secretos de sus ceremonias ya estén en
+#      Supabase, guarda las variables, despliega y comprueba que la función niega
+#      lo que no viene del Worker, que corre en la región de la base y que,
+#      entrando por app.coddvisor.com como una persona, llega a la base y a
+#      Supabase Auth.
 #
 # Cada paso ve solo lo que usa. El proyecto y la región, que no son secretos, van
 # en todo el trabajo. Lo demás del servicio, y la llave secreta de Turnstile, solo
@@ -26,6 +31,21 @@
 name: Desplegar el servicio
 
 on:
+  # Al unir a main: solo si cambió algo de lo que lleva la función (lo que
+  # importa su deno.json), su configuración o su despliegue.
+  push:
+    branches: [main]
+    paths:
+      - 'sistema/aplicaciones/servicio/**'
+      - 'sistema/supabase/functions/**'
+      - 'sistema/supabase/config.toml'
+      - 'sistema/nucleo/**'
+      - 'sistema/contratos/**'
+      - 'sistema/modulos/**'
+      - 'sistema/paquetes/**'
+      - 'sistema/herramientas/desplegar/**'
+      - '.github/workflows/desplegar-servicio.yml'
+      - '!**/*.md'
   workflow_dispatch:
 
 permissions:
@@ -98,11 +118,28 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: sistema/.nvmrc
+      # Antes de tocar nada: esta corrida tiene que ser de lo último de main. Si
+      # main avanzó mientras esperaba (o si alguien la vuelve a correr después),
+      # publicaría una versión vieja encima de una nueva. El repositorio es
+      # público: se lee sin credenciales.
+      - name: Esta corrida es de lo último de main
+        run: |
+          ultimo="$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | cut -f1)"
+          if [ "$ultimo" != "$GITHUB_SHA" ]; then
+            echo "::error::Esta corrida es de una versión anterior de main ($GITHUB_SHA); main ya va en $ultimo. No se desplegó nada. Para publicar lo último: Actions → Desplegar el servicio → Run workflow, rama main."
+            exit 1
+          fi
+      # La versión nueva puede necesitar una migración que llegó a main con ella
+      # y todavía espera su aprobación. Solo lee la base.
+      - name: La base real tiene todas las migraciones de main
+        env:
+          CODDVISOR_MIGRAR_CONEXION: ${{ secrets.CODDVISOR_MIGRAR_CONEXION }}
+        run: node herramientas/migrador/migrar.mjs --exigir-al-dia
       # La CLI de Supabase, en la misma versión exacta que la ceremonia de la llave.
       - uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13 # v3.2.0
         with:
           version: 2.108.0
-      # Antes de tocar nada: si falta una variable, la corrida termina aquí.
+      # Si falta una variable, la corrida termina aquí.
       - name: Revisar las variables del entorno
         env:
           CODDVISOR_ORIGEN: ${{ vars.CODDVISOR_ORIGEN }}

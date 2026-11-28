@@ -63,22 +63,18 @@ migra no es del repartidor, o es de otro proyecto que el de
 
 **Cuándo:** después de la primera corrida de verdad de «Migraciones a la base
 real» (antes de eso el rol no existe) y antes de desplegar la función. Puede ir
-antes o después de la llave del portero; si hace las dos el mismo día, un solo
-token sirve para las dos.
+antes o después de la llave del portero: las dos usan el mismo token guardado.
 
-### 1. El token de Supabase, justo antes
+### 1. El token de Supabase
 
-1. En Supabase, su avatar arriba a la derecha → **Account preferences → Access
-   Tokens** → **Generate new token**.
-2. Nombre: `github-coddvisor-clave`.
-3. Alcance: **solo el proyecto coddvisor-sistema**. Nunca el acceso a toda la
-   cuenta (lo que el panel marca **Legacy**): ese llega también a CAYLA.
-4. Permisos: **Edge Function Secrets: Read-write**, y nada más. La ceremonia
-   primero lee (para probar el token) y después escribe.
-5. Vencimiento: el más corto que ofrezca.
-6. Supabase lo muestra una sola vez. Cópielo directo a GitHub: **Settings →
-   Environments → base-real → Add environment secret**, nombre
-   `SUPABASE_ACCESS_TOKEN`. Nunca por el chat ni por correo.
+La ceremonia usa el token de Supabase que queda guardado en el entorno
+`base-real` como `SUPABASE_ACCESS_TOKEN` (solo `coddvisor-sistema`, **Edge
+Function Secrets: Read-write** entre sus permisos, un año de vencimiento). La
+ceremonia primero lee los secretos (para probar el token) y después escribe.
+Revise que esté y que no haya vencido; cómo se crea y se renueva está en
+`herramientas/desplegar/LEEME.md`, «Los tokens que quedan guardados». (Cambio
+del 27-nov-2026, aprobado por el fundador: antes se creaba justo antes y se
+revocaba al terminar.)
 
 ### 2. Revisar la conexión que migra
 
@@ -97,11 +93,6 @@ migraciones con ella, está bien.
 4. El registro termina con «Listo: la dirección de la base está en los secretos
    de Supabase como CODDVISOR_BASE_DIRECCION». En Supabase, **Edge Functions →
    Secrets**, aparece ese nombre (Supabase no muestra el valor).
-
-### 4. Revocar el token apenas termine
-
-En la misma página de Supabase, **Revoke** junto a `github-coddvisor-clave`. En
-GitHub, el secreto `SUPABASE_ACCESS_TOKEN` del entorno → **Remove**.
 
 ## verify-full o require
 
@@ -163,7 +154,7 @@ El registro dice en qué paso. Nada se arregla a mano.
 | «no es del proyecto» o «no va por el repartidor compartido» | `CODDVISOR_MIGRAR_CONEXION` o `SUPABASE_PROYECTO_REF` no son las de la guía. La base no cambió | Revíselas (paso 2) |
 | «no está como lo dejó la migración», «fecha de vencimiento» o «no es miembro solo de coddvisor_app» | Alguien tocó el rol por otro camino. La base no cambió | No corra nada más. Abra una solicitud de revisión con el mensaje |
 | «Quien migra no puede cambiarle la contraseña» | Ver «Si quien migra no puede», abajo. La base no cambió | |
-| «El token de Supabase no sirve» | El token venció, es de otro proyecto o le falta el permiso. La base no cambió | Haga otro token (paso 1) y corra otra vez la ceremonia |
+| «El token de Supabase no sirve» | El token venció, es de otro proyecto o le falta el permiso. La base no cambió | Renueve el token (paso 1) y corra otra vez la ceremonia |
 | «El repartidor no deja entrar en el puerto 6543» | Desde la máquina de GitHub no se llega al modo transacción (por ejemplo, si se encendieron las restricciones de red de la base). La base no cambió | Si el mensaje dice «Circuit breaker open», espere 5 minutos y córrala otra vez. Si no, o si se repite, abra una solicitud de revisión con el mensaje: la función tampoco entraría |
 | «La prueba entró como ...» | Algo está muy mal en el repartidor o en la conexión. La base tiene la nueva, y no se guardó nada | No corra nada más. Abra una solicitud de revisión con el mensaje |
 | «quedó guardada en Supabase, pero la prueba no pudo entrar» | La base y Supabase tienen la nueva, pero el repartidor todavía no la tomaba | **No la corra enseguida.** Espere 5 minutos. Si la función ya está desplegada, vuelva a desplegarla por su flujo y mire si entra a la base: si entra, terminó. Si no está desplegada, o no entra, corra la ceremonia otra vez, una sola. Si vuelve a fallar, pare y abra una solicitud de revisión con los dos mensajes |

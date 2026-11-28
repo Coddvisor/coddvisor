@@ -12,7 +12,10 @@ los pedidos de cada IP durante un minuto, para el freno.
 | `/api/...` | El Worker: frena por IP y lo pasa a la función `servicio` de Supabase, en São Paulo |
 
 Todo esto se publica **solo** con el flujo «Desplegar el repartidor» de GitHub
-Actions, desde `main` y con su aprobación. Nadie lo publica desde su
+Actions, desde `main` y con su aprobación. Arranca solo al unir a `main` un
+cambio del Worker o de las pantallas (una guía `.md` sola no cuenta), y también
+a mano desde la pestaña Actions (cambio del 27-nov-2026, aprobado por el
+fundador). Nadie lo publica desde su
 computadora (decisión 8). No se contrata nada: el Worker va en el plan gratuito
 de Cloudflare.
 
@@ -128,8 +131,11 @@ Siga [mudar-el-dns.md](mudar-el-dns.md) hasta el final, con el correo probado.
    Edit**. Nada más.
 4. **Account Resources** (a qué cuenta llega): **Include →** la cuenta de
    Coddvisor, solo esa.
-5. **TTL** (vencimiento): una fecha de fin, por ejemplo en 90 días. Anótela:
-   ese día hay que crear otro.
+5. **TTL** (vencimiento): un año desde hoy. Queda guardado en `base-real`, como
+   el de Supabase, y se renueva una vez al año
+   (`herramientas/desplegar/LEEME.md`, «Los tokens que quedan guardados»). El
+   primero, del 27-nov-2026, se creó por 90 días y vence el 25-feb-2027: antes
+   de esa fecha se renueva por un año.
 6. **Continue to summary → Create Token**. Cloudflare lo muestra una sola vez:
    cópielo directo al secreto `CLOUDFLARE_API_TOKEN` del paso 3.
 
@@ -161,11 +167,9 @@ flujo, sin aprobación.
 ### 4. El token de Supabase, solo para un secreto nuevo
 
 El flujo guarda el secreto compartido en Supabase con la CLI, igual que la
-ceremonia de la llave del portero. Use el mismo tipo de token que dice el paso 2
-de `herramientas/migrador/LEEME.md` (solo el proyecto `coddvisor-sistema`, solo
-**Edge Function Secrets: Read-write**, el vencimiento más corto), guardado como
-`SUPABASE_ACCESS_TOKEN` en `base-real`. **Créelo justo antes y revóquelo apenas
-termine.** Con «conservar» no hace falta.
+ceremonia de la llave del portero. Usa el token de Supabase que queda guardado
+en `base-real` como `SUPABASE_ACCESS_TOKEN` (`herramientas/desplegar/LEEME.md`,
+«Los tokens que quedan guardados»). Con «conservar» no lo usa.
 
 ### 5. La primera vez: desplegar con un secreto nuevo
 
@@ -188,7 +192,6 @@ termine.** Con «conservar» no hace falta.
    dos archivos temporales que solo lee el programa y que se borran al terminar.
 4. El registro termina con «Listo: el repartidor está publicado, y el Worker y
    la función comparten un secreto nuevo».
-5. Revoque el token de Supabase y quite `SUPABASE_ACCESS_TOKEN` del entorno.
 
 **Si falla en el paso 2** (Supabase), nada cambió. **Si falla en el paso 3**
 (Wrangler), Supabase ya tiene el secreto nuevo y el Worker no: `/api` responde
@@ -251,20 +254,26 @@ Estos dos solo prueban que el Worker llega a la función con su secreto: el 401 
 `/api/negocios` sale antes de tocar la base. Que la función llegue a la base y a
 Supabase Auth lo prueba la comprobación del final del flujo «Desplegar el
 servicio», que entra con contraseña por `app.coddvisor.com`
-(`herramientas/desplegar/LEEME.md`, «Qué hace el flujo», paso 6). Esa es la que
+(`herramientas/desplegar/LEEME.md`, «Qué hace el flujo», paso 2, punto 7). Esa es la que
 vale antes de abrir el registro.
 
 ## Después
 
 - **Un cambio de código** del repartidor o de las pantallas: al unirlo a `main`,
-  corra el flujo con «conservar». El Worker guarda su secreto entre despliegues.
-- **Cambiar el secreto** (por ejemplo, si cree que se filtró): el flujo con
-  «nuevo» y el token de Supabase del paso 4. Mientras corre, `/api` puede
+  el flujo arranca solo con «conservar» y espera su aprobación. El Worker guarda
+  su secreto entre despliegues. Si el mismo cambio toca también la función,
+  apruebe primero «Desplegar el servicio»: las pantallas nuevas pueden llamar a
+  algo que la función vieja todavía no tiene.
+- **Cambiar el secreto** (por ejemplo, si cree que se filtró): el flujo a mano
+  con «nuevo» (usa el token de Supabase del paso 4). Mientras corre, `/api` puede
   responder 403 unos segundos, entre que Supabase guarda el nuevo y el Worker
   se publica. Para cambiarlo sin ese corte haría falta que la función acepte dos
   secretos a la vez por un rato; hoy no lo hace.
-- **El token de Cloudflare vence** en la fecha del paso 2: cree otro igual y
-  reemplace el secreto en `base-real`.
+- **El token de Cloudflare vence** en la fecha del paso 2: cree otro igual, por
+  un año, y reemplace el secreto en `base-real` (el lápiz junto a su nombre).
+  Los pasos, y qué hacer si cree que se filtró, están en
+  `herramientas/desplegar/LEEME.md`, «Renovar o cambiar el token de
+  Cloudflare».
 
 ## Lo que no está confirmado
 

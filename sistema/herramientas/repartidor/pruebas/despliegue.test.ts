@@ -12,7 +12,7 @@ import { ENCABEZADOS, esDeEntrar, FRENOS, SEGURIDAD_DE_LAS_PAGINAS, SOLO_CON_CIF
 import { leerConfiguracion, VARIABLES as DE_LA_FUNCION } from "../../../aplicaciones/servicio/configuracion.ts";
 import { ENCABEZADOS_DEL_WORKER, puertaDelWorker } from "../../../aplicaciones/servicio/rutas/puerta.ts";
 import { RUTAS } from "../../../aplicaciones/servicio/rutas/rutas.ts";
-import { armarElDespliegue, configuracionDeWrangler, DESPLIEGUE, publicar, revisarProyecto, secretoNuevo, SISTEMA, VARIABLES, type Programa } from "../despliegue.ts";
+import { armarElDespliegue, CARPETAS, configuracionDeWrangler, DESPLIEGUE, publicar, revisarProyecto, secretoNuevo, SISTEMA, VARIABLES, type Programa } from "../despliegue.ts";
 import { DEL_ENTORNO, direccionDeLaFuncion } from "../../desplegar/supabase.ts";
 
 const PROYECTO = "abcdefghijklmnopqrst";
@@ -244,12 +244,39 @@ describe("el flujo de GitHub", () => {
   const RAIZ = path.resolve(SISTEMA, "..");
   const flujo = (nombre: string): Promise<string> => leer(path.join(RAIZ, ".github/workflows", nombre));
 
-  it("corre solo a mano, desde main y en el entorno protegido", async () => {
+  it("corre al unir a main lo que publica, o a mano, desde main y en el entorno protegido", async () => {
     const f = await flujo("desplegar-repartidor.yml");
-    assert.match(f, /^on:\n {2}workflow_dispatch:/m);
-    assert.ok(!/^\s+(push|pull_request|schedule):/m.test(f), "no corre solo");
+    const on = f.slice(f.indexOf("\non:"), f.indexOf("\npermissions:"));
+    // La lista exacta: cualquier otro disparador correría con github.ref = main.
+    assert.deepEqual([...on.matchAll(/^ {2}([a-z_]+):/gm)].map((m) => m[1]), ["push", "workflow_dispatch"]);
+    assert.match(on, /\n {2}push:\n {4}branches: \[main\]\n {4}paths:\n/, "al unir, solo en main y solo por sus archivos");
+    assert.ok(on.includes("'sistema/herramientas/desplegar/supabase.ts'"), "publica si cambia la dirección de la función");
+    // Lo que publica: el Worker y cada carpeta de las páginas (CARPETAS).
+    for (const c of CARPETAS) {
+      const camino = c.desde.startsWith("../") ? c.desde.slice(3).split("/")[0] : `sistema/${c.desde}`;
+      assert.ok(on.includes(`'${camino}/**'`), `publica si cambia ${camino}`);
+    }
+    assert.ok(on.includes("'sistema/aplicaciones/repartidor/**'"));
+    assert.match(on, /'!\*\*\/\*\.md'\n/, "una guía sola no publica");
     assert.match(f, /environment: base-real/);
     assert.match(f, /npm run verificar/);
+  });
+
+  it("al unir a main conserva el secreto, y el token de Supabase solo llega a la corrida a mano con «nuevo»", async () => {
+    const f = await flujo("desplegar-repartidor.yml");
+    assert.match(f, /SECRETO: \$\{\{ inputs\.secreto \|\| 'conservar' \}\}/);
+    assert.match(f, /default: conservar/);
+    // Al unir no hay inputs: la expresión da vacío y el token no se carga.
+    const conToken = [...f.matchAll(/^.*secrets\.SUPABASE_ACCESS_TOKEN.*$/gm)].map((m) => m[0].trim());
+    assert.deepEqual(conToken, ["SUPABASE_ACCESS_TOKEN: ${{ inputs.secreto == 'nuevo' && secrets.SUPABASE_ACCESS_TOKEN || '' }}"]);
+  });
+
+  it("antes de tocar nada, la corrida tiene que ser de lo último de main", async () => {
+    const f = await flujo("desplegar-repartidor.yml");
+    const desplegar = f.slice(f.indexOf("\n  desplegar:\n"));
+    const revision = desplegar.indexOf("git ls-remote");
+    assert.ok(revision > 0 && revision < desplegar.indexOf("Instalar Wrangler"), "la revisión va primero");
+    assert.match(desplegar, /refs\/heads\/main[\s\S]*GITHUB_SHA/);
   });
 
   it("revisa en un trabajo sin secretos, y el que ve los tokens no instala nada del sistema", async () => {

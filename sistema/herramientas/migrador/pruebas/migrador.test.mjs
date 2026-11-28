@@ -10,7 +10,7 @@ import { PGlite } from '@electric-sql/pglite';
 import { crearBase, revisarBase } from '../../../base-de-datos/verificador/base.mjs';
 import { huella, leerCandado, leerMigraciones } from '../../../base-de-datos/verificador/migraciones.mjs';
 import { MIGRACION_DEL_REGISTRO } from '../configuracion.mjs';
-import { FaltaDelMigrador, SE_CERRO_LA_TRANSACCION, guionDeTransaccion, migrar, planear, revisarTexto } from '../migrador.mjs';
+import { FaltaDelMigrador, SE_CERRO_LA_TRANSACCION, avisoDeMigracionesPendientes, guionDeTransaccion, migracionesPendientes, migrar, planear, revisarTexto } from '../migrador.mjs';
 
 function ejecutorDe(db) {
   const guiones = [];
@@ -83,6 +83,30 @@ describe('el migrador en una base nueva', () => {
     assert.match(lineas.join('\n'), /se aplicaría: 20991231000000_solo_mirar\.sql/);
     assert.match(lineas.join('\n'), /La base es PostgreSQL \d+/, 'dice la versión, para compararla con la del ensayo');
     assert.equal((await db.query("select count(*)::int as n from pg_namespace where nspname = 'solo_mirar'")).rows[0].n, 0);
+  });
+
+  test('las pendientes dicen qué falta sin tocar la base, y nada cuando está al día', async () => {
+    assert.deepEqual(await migracionesPendientes({ migraciones: reales, candado: candadoReal, ejecutor }), []);
+    const nueva = migracion('20991231000000_pendiente.sql', 'create schema pendiente;');
+    const antes = ejecutor.guiones.length;
+    assert.deepEqual(await migracionesPendientes({ migraciones: [...reales, nueva], candado: sellar([...reales, nueva]), ejecutor }), [nueva.nombre]);
+    assert.equal(ejecutor.guiones.length, antes, 'no aplica nada');
+    await assert.rejects(migracionesPendientes({ migraciones: [...reales, nueva], candado: candadoReal, ejecutor }), FaltaDelMigrador, 'un archivo sin sellar detiene igual que migrar');
+  });
+
+  test('si la base va adelante de este commit, no dice «al día»: se detiene', async () => {
+    // La base tiene todo lo real; este commit «no conoce» la última migración aplicada.
+    const sinLaUltima = reales.slice(0, -1);
+    await assert.rejects(migracionesPendientes({ migraciones: sinLaUltima, candado: sellar(sinLaUltima), ejecutor }), FaltaDelMigrador);
+  });
+
+  test('el aviso de pendientes dice cuántas, en singular o plural, y qué hacer en orden', () => {
+    const una = avisoDeMigracionesPendientes(['20991231000000_a.sql']);
+    assert.match(una, /le falta 1 migración de main: 20991231000000_a\.sql/);
+    assert.match(avisoDeMigracionesPendientes(['a.sql', 'b.sql']), /le faltan 2 migraciones de main: a\.sql, b\.sql/);
+    assert.match(una, /No se desplegó nada/);
+    assert.match(una, /Migraciones a la base real.*Run workflow.*Desplegar el servicio → Run workflow, rama main/s);
+    assert.ok(!/Re-run/.test(una), 'nunca manda a repetir una corrida vieja');
   });
 
   test('una migración nueva va sola, en su transacción, y queda anotada', async () => {

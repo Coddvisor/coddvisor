@@ -221,7 +221,7 @@ export async function publicar(opciones: OpcionesDePublicar): Promise<void> {
   if (modo !== 'conservar' && modo !== 'nuevo') throw new Error('El secreto se «conserva» o se pide «nuevo».');
   exigir(entorno, VARIABLES.tokenDeCloudflare, 'el token de Cloudflare (LEEME.md, paso 2)');
   exigir(entorno, VARIABLES.cuentaDeCloudflare, 'la cuenta de Cloudflare (LEEME.md, paso 3)');
-  if (modo === 'nuevo') exigir(entorno, VARIABLES.tokenDeSupabase, 'el token de Supabase, solo mientras dure el cambio del secreto (LEEME.md, paso 4)');
+  if (modo === 'nuevo') exigir(entorno, VARIABLES.tokenDeSupabase, 'el token de Supabase que queda guardado en base-real (LEEME.md, paso 4; cómo se renueva: herramientas/desplegar/LEEME.md, «Los tokens que quedan guardados»)');
 
   // Wrangler no ve el token de Supabase, ni la CLI de Supabase el de Cloudflare.
   const paraWrangler = { ...entornoSin(entorno, [VARIABLES.tokenDeSupabase]), WRANGLER_SEND_METRICS: 'false' };

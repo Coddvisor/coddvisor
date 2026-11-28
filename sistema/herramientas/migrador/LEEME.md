@@ -17,7 +17,7 @@ repartidor de Supabase en modo sesión viene en el plan que ya se paga.
 |---|---|
 | `migrador.mjs` | Decide qué se aplica y arma el texto de cada transacción. No habla con la base: lo hace un «ejecutor» que recibe |
 | `psql.mjs` | El ejecutor de verdad: `psql`, que trae el runner de GitHub. La cadena de conexión viaja en variables de entorno, nunca en la línea de órdenes |
-| `migrar.mjs` | La entrada que corre GitHub: `node herramientas/migrador/migrar.mjs` (o con `--solo-mirar`) |
+| `migrar.mjs` | La entrada que corre GitHub: `node herramientas/migrador/migrar.mjs`. Con `--solo-mirar` dice qué aplicaría; con `--exigir-al-dia` falla si falta aplicar algo. Ninguna de las dos toca la base |
 | `llave.mjs`, `ceremonia.mjs` | La ceremonia de la llave del portero: crear una llave en la base y guardarla en Supabase, o retirar una vieja |
 | `clave.mjs`, `clave-de-entrada.mjs`, `scram.mjs` | La ceremonia de la contraseña de `coddvisor_entrada`. Su guía está en [`CLAVE-DE-ENTRADA.md`](CLAVE-DE-ENTRADA.md) |
 | `configuracion.mjs` | Los nombres de las variables, de la tabla del registro y de cada llave, y los límites (cuánto espera por un candado) |
@@ -30,6 +30,11 @@ Los flujos de GitHub están en `.github/workflows/`:
 | `migraciones.yml`, «Migraciones a la base real» | Al unir a `main` un cambio que toca `sistema/base-de-datos/migraciones/` o su candado, y a mano | Primero, sin secretos: `npm run verificar` y un ensayo del migrador con `psql` contra un Postgres de prueba dentro del runner. Después, en el entorno `base-real`, con su aprobación: el migrador contra la base real |
 | `llave-del-portero.yml`, «Llave del portero» | Solo a mano | En el entorno `base-real`, con su aprobación: crea una llave del portero y la guarda en los secretos de Supabase, o retira una |
 | `clave-de-entrada.yml`, «Contraseña de la entrada» | Solo a mano | En el entorno `base-real`, con su aprobación: le pone una contraseña al azar a `coddvisor_entrada` y guarda `CODDVISOR_BASE_DIRECCION` en Supabase ([`CLAVE-DE-ENTRADA.md`](CLAVE-DE-ENTRADA.md)) |
+| `desplegar-servicio.yml`, «Desplegar el servicio» | Al unir a `main` un cambio de la función, y a mano | Antes de desplegar, `migrar.mjs --exigir-al-dia` con la misma conexión: no cambia nada, y si a la base le falta una migración de `main`, no despliega ([`../desplegar/LEEME.md`](../desplegar/LEEME.md)) |
+
+Los cuatro van en la misma fila (`base-real`): una corrida a la vez, y las que
+llegan esperan detrás sin cancelar a otra. Solo ellos ven
+`CODDVISOR_MIGRAR_CONEXION`.
 
 ## Cómo trabaja el migrador
 
@@ -135,30 +140,16 @@ esa comprobación se hace con la primera corrida «solo mirar».
 
 Esa dirección completa es el secreto `CODDVISOR_MIGRAR_CONEXION` (paso 3).
 
-### 2. El token de acceso de Supabase (solo para la ceremonia de la llave)
+### 2. El token de acceso de Supabase
 
 La ceremonia usa la CLI de Supabase (`supabase secrets set`), que pide un token
-de acceso. Supabase deja limitar ese token a un solo proyecto y a ciertos
-permisos, y ponerle fecha de vencimiento. Créelo así:
-
-1. En Supabase, su avatar arriba a la derecha → **Account preferences → Access
-   Tokens** (supabase.com/dashboard/account/tokens) → **Generate new token**.
-2. Nombre: `github-coddvisor-llave`.
-3. Alcance: **solo el proyecto coddvisor-sistema**. Nunca elija el acceso a
-   toda la cuenta (el panel lo marca **Legacy** o «Create legacy token»): ese
-   llega a todos los proyectos, incluido CAYLA.
-4. Permisos: **Edge Function Secrets: Read-write**, y nada más. Si la primera
-   ceremonia falla por un permiso, el error dice cuál falta: agregue solo ese,
-   y anótelo aquí.
-5. Vencimiento: el más corto que ofrezca.
-6. Supabase lo muestra una sola vez: cópielo directo al secreto
-   `SUPABASE_ACCESS_TOKEN` del paso 3.
-
-Aunque esté limitado, **créelo justo antes de la ceremonia y revóquelo apenas
-termine.** La ceremonia se hace pocas veces (la primera llave y cada cambio de
-llave), y un token que no existe no se puede robar. Para revocarlo: la misma
-página, **Revoke** junto a su nombre, y en GitHub, el secreto
-`SUPABASE_ACCESS_TOKEN` del entorno → **Remove**.
+de acceso. Es el mismo que usan «Desplegar el servicio» y la ceremonia de la
+contraseña de la entrada: queda guardado en el entorno `base-real` como
+`SUPABASE_ACCESS_TOKEN`, limitado a `coddvisor-sistema`, con vencimiento de un
+año. Cómo se crea y se renueva, y por qué queda guardado, está en un solo
+lugar: `herramientas/desplegar/LEEME.md`, «Los tokens que quedan guardados».
+(Cambio del 27-nov-2026, aprobado por el fundador: antes se creaba justo antes
+de cada ceremonia y se revocaba al terminar.)
 
 Con un token limitado a un proyecto, `supabase whoami` no funciona: no sirve
 para probarlo. La ceremonia no lo usa.
@@ -182,8 +173,7 @@ En GitHub, en el repositorio `Coddvisor/coddvisor`:
    desmárquelo.
 5. **Environment secrets → Add environment secret**:
    - `CODDVISOR_MIGRAR_CONEXION`: la dirección del paso 1.
-   - `SUPABASE_ACCESS_TOKEN`: el token del paso 2, solo mientras dure la
-     ceremonia.
+   - `SUPABASE_ACCESS_TOKEN`: el token del paso 2, que queda guardado.
 6. **Environment variables → Add environment variable**:
    - `SUPABASE_PROYECTO_REF`: el identificador del proyecto. Está en Supabase,
      **Project Settings → General → Project ID** (20 letras y números; es la
@@ -264,14 +254,13 @@ que solo el programa puede leer y se borra al terminar.
 Cuándo: después de la primera corrida de las migraciones, y antes de desplegar
 la función del servicio (que todavía espera el controlador de Postgres, SV-02).
 
-1. Cree el token del paso 2 y póngalo en el entorno.
+1. Revise que el token del paso 2 esté en el entorno y no haya vencido.
 2. **Actions → Llave del portero → Run workflow**, rama `main`. «Qué hacer»:
    `crear`. «Para qué programa»: `servicio`. **Run workflow**.
 3. Apruebe la corrida (**Review deployments → Approve and deploy**).
 4. El registro termina con «Listo: la llave N está en los secretos de Supabase
    como ...». En Supabase, **Edge Functions → Secrets**, aparecen los dos
    nombres (Supabase no muestra el valor).
-5. Revoque el token y quite el secreto `SUPABASE_ACCESS_TOKEN` del entorno.
 
 Si Supabase falla, la llave queda en la base sin que nadie la tenga: no abre
 nada. El registro dice su número y el orden para arreglarlo, porque la base no
