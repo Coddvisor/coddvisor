@@ -125,7 +125,7 @@ dentro de Node (con PGlite) y desaparece al terminar.
 | `herramientas/guardia/`                   | Las reglas del código, sobre el compilador de TypeScript, y su examen |
 | `herramientas/candados/`                  | El sello de los contratos y la comparación con `main`       |
 | `herramientas/valores-fijos*.mjs`         | La guardia que busca valores fijos en el código, y sus pruebas |
-| `herramientas/revisor-ia*`                | Revisor con IA de las preguntas de juicio de `06-antes-de-unir.md` (solo sugiere; se corre a mano con `npm run revisor-ia`, necesita `.env.local`) |
+| `herramientas/revisor-ia*`                | Revisor con IA de las preguntas de juicio de `06-antes-de-unir.md`, sobre el cambio de todo el repositorio (solo sugiere; se corre a mano con `npm run revisor-ia`, necesita `.env.local`) |
 | `dependencias.md`                         | Cada librería, para qué está y qué se descartó              |
 
 ## Cómo se agrega código
