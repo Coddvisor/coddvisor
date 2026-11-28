@@ -365,6 +365,21 @@ Decisión del fundador del 26 de noviembre de 2026. Condiciones:
   > la dirección IP (`metadata.ip_address`): con varios celulares detrás de una
   > misma IP, y con IPv4 e IPv6 mezclados, negaría a quien sí viene del botón.
   > Los pasos del panel están en `sistema/supabase/LEEME.md`.
+  >
+  > **Nota del 27-nov-2026 (etapa 1 de la comunidad):** la comunidad abre a
+  > cualquiera con Google, también a quien no tiene negocio
+  > (`comunidad-etapa-1.md`, «Lo que cambia en la identidad»). El botón
+  > «Entrar a la comunidad» anota su permiso como «Abra su negocio», por su
+  > propia puerta y con su propia firma
+  > (`identidad.permitir_alta_en_la_comunidad`), y cada permiso dice de qué
+  > botón vino (`control.alta_permitida.origen_codigo`). El gancho no cambia
+  > su cuerpo: deja pasar a Google con un permiso vigente, de cualquiera de los
+  > dos botones, y niega lo demás. Migración
+  > `20261127233200_alta_desde_la_comunidad.sql`. La cuenta que nace así no
+  > tiene ninguna membresía. Falta, con la etapa 2: la ruta y el botón, sus
+  > cupos (topes como filas de `identidad.tope_de_cupo`) y que abrir un negocio
+  > le pida a una cuenta nacida en la comunidad las mismas protecciones que a
+  > las demás.
 
 ### 9. Recuperar una cuenta
 

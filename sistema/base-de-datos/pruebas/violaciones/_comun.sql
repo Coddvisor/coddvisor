@@ -1,5 +1,7 @@
 -- Punto de partida de cada caso: un módulo de prueba que cumple todas las reglas.
--- Tiene una tabla que se edita (cosa) y un libro (movimiento).
+-- Tiene una tabla que se edita (cosa), un libro (movimiento) y una tabla común
+-- (comunidad.prueba_charla), que las pruebas suman a la lista cerrada de lo común
+-- mientras corren.
 -- Cada archivo de esta carpeta le agrega UNA falta y dice qué regla debe atraparla.
 
 create schema prueba;
@@ -51,3 +53,28 @@ comment on column prueba.movimiento.fecha_operacion is 'Día de negocio del movi
 comment on column prueba.movimiento.creado_en is 'Cuándo se anexó.';
 comment on column prueba.movimiento.creado_por is 'Quién lo anexó.';
 select nucleo.preparar_tabla('prueba.movimiento', 'libro');
+
+-- Lo común vive en el esquema de la comunidad. Antes del módulo comunidad, la
+-- prueba lo crea; después, ya existe.
+create schema if not exists comunidad;
+revoke all on schema comunidad from public;
+grant usage on schema comunidad to coddvisor_app;
+
+create table comunidad.prueba_charla (
+  id uuid primary key,
+  tema text not null,
+  creado_en timestamptz not null,
+  creado_por uuid,
+  actualizado_en timestamptz not null,
+  actualizado_por uuid,
+  version integer not null
+);
+comment on table comunidad.prueba_charla is 'Tabla común de prueba: de todos, sin negocio.';
+comment on column comunidad.prueba_charla.id is 'Identificador de la charla.';
+comment on column comunidad.prueba_charla.tema is 'De qué trata la charla.';
+comment on column comunidad.prueba_charla.creado_en is 'Cuándo se creó.';
+comment on column comunidad.prueba_charla.creado_por is 'Quién la creó.';
+comment on column comunidad.prueba_charla.actualizado_en is 'Última modificación.';
+comment on column comunidad.prueba_charla.actualizado_por is 'Quién la modificó.';
+comment on column comunidad.prueba_charla.version is 'Sube en cada modificación.';
+select nucleo.preparar_tabla('comunidad.prueba_charla', 'comun');

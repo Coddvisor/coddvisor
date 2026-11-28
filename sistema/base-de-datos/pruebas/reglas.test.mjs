@@ -11,12 +11,18 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 import { crearBase, revisarBase } from '../verificador/base.mjs';
+import { configuracion } from '../verificador/configuracion.mjs';
 import { reglas } from '../verificador/reglas.mjs';
 import { enTransaccion } from './apoyo.mjs';
 
 const CARPETA = fileURLToPath(new URL('./violaciones/', import.meta.url));
 const archivos = (await readdir(CARPETA)).filter((n) => n.endsWith('.sql') && !n.startsWith('_')).sort();
 const comun = await readFile(path.join(CARPETA, '_comun.sql'), 'utf8');
+
+// La tabla común del módulo de prueba entra a la lista cerrada de lo común solo
+// mientras corren estas pruebas: así cada caso de lo común señala su falta y no,
+// además, que la tabla no está en la lista (BD-16).
+const conElModuloDePrueba = { ...configuracion, tablasComunes: [...configuracion.tablasComunes, 'comunidad.prueba_charla'] };
 
 const incumplidas = (resultados) => resultados.filter((r) => r.violaciones.length > 0).map((r) => r.id);
 
@@ -32,9 +38,15 @@ describe('reglas de la base de datos', () => {
   test('el módulo de prueba, sin faltas, cumple todas las reglas', async () => {
     await enTransaccion(db, async () => {
       await db.exec(comun);
-      const resultados = await revisarBase(db);
+      const resultados = await revisarBase(db, conElModuloDePrueba);
       assert.deepEqual(resultados.flatMap((r) => r.violaciones), []);
     });
+  });
+
+  test('atrapa: una tabla de la lista cerrada de lo común que no existe', async () => {
+    const conUnaQueFalta = { ...configuracion, tablasComunes: [...configuracion.tablasComunes, 'comunidad.charla_que_no_existe'] };
+    const bd16 = (await revisarBase(db, conUnaQueFalta)).find((r) => r.id === 'BD-16');
+    assert.deepEqual(bd16.violaciones.map((v) => v.objeto), ['comunidad.charla_que_no_existe']);
   });
 
   for (const archivo of archivos) {
@@ -46,7 +58,7 @@ describe('reglas de la base de datos', () => {
       await enTransaccion(db, async () => {
         await db.exec(comun);
         await db.exec(sql);
-        assert.deepEqual(incumplidas(await revisarBase(db)).sort(), esperadas);
+        assert.deepEqual(incumplidas(await revisarBase(db, conElModuloDePrueba)).sort(), esperadas);
       });
     });
   }

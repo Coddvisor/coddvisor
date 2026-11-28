@@ -7,7 +7,7 @@ que impide unir a `main` un cambio que la incumpla. La revisión vive en
 Estas reglas son las más caras de cambiar del proyecto, porque se copian en
 cada fila de cada cliente. Por eso se fijan antes de la primera tabla de negocio.
 
-## Las seis clases de tabla
+## Las siete clases de tabla
 
 Toda tabla declara qué clase es. De la clase salen su aislamiento y sus permisos.
 
@@ -19,12 +19,26 @@ Toda tabla declara qué clase es. De la clase salen su aislamiento y sus permiso
 | `custodia` | Datos de un cliente que solo cambia una puerta     | Leer                | `identidad.membresia`, `identidad.asignacion` |
 | `catalogo` | Datos iguales para todos los clientes              | Leer                | `nucleo.moneda`, `nucleo.parametro_legal` |
 | `control`  | Lo que vive fuera de las celdas (enrutador, identidad) | Nada            | `portero.llave`, `control.cuenta` |
+| `comun`    | Datos de todos, que no son de ningún negocio       | Leer                | `comunidad.perfil`        |
 
 Una tabla de `custodia` se aísla y se sella igual que una de `negocio`, pero la
 aplicación no la puede escribir: si pudiera, un error en el servicio
 reactivaría una membresía suspendida o le daría a alguien el rol de dueño. La
 escribe una sola puerta de su módulo, que se da con nombre en la lista de
 puertas.
+
+Una tabla `comun` es de todos: guarda lo de la comunidad, que se ve sin entrar
+a ningún negocio. No lleva `tenant_id` ni seguridad por fila, porque no hay
+negocio que aislar. La aplicación solo la lee; la escriben las puertas firmadas
+de su módulo (`comunidad`), igual que las de identidad, así un error del
+servicio no puede publicar a nombre de otra persona. Lleva los sellos y el
+candado de identidad de una tabla de negocio, sobre su `id`. Sus tablas van en
+una lista cerrada, como las del plano de control (BD-16), y cuando haya varias
+celdas no se reparte: vive junto al plano de control, como las cuentas. Ninguna
+de las otras seis servía: las de un cliente esconden sus filas fuera de su
+negocio, un catálogo solo lo cambia una migración y la aplicación no lee el
+plano de control. (Clase nueva del 27-nov-2026, etapa 1 de la comunidad,
+`../propuestas/comunidad-etapa-1.md`.)
 
 Nadie borra. Lo que deja de usarse se archiva (`archivado_en`) o se anula con
 un movimiento inverso.
@@ -270,6 +284,67 @@ membresía automática no se toca** por estas puertas.
 Lo que todavía no hacen: invitar a un correo que no tiene cuenta (tramo 3). Una
 invitación así no es una membresía sin cuenta.
 
+## Las puertas de la comunidad
+
+Las tablas comunes (`comunidad.perfil` y `comunidad.conteo_descripcion`) no las
+escribe la aplicación: las escribe `coddvisor_comunidad`, un rol como el de
+identidad, que no inicia sesión, no hereda, no se salta la seguridad por fila y
+solo es dueño de sus funciones. Toca solo las tablas de su lista cerrada
+(`permisosPorTabla`): el perfil y su proyección, y para leer el rubro, los
+escalones y los ajustes. Ninguna tabla de un negocio y nada del plano de
+control: de una cuenta solo sabe si está activa, por `identidad.cuenta_activa`.
+Con `SELECT` sobre `control.cuenta`, que la propuesta pedía para leer su estado,
+leería también todos los correos: los permisos se dan por tabla.
+
+Cada puerta exige una firma del servicio con un propósito propio, que verifica
+el portero (`portero.exigir_firma_de_comunidad`, solo para propósitos que
+empiezan con `comunidad_`: una firma de identidad no vale en la comunidad, ni al
+revés). Ninguna abre un negocio: si la transacción tiene uno abierto, fallan
+(CV014). Por eso los sellos de lo común no guardan quién actúa; lo dice
+`cuenta_id`.
+
+| Puerta | Qué hace | Propósito firmado |
+|---|---|---|
+| `crear_perfil` | El perfil de una cuenta activa, con su nombre y su negocio descrito (cada parte, opcional), y su descripción sumada a la proyección. Se puede repetir: si la cuenta ya tiene un perfil vivo, devuelve ese | `comunidad_crear_perfil`, sobre todos los datos |
+| `cambiar_perfil` | Reemplaza el nombre, el rol y la descripción. Firma la versión que vio el servicio (CV304 si cambió). Rubro, región, tamaño y país, como mucho una vez cada tantos días (ajuste `dias_entre_cambios_de_descripcion`, CV305); el primer cambio después de crear no espera | `comunidad_cambiar_perfil`, sobre todos los datos y la versión |
+| `archivar_perfil` | La persona deja la comunidad: su perfil se archiva y su descripción se resta. Lo que publicó queda como «Alguien que dejó la comunidad». Se puede siempre y se puede repetir | `comunidad_archivar_perfil`, sobre el perfil y la cuenta |
+| `olvidar_perfil` | La persona pide borrar sus datos (Ley 29733): se vacían el nombre, la descripción y la cuenta, y la fila queda con `olvidado_en` para que nada que la cite falle. No pide la cuenta activa ni ningún ajuste, y se puede repetir: no falla para quien tiene el derecho | `comunidad_olvidar_perfil`, sobre el perfil y la cuenta |
+
+La lectura `comunidad.descripcion_de` (hasta 100 perfiles por llamada, CV308)
+no es una puerta: corre con los permisos de quien la llama.
+
+**La descripción se achica sola.** Se muestra el primer escalón de
+`comunidad.escalon`, por orden, cuya combinación comparten al menos
+`descripcion_minimo` perfiles vivos del mismo país (nace en 10, decisión de la
+fundadora del 26-nov-2026). Se calcula al leer, con los ajustes que rigen ahora,
+sobre la proyección `comunidad.conteo_descripcion`, que las puertas mueven en la
+misma transacción que el perfil y `comunidad.reconstruir_conteo` rehace. Sube
+rápido y baja despacio: la primera vez abre con el mínimo; si cae bajo el
+mínimo, cierra al momento y vuelve recién con el mínimo más `descripcion_margen`.
+Cada escalón muestra lo mismo o menos que el anterior, y si ninguno alcanza la
+descripción no dice nada del negocio: solo el rol. Un tamaño que no es visible
+(`comunidad.tamano.es_visible`) no se muestra nunca. El nombre de pila y el rol
+no se cuentan.
+
+Tres reglas valen en todas, por los requisitos 6, 9 y 12 de
+`comunidad-etapa-1.md`:
+
+- **Olvidar a una persona no puede fallar.** Bajar un conteo nunca falla: sin el
+  mínimo de su país, cierra, y no baja de cero si la proyección se atrasó.
+- **Lo que se revoca se revoca con fecha, no borrando.** Un perfil se archiva o
+  se olvida con su instante, y no vuelve ni pasa a otra cuenta (un disparador lo
+  impide, CV309); un espacio o un escalón se archivan; un ajuste nuevo es una
+  fila nueva, y la tabla de ajustes solo se anexa.
+- **Un ajuste que falta rechaza la acción.** Sumar a la proyección sin el mínimo
+  y el margen del país, o cambiar la descripción sin el ajuste de los días, falla
+  (CV306). Leer sin el mínimo no muestra nada del negocio.
+
+Dos perfiles nuevos de la misma cuenta a la vez dan uno solo (el índice único
+del perfil vivo pone en fila al segundo, que devuelve el primero), y dos puertas
+que mueven la misma combinación se ponen en fila en su fila, que se tocan en el
+orden de su id. PGlite tiene una sola conexión: eso se prueba en un Postgres
+real con dos.
+
 ## Las reglas
 
 ### Aislamiento
@@ -300,10 +375,20 @@ ninguna otra regla lo notaría. Si los datos son de un cliente, la tabla es de
 negocio, libro o custodia. (Cambio del 26-nov-2026, auditoría de seguridad de
 la identidad.)
 
+Una tabla común tampoco lleva `tenant_id`, por lo mismo, y su clave es `id`
+(UUID). (Cambio del 27-nov-2026, etapa 1 de la comunidad.)
+
 **BD-03. Una fila de un cliente nunca puede apuntar a otro cliente, y nada se borra en cascada.**
 Toda relación entre datos de un cliente incluye `tenant_id`. Así lo impide la
 propia base, aunque el programa se equivoque. Ninguna tabla de un cliente
 apunta al plano de control, y ningún catálogo apunta a datos de un cliente.
+
+Lo común queda aparte de los negocios en los dos sentidos: ninguna tabla de un
+negocio apunta a una tabla común, y ninguna común apunta a una de un negocio.
+Así la comunidad no llega a las ventas de nadie, ni un negocio depende de la
+comunidad. Una tabla común puede apuntar a los catálogos y, del plano de
+control, solo a `control.cuenta` (`controlQueCitaLoComun` en la configuración
+del verificador). (Cambio del 27-nov-2026, etapa 1 de la comunidad.)
 
 **BD-04. La seguridad por fila está activa y forzada, y toda política filtra por el cliente activo.**
 Es la segunda barrera: si el programa olvida filtrar, la base no devuelve
@@ -349,6 +434,17 @@ no pueden saltarse la seguridad por fila. Además:
   escribe una puerta, y nadie por su clase. Las de identidad las escriben las
   puertas de `coddvisor_identidad`, que la aplicación ejecuta con la firma del
   servicio. (Cambio del 26-nov-2026, tramo 2a de la identidad.)
+- Una tabla común, la aplicación solo la lee y el rol de los libros no la toca.
+  La escriben las puertas de su módulo, y nadie por su clase. (Cambio del
+  27-nov-2026, etapa 1 de la comunidad.)
+- El dueño de las puertas de la comunidad (`coddvisor_comunidad`) es como el de
+  identidad: por clase no tiene nada, toca solo las tablas de su lista cerrada
+  (el perfil y su proyección; para leer, el rubro, los escalones y los ajustes),
+  no inicia sesión ni se salta la seguridad por fila. Ninguna tabla de un negocio
+  ni del plano de control: de una cuenta solo pregunta si está activa, por la
+  puerta `identidad.cuenta_activa`, que solo él ejecuta. Lee el contexto del
+  portero, como todos los sellos. (Cambio del 27-nov-2026, etapa 1 de la
+  comunidad; lo aprueba el fundador.)
 - Los permisos se dan por tabla, nunca por columna.
 - Ningún rol de la aplicación es dueño de una tabla ni crea objetos.
 - La aplicación no crea tablas temporales.
@@ -396,8 +492,9 @@ una vez, ahí. Una tabla con importes tiene una columna `moneda_codigo`.
 `creado_en`, `creado_por`, `actualizado_en`, `actualizado_por` y `version`.
 Los pone la base, no el programa, así que no se pueden falsear. `version`
 sube en cada cambio y permite avisar cuando dos personas editan lo mismo.
-Vale también para una tabla de custodia y para una tabla de control que
-alguien edita.
+Vale también para una tabla de custodia, para una común (con el candado de su
+`id`; cambio del 27-nov-2026, etapa 1 de la comunidad) y para una tabla de
+control que alguien edita.
 
 **BD-10. Un libro solo se anexa.**
 No se edita, no se borra y no se vacía, ni siquiera por el dueño de la base.
@@ -461,14 +558,14 @@ real falló, porque en Supabase quien migra no es superusuario.)
 
 ### Afuera de los negocios
 
-**BD-16. Afuera de los negocios viven solo las tablas de una lista cerrada.**
+**BD-16. Afuera de los negocios viven solo las tablas de dos listas cerradas.**
 El plano de control (las tablas de clase `control`) es lo único que no es de
 ningún negocio: las cuentas, el índice de accesos, la lista de en qué celda vive
 cada negocio y con qué nombre se muestra (`control.negocio`, decisión 14 de
 identidad: así la persona elige a qué negocio entra sin abrir ninguno; es una
 copia del nombre de `nucleo.tenant`, que `fundar_negocio` escribe en la misma
 transacción), la llave del portero y la marca que el portero traba al abrir
-un negocio (`portero.marca`, sin filas) y los permisos de alta que anota «Abra su negocio»
+un negocio (`portero.marca`, sin filas) y los permisos de alta que anotan «Abra su negocio» y, desde la etapa 1 de la comunidad, «Entrar a la comunidad»
 para que el gancho de Supabase Auth deje crear la cuenta (`control.alta_permitida`,
 solo la huella del correo y su vencimiento) y el registro de las migraciones
 que el migrador aplicó a la base, con su huella (`control.migracion_aplicada`,
@@ -485,6 +582,13 @@ día, con la barrera de altas, pendiente de la aprobación del fundador;
 `control.migracion_aplicada`, el mismo día, con el camino de las migraciones,
 también pendiente de su aprobación; `control.cupo_usado`, el 27-nov-2026, con
 los cupos compartidos, pendiente de su aprobación.)
+
+La segunda lista es la de lo común (`tablasComunes`): las tablas de clase
+`comun`, que son de todos y no de un negocio. Toda tabla común figura en ella y
+vive en el esquema `comunidad`; una que no figure, o que viva en otro esquema,
+es una falta, y una de la lista que no exista también. Entra a la lista con su
+porqué, y lo aprueba el fundador. (Cambio del 27-nov-2026, etapa 1 de la
+comunidad.)
 
 **BD-17. Los datos personales no dejan rastro en los resúmenes de la base.**
 La base guarda resúmenes de cada columna (los valores más frecuentes, los
@@ -544,12 +648,17 @@ Los cimientos no cierran estas piezas. Cada una llega con su documento:
 | Campos propios y su definición | Módulo de configuración (D16) |
 | Valores legales del Perú en `parametro_legal`, entre ellos los topes, categorías y tasas de cada régimen tributario, y la norma y la fecha legal de cada régimen (`nucleo.regimen_tributario.norma_fuente` está vacía, y su `vigente_desde`, 2017-01-01, es la fecha desde la que el sistema ofrece la opción, no el inicio legal), y la nota de la primera pregunta de «Abra su negocio» sobre qué comprobantes entrega cada régimen | Confirmación del contador asesor, con norma y fecha |
 | El historial del régimen de una empresa (el perfil fiscal con vigencia): hoy `nucleo.empresa.regimen_codigo` guarda el que eligió al abrir | La primera pantalla que deje cambiar de régimen |
-| Abrir un negocio con una cuenta real. Ya existen el proveedor real, el gancho que deja pasar solo las altas con Google cuyo correo pasó por «Abra su negocio» (`ganchos.antes_de_crear_cuenta` y `control.alta_permitida`) y las rutas y las pantallas para pedir el correo de Google antes de ir a Google y para inscribir la app de códigos (`aplicaciones/oficina/entrar/abrir-con-google.html` y `app-de-codigos.html`). Falta: el alta con correo y su enlace de un solo uso (el programa aparte con la llave de administrador, que usa `POST /admin/users` y nunca `/invite`: según el código de GoTrue, las invitaciones pasan por el gancho y las altas del administrador no; se confirma en el proyecto de pruebas), y que el programa de administrador revise él mismo la prueba de que no es un robot (Supabase no la pide a `POST /admin/users`). La prueba (Cloudflare Turnstile) y los cupos compartidos de permisos y de altas por día ya existen (`sistema/supabase/turnstile.md`); el de negocios abiertos por cuenta lo pone `abrir_negocio`. La pantalla que pide el correo dice que use exactamente el de su cuenta de Google: el permiso se compara con la huella exacta, y Google devuelve el correo principal (sin los puntos o el googlemail.com que la persona pueda escribir) | Pantallas de «Abra su negocio» y programa de administrador (decisiones 8 bis y 10) |
+| Abrir un negocio con una cuenta real. Ya existen el proveedor real, el gancho que deja pasar solo las altas con Google cuyo correo pasó por «Abra su negocio» o, desde la etapa 1 de la comunidad, por «Entrar a la comunidad» (`ganchos.antes_de_crear_cuenta` y `control.alta_permitida`, que dice de qué botón vino cada permiso) y las rutas y las pantallas para pedir el correo de Google antes de ir a Google y para inscribir la app de códigos (`aplicaciones/oficina/entrar/abrir-con-google.html` y `app-de-codigos.html`). Falta: el alta con correo y su enlace de un solo uso (el programa aparte con la llave de administrador, que usa `POST /admin/users` y nunca `/invite`: según el código de GoTrue, las invitaciones pasan por el gancho y las altas del administrador no; se confirma en el proyecto de pruebas), y que el programa de administrador revise él mismo la prueba de que no es un robot (Supabase no la pide a `POST /admin/users`). La prueba (Cloudflare Turnstile) y los cupos compartidos de permisos y de altas por día ya existen (`sistema/supabase/turnstile.md`); el de negocios abiertos por cuenta lo pone `abrir_negocio`. La pantalla que pide el correo dice que use exactamente el de su cuenta de Google: el permiso se compara con la huella exacta, y Google devuelve el correo principal (sin los puntos o el googlemail.com que la persona pueda escribir) | Pantallas de «Abra su negocio» y programa de administrador (decisiones 8 bis y 10) |
 | Aceptar una invitación entrando con Google, para alguien que todavía no tiene cuenta: el gancho la niega porque su correo no tiene un permiso de «Abra su negocio». La invitación tendrá que anotar su propio permiso (la huella del correo en `control.alta_permitida` o en una tabla hermana). La decisión 8 bis lo pone como condición: la barrera no está completa sin esto | Invitaciones (decisión 8 bis) |
 | Cómo pasar a Supabase la IP de la persona sin la llave secreta (decisión 10). Y el camino directo a Supabase Auth con la clave pública, que no pasa por los cupos del servicio: su segundo paso admite 15 códigos por minuto por IP, sin poder cambiarlo (`sistema/supabase/LEEME.md`, «Lo que los cupos del servicio no cubren»). Que la función acepte solo pedidos del Worker ya existe (`aplicaciones/servicio/rutas/puerta.ts`) | Fundador, antes de abrir al público (`sistema/supabase/LEEME.md`) |
 | Archivar los permisos de alta vencidos (`control.alta_permitida`): solo importan diez minutos | Primer trabajo de fondo (decisión 7) |
 | Archivar las filas de `control.cupo_usado` cuya ventana ya venció: solo importan cinco minutos o un día, y la tabla crece con cada clave y cada ventana | Primer trabajo de fondo (decisión 7) |
 | Que cada rubro proponga sus plantillas (la tabla que une `configuracion.rubro` con `plantilla`) | La primera plantilla publicada (`molde-de-rubro.md`) |
+| El código que firma y llama las puertas de la comunidad, sus pantallas y los textos de sus catálogos (la frase de cada rol, rubro, rubro amplio, región y tamaño) en el catálogo de textos | Etapa 2 de la comunidad y dónde corre su página (`../propuestas/donde-corre-el-sistema.md`) |
+| Que la comunidad se entere cuando una cuenta se cierra: hoy su perfil sigue vivo hasta que el servicio lo archive u olvide. La identidad no usa a la comunidad, así que lo hará un trabajo que lea las cuentas cerradas | La puerta que cierre una cuenta (decisión 9 de identidad) y el primer trabajo de fondo (decisión 7) |
+| El trabajo que compara la proyección de la descripción con los perfiles. Hoy `comunidad.reconstruir_conteo` la rehace, y la corre quien migra | Primer trabajo de fondo (decisión 7) |
+| Probar con dos conexiones a la vez lo que PGlite no puede: dos altas de un perfil para la misma cuenta, dos cambios del mismo perfil y dos puertas que mueven la misma combinación | Un Postgres real, antes de abrir la comunidad (etapa 4) |
+| El botón «Entrar a la comunidad» y su ruta, que piden la prueba de que es una persona y gastan sus propios cupos (topes como filas de `identidad.tope_de_cupo`) antes de `identidad.permitir_alta_en_la_comunidad`. Y que abrir un negocio le pida a una cuenta nacida en la comunidad las mismas protecciones que «Abra su negocio» (comunidad-etapa-1.md: «Se rompe si...»); se prueba en el proyecto de pruebas | Etapa 2 de la comunidad |
 
 Ninguna migración se aplicó a una base real. El camino ya existe
 (`sistema/herramientas/migrador/`: GitHub Actions al unir a `main`, en el entorno
