@@ -173,13 +173,16 @@ function leerBases(config) {
 // `carpeta` es desde dónde se corre git: sistema/ en el uso normal, otra en las pruebas.
 // El cambio se lee desde la raíz del repositorio («:/» y «top»), no desde la carpeta:
 // las preguntas de 06-antes-de-unir.md valen también para web/ y arquitectura/.
+// Se compara contra origin/<base>, no contra la rama local: en una copia de trabajo el
+// main local puede tener semanas (el 27-nov-2026 iba 242 cambios atrás), y el cambio
+// traería el trabajo ya unido de otras sesiones. La rama local queda solo si no hay origin.
 export function leerDiff(base, config, carpeta = RAIZ) {
   const excluir = config.ignorar_en_diff.map((p) => `:(top,exclude,glob)**/${p}`);
-  const git = (rama) => execFileSync('git', ['diff', `${rama}...HEAD`, '--', ':/', ...excluir], { cwd: carpeta, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const git = (rama) => execFileSync('git', ['diff', `${rama}...HEAD`, '--', ':/', ...excluir], { cwd: carpeta, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] });
   try {
-    return git(base);
-  } catch {
     return git(`origin/${base}`);
+  } catch {
+    return git(base);
   }
 }
 
@@ -200,6 +203,13 @@ async function principal() {
   if (preguntas.length === 0) {
     console.error(`No encontré preguntas en ${config.lista_de_revision}. ¿Cambió el encabezado "${config.encabezado_preguntas}"?`);
     process.exit(2);
+  }
+  // Trae lo último de la rama base, para comparar contra lo que de verdad está unido. Sin
+  // red, avisa y sigue con la última copia conocida.
+  try {
+    execFileSync('git', ['fetch', '--quiet', 'origin', base], { cwd: RAIZ, stdio: 'ignore', timeout: 30000 });
+  } catch {
+    console.error(`Aviso: no se pudo traer origin/${base}. Se compara con la última copia conocida, que puede estar atrasada.`);
   }
   const diff = leerDiff(base, config);
   if (diff.trim() === '') {
