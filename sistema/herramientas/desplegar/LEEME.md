@@ -14,28 +14,35 @@ la enlazan.
 
 ## Qué hace el flujo
 
-Corre solo cuando usted lo pide, solo desde `main`, y espera su aprobación. Va en
+Arranca solo al unir a `main` un cambio de lo que lleva la función (sus
+archivos, los módulos que importa o su despliegue; una guía `.md` sola no
+cuenta), y también a mano desde la pestaña Actions. Siempre desde `main`, y
+siempre espera su aprobación: nada llega a producción sin su visto bueno. Va en
 la misma fila que las migraciones y la llave del portero: una corrida a la vez.
+(Cambio del 27-nov-2026, aprobado por el fundador: antes corría solo a mano.)
 
 1. **Verificar**, sin secretos: `npm run verificar` y que el candado de Deno
    (`deno.lock`, ver abajo) exista y coincida.
 2. **Desplegar**, en el entorno protegido `base-real`, después de su aprobación:
-   1. Revisa que estén todas las variables del entorno, y la llave secreta de
+   1. Mira que la base real ya tenga todas las migraciones de `main`, sin tocar
+      nada. Si una llegó junto con este cambio y todavía espera su aprobación,
+      termina sin desplegar y dice qué hacer (ver «En cada despliegue», abajo).
+   2. Revisa que estén todas las variables del entorno, y la llave secreta de
       Turnstile, y que sirvan. Si falta una, termina sin tocar nada y dice cuál.
-   2. Mira en Supabase que ya estén los secretos que guardan las ceremonias. Si
+   3. Mira en Supabase que ya estén los secretos que guardan las ceremonias. Si
       falta uno, termina sin desplegar: sin ellos la función no arranca.
-   3. Guarda las variables que no son secretas, y las dos llaves de Turnstile
+   4. Guarda las variables que no son secretas, y las dos llaves de Turnstile
       (`CODDVISOR_CAPTCHA_LLAVE_DEL_SITIO` y `CODDVISOR_CAPTCHA_SECRETO`), en
       **Edge Functions → Secrets** de Supabase, para que nadie las escriba a mano
       en el panel.
-   4. Despliega la función, sin la revisión del pase de Supabase en el
+   5. Despliega la función, sin la revisión del pase de Supabase en el
       encabezado (lo pide `supabase/config.toml`: las rutas revisan la cookie).
-   5. Llama a la función directo, como lo haría un extraño, pidiendo la región
+   6. Llama a la función directo, como lo haría un extraño, pidiendo la región
       de la base. Tiene que negarse (403, porque no trae el secreto del Worker)
       y decir que corrió en esa región (encabezado `x-sb-edge-region`). Si no,
       la corrida falla y dice qué vio. Ese 403 sale antes de mirar la ruta: no
       prueba ni la base ni Supabase Auth.
-   6. Por eso, después, entra con contraseña por `app.coddvisor.com`, como una
+   7. Por eso, después, entra con contraseña por `app.coddvisor.com`, como una
       persona, con un correo que no es de nadie
       (`comprobacion-del-despliegue@example.com`) y una prueba de Turnstile
       inventada. Ese pedido pasa por el Worker, por la puerta, por los cupos de
@@ -46,7 +53,8 @@ la misma fila que las migraciones y la llave del portero: una corrida a la vez.
       es la base o Auth que no responden: la corrida falla y dice qué revisar.
 
    Cada paso ve solo lo que usa: la llave secreta de Turnstile la ven solo el
-   que revisa las variables y el que las guarda. Ni las acciones de afuera
+   que revisa las variables y el que las guarda, y la conexión que migra, solo
+   el que mira si faltan migraciones. Ni las acciones de afuera
    (checkout, setup-node, la CLI de Supabase) ni el despliegue con Docker.
 
 ## La puerta de la función
@@ -137,17 +145,11 @@ genera con Deno, que no está en esta computadora, así que lo genera GitHub:
    (`package-lock.json`).
 4. Usted revisa y une la solicitud como cualquier otra.
 
-**Hoy falta.** La solicitud que trajo este flujo (la 81) se unió sin el
-candado: `main` no tiene `sistema/supabase/functions/servicio/deno.lock`. Como
-«Candado de Deno» ya está en `main`, se corre a mano: **Actions → Candado de
-Deno → Run workflow**, en una rama nueva sacada de `main`. El candado que deja
-entra en esa rama, como en el punto 2, y la rama se une por su propia solicitud
-de revisión **antes del primer despliegue**.
-
-Mientras el candado no esté en `main`, el flujo «Desplegar el servicio» no
-despliega: lo dice en su primer paso («Falta deno.lock»). Cada vez que cambie
-`deno.json` (por ejemplo, una versión nueva de postgres.js), se repite esto en
-la misma solicitud que lo cambia.
+**Ya está.** El candado entró en `main` el 27-nov-2026, por la solicitud 89.
+Cada vez que cambie `deno.json` (por ejemplo, una versión nueva de postgres.js),
+se repite esto en la misma solicitud que lo cambia. Si alguna vez faltara en
+`main`, el flujo «Desplegar el servicio» no despliega: lo dice en su primer paso
+(«Falta deno.lock»).
 
 Se genera con Deno 2.1.4 a propósito: es el que trae la imagen con que la CLI de
 Supabase 2.108.0 arma la función (`supabase/edge-runtime:v1.74.2`). Un Deno más
@@ -161,22 +163,25 @@ Esta es la única lista, en el orden en que se hace. Cada paso dice su guía.
    flujo «Migraciones a la base real», corrido y aprobado
    (`herramientas/migrador/LEEME.md`). Sin ellas la función arranca, pero
    falla en cada pedido que toca la base.
-2. **La contraseña de la entrada**: la ceremonia «Contraseña de la entrada»
+2. **El token de Supabase guardado** en `base-real`: lo usan las dos
+   ceremonias, el repartidor con «nuevo» y este flujo («Los tokens que quedan
+   guardados», abajo).
+3. **La contraseña de la entrada**: la ceremonia «Contraseña de la entrada»
    guarda `CODDVISOR_BASE_DIRECCION` (`herramientas/migrador/CLAVE-DE-ENTRADA.md`).
    Deje `verify-full`.
-3. **La llave del portero**: la ceremonia «Llave del portero» guarda
+4. **La llave del portero**: la ceremonia «Llave del portero» guarda
    `CODDVISOR_PORTERO_LLAVE_NUMERO` y `CODDVISOR_PORTERO_LLAVE_SECRETO`
    (`herramientas/migrador/LEEME.md`).
-4. **El DNS y el repartidor**: mudar el DNS
+5. **El DNS y el repartidor**: mudar el DNS
    (`herramientas/repartidor/mudar-el-dns.md`), el flujo «Desplegar el
    repartidor» con «nuevo», que guarda `CODDVISOR_REPARTIDOR_SECRETO` en
    Supabase y en el Worker a la vez, y el dominio `app.coddvisor.com` en el
    Worker (`herramientas/repartidor/LEEME.md`, pasos 1 a 6).
-5. **Las variables del entorno `base-real`** (punto 1 de esta guía), con las
+6. **Las variables del entorno `base-real`** (punto 1 de esta guía), con las
    llaves de Turnstile (`sistema/supabase/turnstile.md`, pasos 1 y 3).
-6. **El candado de Deno** en `main` (punto 2 de esta guía).
-7. **Este flujo**, «Desplegar el servicio» («En cada despliegue», abajo).
-8. **La protección de Supabase Auth**: encender Turnstile en **Attack
+7. **El candado de Deno** en `main` (punto 2 de esta guía).
+8. **Este flujo**, «Desplegar el servicio» («En cada despliegue», abajo).
+9. **La protección de Supabase Auth**: encender Turnstile en **Attack
    Protection** (`sistema/supabase/turnstile.md`, paso 2) y revisar sus
    límites (`sistema/supabase/LEEME.md`, «Los límites de Supabase y el
    servicio»). Va después del despliegue, a propósito: al revés, nadie podría
@@ -196,9 +201,9 @@ guardan las ceremonias, y no despliega si falta uno:
 
 | Secreto en Supabase | Quién lo guarda |
 |---|---|
-| `CODDVISOR_BASE_DIRECCION` | La ceremonia «Contraseña de la entrada» (paso 2 de la lista) |
-| `CODDVISOR_PORTERO_LLAVE_NUMERO` y `CODDVISOR_PORTERO_LLAVE_SECRETO` | La ceremonia «Llave del portero» (paso 3) |
-| `CODDVISOR_REPARTIDOR_SECRETO` | El flujo «Desplegar el repartidor» con «nuevo» (paso 4). Si se corre primero este flujo, para aquí y no despliega |
+| `CODDVISOR_BASE_DIRECCION` | La ceremonia «Contraseña de la entrada» (paso 3 de la lista) |
+| `CODDVISOR_PORTERO_LLAVE_NUMERO` y `CODDVISOR_PORTERO_LLAVE_SECRETO` | La ceremonia «Llave del portero» (paso 4) |
+| `CODDVISOR_REPARTIDOR_SECRETO` | El flujo «Desplegar el repartidor» con «nuevo» (paso 5). Si se corre primero este flujo, para aquí y no despliega |
 
 Y `CODDVISOR_BASE_CERTIFICADO`, que **hoy no tiene camino y no se pega a mano**.
 Hace falta solo si la conexión con `sslmode=verify-full` no reconoce el
@@ -211,18 +216,68 @@ del certificado (una ceremonia que lo cargue, como las demás). Bajar a
 
 ## En cada despliegue
 
-### 0. Las migraciones que trae `main`
+1. Al unir a `main` una solicitud que cambia la función, en **Actions** aparece
+   «Desplegar el servicio». Su primer paso, «Verificar y revisar el candado de
+   Deno», corre solo. El segundo, «Desplegar la función», queda **Waiting**
+   (esperando). Para desplegar sin un cambio nuevo: **Actions → Desplegar el
+   servicio → Run workflow**, rama `main`.
+2. Toque **Review deployments** (revisar despliegues), marque `base-real` y
+   **Approve and deploy** (aprobar y desplegar). O **Reject** (rechazar) si no
+   es el momento: nada cambia, y lo puede correr a mano después.
+3. Al terminar, el último paso dice: «La función niega lo que no viene del
+   Worker (403) y corre en sa-east-1» y «Listo: por el Worker, la función llega
+   a la base y a Supabase Auth, que revisa la prueba de Turnstile, y corre en
+   sa-east-1». Si en vez de eso hay un aviso amarillo de que Supabase Auth no
+   revisó la prueba, falta el paso 9 de «Lo que tiene que estar antes del primer
+   despliegue».
 
-Si desde la última corrida de «Migraciones a la base real» entró a `main` una
-migración nueva, córralo y apruébelo antes (`herramientas/migrador/LEEME.md`).
-La versión nueva de la función puede necesitarla: los cupos compartidos, por
-ejemplo, necesitan `identidad.usar_cupos`, y sin ella entrar con contraseña
-responde «interno». Si no lo hace, la comprobación del final lo dice con un 500.
+Si otra corrida de la base real espera su aprobación, esta queda **Pending**
+(pendiente) detrás, en fila. Ninguna cancela a otra.
 
-### 1. El token de acceso de Supabase
+**Si la misma solicitud trae una migración**, al unirla arrancan dos corridas,
+«Migraciones a la base real» y esta, y van en la misma fila: la que llegó
+primero espera su aprobación (**Waiting**) y la otra queda **Pending** detrás.
+Las migraciones van primero, porque la versión nueva de la función puede
+necesitarlas (los cupos compartidos, por ejemplo, necesitan
+`identidad.usar_cupos`):
 
-El flujo usa la CLI de Supabase, que pide un token. Créelo justo antes y
-revóquelo apenas termine: un token que no existe no se puede robar.
+- **Si la que espera es la de las migraciones**: apruébela. Al terminar arranca
+  esta, que espera su aprobación como siempre.
+- **Si la que espera es esta**: toque **Reject** (rechazar). Arranca la de las
+  migraciones: apruébela y, cuando termine, despliegue a mano: **Actions →
+  Desplegar el servicio → Run workflow**, rama `main`.
+
+Si igual aprueba esta antes, no pasa nada malo: su primer paso lo nota, termina
+sin desplegar y lo dice («A la base real le faltan N migraciones de main»).
+Siga entonces como en el segundo caso. Para volver a desplegar use siempre **Run
+workflow**, nunca **Re-run** en una corrida vieja: si `main` avanzó, esa corrida
+se niega («Esta corrida es de una versión anterior de main»).
+
+Desplegar no abre nada al público: el registro sigue apagado
+(`sistema/supabase/LEEME.md`, paso 6), y nadie llega a la función sin el Worker.
+
+## Los tokens que quedan guardados
+
+Desde el 27-nov-2026 (decisión del fundador), los flujos usan tokens que quedan
+guardados en el entorno protegido `base-real`, con vencimiento de un año, en vez
+de crear uno antes de cada corrida y revocarlo al terminar. Los protege lo mismo
+que a la contraseña de la base: solo los usan los flujos que corren desde `main`
+después de su aprobación, ninguna solicitud de revisión llega a ellos, y nadie
+puede leerlos de vuelta en GitHub, ni usted.
+
+| Secreto en `base-real` | Qué es | Lo usan | Vence |
+|---|---|---|---|
+| `SUPABASE_ACCESS_TOKEN` | Token de Supabase `github-coddvisor-despliegue`: solo el proyecto `coddvisor-sistema`, **Edge Functions** y **Edge Function Secrets**, lectura y escritura | «Desplegar el servicio», las ceremonias «Llave del portero» y «Contraseña de la entrada», y «Desplegar el repartidor» con «nuevo» | 26-nov-2027 (se ve en Supabase, **Access Tokens**) |
+| `CLOUDFLARE_API_TOKEN` | Token de Cloudflare `github-coddvisor-repartidor`: solo la cuenta Coddvisor, **Workers Scripts: Edit** (`herramientas/repartidor/LEEME.md`, paso 2) | «Desplegar el repartidor» | 25-feb-2027 (se creó antes de este cambio, por 90 días). Al renovarlo, póngale un año |
+
+Cuando uno vence, el flujo que lo usa falla sin cambiar nada y su registro dice
+que el token no sirve. Conviene renovarlos unos días antes.
+
+### Crear o renovar el token de Supabase
+
+Una vez al año, o si alguna vez sospecha que se filtró. Igual que en GitHub,
+el token se copia de una pestaña y se pega en la otra: nunca por el chat ni por
+un archivo.
 
 1. En Supabase, su avatar arriba a la derecha → **Account preferences → Access
    Tokens** (supabase.com/dashboard/account/tokens) → **Generate new token**
@@ -234,54 +289,54 @@ revóquelo apenas termine: un token que no existe no se puede robar.
 4. Permisos, y nada más:
    - **Edge Functions: Read-write** (desplegar la función);
    - **Edge Function Secrets: Read-write** (mirar los secretos y guardar las
-     variables).
+     variables; también lo usan las ceremonias).
 
-   Si la corrida falla por un permiso, el error dice cuál falta: agregue solo
+   Si una corrida falla por un permiso, el error dice cuál falta: agregue solo
    ese y anótelo en esta guía.
-5. Vencimiento: el más corto que ofrezca.
+5. Vencimiento: **Custom** (a medida), el día anterior al de hoy, del año que
+   viene. Supabase no acepta más de un año, y el mismo día del año que viene
+   lo rechazó («no later than one year from now»).
 6. Supabase lo muestra una sola vez: cópielo directo a GitHub, **Settings →
-   Environments → base-real → Environment secrets → Add environment secret**,
-   con el nombre `SUPABASE_ACCESS_TOKEN`. Si ya hay uno con ese nombre (el de la
-   ceremonia de la llave), reemplácelo: aquel no tiene permiso para desplegar.
+   Environments → base-real → Environment secrets**. Si ya hay un
+   `SUPABASE_ACCESS_TOKEN`, toque el lápiz y reemplace su valor; si no, **Add
+   environment secret** con ese nombre.
+7. Si era una renovación, revoque el token viejo: en la misma página de
+   Supabase, **Revoke** (revocar) junto al nombre que tenga la fecha más vieja.
 
-### 2. Correr y aprobar
+**Si sospecha que se filtró:** revóquelo en Supabase primero (deja de servir en
+el acto) y después cree otro con estos pasos.
 
-1. **Actions → Desplegar el servicio → Run workflow**, rama `main`, **Run
-   workflow**.
-2. Espere a que «Verificar y revisar el candado de Deno» termine bien. El paso
-   «Desplegar la función» queda **Waiting** (esperando).
-3. Toque **Review deployments** (revisar despliegues), marque `base-real` y
-   **Approve and deploy** (aprobar y desplegar). O **Reject** (rechazar) si no
-   es el momento.
-4. Al terminar, el último paso dice: «La función niega lo que no viene del
-   Worker (403) y corre en sa-east-1» y «Listo: por el Worker, la función llega
-   a la base y a Supabase Auth, que revisa la prueba de Turnstile, y corre en
-   sa-east-1». Si en vez de eso hay un aviso amarillo de que Supabase Auth no
-   revisó la prueba, falta el paso 8 de la lista de arriba.
+### Renovar o cambiar el token de Cloudflare
 
-Si otra corrida de la base real espera su aprobación, esta queda **Pending**
-(pendiente) detrás, en fila. Ninguna cancela a otra.
-
-### 3. Al terminar
-
-Revoque el token: la misma página de Supabase, **Revoke** (revocar) junto a su
-nombre, y en GitHub, el secreto `SUPABASE_ACCESS_TOKEN` del entorno →
-**Remove** (quitar).
-
-Desplegar no abre nada al público: el registro sigue apagado
-(`sistema/supabase/LEEME.md`, paso 6), y nadie llega a la función sin el Worker.
+- **Al vencer**: cree otro igual (`herramientas/repartidor/LEEME.md`, paso 2),
+  con un año de vencimiento. Péguelo en GitHub, **Settings → Environments →
+  base-real → Environment secrets**, con el lápiz junto a
+  `CLOUDFLARE_API_TOKEN`. Después borre el viejo en Cloudflare, **API Tokens**.
+- **Si sospecha que se filtró**: en Cloudflare, su perfil → **API Tokens**, el
+  menú junto a `github-coddvisor-repartidor` → **Roll** (girar). El valor viejo
+  deja de servir en el acto y Cloudflare muestra el nuevo una sola vez: péguelo
+  con el lápiz, igual que arriba.
 
 ## Si algo falla
 
 - **«Falta la variable ...»**, **«Falta el secreto ...»** o **«... debe ser
   exactamente la dirección de Auth...»**: corrija esa variable (o ese secreto)
   en el entorno y corra de nuevo. Nada cambió.
+- **«A la base real le faltan N migraciones de main»**: apruebe la corrida de
+  «Migraciones a la base real» que quedó esperando (si no hay ninguna, lánzela:
+  **Actions → Migraciones a la base real → Run workflow**, rama `main`). Cuando
+  termine, **Actions → Desplegar el servicio → Run workflow**, rama `main`.
+  Nada se desplegó.
+- **«Esta corrida es de una versión anterior de main»**: después de esta
+  corrida se unió otro cambio. Si ese cambio también toca la función, su propia
+  corrida lo despliega; si no, **Run workflow**, rama `main`. Nada se desplegó.
 - **«Falta deno.lock»**: falta el paso 2 de «Lo que se prepara una sola vez».
 - **«Faltan en los secretos de Supabase: ...»**: falta la ceremonia de ese
   secreto. Nada cambió.
 - **El despliegue falla en la CLI**: el registro dice qué dijo Supabase. Si es
-  un permiso del token, agregue solo ese permiso. La versión que ya corría sigue
-  corriendo.
+  un permiso del token, agregue solo ese permiso. Si dice que el token no sirve,
+  venció: renuévelo («Crear o renovar el token de Supabase»). La versión que
+  ya corría sigue corriendo.
 - **«La función respondió 303 (o 200) a un pedido sin el secreto del Worker»**:
   la versión desplegada no tiene la puerta. No conecte el Worker ni abra el
   registro; avise para corregirlo por solicitud de revisión.
@@ -292,7 +347,8 @@ Desplegar no abre nada al público: el registro sigue apagado
   Logs** (registros) dice qué variable revisar, sin mostrar su valor.
 - **«La función respondió 500 ... al entrar con contraseña»**: la función
   arranca, pero no llega a la base o a Supabase Auth. Lo más común, en este
-  orden: falta aplicar una migración de `main` (paso 0), la dirección de la base
+  orden: falta aplicar una migración de `main` (aunque el primer paso lo revisa,
+  pudo entrar otra después), la dirección de la base
   no sirve (corra otra vez «Contraseña de la entrada») o `verify-full` no
   reconoce el certificado (punto 3 de «Lo que se prepara una sola vez»). Los
   registros de la función dicen cuál. La versión nueva ya está desplegada: no
@@ -309,8 +365,11 @@ cambio en `main` por una solicitud de revisión. Nada se despliega a mano.
 
 ## Lo que no está confirmado
 
-- **El flujo no corrió nunca.** Lo prueban las pruebas de
-  `herramientas/desplegar/pruebas/`, con la CLI y la red de mentira.
+- **El arranque solo al unir y el paso que mira las migraciones no corrieron
+  nunca.** El flujo corrió dos veces a mano el 27-nov-2026 y desplegó la
+  función; lo nuevo lo prueban, por ahora, las pruebas de
+  `herramientas/desplegar/pruebas/` y del migrador, con la CLI y la red de
+  mentira. La primera unión que toque la función lo dice.
 - Que el token limitado con esos dos permisos alcance para
   `supabase functions deploy` y `supabase secrets list`. La documentación de
   Supabase (supabase.com/docs/guides/platform/personal-access-tokens, leída el

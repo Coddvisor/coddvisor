@@ -292,15 +292,35 @@ describe('el flujo que despliega', () => {
   const desplegar = texto.slice(texto.indexOf('\n  desplegar:'));
   const verificar = texto.slice(0, texto.indexOf('\n  desplegar:'));
 
-  test('corre solo a mano, desde main, y la parte que despliega solo en el entorno protegido', () => {
+  test('corre al unir a main lo que lleva la función, o a mano, y la parte que despliega solo en el entorno protegido', () => {
     const on = disparadores(texto);
-    assert.match(on, /workflow_dispatch:/);
-    assert.ok(!/push:|pull_request|schedule|workflow_run/.test(on), 'nunca solo');
+    // La lista exacta: cualquier otro disparador (pull_request_target,
+    // issue_comment, repository_dispatch...) correría con github.ref = main.
+    assert.deepEqual([...on.matchAll(/^ {2}([a-z_]+):/gm)].map((m) => m[1]), ['push', 'workflow_dispatch']);
+    assert.match(on, /push:\n\s+branches: \[main\]\n\s+paths:\n/, 'al unir, solo en main y solo por sus archivos');
+    for (const camino of ['sistema/aplicaciones/servicio/**', 'sistema/supabase/functions/**', 'sistema/nucleo/**', 'sistema/modulos/**', 'sistema/paquetes/**', 'sistema/contratos/**']) {
+      assert.ok(on.includes(`'${camino}'`), `despliega si cambia ${camino}`);
+    }
+    assert.match(on, /'!\*\*\/\*\.md'\n/, 'una guía sola no despliega');
     for (const parte of [verificar, desplegar]) assert.match(parte, /if: github\.ref == 'refs\/heads\/main'/);
     assert.match(desplegar, /needs: verificar/);
     assert.match(desplegar, /environment: base-real/);
     assert.match(verificar, /npm run verificar/);
     assert.ok(!verificar.includes('secrets.') && !verificar.includes('environment:'), 'el paso sin entorno no ve ningún secreto');
+  });
+
+  test('antes de tocar nada exige que la base real tenga las migraciones de main, y solo ese paso ve la conexión', () => {
+    const pasos = desplegar.split('\n      - ').slice(1);
+    const indice = (patron) => pasos.findIndex((p) => patron.test(p));
+    const alDia = indice(/migrar\.mjs --exigir-al-dia\n/);
+    assert.ok(alDia >= 0, 'revisa las migraciones, con la opción exacta');
+    const loUltimo = indice(/git ls-remote .*refs\/heads\/main[\s\S]*GITHUB_SHA/);
+    assert.ok(loUltimo >= 0 && loUltimo < alDia, 'antes de todo, que la corrida sea de lo último de main');
+    assert.ok(!pasos[loUltimo].includes('secrets.'), 'esa revisión no ve ningún secreto');
+    for (const despues of [/desplegar\.mjs revisar/, /desplegar\.mjs guardar/, /supabase functions deploy/]) assert.ok(indice(despues) > alDia, `${despues} va después`);
+    const conConexion = pasos.filter((p) => p.includes('secrets.CODDVISOR_MIGRAR_CONEXION'));
+    assert.equal(conConexion.length, 1, 'un solo paso ve la conexión que migra');
+    assert.match(conConexion[0], /--exigir-al-dia/);
   });
 
   test('va en la misma fila que los otros flujos de la base real', () => {
@@ -339,8 +359,9 @@ describe('el flujo que despliega', () => {
       assert.match(desplegar, new RegExp(`${nombre}: \\$\\{\\{ secrets\\.${nombre} \\}\\}`), nombre);
     }
     // Ningún otro secreto de GitHub: los que tienen ceremonia los guarda ella, nunca este flujo.
+    // La conexión que migra la ve solo el paso que mira si faltan migraciones (prueba de arriba).
     const secretos = [...texto.matchAll(/secrets\.([A-Z_]+)/g)].map((m) => m[1]);
-    assert.deepEqual([...new Set(secretos)].sort(), ['SUPABASE_ACCESS_TOKEN', ...SECRETOS_QUE_CARGA_EL_FLUJO].sort());
+    assert.deepEqual([...new Set(secretos)].sort(), ['SUPABASE_ACCESS_TOKEN', 'CODDVISOR_MIGRAR_CONEXION', ...SECRETOS_QUE_CARGA_EL_FLUJO].sort());
     for (const nombre of SECRETOS_QUE_DEBEN_ESTAR) assert.ok(!secretos.includes(nombre), nombre);
     // La comprobación final no lleva el token: llama como cualquiera desde afuera.
     const ultimo = desplegar.slice(desplegar.indexOf('Comprobar la puerta'));
