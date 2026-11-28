@@ -18,13 +18,13 @@ resuelve el diseño de la comunidad.
   un dato sensible. Lo que se ofrece en «Oportunidades». Los menores. Y lo que
   prometen los términos.
 - **Se cuidan con cuatro inventos** que además hacen la comunidad más útil. Son
-  dos puertas para cualquier problema, hechos y no culpables, el número nunca a
-  la vista, y reglas iguales para todos, con aviso y apelación.
+  un botón con tres caminos por dentro, hechos y no culpables, el número nunca
+  a la vista, y reglas iguales para todos, con aviso y apelación.
 - **Tres cosas son obligatorias antes de abrir y no son opciones**: copias de
   respaldo cada semana, inscribir el banco de datos y un protocolo para el
   material sexual de menores, que nunca se archiva.
-- **Siete decisiones de la fundadora** cambian los textos que van al abogado.
-  Están en [comunidad-normas.md](comunidad-normas.md), con su recomendación.
+- **La fundadora decidió siete cosas el 28-nov**, todas con la recomendación.
+  Están en [comunidad-normas.md](comunidad-normas.md).
 - **No existe en el Perú una norma que proteja al sitio por lo que escriben
   otros**, salvo en derechos de autor. Este diseño baja el riesgo; no lo borra.
 
@@ -34,19 +34,22 @@ Cada uno resuelve un riesgo legal y, al mismo tiempo, hace la comunidad más
 útil. Esa es la prueba de un buen diseño: si una protección solo estorba, la
 gente la esquiva.
 
-### 1. Dos puertas para cualquier problema
+### 1. Un botón, tres caminos por dentro
 
-En cada publicación, «¿Hay un problema?». Se abre sin cuenta, con la prueba de
-que no es un robot y un tope por publicación. Ofrece dos caminos.
+En cada publicación, «¿Hay un problema?». Pregunta «¿Qué pasa?» y ofrece cuatro
+respuestas en palabras de la persona; el sistema elige el camino (decisión N1).
+«Es spam o vende fuera de lugar» y «Falta el respeto o no es del negocio» van a
+la comunidad. Las otras dos se abren también sin cuenta, con la prueba de que no
+es un robot y un tope por publicación, y llevan a estos caminos:
 
-**«Es peligroso».** Para lo que no admite duda: los datos de alguien (DNI,
+**«Pone en peligro a alguien».** Para lo que no admite duda: los datos de alguien (DNI,
 dirección, teléfono, la foto de un documento), una amenaza, una extorsión o algo
 con un menor. También hacerse pasar por otro, llamar a la violencia o un insulto
 grave.
 Se oculta al momento, y el equipo lo confirma en horas (un ajuste). Si es
 material sexual de menores, sigue su protocolo (ver «Menores y delitos»).
 
-**«No es cierto o me perjudica».** Para quien es nombrado, o cree que un hecho
+**«Habla de mí o de mi negocio».** Para quien es nombrado, o cree que un hecho
 contado es falso. Coddvisor no decide quién tiene la razón:
 
 1. Quien reclama escribe su respuesta. Se fija justo debajo, con un aviso en la
@@ -61,7 +64,7 @@ contado es falso. Coddvisor no decide quién tiene la razón:
 Por qué así:
 
 - **La ley.** El riesgo de Coddvisor nace cuando se entera (ver «¿Responde
-  Coddvisor?»). Con estas puertas, cada vez que se entera actúa igual, pronto y
+  Coddvisor?»). Con estos caminos, cada vez que se entera actúa igual, pronto y
   con registro. Oculta lo evidente y, en lo discutible, pone la respuesta del
   afectado en el mismo lugar y saca la publicación de los buscadores. Es lo que piden la
   rectificación, que va gratis, pronto y con el mismo relieve, y la oposición en
@@ -74,9 +77,11 @@ Por qué así:
 - **Lo atractivo.** La empresa nombrada contesta donde la leen, y gana
   reputación si resuelve. Quien contó no queda expuesto a un juicio sin aviso.
   Los demás ven las dos versiones.
-- **Se rompe si** una empresa usa «No es cierto» para tapar toda opinión. Por
+- **Se rompe si** una empresa usa «Habla de mí» para tapar toda opinión. Por
   eso hay un tope por publicación, y lo que el autor sostuvo no se vuelve a
-  ocultar por el mismo reclamo.
+  ocultar por el mismo reclamo. También si la gente elige «Pone en peligro a
+  alguien» para todo: Coddvisor lo revisa en horas, y quien abusa pierde esa
+  respuesta.
 
 ### 2. Hechos, no culpables
 
@@ -173,8 +178,8 @@ Por qué así:
 
 ### Y además
 
-- **El equipo actúa si ve algo grave** (decisión N6, que cambia lo decidido el
-  27-nov). No revisar por su cuenta no es mirar a otro lado: lo que el equipo
+- **El equipo actúa si ve algo grave** (decisión N6 del 28-nov, que cambió lo
+  decidido el 27-nov). No revisar por su cuenta no es mirar a otro lado: lo que el equipo
   ve, lo atiende como un pedido de ayuda.
 - **El lazo de lo sin firma se bloquea, no se borra**, cuando la persona pide
   borrar sus datos (reglamento de datos, art. 82.3; decisión N7). Nadie lo lee, solo sale con
@@ -310,7 +315,7 @@ Tribunal Federal, Temas 987 y 533 (2025).
   aclarar hechos, hace falta un juez. En Brasil, desde 2025 la regla general es
   responder tras el aviso, pero en lo que toca al honor sigue haciendo falta la
   orden de un juez.
-- Se resuelve: las dos puertas del invento 1 siguen esa división. Lo
+- Se resuelve: los tres caminos del invento 1 siguen esa división. Lo
   manifiesto se oculta con un aviso; lo que pide aclarar hechos va a la vía de
   disputa y, para retirarse del todo, a un juez.
 - Certeza: texto oficial. En el Perú no hay una regla así: es un criterio, no
@@ -355,7 +360,7 @@ reglamento, arts. 11.1.1, 11.3 y 86.1.
   subidos por sus usuarios
   ([nota](https://elperuano.pe/noticia/284555-detectan-sitio-web-que-publica-datos-sin-anuencia)).
 - Se resuelve: el aviso de datos personales antes de publicar; ningún número
-  de documento se publica nunca; la vía rápida «Es peligroso» del invento 1,
+  de documento se publica nunca; la respuesta «Pone en peligro a alguien» del invento 1,
   abierta sin cuenta; y nombrar empresas, no personas (invento 2).
 - Certeza: texto oficial. La nota de 2025 es secundaria.
 
@@ -394,8 +399,7 @@ y 76.
   único al que puede demandar es Coddvisor.
 - Se resuelve: al pedir el borrado, ese lazo queda **bloqueado**. Nadie lo lee,
   solo sale con la orden de una autoridad, y se borra cuando vence el plazo
-  (un ajuste que fija el abogado). Si la fundadora lo elige (N7), los términos
-  lo dicen así.
+  (un ajuste que fija el abogado). Los términos lo dicen así (decisión N7).
 - Certeza: texto oficial. El plazo, sin confirmar.
 
 **Que no salga en los buscadores.** Reglamento, art. 86.5.
@@ -404,7 +408,7 @@ y 76.
   045-2015-JUS/DGPDP).
 - Duele: a quien nombran, lo que más le pesa es que aparezca cuando alguien
   busca su nombre.
-- Se resuelve: mientras dura un reclamo de la vía «No es cierto», la
+- Se resuelve: mientras dura un reclamo por «Habla de mí o de mi negocio», la
   publicación deja de salir en los buscadores, aunque siga a la vista en la
   comunidad.
 - Certeza: texto oficial.

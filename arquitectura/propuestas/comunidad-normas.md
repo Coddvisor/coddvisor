@@ -21,9 +21,9 @@ norma, está en [comunidad-riesgos-legales.md](comunidad-riesgos-legales.md).
 - **Nada de esto vale todavía.** Todo es borrador para el abogado. Si su
   revisión no llega cuando termine la etapa 4, la comunidad no abre: sigue en
   el entorno de pruebas.
-- **Siete decisiones de la fundadora** cambian el texto que va al abogado (ver
-  «Lo que decide la fundadora»). Ninguna está tomada: el texto lleva la opción
-  recomendada, y cada frase que depende de una decisión lo dice en sus notas.
+- **La fundadora decidió siete cosas el 28-nov** (ver «Lo que decidió la
+  fundadora»). El texto ya las lleva, y cada frase que sale de una decisión lo
+  dice en sus notas.
 - **El hallazgo que más pesa.** Contar un hecho ya puede ser difamación
   (Código Penal, art. 132), y en una comunidad abierta es la forma agravada,
   como en una red social (R.N. 1495-2019-Lima). El freno solo cubría la
@@ -36,12 +36,12 @@ La solicitud Coddvisor/coddvisor#90 unió la primera versión. Esta suma la
 revisión norma por norma y cambia:
 
 - las normas 3, 4, 5, 6, 7, 8 y 10;
-- casi todos los términos, sobre todo las dos puertas para cualquier problema,
+- casi todos los términos, sobre todo «¿Hay un problema?» con sus tres caminos,
   el bloqueo del lazo de lo sin firma, el permiso de autor, las copias
   semanales y los motivos de un cambio;
 - los textos de pantalla y las preguntas para el abogado, que ahora dicen lo
   que ya se encontró;
-- cuatro decisiones nuevas, de N4 a N7, y unas N1 y N2 más completas;
+- siete decisiones de la fundadora, del 28-nov, de N1 a N7;
 - las frases que propusieron Coddvisor/coddvisor#94 y Coddvisor/coddvisor#98
   para el contenido inicial: lo firmado «Equipo de Coddvisor» es de Coddvisor,
   no de terceros;
@@ -82,8 +82,8 @@ revisión de la comunidad. Este borrador parte de:
 - **Las notas para la revisión** van debajo de cada texto: de dónde sale cada
   punto, qué decisión lo cambia (N1 a N7) y qué pregunta del abogado lo toca (P1
   a P12).
-- **Lo que depende de una decisión va con la opción recomendada**, y su nota lo
-  dice. Si la fundadora elige otra, esa frase cambia.
+- **Lo que sale de una decisión de la fundadora** lo dice su nota, con el número
+  de la decisión (N1 a N7, del 28-nov).
 - **Lo incompleto está marcado.** Cada pregunta dice qué se encontró y qué
   falta. Lo que no se pudo confirmar está en la lista del final de
   [comunidad-riesgos-legales.md](comunidad-riesgos-legales.md). Nada se da por
@@ -161,8 +161,8 @@ revisión de la comunidad. Este borrador parte de:
 > usted vende, o por lo que le pagan o le regalan, dígalo al comienzo.
 >
 > **8. Si algo rompe estas normas, avise.**
-> Toque «¿Hay un problema?». Lo grave, como los datos de alguien, una amenaza o
-> algo con un menor, se oculta al momento. Lo demás lo revisan los guardianes,
+> Toque «¿Hay un problema?» y elija qué pasa. Si pone en peligro a alguien, se
+> oculta al momento. Lo demás lo revisan los guardianes,
 > que son miembros de nivel alto. Pesa más el aviso de quien tiene más nivel, y
 > quien avisa sin razón pierde peso. A quien rompe las normas se le dice el
 > motivo. Si sigue, pierde permisos por un tiempo, con reglas que valen para
@@ -194,14 +194,14 @@ revisión de la comunidad. Este borrador parte de:
 |---|---|---|
 | 1 | «Solo hay espacios de gestión», de la #85, y los espacios de [comunidad.md](comunidad.md) | |
 | 2 | «Me sirvió» en lugar de «me gusta» ([comunidad.md](comunidad.md), «Cómo se conversa») | |
-| 3 | El freno de acusaciones ([comunidad.md](comunidad.md); #85, «Nombrar empresas»). Los calificativos, las personas y lo sin firma son la decisión N2 | P1 |
-| 4 | «Oportunidades» (decisión del 27-nov). El catálogo y el reclutamiento son la decisión N5; la lista de productos y las ofertas de trabajo salen de la revisión, «Consumo, publicidad y Oportunidades» | P10 |
-| 5 | «Datos personales en el texto». «Me interesa» y los rangos son la decisión N4 | P6 |
+| 3 | El freno de acusaciones ([comunidad.md](comunidad.md); #85, «Nombrar empresas»). Los calificativos, las personas y lo sin firma salen de la decisión N2 | P1 |
+| 4 | «Oportunidades» (decisión del 27-nov). El catálogo y el reclutamiento salen de la decisión N5; la lista de productos y las ofertas de trabajo salen de la revisión, «Consumo, publicidad y Oportunidades» | P10 |
+| 5 | «Datos personales en el texto». «Me interesa» y los rangos salen de la decisión N4 | P6 |
 | 6 | «Menores» ([comunidad.md](comunidad.md)). Es un requisito para entrar, no un poder de cerrar (Código Civil, art. 1398; reglamento de datos, art. 23.1). La edad es el ajuste `edad_minima`, por país | P8 |
 | 7 | Nueva. Decir lo que uno gana evita la publicidad encubierta (D. Leg. 1044, art. 16) | P10 |
-| 8 | «Reportes» ([comunidad.md](comunidad.md)). Las dos puertas son la decisión N1. Las consecuencias graduales salen del Código Civil, art. 1398, y de la Ley 29571, art. 50 | P1, P11, P12 |
+| 8 | «Reportes» ([comunidad.md](comunidad.md)). «¿Hay un problema?» y sus cuatro razones salen de la decisión N1. Las consecuencias graduales salen del Código Civil, art. 1398, y de la Ley 29571, art. 50 | P1, P11, P12 |
 | 9 | «Cuentas nuevas» y «Niveles de confianza» ([comunidad.md](comunidad.md)) | |
-| 10 | «Coddvisor, solo a pedido» (decisión del 27-nov). «Si ve algo grave» es la decisión N6, y cambia lo decidido el 27-nov: si la fundadora elige B, se quita. El 105 es el teléfono de emergencia de la Policía del Perú: un dato del país | P1, P4 |
+| 10 | «Coddvisor, solo a pedido» (decisión del 27-nov). «Si ve algo grave» sale de la decisión N6, que cambió lo decidido el 27-nov. El 105 es el teléfono de emergencia de la Policía del Perú: un dato del país | P1, P4 |
 
 ## Parte 2. Términos de la comunidad
 
@@ -284,23 +284,26 @@ revisión de la comunidad. Este borrador parte de:
 >
 > **5. Si hay un problema con una publicación**
 >
-> En cada publicación está «¿Hay un problema?». Lo puede usar cualquiera,
-> también sin cuenta. Tiene dos caminos:
+> En cada publicación está «¿Hay un problema?». Le pregunta qué pasa, y cada
+> respuesta tiene su camino:
 >
-> - **«Es peligroso»**, para los datos de alguien, una amenaza, una extorsión o
->   algo con un menor. También para hacerse pasar por otro, llamar a la
->   violencia o un insulto grave. Se oculta al momento, y el equipo de Coddvisor lo revisa en
->   horas.
-> - **«No es cierto o me perjudica»**, para quien es nombrado o cree que un
->   hecho contado es falso. Coddvisor no decide quién tiene la razón. La
->   respuesta de quien reclama se muestra justo debajo, y la publicación deja de
->   salir en los buscadores. A quien publicó le pedimos que la sostenga, la
->   corrija o la retire. Si no contesta a tiempo, se oculta hasta que conteste.
->   Retirarla del todo lo decide su autor, o lo ordena un juez.
+> - **«Pone en peligro a alguien»**: los datos de una persona, una amenaza, una
+>   extorsión, algo con un menor o llamar a la violencia. Se oculta al momento,
+>   y el equipo de Coddvisor lo revisa en horas.
+> - **«Habla de mí o de mi negocio»**: no es cierto, le perjudica o se hace pasar
+>   por usted. Coddvisor no decide quién tiene la razón. Su respuesta se muestra
+>   justo debajo, y la publicación deja de salir en los buscadores. A quien
+>   publicó le pedimos que la sostenga, la corrija o la retire. Si no contesta a
+>   tiempo, se oculta hasta que conteste. Retirarla del todo lo decide su autor,
+>   o lo ordena un juez.
+> - **«Es spam o vende fuera de lugar»** y **«Falta el respeto o no es del
+>   negocio»**: lo revisa la comunidad, con sus guardianes.
 >
-> Para no estar de acuerdo con lo que los guardianes decidieron sobre lo suyo
-> está «Pedir ayuda a Coddvisor». Hay un tope de pedidos, para que no se vuelva
-> el camino de todo.
+> Las dos primeras se pueden usar sin cuenta. Hay un tope de avisos, para que no
+> se vuelvan el camino de todo.
+>
+> Si se decidió algo sobre lo suyo y no está de acuerdo, ahí mismo aparece
+> «Pedir ayuda a Coddvisor».
 >
 > Cuando el equipo entra, puede hacer lo mismo que un guardián: ocultar,
 > restaurar o mover. Si la ley lo pide, también retirar. Entra con su cuenta
@@ -455,13 +458,13 @@ Cada punto remite a la ficha de
 | 1 | La razón social, el RUC y el domicilio están pendientes, como en el aviso de privacidad (`titular` en `privacidad.astro`) | P11 |
 | 2 | Las cuentas de Coddvisor son las del sistema (decisión del 26-nov). Los 18 años son un requisito de la oferta: ficha «La edad para aceptar» | P8 |
 | 3 | Las preguntas de ejemplo, de la #94 y la #98. Los frenos se anuncian y dejan pedir una persona: ficha «El freno automático». Copias semanales: ficha «Registros, canales y copias». Libro de reclamaciones: su ficha | P5, P11 |
-| 4 | Decisiones del 27-nov. «Si alguien del equipo ve algo grave» es la decisión N6, que cambia lo decidido el 27-nov; si la fundadora elige B, se quita. Ficha «¿Responde Coddvisor?». El sello dice lo que comprueba: ficha «Alojar ofertas de otros» | P1, P10 |
-| 5 | Las dos puertas son la decisión N1 (invento 1) | P1, P4 |
+| 4 | Decisiones del 27-nov. «Si alguien del equipo ve algo grave» sale de la decisión N6, que cambió lo decidido el 27-nov. Ficha «¿Responde Coddvisor?». El sello dice lo que comprueba: ficha «Alojar ofertas de otros» | P1, P10 |
+| 5 | La decisión N1: una pregunta con cuatro razones y tres caminos por dentro (invento 1) | P1, P4 |
 | 6 | Fichas «Quién puede pedir el nombre del autor» y «Lo que hacen los vecinos» | P2, P3 |
-| 7 | «Publicar sin firma» ([comunidad-etapa-1.md](comunidad-etapa-1.md)). No nombrar a nadie: ficha «La rectificación». El bloqueo es la decisión N7: la #90 decía que se borra. «Juez o fiscal» precisa «una autoridad», lo aprobado; no agrega casos | P2 |
+| 7 | «Publicar sin firma» ([comunidad-etapa-1.md](comunidad-etapa-1.md)). No nombrar a nadie: ficha «La rectificación». El bloqueo sale de la decisión N7: la #90 decía que se borra. «Juez o fiscal» precisa «una autoridad», lo aprobado; no agrega casos | P2 |
 | 8 | Ficha «El permiso sobre lo publicado» y la de los derechos de autor (D. Leg. 1724). El permiso es una lista cerrada: no incluye usar lo publicado para entrenar inteligencia artificial | P9 |
 | 9 | «Mal consejo de impuestos o leyes» ([comunidad.md](comunidad.md)), y lo firmado por el equipo, de la #94 y la #98 | P1, P9, P10 |
-| 10 | `archivar_perfil` y `olvidar_perfil`, que en la etapa 1 vacía también la cuenta del perfil (Coddvisor/coddvisor#92). El bloqueo es la decisión N7 | P2, P5, P9 |
+| 10 | `archivar_perfil` y `olvidar_perfil`, que en la etapa 1 vacía también la cuenta del perfil (Coddvisor/coddvisor#92). El bloqueo sale de la decisión N7 | P2, P5, P9 |
 | 11 | «Lo que no se hace» ([comunidad.md](comunidad.md)), la decisión N3 y la ficha «Los correos de aviso y las promociones» | P11 |
 | 12 | Ficha «Lo que los términos no pueden decir»: en vez de «no podemos prometer», lo que se hace | P11 |
 | 13 | Motivo del cambio y salida sin costo (Ley 29571, arts. 47 y 51). `normas_version` en `comunidad.perfil` | P11 |
@@ -479,7 +482,7 @@ Cada punto remite a la ficha de
 | Al contar cuánto vende o cuánto debe | «Está contando la plata de su negocio. ¿La cambiamos por un rango, o la publica sin firma?» Casilla: «Entiendo que estoy contando cuánto vende mi negocio, y acepto que se publique.» |
 | El aviso de datos personales | «Esto parece un número de celular. Si lo publica, cualquiera lo podrá ver.» Con un documento: «Quitamos el número de documento. No se publica.» |
 | «Me interesa», a quien publicó | «A {nombre}, {descripción}, le interesa su oferta. ¿Le pasamos su WhatsApp?» Botones: «Sí, pasárselo» y «No» |
-| «¿Hay un problema?» | «Es peligroso: datos de alguien, una amenaza, una extorsión o algo con un menor.» y «No es cierto o me perjudica.» |
+| «¿Hay un problema?» | «¿Qué pasa?» y cuatro respuestas: «Pone en peligro a alguien», «Habla de mí o de mi negocio», «Es spam o vende fuera de lugar» y «Falta el respeto o no es del negocio». Sin cuenta, solo las dos primeras |
 | Al autor, si hay un reclamo | «Dicen que lo que contó no es exacto. Puede sostenerlo, corregirlo o retirarlo. Si no responde en {días} días, se oculta hasta que responda.» |
 | En la publicación con reclamo | «La empresa nombrada respondió» |
 | Lo que el autor retiró | «El autor retiró este texto» |
@@ -516,11 +519,13 @@ tiene (art. 13). En lo civil, el riesgo nace con el aviso (Código Civil, arts.
 17, 1969 y 1978). No hay una norma que proteja al sitio, salvo en derechos de
 autor (D. Leg. 1724).
 
-**Se propone.** Las dos puertas (N1) y hechos, no culpables (N2).
+**Se propone.** «¿Hay un problema?» con sus tres caminos (N1) y hechos, no
+culpables (N2), decididos el 28-nov.
 
 **Preguntas.**
 
-1. Con las dos puertas, ¿queda Coddvisor fuera de la ayuda dolosa (art. 25) y
+1. Con los tres caminos de «¿Hay un problema?», ¿queda Coddvisor fuera de la
+   ayuda dolosa (art. 25) y
    de la culpa civil (art. 1969)? ¿Qué plazo y qué registro muestran el
    cuidado debido?
 2. En la vía de disputa, si el autor sostiene lo que contó, la publicación
@@ -598,7 +603,9 @@ arts. IV y III.22). Debe atender la oposición y el borrado en 10 días hábiles
 (art. 69). En diciembre de 2025 la autoridad anunció acciones contra un sitio
 con datos de terceros subidos por sus usuarios.
 
-**Se propone (N1).** «¿Hay un problema?» abierto sin cuenta, con dos caminos.
+**Se propone (N1).** «¿Hay un problema?» abierto sin cuenta: quien no tiene
+cuenta ve las razones «Pone en peligro a alguien» y «Habla de mí o de mi
+negocio».
 
 **Preguntas.**
 
@@ -775,135 +782,79 @@ datos, art. 46.4).
 4. Quitarle permisos a alguien, ¿exige avisarle, decirle por qué y dejarle
    apelar? ¿Basta «Pedir ayuda a Coddvisor» como apelación?
 
-## Lo que decide la fundadora
+## Lo que decidió la fundadora (28 de noviembre de 2026)
 
-Siete decisiones cambian el texto que va al abogado. Ninguna está tomada
-todavía. Cada una va con la recomendada primero. **Si no responde, el borrador
-va al abogado con la opción recomendada de cada una.**
+Se le preguntó por el diálogo, con las opciones explicadas y una recomendación
+en cada pregunta. Eligió las siete recomendaciones. En N1 pidió analizar si los
+tres caminos eran lo mejor, y eligió la pantalla de una pregunta con cuatro
+razones.
 
-### N1. ¿Cómo se atiende un problema con una publicación?
-
-| Opción | Gana | Paga |
+| Pregunta | Decisión | Qué descartó |
 |---|---|---|
-| **A. Dos puertas, abiertas sin cuenta** (recomendada). «Es peligroso» oculta al momento; «No es cierto o me perjudica» pone la respuesta debajo, saca la publicación de los buscadores y le pide al autor que la sostenga o la retire | El afectado, que casi nunca es miembro, tiene una salida rápida. Coddvisor actúa igual cada vez que se entera, con registro: eso muestra el cuidado debido | Una puerta abierta se puede usar para molestar. Lleva la prueba de que no es un robot, un tope por publicación, y lo que el autor sostuvo no se oculta otra vez por el mismo reclamo. Hay más trabajo para el equipo en lo peligroso |
-| B. Un solo botón «Pedir ayuda», solo para miembros, como estaba | Menos que construir | Quien es nombrado y no tiene cuenta solo puede ir a un juez, y lo primero que sabe Coddvisor es la denuncia |
-| C. Todo por correo a equipo@coddvisor.com | Nada que construir | Queda fuera del registro, del plazo y de la cuenta del año |
+| **N1.** ¿Cómo se atiende un problema con una publicación? | **Un botón, «¿Hay un problema?», abierto también sin cuenta, con una pregunta («¿Qué pasa?») y cuatro razones en palabras de la persona.** El sistema lleva cada razón a uno de tres caminos: «Pone en peligro a alguien» se oculta al momento y lo ve Coddvisor; «Habla de mí o de mi negocio» pone la respuesta debajo y pide al autor sostenerla o retirarla; «Es spam o vende fuera de lugar» y «Falta el respeto o no es del negocio» van a la comunidad. Sin cuenta se ven solo las dos primeras. «Pedir ayuda a Coddvisor» aparece en lo suyo, cuando se decidió algo y no está de acuerdo | Tres botones con el nombre del camino (la persona tendría que saber cuál es el suyo, y elegiría el que oculta más rápido), un botón solo para miembros (quien es nombrado solo podría ir a un juez) y todo por correo (sin registro ni plazo) |
+| **N2.** ¿Qué se puede contar de otros? | **Hechos, no culpables**: se nombran empresas y negocios, nunca personas; se frenan los calificativos y los insultos; la experiencia con un proveedor tiene su formato y la casilla «tengo cómo mostrarlo»; sin firma no se nombra a nadie | Nombrar solo empresas con RUC 20 (dejaba sin nombre a las bodegas; queda como pregunta para el abogado, P1) y la regla del 27-nov, que solo frenaba la acusación de un delito |
+| **N3.** ¿Qué quiere decir «sin publicidad»? | **Nadie paga por aparecer**, y el sistema de Coddvisor aparece solo en el menú y el pie de la página. Si el equipo lo nombra en una conversación, lo dice | Ninguna mención al sistema (la comunidad dejaría de llevar a probarlo) y promoverlo adentro («sin publicidad» dejaría de ser verdad) |
+| **N4.** ¿Cómo se contactan en «Oportunidades», y qué pasa con la plata que se cuenta? | **«Me interesa»**: ningún número a la vista, y quien publicó decide si pasa su WhatsApp. Sin mensajes privados entre desconocidos. La plata, en un rango o sin firma, con una confirmación guardada como prueba | Que cada uno ponga su número (una lista para el extorsionador) y los mensajes privados (estafas, acoso y contacto con menores) |
+| **N5.** ¿Qué se frena en «Oportunidades»? | **La promesa y el reclutamiento**: se puede ofrecer lo que se vende, también por catálogo; no se recluta, no se cobra por entrar a un negocio y no se promete ganar por sumar personas. Cambia lo decidido el 27-nov | Frenar la palabra «multinivel» (sacaba a vendedoras legales, y quien recluta usa otra palabra) |
+| **N6.** ¿Qué hace el equipo si ve algo grave sin que nadie lo pida? | **Lo atiende como un pedido de ayuda, con su registro.** El equipo sigue sin patrullar: solo atiende lo que ya vio. Cambia lo decidido el 27-nov | No hacer nada sin un pedido (Coddvisor sabría y no actuaría, que es lo que la ley reprocha) |
+| **N7.** Al pedir el borrado, ¿qué pasa con lo que une a la persona con lo que publicó sin firma? | **Se bloquea hasta que venza el plazo legal, y después se borra solo.** Nadie lo lee; solo sale ante la orden de un juez | Borrarlo al momento, como decía la #90 (se perdía la única forma de llegar al autor, y el afectado solo podría ir contra Coddvisor) |
 
-**Por qué A.** La decisión del 27-nov dice que Coddvisor entra «cuando alguien
-se lo pide». A hace que ese «alguien» incluya a quien más lo necesita, y que
-cada vez que Coddvisor se entera haga lo mismo. Es la división que usan las
-cortes de Argentina y Brasil: lo manifiesto se oculta con un aviso; lo que pide
-aclarar hechos va a un juez. **Se rompe si** la vía de disputa se vuelve el
-camino para tapar opiniones incómodas: por eso el tope es por publicación y lo
-sostenido no se oculta dos veces.
+Cómo se cuida cada una, porque cada decisión se rompe en un caso:
 
-### N2. ¿Qué se puede contar de otros?
+- **N1** se rompe si la gente elige «Pone en peligro a alguien» para todo. Por eso
+  Coddvisor lo revisa en horas, quien lo usa sin razón pierde peso, y quien abusa
+  pierde esa razón. La vía de disputa tiene un tope por publicación, y lo que el
+  autor sostuvo no se oculta dos veces por el mismo reclamo.
+- **N2** se rompe si el negocio lleva el nombre de su dueño, como la bodega que se
+  llama como quien la atiende. Lo responde el abogado (P1, pregunta 3).
+- **N3** se rompe si alguien pone un «Pruebe Coddvisor» junto a una pregunta de
+  caja: desde ese día, la frase de los términos es falsa.
+- **N4** se rompe si alguien escribe su número dentro de una foto o con letras: el
+  aviso de datos personales mira también eso, y la norma 5 lo prohíbe.
+- **N5** se rompe si el reclutamiento se disfraza de venta («compre el kit y
+  empiece»): pagar por entrar a vender es justo lo que la norma 4 no deja.
+- **N6** se rompe si el equipo empieza a recorrer la comunidad para encontrar
+  cosas: eso ya es patrullar, y lo prohíbe la misma decisión.
+- **N7** se rompe si el bloqueo no tiene fin: su plazo es un ajuste que fija el
+  abogado (P2, pregunta 3), y al vencer se borra solo.
 
-| Opción | Gana | Paga |
-|---|---|---|
-| **A. Hechos, no culpables** (recomendada). Se nombran empresas y negocios, nunca personas; se frenan los calificativos y los insultos; la experiencia con un proveedor tiene su formato y la marca «tengo cómo mostrarlo»; sin firma no se nombra a nadie | Queda lo que más le sirve a un dueño, saber qué proveedor cumple, contado de la forma que la ley defiende | La norma es más larga, y contar una experiencia pide un paso más |
-| B. Como se aprobó: solo se frena la acusación de un delito | La norma más corta | La difamación alcanza los hechos y los calificativos, y en una comunidad abierta es la forma agravada (P1) |
+### Antes de abrir: lo mínimo
 
-**Por qué A.** El freno nació para nombrar empresas («Nombrar empresas», en la
-#85). A lo deja donde sirve y lo cierra donde la ley no defiende: el insulto,
-la persona nombrada y lo anónimo que señala a otro. **Se rompe si** el negocio
-lleva el nombre de su dueño, como la bodega que se llama como quien la atiende:
-nombrar el negocio es nombrar a la persona. Lo responde el abogado (P1,
-pregunta 3).
+La fundadora pidió simplificar (28-nov). Lo que pide la ley queda en una sola
+lista, y lo poco probable se cuida con una regla corta, no con un documento.
+Esta solicitud no contrata ni hace ninguna de estas cosas.
 
-### N3. ¿Qué quiere decir «sin publicidad»?
+**Lo que hace la fundadora:**
 
-| Opción | Gana | Paga |
-|---|---|---|
-| **A. Nadie paga por aparecer, y Coddvisor muestra su sistema solo en el menú y el pie de la página, como en el resto del sitio** (recomendada) | La promesa es verdad tal como está escrita, y el sitio sigue presentando el sistema | No hay promociones del sistema dentro de las conversaciones, aunque convengan |
-| B. Ni siquiera el sistema de Coddvisor | La promesa más limpia | La comunidad deja de llevar a probar el sistema, que es lo que se mira al final ([comunidad.md](comunidad.md), «Qué se mide») |
-| C. Coddvisor puede promover su sistema dentro de la comunidad | Más pedidos para probarlo | «Sin publicidad» deja de ser verdad, y la comunidad se vuelve un anuncio |
+1. **Contratar copias de respaldo semanales** para la comunidad (reglamento de
+   datos, art. 51.1). Antes era una recomendación en
+   [comunidad.md](comunidad.md); ahora es la ley.
+2. **Inscribir el banco de datos y comunicar el envío de datos a Brasil.** Es
+   gratis y en línea (arts. 42.1 y 21.2). El documento de seguridad que pide el
+   art. 47 se escribe corto, con el abogado, en ese momento.
+3. **Tener el libro de reclamaciones virtual** del sitio (Ley 29571, arts. 150
+   y 151). Sirve al sitio y a la comunidad, y va en su propia solicitud.
 
-**Por qué A.** «Lo que no existe, no lo anunciamos» vale también al revés: lo
-que se promete tiene que ser verdad el día que se lee. Y cuando el equipo nombre
-su sistema en una conversación, lo dice, como pide la norma 7. **Se rompe si**
-alguien pone un «Pruebe Coddvisor» junto a una pregunta de caja: desde ese día,
-la frase de los términos es falsa.
+Y al mandar esto al abogado: elegirlo (lo natural es el mismo que revise
+`/privacidad/`), nombrar a quien recibe los avisos de derechos de autor (D. Leg.
+1724) y completar la razón social, el RUC y el domicilio de los términos.
 
-### N4. ¿Cómo se contactan en «Oportunidades», y qué pasa con la plata que se cuenta?
+**Tres reglas para el equipo**, en vez de protocolos:
 
-| Opción | Gana | Paga |
-|---|---|---|
-| **A. El número nunca a la vista** (recomendada). «Me interesa», y quien publicó decide si pasa su WhatsApp; no hay mensajes privados entre desconocidos; la plata, en un rango o sin firma, con una confirmación propia | Nadie arma una lista de números y ventas para extorsionar. Es un toque y termina en WhatsApp. El consentimiento para el dato sensible queda probado | Un paso más para contactar, y una confirmación cuando se cuenta plata |
-| B. Cada uno pone su número en la oferta | Lo más rápido | Números y ventas a la vista de los buscadores, en un país donde casi todos los bodegueros han sufrido extorsión. Rompe la norma 5 |
-| C. Mensajes privados dentro de la comunidad | Todo queda adentro | Hay que cuidar los chats: estafas, acoso y contacto con menores (Ley 30096, art. 5) |
+- **Menores.** Si aparece material sexual de menores, se oculta, se denuncia a
+  la Policía y se borra. Nunca se archiva ni se hace una captura (Código Penal,
+  art. 129-M).
+- **Autoridades.** Se dice quién escribió algo, o se retira algo, solo ante una
+  orden escrita de un juez o de un fiscal. Se le avisa a la persona, salvo que
+  la orden lo prohíba, y se cuenta en el informe del año.
+- **Filtraciones.** Si se filtran datos personales, se avisa a la autoridad en
+  48 horas, y a los afectados si les toca (reglamento de datos, art. 34).
 
-**Por qué A.** Cuida a la persona, que es lo primero, y además cumple la ley de
-datos sin pedirle nada raro. **Se rompe si** alguien escribe su número dentro
-de una foto o con letras: el aviso de datos personales mira también eso, y la
-norma 5 lo prohíbe.
+Los guardianes, al recibir su nivel, aceptan tres líneas: no sacar nada de la
+comunidad, aplicar solo las normas publicadas y, ante algo con un menor, no
+publicar y pedir ayuda.
 
-### N5. ¿Qué se frena en «Oportunidades»: la palabra «multinivel» o la promesa?
-
-| Opción | Gana | Paga |
-|---|---|---|
-| **A. La promesa y el reclutamiento** (recomendada). Se puede ofrecer lo que se vende, también por catálogo; no se recluta gente, no se cobra por entrar a un negocio y no se promete ganar por sumar personas | No deja fuera a la dueña que vende por catálogo, que es legal y común. Frena lo que la ley castiga y lo que ensucia la comunidad | El freno tiene que aprender frases nuevas, y algunos casos van a los guardianes |
-| B. Como se aprobó el 27-nov: no se acepta el multinivel | La regla más simple | Saca a vendedoras que trabajan dentro de la ley, y quien recluta usa otra palabra |
-
-**Por qué A.** Ninguna norma peruana prohíbe el multinivel; lo que se castiga
-es captar dinero del público sin autorización y estafar (P10). Lo que delata a
-una pirámide es cobrar por entrar y pagar por sumar gente, no su nombre. **Se
-rompe si** el reclutamiento se disfraza de venta («compre el kit y empiece»):
-pagar por entrar a vender es justo lo que la norma 4 no deja.
-
-### N6. ¿Qué hace el equipo si ve algo grave sin que nadie lo pida?
-
-Cambia lo que decidió la fundadora el 27-nov: «Coddvisor entra solo a pedido»,
-cuando alguien toca «Pedir ayuda a Coddvisor» o lo ordena una autoridad.
-
-| Opción | Gana | Paga |
-|---|---|---|
-| **A. Lo atiende como un pedido de ayuda, con su registro** (recomendada) | Coddvisor no se queda quieto después de enterarse, que es cuando nace su riesgo (P1). Una amenaza o material sexual de menores no queda a la vista ni un minuto más | Se aparta un poco de «solo a pedido»: el que pide puede ser alguien del equipo. Hay que cuidar que no se vuelva vigilancia |
-| B. Como se decidió el 27-nov: solo a pedido o por orden | La regla más pura | Si alguien del equipo ve una amenaza o material de menores y nadie lo pidió, Coddvisor sabe y no hace nada. Es justo lo que la ley mira (Código Civil, art. 1969; Código Penal, art. 129-M) |
-
-**Por qué A.** «Solo a pedido» protege a la comunidad de un equipo que patrulla,
-y eso se mantiene: el equipo no sale a buscar. Pero lo que ya vio no lo puede
-dejar de ver. **Se rompe si** el equipo empieza a recorrer la comunidad para
-encontrar cosas: eso ya es patrullar, y lo prohíbe la misma decisión. Si la
-fundadora elige B, se quitan las frases del punto 4 y del «En corto» de los
-términos, y la de la norma 10.
-
-### N7. Al pedir el borrado, ¿qué pasa con lo que une a la persona con lo que publicó sin firma?
-
-La #90 decía que se borra. El reglamento de datos dice que pedir el borrado
-bloquea el dato, y que el bloqueo puede durar mientras prescriben las
-responsabilidades (arts. 82.3 y III.2).
-
-| Opción | Gana | Paga |
-|---|---|---|
-| **A. Se bloquea hasta que venza el plazo legal, y después se borra solo** (recomendada) | Si alguien fue difamado por algo sin firma, un juez todavía puede saber quién fue, y Coddvisor no queda como el único demandado | Quien pide borrar sus datos espera que se borren al momento. Los términos se lo tienen que decir con claridad |
-| B. Se borra al momento, como decía la #90 | Lo más simple de explicar | Se destruye la única forma de encontrar al autor. Si ya había un reclamo, puede verse como borrar pruebas, y el afectado solo puede ir contra Coddvisor |
-
-**Por qué A.** Nadie lee el lazo bloqueado, ni el equipo: solo sale ante la
-orden de un juez. La persona pierde lo mismo que con B, que su nombre quede a la
-vista de alguien, y la víctima no pierde su camino a la justicia. **Se rompe
-si** el bloqueo no tiene fin: por eso su plazo es un ajuste que fija el abogado
-(P2, pregunta 3), y al vencer se borra solo.
-
-### Lo que hay que hacer antes de abrir, y no es opcional
-
-Salieron de la revisión. No son decisiones: son obligaciones, y esta solicitud
-no contrata ni hace ninguna.
-
-- **Contratar copias de respaldo semanales** para la comunidad (reglamento de
-  datos, art. 51.1). Antes era una recomendación en
-  [comunidad.md](comunidad.md); ahora es la ley.
-- **Inscribir el banco de datos y comunicar el envío de datos a Brasil**
-  (arts. 42.1 y 21.2).
-- **Tener el protocolo de material sexual de menores** antes de abrir (Código
-  Penal, art. 129-M).
-- **Elegir al abogado** y mandarle este documento con
-  [comunidad-riesgos-legales.md](comunidad-riesgos-legales.md). Lo natural es el
-  mismo que revise `/privacidad/`, porque P4, P5, P6 y P11 tocan también el
-  aviso de privacidad.
-- **Nombrar un representante** para los avisos de derechos de autor (D. Leg.
-  1724) y **tener el libro de reclamaciones virtual** del sitio.
-- **Completar la razón social, el RUC y el domicilio** de los términos.
+Queda para después la evaluación de impacto, que es voluntaria.
 
 ### Lo que no es decisión de hoy
 
@@ -917,7 +868,8 @@ Los textos prometen cosas que todavía no tienen diseño. Si la etapa 4 no las
 construye, el texto se corrige antes de publicarse, porque lo que no existe no
 se anuncia.
 
-1. **Las dos puertas** de «¿Hay un problema?», sin cuenta (N1).
+1. **«¿Hay un problema?»** con su pregunta, sus cuatro razones y sus tres
+   caminos, abierto también sin cuenta (N1).
 2. **La vía de disputa**: la respuesta fijada, la publicación fuera de los
    buscadores, el aviso al autor y su plazo.
 3. **El formato de las experiencias**, la marca «tengo cómo mostrarlo» y el

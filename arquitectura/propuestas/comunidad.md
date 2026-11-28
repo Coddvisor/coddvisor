@@ -41,6 +41,23 @@ de la otra:
 | **Se confirma el perfil** | Nombre de pila y negocio descrito, que se achica solo. El RUC y el nombre del negocio, solo si ella lo pide |
 | **Se suman de la otra propuesta** | Los niveles de confianza, el freno de acusaciones y lo que se aprendió al probar un modelo completo ([comunidad-etapa-1.md](comunidad-etapa-1.md)) |
 
+## Lo que decidió la fundadora el 28 de noviembre de 2026
+
+Después de la revisión legal norma por norma
+([comunidad-riesgos-legales.md](comunidad-riesgos-legales.md)), eligió siete
+cosas que cambian partes de esta página. El detalle está en
+[comunidad-normas.md](comunidad-normas.md), «Lo que decidió la fundadora».
+
+| Decisión | Qué cambia aquí |
+|---|---|
+| **N1.** Un botón, «¿Hay un problema?», con una pregunta y cuatro respuestas; tres caminos por dentro; abierto también sin cuenta | «Coddvisor, solo a pedido»: también pide quien es nombrado sin tener cuenta. «Pedir ayuda a Coddvisor» queda para no estar de acuerdo con lo decidido sobre lo suyo |
+| **N2.** Hechos, no culpables | «Difamación»: se nombran empresas, nunca personas; se frenan los calificativos, no solo las acusaciones; sin firma no se nombra a nadie |
+| **N3.** «Sin publicidad»: nadie paga por aparecer | El sistema de Coddvisor aparece solo en el menú y el pie de la página |
+| **N4.** «Me interesa» | En «Oportunidades» no se publica ningún número, y no hay mensajes privados entre desconocidos |
+| **N5.** Se frena la promesa, no la palabra | «Venta disfrazada»: se puede ofrecer por catálogo; no se recluta, no se cobra por entrar y no se promete ganar por sumar personas |
+| **N6.** El equipo atiende lo grave que ve | «Coddvisor, solo a pedido»: si alguien del equipo ve algo grave, lo atiende como un pedido de ayuda, sin salir a buscar |
+| **N7.** El lazo de lo sin firma se bloquea | «Nada se borra»: al pedir el borrado, ese lazo se bloquea hasta que vence el plazo legal, y después se borra solo |
+
 ## En corto
 
 - **La comunidad es dinámica, pero premia lo que sirve.** Los experimentos
@@ -256,7 +273,7 @@ permisos que se ganan:
   cuando los guardianes los elige la propia comunidad.
 - **Coddvisor, solo a pedido**: el equipo no patrulla. Entra en dos casos:
   cuando alguien se lo pide con **«Pedir ayuda a Coddvisor»** y cuando lo ordena
-  una autoridad.
+  una autoridad. (Cambió el 28-nov: ver «Lo que decidió la fundadora el 28 de noviembre».)
   - Pueden pedir ayuda quien no está de acuerdo con lo que los guardianes
     decidieron sobre lo suyo (una apelación) y cualquier miembro ante algo
     grave que no puede esperar a la comunidad: una amenaza, una extorsión,
@@ -271,7 +288,7 @@ permisos que se ganan:
 - **Mal consejo de impuestos o leyes**: lo que no responde un profesional
   verificado lleva «Respuesta de otro dueño, no revisada. Revísela con su
   contador».
-- **Venta disfrazada**: un espacio propio, **«Oportunidades»**, con el
+- **Venta disfrazada** (Cambió el 28-nov: ver «Lo que decidió la fundadora el 28 de noviembre».) Un espacio propio, **«Oportunidades»**, con el
   subtítulo «Ofrezco y busco: productos, servicios, proveedores y trabajo». Fuera
   de él, se archiva. Publicar ahí pide nivel y tiene un tope por semana. No se
   aceptan «ingresos extra», multinivel ni negocios donde se gana por sumar
@@ -282,7 +299,7 @@ permisos que se ganan:
   Su borrador para el abogado, con los términos de la comunidad, está en
   [comunidad-normas.md](comunidad-normas.md), y la revisión norma por norma, en
   [comunidad-riesgos-legales.md](comunidad-riesgos-legales.md).
-- **Difamación**: en el Perú no se encontró una norma que proteja al sitio por
+- **Difamación** (Cambió el 28-nov: ver «Lo que decidió la fundadora el 28 de noviembre».) En el Perú no se encontró una norma que proteja al sitio por
   lo que escriben otros. Lo revisa un abogado antes de abrir. Mientras, un
   freno: una acusación de delito con nombre («son unos estafadores») se detiene
   antes de publicar, y el sistema ofrece contarlo sin acusar, quitar el nombre

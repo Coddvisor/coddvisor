@@ -282,7 +282,11 @@ nacen en la etapa 2, con las publicaciones.
   ayuda le mostraría al equipo justo lo que «Publicar sin firma» esconde.
 - **La pantalla dice la verdad**: «Su nombre no se mostrará. Coddvisor sabe que
   usted lo escribió, y solo lo diría si una autoridad lo pide por ley». El
-  texto exacto lo revisa el abogado.
+  texto exacto lo revisa el abogado. (28-nov: el borrador para el abogado lo
+  precisa como «ante la orden escrita de un juez o de un fiscal», y sin firma no
+  se nombra a nadie. Al pedir el borrado, el lazo con la cuenta se bloquea hasta
+  que vence el plazo legal, en vez de borrarse al momento: decisión N7 de
+  [comunidad-normas.md](comunidad-normas.md).)
 
 ## Las preguntas de las guías se mudan a la comunidad
 
