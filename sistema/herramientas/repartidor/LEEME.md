@@ -263,7 +263,10 @@ vale antes de abrir el registro.
   el flujo arranca solo con «conservar» y espera su aprobación. El Worker guarda
   su secreto entre despliegues. Si el mismo cambio toca también la función,
   apruebe primero «Desplegar el servicio»: las pantallas nuevas pueden llamar a
-  algo que la función vieja todavía no tiene.
+  algo que la función vieja todavía no tiene. Si mientras espera se une a `main`
+  otro cambio del Worker o de las pantallas, esa corrida se niega sin publicar y
+  la del cambio nuevo publica lo último; si el cambio nuevo es de otra cosa,
+  sigue (`herramientas/desplegar/LEEME.md`, «En cada despliegue»).
 - **Cambiar el secreto** (por ejemplo, si cree que se filtró): el flujo a mano
   con «nuevo» (usa el token de Supabase del paso 4). Mientras corre, `/api` puede
   responder 403 unos segundos, entre que Supabase guarda el nuevo y el Worker

@@ -24,9 +24,17 @@ la misma fila que las migraciones y la llave del portero: una corrida a la vez.
 1. **Verificar**, sin secretos: `npm run verificar` y que el candado de Deno
    (`deno.lock`, ver abajo) exista y coincida.
 2. **Desplegar**, en el entorno protegido `base-real`, después de su aprobación:
-   1. Mira que la base real ya tenga todas las migraciones de `main`, sin tocar
-      nada. Si una llegó junto con este cambio y todavía espera su aprobación,
-      termina sin desplegar y dice qué hacer (ver «En cada despliegue», abajo).
+   1. Antes de tocar nada, mira dos cosas. Primero, que mientras esperaba no
+      haya llegado a `main` otro cambio de lo que publica este flujo (las mismas
+      rutas que lo arrancan): si llegó, termina sin desplegar, porque ese cambio
+      trae su propia corrida; si `main` avanzó solo en otras cosas (una guía,
+      las migraciones, las pantallas o el repartidor), sigue, porque publica lo
+      mismo que hay en `main`. Ojo: cualquier cambio de código en el núcleo, los
+      contratos, los módulos o los paquetes cuenta, aunque la función no lo use.
+      Segundo, que la base real ya tenga todas las migraciones que trae esta
+      versión, sin tocarla: si una llegó junto con este cambio y todavía espera
+      su aprobación, termina sin desplegar y dice qué hacer (ver «En cada
+      despliegue», abajo).
    2. Revisa que estén todas las variables del entorno, y la llave secreta de
       Turnstile, y que sirvan. Si falta una, termina sin tocar nada y dice cuál.
    3. Mira en Supabase que ya estén los secretos que guardan las ceremonias. Si
@@ -249,9 +257,15 @@ necesitarlas (los cupos compartidos, por ejemplo, necesitan
 
 Si igual aprueba esta antes, no pasa nada malo: su primer paso lo nota, termina
 sin desplegar y lo dice («A la base real le faltan N migraciones de main»).
-Siga entonces como en el segundo caso. Para volver a desplegar use siempre **Run
-workflow**, nunca **Re-run** en una corrida vieja: si `main` avanzó, esa corrida
-se niega («Esta corrida es de una versión anterior de main»).
+Siga entonces como en el segundo caso.
+
+**Si mientras una corrida espera se une otro cambio a `main`**, la corrida sigue
+sirviendo, salvo que ese cambio toque lo que ella publica: entonces se niega
+sin desplegar («Después de esta corrida llegó a main otro cambio de lo que
+publica...»), y apruebe la corrida del cambio nuevo, que ya está en la fila.
+(Cambio del 28-nov-2026, aprobado por el fundador: antes se negaba con
+cualquier cambio, aunque fuera una guía.) Para volver a desplegar, lo más simple
+es **Run workflow**, rama `main`.
 
 Desplegar no abre nada al público: el registro sigue apagado
 (`sistema/supabase/LEEME.md`, paso 6), y nadie llega a la función sin el Worker.
@@ -327,9 +341,21 @@ el acto) y después cree otro con estos pasos.
   **Actions → Migraciones a la base real → Run workflow**, rama `main`). Cuando
   termine, **Actions → Desplegar el servicio → Run workflow**, rama `main`.
   Nada se desplegó.
-- **«Esta corrida es de una versión anterior de main»**: después de esta
-  corrida se unió otro cambio. Si ese cambio también toca la función, su propia
-  corrida lo despliega; si no, **Run workflow**, rama `main`. Nada se desplegó.
+- **«Después de esta corrida llegó a main otro cambio de lo que publica...»**:
+  el aviso nombra los archivos. Apruebe la corrida de ese cambio, que ya está en
+  la fila; si no la ve, **Run workflow**, rama `main`. Nada se desplegó.
+- **«No se pudo leer main en GitHub...»** (en este flujo o en el del
+  repartidor): la corrida no alcanzó a GitHub, casi siempre por un rato. Nada se
+  publicó. Vuelva a correrla en unos minutos (**Re-run**, que ya no publica una
+  versión vieja: si llegó un cambio de lo que publica, se niega) o **Run
+  workflow**, rama `main`.
+- **«No se entiende esta línea de «paths:»...»**: alguien escribió una ruta del
+  flujo de otra forma. Cada ruta va sola en su línea y entre comillas simples;
+  se corrige por solicitud de revisión. Nada se publicó.
+- **«La base tiene aplicada ..., que no está en el repositorio»**: si esa
+  migración está en `main`, llegó después de esta corrida y ya se aplicó:
+  despliegue lo último con **Run workflow**, rama `main`. Si no está en `main`,
+  la base se tocó por otro camino: no despliegue y avise. Nada se desplegó.
 - **«Falta deno.lock»**: falta el paso 2 de «Lo que se prepara una sola vez».
 - **«Faltan en los secretos de Supabase: ...»**: falta la ceremonia de ese
   secreto. Nada cambió.

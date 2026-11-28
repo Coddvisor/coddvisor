@@ -314,9 +314,9 @@ describe('el flujo que despliega', () => {
     const indice = (patron) => pasos.findIndex((p) => patron.test(p));
     const alDia = indice(/migrar\.mjs --exigir-al-dia\n/);
     assert.ok(alDia >= 0, 'revisa las migraciones, con la opción exacta');
-    const loUltimo = indice(/git ls-remote .*refs\/heads\/main[\s\S]*GITHUB_SHA/);
-    assert.ok(loUltimo >= 0 && loUltimo < alDia, 'antes de todo, que la corrida sea de lo último de main');
-    assert.ok(!pasos[loUltimo].includes('secrets.'), 'esa revisión no ve ningún secreto');
+    const vigente = indice(/run: node herramientas\/desplegar\/sigue-vigente\.mjs desplegar-servicio\.yml\n/);
+    assert.ok(vigente >= 0 && vigente < alDia, 'antes de todo, que nada de lo que publica haya cambiado en main después de esta corrida');
+    assert.ok(!pasos[vigente].includes('secrets.') && !pasos[vigente].includes('env:'), 'esa revisión no ve ningún secreto');
     for (const despues of [/desplegar\.mjs revisar/, /desplegar\.mjs guardar/, /supabase functions deploy/]) assert.ok(indice(despues) > alDia, `${despues} va después`);
     const conConexion = pasos.filter((p) => p.includes('secrets.CODDVISOR_MIGRAR_CONEXION'));
     assert.equal(conConexion.length, 1, 'un solo paso ve la conexión que migra');

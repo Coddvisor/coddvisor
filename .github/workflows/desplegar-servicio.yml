@@ -13,9 +13,11 @@
 # Dos pasos:
 #   1. «verificar», sin secretos: npm run verificar, y que el candado de Deno
 #      (deno.lock) exista y coincida con deno.json.
-#   2. «desplegar», en el entorno «base-real»: primero mira que la base real ya
-#      tenga todas las migraciones de main (si llegaron junto con este cambio y
-#      todavía no se aprobaron, se detiene sin desplegar y dice qué hacer); revisa
+#   2. «desplegar», en el entorno «base-real»: primero mira que mientras esperaba
+#      no haya llegado a main otro cambio de lo que publica (si llegó, se niega:
+#      ese cambio trae su propia corrida), y que la base real ya tenga todas las
+#      migraciones de main (si llegaron junto con este cambio y todavía no se
+#      aprobaron, se detiene sin desplegar y dice qué hacer); revisa
 #      las variables, mira que los secretos de sus ceremonias ya estén en
 #      Supabase, guarda las variables, despliega y comprueba que la función niega
 #      lo que no viene del Worker, que corre en la región de la base y que,
@@ -118,17 +120,13 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: sistema/.nvmrc
-      # Antes de tocar nada: esta corrida tiene que ser de lo último de main. Si
-      # main avanzó mientras esperaba (o si alguien la vuelve a correr después),
-      # publicaría una versión vieja encima de una nueva. El repositorio es
-      # público: se lee sin credenciales.
-      - name: Esta corrida es de lo último de main
-        run: |
-          ultimo="$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | cut -f1)"
-          if [ "$ultimo" != "$GITHUB_SHA" ]; then
-            echo "::error::Esta corrida es de una versión anterior de main ($GITHUB_SHA); main ya va en $ultimo. No se desplegó nada. Para publicar lo último: Actions → Desplegar el servicio → Run workflow, rama main."
-            exit 1
-          fi
+      # Antes de tocar nada: si mientras esperaba (o al volver a correrla) llegó a
+      # main otro cambio de lo que publica este flujo (las rutas de «push»), se
+      # niega: pondría una versión vieja encima de la nueva, y ese cambio trae su
+      # propia corrida. Si main avanzó solo en otras cosas, sigue. Lee main sin
+      # credenciales: el repositorio es público.
+      - name: Nada de lo que publica cambió en main después de esta corrida
+        run: node herramientas/desplegar/sigue-vigente.mjs desplegar-servicio.yml
       # La versión nueva puede necesitar una migración que llegó a main con ella
       # y todavía espera su aprobación. Solo lee la base.
       - name: La base real tiene todas las migraciones de main

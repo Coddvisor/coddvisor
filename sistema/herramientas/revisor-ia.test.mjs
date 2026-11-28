@@ -10,6 +10,11 @@ import { describe, test } from 'node:test';
 import { armarMensajes, consultarModelo, extraerPreguntas, formatearInforme, leerConfiguracion, leerDiff, parsearRespuesta, recortarDiff } from './revisor-ia.mjs';
 
 const config = { ...leerConfiguracion(), reintentos: 1, segundos_espera: 5 };
+
+// El git de los repositorios de juguete, sin ninguna variable GIT_ heredada: si
+// la prueba corre desde un gancho de git (GIT_DIR, GIT_INDEX_FILE...), sus
+// órdenes caerían sobre el repositorio de verdad.
+const SIN_GIT_HEREDADO = Object.fromEntries(Object.entries(process.env).filter(([nombre]) => !nombre.startsWith('GIT_')));
 const preguntas = [
   { id: 'P01', grupo: 'Datos', pregunta: '¿Se puede repetir sin duplicar?' },
   { id: 'P02', grupo: 'Datos', pregunta: '¿Todo va en una transacción?' },
@@ -40,7 +45,7 @@ describe('qué parte del cambio mira', () => {
   test('ve el cambio de todo el repositorio, no solo sistema/, y deja fuera lo que pide la configuración', () => {
     const repo = mkdtempSync(path.join(tmpdir(), 'revisor-ia-'));
     try {
-      const git = (...args) => execFileSync('git', ['-c', 'commit.gpgsign=false', ...args], { cwd: repo, encoding: 'utf8' });
+      const git = (...args) => execFileSync('git', ['-c', 'commit.gpgsign=false', ...args], { cwd: repo, encoding: 'utf8', env: SIN_GIT_HEREDADO });
       const escribir = (ruta, texto) => writeFileSync(path.join(repo, ruta), texto);
       git('init', '-q', '-b', 'main');
       git('config', 'user.name', 'Prueba');
@@ -75,7 +80,7 @@ describe('contra qué main compara', () => {
   test('con el main local atrasado, compara contra origin/main y no lee el trabajo ajeno', () => {
     const raiz = mkdtempSync(path.join(tmpdir(), 'revisor-ia-origen-'));
     try {
-      const git = (cwd, ...args) => execFileSync('git', ['-c', 'commit.gpgsign=false', '-c', 'user.name=Prueba', '-c', 'user.email=prueba@ejemplo.invalid', ...args], { cwd, encoding: 'utf8' });
+      const git = (cwd, ...args) => execFileSync('git', ['-c', 'commit.gpgsign=false', '-c', 'user.name=Prueba', '-c', 'user.email=prueba@ejemplo.invalid', ...args], { cwd, encoding: 'utf8', env: SIN_GIT_HEREDADO });
       const origen = path.join(raiz, 'origen.git');
       const aqui = path.join(raiz, 'aqui');
       const otra = path.join(raiz, 'otra');
