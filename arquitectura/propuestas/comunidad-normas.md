@@ -7,28 +7,44 @@ pantallas hasta que vuelva revisado. No es código, migración ni contratación.
 Sigue a [comunidad.md](comunidad.md), que dice qué es la comunidad, y a
 [comunidad-etapa-1.md](comunidad-etapa-1.md), que dice cómo se construye. La
 comunidad abre al público al terminar la etapa 4, y estas normas y estos
-términos son parte de esa etapa.
+términos son parte de esa etapa. **Por qué** cada texto es como es, norma por
+norma, está en [comunidad-riesgos-legales.md](comunidad-riesgos-legales.md).
 
 ## En corto
 
 - **Tres partes.** Las normas de convivencia, que la persona acepta al entrar
   y ve siempre. Los términos de la comunidad, que dicen qué hace Coddvisor y
-  qué no. Y doce preguntas para el abogado, cada una con su contexto.
-- **Por qué ahora.** En el Perú la difamación es delito, y no se encontró una
-  norma que proteja al sitio por lo que escriben otros. La revisión tarda
-  semanas, así que se escribe mientras se construyen las etapas 1 a 4.
+  qué no. Y doce preguntas para el abogado, cada una con lo que ya se encontró.
+- **Por qué ahora.** En el Perú la difamación es delito, y no hay una norma que
+  proteja al sitio por lo que escriben otros. La revisión tarda semanas, así
+  que se escribe mientras se construyen las etapas 1 a 4.
 - **Nada de esto vale todavía.** Todo es borrador para el abogado. Si su
   revisión no llega cuando termine la etapa 4, la comunidad no abre: sigue en
   el entorno de pruebas.
-- **Tres decisiones de la fundadora** cambian el texto que va al abogado (ver
-  «Lo que decide la fundadora»). Son quién puede pedir ayuda sin tener
-  cuenta, a quién se puede nombrar al contar un hecho y qué quiere decir «sin
-  publicidad».
-- **El hallazgo que más pesa**: el Código Penal castiga como difamación
-  atribuir a alguien «un hecho, una cualidad o una conducta» que perjudique su
-  honor, no solo un delito. El freno de acusaciones cubre la acusación de un
-  delito, pero contar un hecho con nombre también puede ser difamación. Es la
-  primera pregunta para el abogado (P1).
+- **Cinco decisiones de la fundadora** cambian el texto que va al abogado (ver
+  «Lo que decide la fundadora»).
+- **El hallazgo que más pesa.** Contar un hecho ya puede ser difamación
+  (Código Penal, art. 132), y en una comunidad abierta es la forma agravada,
+  como en una red social (R.N. 1495-2019-Lima). El freno solo cubría la
+  acusación de un delito. Ahora frena también los calificativos, y lo
+  publicado sin firma no nombra a nadie.
+
+## Qué cambió después de la #90
+
+La solicitud Coddvisor/coddvisor#90 unió la primera versión. Esta suma la
+revisión norma por norma y cambia:
+
+- las normas 3, 4, 5, 6, 7, 8 y 10;
+- casi todos los términos, sobre todo las dos puertas para cualquier problema,
+  el bloqueo del lazo de lo sin firma, el permiso de autor, las copias
+  semanales y los motivos de un cambio;
+- los textos de pantalla y las preguntas para el abogado, que ahora dicen lo
+  que ya se encontró;
+- dos decisiones nuevas, N4 y N5, y unas N1 y N2 más completas;
+- las frases que propusieron Coddvisor/coddvisor#94 y Coddvisor/coddvisor#98
+  para el contenido inicial: lo firmado «Equipo de Coddvisor» es de Coddvisor,
+  no de terceros;
+- la Ley 26775 en la P1, que quedó fuera de la #90.
 
 ## De dónde sale
 
@@ -53,9 +69,9 @@ revisión de la comunidad. Este borrador parte de:
   el tono y para no contradecir lo que ya se promete en público. Ahí se promete
   que no vendemos datos ni mandamos publicidad. Lo sin firma sale como «Alguien
   de la comunidad», y se puede reclamar ante la autoridad de datos personales.
-- **La evidencia** de [comunidad-evidencia.md](comunidad-evidencia.md) y una
-  búsqueda en fuentes públicas del 27-nov, que se cita en cada pregunta. No es
-  una opinión legal.
+- **La revisión norma por norma**
+  ([comunidad-riesgos-legales.md](comunidad-riesgos-legales.md)) y la evidencia
+  de [comunidad-evidencia.md](comunidad-evidencia.md). No son una opinión legal.
 
 ## Cómo leer este borrador
 
@@ -102,41 +118,47 @@ revisión de la comunidad. Este borrador parte de:
 > Lo que más sirve sube, y los demás lo ven primero. No pida que se lo marquen,
 > no lo cambie por favores y no use otra cuenta para marcarlo.
 >
-> **3. Cuente lo que pasó, sin acusar de un delito.**
+> **3. Cuente lo que pasó, sin acusar ni insultar.**
 > Puede contar lo que le pasó con un proveedor o una empresa, con su nombre:
-> «me entregó tarde y con faltantes». No escriba que alguien es estafador o
-> ladrón: eso es acusar de un delito, y solo un juez decide si lo hubo. A una
-> persona, como un trabajador, una clienta o un vecino, no la nombre: cuente el
-> caso sin su nombre. Si cree que hubo un delito, denúncielo. La comunidad le
-> dice dónde.
+> qué pidió, qué llegó y cuándo. Cuente solo lo que vivió y puede mostrar. No
+> le ponga calificativos como «estafador», «ladrón» o «corrupto»: la ley no los
+> defiende, aunque sean ciertos. A una persona, como un trabajador, una clienta
+> o un vecino, no la nombre. Y si publica sin firma, no nombre a nadie. Si cree
+> que hubo un delito, denúncielo: la comunidad le dice dónde.
 >
 > **4. Para ofrecer algo, use «Oportunidades».**
 > Para vender, comprar, buscar proveedor u ofrecer trabajo, publique en
-> «Oportunidades». Fuera de ahí, se archiva. No se aceptan «ingresos extra»,
-> multinivel, pirámides ni negocios donde se gana por sumar personas. Una
-> oferta de trabajo no pide edad, sexo, apariencia ni nada que discrimine.
+> «Oportunidades». Fuera de ahí, se archiva. Puede ofrecer lo que vende, también
+> por catálogo. No se recluta gente, no se cobra por entrar a un negocio y no se
+> promete ganar por sumar personas. No se ofrecen medicamentos, armas,
+> pirotécnicos, animales silvestres ni productos piratas. Las bebidas
+> alcohólicas, solo quien tiene licencia. Una oferta de trabajo no pide edad,
+> sexo, estado civil ni apariencia.
 >
 > **5. Cuide los datos de todos, también los suyos.**
 > No publique el DNI, el RUC, el celular, el correo ni la dirección de nadie,
-> ni en el texto ni en una foto. La comunidad le avisa si encuentra uno, y
-> nunca publica un número de documento. Si su caso es delicado, como SUNAT,
-> una deuda o una extorsión, use «Publicar sin firma».
+> ni en el texto ni en una foto. En «Oportunidades», en vez de su número, use
+> «Me interesa». Si cuenta cuánto vende o cuánto debe, use un rango o publique
+> sin firma. La comunidad le avisa si encuentra un dato, y nunca publica un
+> número de documento.
 >
 > **6. Es solo para mayores de 18 años.**
 > Al entrar, usted confirma que los tiene. Si sabemos que un perfil es de
-> alguien menor, lo cerramos y borramos sus datos de la comunidad.
+> alguien menor, borramos sus datos, como manda la ley.
 >
 > **7. Con respeto y con la verdad.**
 > Sin insultos, amenazas ni burlas. Nadie es atacado por su origen, su sexo, su
 > religión ni por ninguna otra condición. Discuta la idea, no a la persona. No
-> se haga pasar por otra persona ni por otro negocio.
+> se haga pasar por otra persona ni por otro negocio. Si recomienda algo que
+> usted vende, o por lo que le pagan o le regalan, dígalo al comienzo.
 >
-> **8. Si algo rompe estas normas, repórtelo.**
-> Toque «Reportar». Cuando varias personas lo reportan, se oculta y lo revisan
-> los guardianes, que son miembros de nivel alto. Pesa más el reporte de quien
-> tiene más nivel, y quien reporta sin razón pierde peso. Si los guardianes
-> confirman que rompe las normas, se archiva. Quien las rompe una y otra vez
-> pierde permisos.
+> **8. Si algo rompe estas normas, avise.**
+> Toque «¿Hay un problema?». Lo grave, como los datos de alguien, una amenaza o
+> algo con un menor, se oculta al momento. Lo demás lo revisan los guardianes,
+> que son miembros de nivel alto. Pesa más el aviso de quien tiene más nivel, y
+> quien avisa sin razón pierde peso. A quien rompe las normas se le dice el
+> motivo. Si sigue, pierde permisos por un tiempo, con reglas que valen para
+> todos.
 >
 > **9. Su nivel sube con constancia.**
 > Sube con los días que entra, lo que lee y sus respuestas que sirvieron, no
@@ -146,15 +168,15 @@ revisión de la comunidad. Este borrador parte de:
 > nivel alto se pierde.
 >
 > **10. Coddvisor no revisa lo que se publica: entra si se lo piden.**
-> La comunidad se cuida sola. El equipo de Coddvisor entra solo si alguien toca
-> «Pedir ayuda a Coddvisor» o si lo ordena una autoridad. Pida ayuda si no está
-> de acuerdo con lo que decidieron sobre lo suyo. También ante algo grave: una
-> amenaza, una extorsión, datos de otra persona o algo con un menor. Si hay
-> peligro ahora, llame a la Policía al 105.
+> La comunidad se cuida sola. El equipo de Coddvisor entra si alguien se lo
+> pide, si lo ordena una autoridad o si ve algo grave. Pida ayuda si no está de
+> acuerdo con lo que decidieron sobre lo suyo. También si lo nombran y no es
+> cierto, aunque no tenga cuenta. Si hay peligro ahora, llame a la Policía al
+> 105.
 >
-> Estas normas pueden cambiar. Si cambian, se lo avisamos antes y le pedimos
-> que las acepte de nuevo. Van junto con los términos de la comunidad y el
-> aviso de privacidad.
+> Estas normas pueden cambiar. Si cambian, le decimos por qué, se lo avisamos
+> antes y le pedimos que las acepte de nuevo. Van junto con los términos de la
+> comunidad y el aviso de privacidad.
 >
 > Botón: «Acepto»
 
@@ -164,14 +186,14 @@ revisión de la comunidad. Este borrador parte de:
 |---|---|---|
 | 1 | «Solo hay espacios de gestión», de la #85, y los espacios de [comunidad.md](comunidad.md) | |
 | 2 | «Me sirvió» en lugar de «me gusta» ([comunidad.md](comunidad.md), «Cómo se conversa») | |
-| 3 | El freno de acusaciones ([comunidad.md](comunidad.md), «Difamación»; #85, «Nombrar empresas»). La frase sobre las personas depende de la decisión N2 | P1 |
-| 4 | «Oportunidades» ([comunidad.md](comunidad.md), «Venta disfrazada», y decisión del 27-nov). La frase sobre las ofertas de trabajo es nueva | P10 |
-| 5 | «Datos personales en el texto» y «Publicar sin firma» | P6 |
-| 6 | «Menores» ([comunidad.md](comunidad.md)). La edad es el ajuste `edad_minima`, por país | P8 |
-| 7 | Nueva: ninguna norma lo decía. Lo de hacerse pasar por otro sale del sello «Negocio verificado» | |
-| 8 | «Reportes» ([comunidad.md](comunidad.md)). «Pierde permisos» es nuevo: la etapa 4 tiene que diseñarlo | P12 |
+| 3 | El freno de acusaciones ([comunidad.md](comunidad.md); #85, «Nombrar empresas»). Los calificativos, las personas y lo sin firma son la decisión N2 | P1 |
+| 4 | «Oportunidades» (decisión del 27-nov). El catálogo y el reclutamiento son la decisión N5; la lista de productos y las ofertas de trabajo salen de la revisión, «Consumo, publicidad y Oportunidades» | P10 |
+| 5 | «Datos personales en el texto». «Me interesa» y los rangos son la decisión N4 | P6 |
+| 6 | «Menores» ([comunidad.md](comunidad.md)). Es un requisito para entrar, no un poder de cerrar (Código Civil, art. 1398; reglamento de datos, art. 23.1). La edad es el ajuste `edad_minima`, por país | P8 |
+| 7 | Nueva. Decir lo que uno gana evita la publicidad encubierta (D. Leg. 1044, art. 16) | P10 |
+| 8 | «Reportes» ([comunidad.md](comunidad.md)). Las dos puertas son la decisión N1. Las consecuencias graduales salen del Código Civil, art. 1398, y de la Ley 29571, art. 50 | P1, P11, P12 |
 | 9 | «Cuentas nuevas» y «Niveles de confianza» ([comunidad.md](comunidad.md)) | |
-| 10 | «Coddvisor, solo a pedido» (decisión del 27-nov). El 105 es el teléfono de emergencia de la Policía del Perú: un dato del país en el catálogo de textos | P1, P4 |
+| 10 | «Coddvisor, solo a pedido» (decisión del 27-nov). Entrar si ve algo grave evita mirar a otro lado después de enterarse. El 105 es el teléfono de emergencia de la Policía del Perú: un dato del país | P1, P4 |
 
 ## Parte 2. Términos de la comunidad
 
@@ -185,11 +207,12 @@ revisión de la comunidad. Este borrador parte de:
 >
 > - La comunidad es gratis y no tiene publicidad.
 > - Lo que usted escribe es suyo. Coddvisor lo muestra y, si usted se va, lo
->   guarda sin su nombre.
-> - Coddvisor no revisa lo que se publica. Entra si alguien se lo pide o si lo
->   ordena una autoridad.
-> - Si publica sin firma, nadie ve su nombre. Coddvisor sabe que es suyo y
->   solo lo diría si una autoridad lo pide por ley.
+>   guarda sin su nombre. Puede retirar su texto cuando quiera.
+> - Coddvisor no revisa lo que se publica. Entra si alguien se lo pide, si ve
+>   algo grave o si lo ordena una autoridad.
+> - Si publica sin firma, nadie ve su nombre. Coddvisor sabe que es suyo. Solo
+>   lo diría ante la orden escrita de un juez o de un fiscal, o para proteger a
+>   un menor.
 > - Puede irse cuando quiera y pedir que borremos sus datos.
 >
 > **1. Qué es este acuerdo**
@@ -202,15 +225,16 @@ revisión de la comunidad. Este borrador parte de:
 > publica. Van junto con las normas de la comunidad y el aviso de privacidad.
 > Al entrar, usted los acepta.
 >
-> Coddvisor es [razón social], RUC [número]. Correo: equipo@coddvisor.com.
+> Coddvisor es [razón social], RUC [número], con domicilio en [dirección].
+> Correo: equipo@coddvisor.com.
 >
 > **2. Quién puede entrar**
 >
-> - Cualquier persona de 18 años o más. Al entrar, usted confirma que los
->   tiene.
+> - La comunidad se ofrece solo a personas de 18 años o más. Al entrar, usted
+>   confirma que los tiene.
 > - Para leer no hace falta una cuenta. Para publicar, responder, marcar «Me
->   sirvió», seguir o reportar, se entra con una cuenta de Coddvisor. Hoy se
->   entra con Google.
+>   sirvió» o seguir, se entra con una cuenta de Coddvisor. Hoy se entra con
+>   Google.
 > - Una persona, una cuenta. Su cuenta es suya, no de su negocio: no la preste.
 > - Si usa el sistema de gestión de Coddvisor, la cuenta es la misma. Pero la
 >   comunidad no ve nada de su negocio en el sistema, ni sus ventas ni sus
@@ -219,61 +243,77 @@ revisión de la comunidad. Este borrador parte de:
 > **3. Lo que hace Coddvisor**
 >
 > - Mantiene la comunidad funcionando, gratis.
+> - Antes de abrir, publica preguntas de ejemplo, firmadas «Equipo de
+>   Coddvisor», con respuestas sacadas de sus guías. Las mantiene al día con
+>   ellas.
 > - Pone los frenos que piden las normas. Son el aviso de datos personales, el
->   freno de acusaciones, el de ofertas fuera de «Oportunidades» y los topes de
->   las cuentas nuevas. Valen igual para todos. Avisan, y usted decide cómo
->   escribirlo. Lo único que quitan solos es un número de documento.
+>   freno de calificativos y acusaciones, el de ofertas fuera de «Oportunidades»
+>   y los topes de las cuentas nuevas. Valen igual para todos. Avisan, dicen por
+>   qué, y usted decide cómo escribirlo. Lo único que quitan solos es un número
+>   de documento. Si no está de acuerdo con un freno, pida que lo vea una
+>   persona.
 > - Nombra a los primeros guardianes, porque el primer día nadie tiene nivel.
 >   Lo hace una sola vez y con un tope. Después los elige la propia comunidad.
 > - Atiende cuando alguien le pide ayuda y cumple lo que ordena una autoridad
 >   (puntos 5 y 6).
-> - Cuida sus datos como dice el aviso de privacidad.
-> - Cada año publica cuántas veces entró y por qué.
+> - Guarda una copia de respaldo cada semana, y cuida sus datos como dice el
+>   aviso de privacidad.
+> - Tiene un libro de reclamaciones al pie de cada página, que se usa sin
+>   cuenta.
+> - Cada año publica cuántas veces entró, por qué y a pedido de quién.
 >
 > **4. Lo que no hace Coddvisor**
 >
 > - No revisa por su cuenta lo que se publica. La comunidad se cuida sola, con
->   las normas, los reportes y los guardianes.
+>   las normas, los avisos y los guardianes. Pero si alguien del equipo ve algo
+>   grave, lo atiende como un pedido de ayuda, con su registro.
 > - No responde las preguntas en nombre de la comunidad.
 > - No comprueba lo que escriben otros. Solo comprueba que un contador o un
->   abogado verificado esté colegiado, y el RUC de un «Negocio verificado».
-> - No participa en los tratos de «Oportunidades» ni cobra por ellos.
+>   abogado verificado esté colegiado, y que el RUC de un «Negocio verificado»
+>   esté activo en SUNAT. Ese sello no garantiza sus productos ni sus tratos.
+> - No participa en los tratos de «Oportunidades», no elige a nadie y no cobra
+>   por ellos.
 > - No vende ni presta sus datos.
 >
-> **5. Cuándo entra Coddvisor: si se lo piden**
+> **5. Si hay un problema con una publicación**
 >
-> Para eso está «Pedir ayuda a Coddvisor». Lo puede usar:
+> En cada publicación está «¿Hay un problema?». Lo puede usar cualquiera,
+> también sin cuenta. Tiene dos caminos:
 >
-> - quien no está de acuerdo con lo que los guardianes decidieron sobre lo
->   suyo;
-> - cualquier miembro, ante algo grave que no puede esperar: una amenaza, una
->   extorsión, datos personales de otra persona o algo que involucra a un
->   menor;
-> - quien es nombrado en una publicación o es afectado por ella, aunque no
->   tenga cuenta.
+> - **«Es peligroso»**, para los datos de alguien, una amenaza, una extorsión o
+>   algo con un menor. También para hacerse pasar por otro, llamar a la
+>   violencia o un insulto grave. Se oculta al momento, y el equipo de Coddvisor lo revisa en
+>   horas.
+> - **«No es cierto o me perjudica»**, para quien es nombrado o cree que un
+>   hecho contado es falso. Coddvisor no decide quién tiene la razón. La
+>   respuesta de quien reclama se muestra justo debajo, y la publicación deja de
+>   salir en los buscadores. A quien publicó le pedimos que la sostenga, la
+>   corrija o la retire. Si no contesta a tiempo, se oculta hasta que conteste.
+>   Retirarla del todo lo decide su autor, o lo ordena un juez.
 >
-> Para que pedir ayuda no se vuelva el camino de todo, cada persona tiene un
-> tope de pedidos.
+> Para no estar de acuerdo con lo que los guardianes decidieron sobre lo suyo
+> está «Pedir ayuda a Coddvisor». Hay un tope de pedidos, para que no se vuelva
+> el camino de todo.
 >
-> Al entrar, el equipo puede hacer lo mismo que un guardián: ocultar, restaurar
-> o mover una publicación. Si la ley lo pide, también retirarla. Entra con su
-> cuenta identificada. Cada intervención queda registrada: quién la pidió, qué
-> se decidió y por qué. A quien pidió ayuda y a quien publicó les avisamos lo
-> que se decidió.
+> Cuando el equipo entra, puede hacer lo mismo que un guardián: ocultar,
+> restaurar o mover. Si la ley lo pide, también retirar. Entra con su cuenta
+> identificada, y cada intervención queda registrada: quién la pidió, qué se
+> decidió y por qué. A quien pidió y a quien publicó les decimos lo que se
+> decidió, y por qué.
 >
 > Coddvisor no es la Policía. Si hay peligro ahora, llame al 105.
 >
-> **6. Cuándo entra Coddvisor: si lo ordena una autoridad**
+> **6. Si lo ordena una autoridad**
 >
 > - Retiramos lo que ordena retirar un juez u otra autoridad que, por ley,
->   puede ordenarlo. La orden tiene que llegar por escrito y decir qué
+>   puede hacerlo. La orden tiene que llegar por escrito y decir qué
 >   publicación.
 > - Lo retirado deja de verse y se guarda aparte, por si la autoridad lo pide.
 >   No se borra, salvo que la orden lo diga.
 > - A quien lo publicó le avisamos que se retiró y por qué, salvo que la orden
 >   nos pida no hacerlo.
-> - Si una autoridad pide saber quién escribió algo, se lo decimos solo si la
->   ley nos obliga, y solo lo que pide.
+> - Decimos quién escribió algo solo ante la orden escrita de un juez, o de un
+>   fiscal en un delito que persigue el Estado. Y solo lo que se pide.
 > - Cada orden queda registrada y entra en la cuenta del año.
 >
 > **7. Lo que publica sin firma**
@@ -281,40 +321,51 @@ revisión de la comunidad. Este borrador parte de:
 > - Si elige «Publicar sin firma», su publicación sale como «Alguien de la
 >   comunidad», sin nombre y sin descripción. Si responde en su propio hilo,
 >   sale como «Quien preguntó».
+> - Sin firma no se nombra a nadie. Es para contar lo suyo, no para señalar a
+>   otros.
 > - Antes de mostrarla, la revisa un guardián. Ve el texto, nunca a usted. Si
 >   nadie la revisa en un plazo, se publica sola.
 > - Al publicar, la pantalla le dice: «Su nombre no se mostrará. Coddvisor sabe
->   que usted lo escribió, y solo lo diría si una autoridad lo pide por ley».
+>   que usted lo escribió. Solo lo diría ante la orden escrita de un juez o de un
+>   fiscal, o para proteger a un menor».
 > - Es verdad: la base de datos guarda quién la escribió, aparte, en un lugar
 >   que el programa de la comunidad no puede leer. Si usted pide ayuda por esa
 >   publicación, el equipo la ve como «quien la escribió», nunca su cuenta.
 > - Lo publicado sin firma no suma a su perfil, ni a sus insignias ni a sus
 >   contadores. Así nadie le reconoce por un número que sube.
-> - Las normas valen igual. Los topes y los reportes cuentan por su cuenta, con
+> - Las normas valen igual. Los topes y los avisos cuentan por su cuenta, con
 >   firma o sin ella.
-> - Si pide borrar sus datos, también se borra lo que une su cuenta con lo que
->   publicó sin firma.
+> - Si pide borrar sus datos, lo que une su cuenta con lo que publicó sin firma
+>   queda bloqueado. Nadie lo lee, solo sale ante la orden de un juez y se borra
+>   cuando vence el plazo que fija la ley.
 >
 > **8. Lo que usted publica**
 >
 > - Lo que escribe es suyo, y usted responde por ello.
-> - Al publicarlo, le da permiso a Coddvisor para:
+> - Al publicarlo, le da a Coddvisor un permiso gratis, no exclusivo y para
+>   todo el mundo, para:
 >   - mostrarlo en la comunidad a quien entre, también sin cuenta;
 >   - dejar que los buscadores lo lean;
 >   - mostrar una vista previa cuando alguien lo comparte, por ejemplo por
 >     WhatsApp;
->   - llevar una duda que se repite a la guía de su tema, con enlace a la
->     conversación;
+>   - citarlo sin cambiarlo, con enlace a la conversación, en la guía de su
+>     tema;
 >   - guardarlo después de que usted se vaya, sin su nombre.
-> - Este permiso es gratis, no es exclusivo y no vence. Para cualquier otro
->   uso, Coddvisor le pedirá permiso.
+> - Ese permiso no vence, pero usted puede **retirar su texto** cuando quiera.
+>   Deja de verse, queda «El autor retiró este texto» y las respuestas de los
+>   demás siguen. Para cualquier otro uso, Coddvisor le pedirá permiso.
 > - No publique lo que no es suyo, como textos, fotos o archivos de otros, sin
->   su permiso.
+>   su permiso. Si alguien publicó algo suyo, escriba a [representante: nombre,
+>   correo, teléfono y domicilio]. Lo atendemos en 3 días hábiles. Quien lo hace
+>   una y otra vez pierde el permiso de publicar.
 >
 > **9. Lo que publican otros**
 >
 > - Lo que lee aquí lo escriben otras personas, desde su experiencia.
 >   Coddvisor no lo comprueba.
+> - Lo firmado «Equipo de Coddvisor» es distinto: lo escribe Coddvisor y sale
+>   de sus guías, revisadas contra la norma en la fecha que dice. Aun así,
+>   revíselo con su contador.
 > - Una respuesta de impuestos o leyes que no es de un profesional verificado
 >   lleva la marca «Respuesta de otro dueño, no revisada. Revísela con su
 >   contador».
@@ -322,9 +373,10 @@ revisión de la comunidad. Este borrador parte de:
 >   que usted contó. No reemplaza una consulta con todos sus datos.
 > - Los enlaces llevan a sitios que Coddvisor no maneja.
 > - Lo que acuerde en «Oportunidades» es entre usted y la otra persona. Revise
->   con quién trata, y nunca entregue claves ni códigos.
-> - Si una publicación habla de usted o de su negocio, puede contestar debajo.
->   Si cree que le hace daño, pida ayuda a Coddvisor (punto 5).
+>   con quién trata, no pague por adelantado a quien no conoce y nunca entregue
+>   claves ni códigos.
+> - Si una publicación habla de usted o de su negocio, puede contestar debajo y
+>   usar «¿Hay un problema?» (punto 5).
 >
 > **10. Dejar la comunidad y borrar sus datos**
 >
@@ -332,9 +384,10 @@ revisión de la comunidad. Este borrador parte de:
 >   verse. Lo que publicó se queda, porque ayuda a otros, y sale como «Alguien
 >   que dejó la comunidad».
 > - Además, puede pedir que borremos sus datos. Dentro del plazo que fija la
->   ley, borramos su nombre y la descripción de su negocio. También lo que une
->   su cuenta con lo que publicó sin firma. Lo que publicó sigue como «Alguien
->   que dejó la comunidad».
+>   ley, borramos su nombre, la descripción de su negocio y lo que une su
+>   perfil con su cuenta. Lo que une su cuenta con lo que publicó sin firma
+>   queda bloqueado (punto 7). Lo que publicó sigue como «Alguien que dejó la
+>   comunidad».
 > - Si algo que escribió trae datos suyos, como el nombre de su negocio o su
 >   número, puede pedir que se borre del todo.
 > - Dejar la comunidad no cierra su cuenta de Coddvisor ni toca su negocio en
@@ -350,232 +403,245 @@ revisión de la comunidad. Este borrador parte de:
 > - No tiene publicidad. Nadie paga por aparecer, por subir una publicación ni
 >   por quitarla. Coddvisor muestra su propio sistema solo en el menú y al pie
 >   de la página, como en el resto del sitio.
+> - Los avisos por correo solo le cuentan lo que pasó en la comunidad. No le
+>   mandamos promociones, salvo que usted las pida aparte.
 > - No vendemos ni prestamos sus datos.
 >
 > **12. Si algo falla**
 >
-> - La comunidad puede dejar de funcionar un tiempo. Hacemos lo posible por no
->   perder nada de lo publicado, pero no podemos prometer que nunca pase.
+> - Guardamos una copia de respaldo cada semana. Si algo se pierde o falla por
+>   culpa nuestra, respondemos como manda la ley.
 > - Si la comunidad falla, su negocio en el sistema sigue igual: no depende de
 >   ella.
+> - Si un día cerráramos la comunidad, le avisaríamos con tiempo para que
+>   descargue lo suyo.
 >
 > **13. Si cambian estas normas o estos términos**
 >
+> - Solo los cambiamos por una ley nueva, por la orden de una autoridad o para
+>   cuidar mejor a la comunidad, y le decimos el motivo.
 > - Le avisamos antes de que rijan, dentro de la comunidad, y le mostramos qué
 >   cambió en pocas líneas.
 > - Si el cambio le quita algo o le pide algo nuevo, le pedimos que acepte de
->   nuevo. Si no acepta, puede dejar la comunidad y pedir que borremos sus
->   datos.
+>   nuevo. Si no acepta, puede dejar la comunidad sin costo y pedir que borremos
+>   sus datos.
 > - Cada versión queda guardada con su fecha, y sabemos cuál aceptó usted.
 >
 > **14. La ley y los reclamos**
 >
 > - Estos términos se rigen por las leyes del Perú.
-> - Si tiene un reclamo, escríbanos a equipo@coddvisor.com.
+> - Si tiene un reclamo, use el libro de reclamaciones o escríbanos a
+>   equipo@coddvisor.com. Le respondemos en el plazo de la ley.
+> - También puede reclamar ante el Indecopi o ante los jueces que correspondan
+>   según la ley.
 > - Si su reclamo es sobre sus datos, y no le respondemos o no está de acuerdo,
 >   puede ir a la autoridad. Es la Autoridad Nacional de Protección de Datos
 >   Personales, del Ministerio de Justicia.
 
 ### Notas para la revisión
 
+Cada punto remite a la ficha de
+[comunidad-riesgos-legales.md](comunidad-riesgos-legales.md) que lo explica.
+
 | Punto | De dónde sale | Lo toca |
 |---|---|---|
-| 1 | La razón social y el RUC están pendientes, como en el aviso de privacidad (`titular` en `privacidad.astro`) | P11 |
-| 2 | Las cuentas de Coddvisor son las del sistema (decisión del 26-nov), y la comunidad no lee nada de los negocios ([comunidad-etapa-1.md](comunidad-etapa-1.md)) | P8 |
-| 3 | «Los riesgos y cómo se cuidan» y los primeros guardianes ([comunidad.md](comunidad.md)) | P1, P12 |
-| 4 | Decisiones del 27-nov: Coddvisor no modera ni responde por la comunidad | P1 |
-| 5 | «Coddvisor, solo a pedido» y su tope por persona ([comunidad.md](comunidad.md)). La tercera línea, sin cuenta, es la decisión N1 | P1, P4 |
-| 6 | Retirar si la ley lo pide, y el conteo anual ([comunidad.md](comunidad.md)) | P3 |
-| 7 | «Publicar sin firma» ([comunidad-etapa-1.md](comunidad-etapa-1.md)), con su texto de pantalla | P2 |
-| 8 | «Lo mejor vuelve a la guía», las páginas que leen los buscadores y el compartir por WhatsApp ([comunidad.md](comunidad.md)). El permiso es una lista cerrada: no incluye, por ejemplo, usar lo publicado para entrenar inteligencia artificial | P9 |
-| 9 | «Mal consejo de impuestos o leyes» y los profesionales verificados ([comunidad.md](comunidad.md)) | P1, P10 |
-| 10 | `archivar_perfil` y `olvidar_perfil` ([comunidad-etapa-1.md](comunidad-etapa-1.md)); «Nada se borra, salvo lo que pide la ley»; el registro de accesos que se guarda dos años (art. 46.3 del reglamento, según [identidad-y-membresia.md](identidad-y-membresia.md)) | P2, P5, P9 |
-| 11 | «Lo que no se hace» ([comunidad.md](comunidad.md)) y «no vendemos datos», del aviso de privacidad y de la Constitución de Coddvisor. La última frase de la segunda línea es la decisión N3 | P11 |
-| 12 | Hoy la comunidad no tiene copias de seguridad: el plan gratis no las hace y la decisión de pago es de la fundadora, antes de abrir ([comunidad.md](comunidad.md)). Por eso el texto no las promete. Ninguna tabla de un negocio apunta a una de la comunidad, ni al revés (la clase `comun`, BD-03) | P11 |
-| 13 | `normas_version` en `comunidad.perfil` (ver «Cómo llega esto al sistema») | P11 |
-| 14 | El reclamo ante la autoridad, como en el aviso de privacidad | P11 |
+| 1 | La razón social, el RUC y el domicilio están pendientes, como en el aviso de privacidad (`titular` en `privacidad.astro`) | P11 |
+| 2 | Las cuentas de Coddvisor son las del sistema (decisión del 26-nov). Los 18 años son un requisito de la oferta: ficha «La edad para aceptar» | P8 |
+| 3 | Las preguntas de ejemplo, de la #94 y la #98. Los frenos se anuncian y dejan pedir una persona: ficha «El freno automático». Copias semanales: ficha «Registros, canales y copias». Libro de reclamaciones: su ficha | P5, P11 |
+| 4 | Decisiones del 27-nov. Ver algo grave y actuar: ficha «¿Responde Coddvisor?». El sello dice lo que comprueba: ficha «Alojar ofertas de otros» | P1, P10 |
+| 5 | Las dos puertas son la decisión N1 (invento 1) | P1, P4 |
+| 6 | Fichas «Quién puede pedir el nombre del autor» y «Lo que hacen los vecinos» | P2, P3 |
+| 7 | «Publicar sin firma» ([comunidad-etapa-1.md](comunidad-etapa-1.md)). No nombrar a nadie: ficha «La rectificación». El bloqueo: ficha «Borrar, bloquear y el nada se borra». Proteger a un menor: ficha «El material sexual de menores» | P2 |
+| 8 | Ficha «El permiso sobre lo publicado» y la de los derechos de autor (D. Leg. 1724). El permiso es una lista cerrada: no incluye usar lo publicado para entrenar inteligencia artificial | P9 |
+| 9 | «Mal consejo de impuestos o leyes» ([comunidad.md](comunidad.md)), y lo firmado por el equipo, de la #94 y la #98 | P1, P9, P10 |
+| 10 | `archivar_perfil` y `olvidar_perfil`, que en la etapa 1 vacía también la cuenta del perfil (Coddvisor/coddvisor#92) | P2, P5, P9 |
+| 11 | «Lo que no se hace» ([comunidad.md](comunidad.md)), la decisión N3 y la ficha «Los correos de aviso y las promociones» | P11 |
+| 12 | Ficha «Lo que los términos no pueden decir»: en vez de «no podemos prometer», lo que se hace | P11 |
+| 13 | Motivo del cambio y salida sin costo (Ley 29571, arts. 47 y 51). `normas_version` en `comunidad.perfil` | P11 |
+| 14 | Ficha «La ley y los jueces» | P11 |
 
 ### Textos de pantalla que también revisa el abogado
 
 | Dónde | Texto propuesto |
 |---|---|
 | Al entrar por primera vez | «Para entrar, confirme que tiene 18 años o más y que acepta las normas y los términos de la comunidad.» Botón: «Acepto» |
-| Al publicar sin firma | «Su nombre no se mostrará. Coddvisor sabe que usted lo escribió, y solo lo diría si una autoridad lo pide por ley.» |
-| El freno de acusaciones | «Su mensaje acusa de un delito. Puede contar lo que pasó sin esas palabras, o quitar el nombre. Si cree que hubo un delito, aquí puede denunciarlo.» |
+| Al publicar sin firma | «Su nombre no se mostrará. Coddvisor sabe que usted lo escribió. Solo lo diría ante la orden escrita de un juez o de un fiscal, o para proteger a un menor.» |
+| Sin firma, con un nombre | «Sin firma no se nombra a nadie. Quite el nombre, o publíquelo con su firma.» |
+| El freno de calificativos y acusaciones | «Esta palabra califica a alguien, y la ley no la defiende aunque sea cierta. Cuente qué pasó y cuándo. Si cree que hubo un delito, aquí puede denunciarlo.» |
+| Al contar una experiencia con un proveedor | Casilla: «Lo que cuento lo viví y tengo cómo mostrarlo.» |
+| Al contar cuánto vende o cuánto debe | «Está contando la plata de su negocio. ¿La cambiamos por un rango, o la publica sin firma?» Casilla: «Entiendo que estoy contando cuánto vende mi negocio, y acepto que se publique.» |
 | El aviso de datos personales | «Esto parece un número de celular. Si lo publica, cualquiera lo podrá ver.» Con un documento: «Quitamos el número de documento. No se publica.» |
+| «Me interesa», a quien publicó | «A {nombre}, {descripción}, le interesa su oferta. ¿Le pasamos su WhatsApp?» Botones: «Sí, pasárselo» y «No» |
+| «¿Hay un problema?» | «Es peligroso: datos de alguien, una amenaza, una extorsión o algo con un menor.» y «No es cierto o me perjudica.» |
+| Al autor, si hay un reclamo | «Dicen que lo que contó no es exacto. Puede sostenerlo, corregirlo o retirarlo. Si no responde en {días} días, se oculta hasta que responda.» |
+| En la publicación con reclamo | «La empresa nombrada respondió» |
+| Lo que el autor retiró | «El autor retiró este texto» |
 | Una respuesta de impuestos o leyes sin profesional | «Respuesta de otro dueño, no revisada. Revísela con su contador.» |
+| El sello «Negocio verificado» | «Su RUC está activo en SUNAT. Coddvisor no garantiza sus productos ni sus tratos.» |
 | Una oferta fuera de su espacio | «Las ofertas van en “Oportunidades”. ¿La pasamos ahí?» |
-| Una oferta que no se acepta | «No se aceptan “ingresos extra”, multinivel ni negocios donde se gana por sumar personas.» |
-| Un pedido de ayuda enviado | «Coddvisor revisará su pedido. Le avisaremos lo que se decida.» |
+| Una oferta que no se acepta | «No se acepta reclutar gente, cobrar por entrar a un negocio ni prometer ganar por sumar personas.» |
+| Una oferta de trabajo | «No pida edad, sexo, estado civil ni apariencia, salvo que el puesto lo exija de verdad.» |
+| Una oferta de bebidas alcohólicas | La comunidad agrega sola la advertencia de ley: «TOMAR BEBIDAS ALCOHÓLICAS EN EXCESO ES DAÑINO» |
+| Un pedido de ayuda enviado | «Coddvisor revisará su pedido. Le avisaremos lo que se decida, y por qué.» |
 | El perfil de quien se fue | «Alguien que dejó la comunidad» |
+| Una pregunta de ejemplo del equipo | «Pregunta de ejemplo» |
+| Una respuesta del equipo | «Respuesta del Equipo de Coddvisor, de la guía {título}, verificada contra la norma el {fecha}. Revísela con su contador.» |
+| Una respuesta del equipo que quedó vieja | «Esta respuesta es del {fecha}. La guía tiene la versión al día.» |
 
 ## Parte 3. Preguntas para el abogado
 
-Van en orden de cuánto pesan. Cada una dice qué se encontró, qué se propone y
-qué se pregunta. Lo que se cita de una ley sale de fuentes públicas leídas el
-27-nov, en su mayoría secundarias: confirmarlo en el texto oficial es parte de
-la pregunta.
+Van en orden de cuánto pesan. La revisión norma por norma ya respondió una
+parte en fuentes públicas: cada pregunta dice qué se encontró y qué falta.
+Confirmarlo en el texto oficial es parte de la pregunta. El detalle y las
+fuentes de cada hallazgo están en
+[comunidad-riesgos-legales.md](comunidad-riesgos-legales.md).
 
 ### P1. ¿Responde Coddvisor por lo que otros escriben?
 
-**Contexto.** En el Perú, la injuria, la calumnia y la difamación son delitos
-(Código Penal, arts. 130 a 132). La calumnia es atribuir falsamente un delito.
-La difamación es atribuir a alguien, ante varias personas, «un hecho, una
-cualidad o una conducta» que pueda perjudicar su honor. La pena sube si se
-hace por un medio de comunicación social. La prueba de la verdad solo se
-admite en los casos del art. 134. No se encontró una norma que proteja al
-sitio por lo que escriben otros: la única exención para quien da un servicio
-en internet que se encontró, el D. Leg. 1724 de 2026, cubre solo derechos de
-autor ([comunidad-evidencia.md](comunidad-evidencia.md), sección 4). Tampoco se
-encontraron fallos peruanos sobre un sitio y los comentarios de terceros.
+**Se encontró.** La difamación alcanza el hecho, no solo el delito (Código
+Penal, art. 132), y una red social abierta es un «medio de comunicación
+social» (R.N. 1495-2019-Lima): es la forma agravada, de 1 a 3 años. El Acuerdo
+Plenario 3-2006/CJ-116 defiende el hecho de interés público contado con una
+diligencia mínima, nunca el insulto. En lo penal nadie responde sin intención
+propia (arts. VII, 12 y 25), y la omisión pide un deber legal que un foro no
+tiene (art. 13). En lo civil, el riesgo nace con el aviso (Código Civil, arts.
+17, 1969 y 1978). No hay una norma que proteja al sitio, salvo en derechos de
+autor (D. Leg. 1724).
 
-**Lo que se propone.** Coddvisor no revisa nada por su cuenta (decisión de la
-fundadora del 27-nov). Antes de publicar, el freno de acusaciones detiene la
-acusación de un delito con nombre y ofrece contarlo sin acusar, quitar el
-nombre o ir a la denuncia oficial. Después, cuidan los reportes y los
-guardianes, y «Pedir ayuda a Coddvisor» para lo grave. La empresa nombrada
-puede contestar debajo.
+**Se propone.** Las dos puertas (N1) y hechos, no culpables (N2).
 
 **Preguntas.**
 
-1. ¿Puede Coddvisor responder, penal o civilmente, por una publicación de
-   otro? ¿Cuenta la comunidad como «medio de comunicación social» para el
-   art. 132?
-2. No revisar por su cuenta, ¿protege a Coddvisor, porque no sabía, o lo
-   expone, porque no cuidó? ¿Conviene decirlo en los términos con estas
-   palabras?
-3. Cuando alguien pide ayuda por una publicación, Coddvisor ya sabe de ella.
-   ¿En qué plazo tiene que decidir, y qué tiene que registrar para mostrar que
-   actuó con cuidado?
-4. El freno detiene la acusación de un delito, que es la calumnia. Contar un
-   hecho con nombre, como «me entregó tarde y con faltantes», puede ser
-   difamación aunque sea cierto. ¿Lo ampara el derecho a informar a otros
-   dueños? ¿Conviene permitir el nombre de una empresa o un negocio, y nunca el
-   de una persona (decisión N2)? ¿Y si el negocio lleva el nombre de su dueño?
+1. Con las dos puertas, ¿queda Coddvisor fuera de la ayuda dolosa (art. 25) y
+   de la culpa civil (art. 1969)? ¿Qué plazo y qué registro muestran el
+   cuidado debido?
+2. En la vía de disputa, si el autor sostiene lo que contó, la publicación
+   sigue a la vista con la respuesta, y solo un juez la retira. ¿Es
+   defendible, o mantenerla después del aviso expone a Coddvisor?
+3. ¿Conviene permitir nombrar empresas y negocios, y nunca personas (N2)? ¿Y
+   nombrar solo negocios con RUC de persona jurídica, que empieza con 20?
+4. ¿Ayuda la marca «Lo que cuento lo viví y tengo cómo mostrarlo» a mostrar la
+   diligencia mínima del autor?
 5. El freno detiene un texto antes de publicarlo. ¿Puede verse como censura
    previa, aunque lo aplique un privado y la persona pueda reescribir?
-6. ¿A qué vías oficiales debe llevar el freno a quien cree que hubo un delito?
-   ¿La comisaría, la fiscalía, Indecopi?
-7. La Constitución (art. 2, inciso 7) da a quien es agraviado en un medio de
-   comunicación social el derecho a que este se rectifique gratis, de
-   inmediato y en forma proporcional, y la Ley 26775 fija cómo se pide.
-   ¿Aplica a la comunidad? ¿Basta con que la persona o la empresa nombrada
-   pueda contestar debajo?
+6. ¿A qué vías oficiales debe llevar el freno a quien cree que hubo un delito:
+   la comisaría, la fiscalía, el Indecopi?
+7. La Constitución (art. 2, inciso 7) y la Ley 26775 dan derecho a la
+   rectificación en un medio de comunicación social, y el Tribunal
+   Constitucional la aplicó a un portal de noticias (Exp. 00098-2022-PA/TC).
+   ¿Aplica a la comunidad? ¿Basta la respuesta fijada debajo, con un aviso en
+   la publicación?
 
-### P2. «Publicar sin firma»: qué se promete y a quién se le dice
+### P2. Lo sin firma: qué se promete y a quién se le dice
 
-**Contexto.** Lo sin firma sale como «Alguien de la comunidad». La base guarda
-quién lo escribió en una tabla que el programa de la comunidad no puede leer.
-Un guardián lo revisa antes de mostrarlo y ve el texto, nunca al autor
-([comunidad-etapa-1.md](comunidad-etapa-1.md), «Publicar sin firma»). La
-pantalla dice: «Su nombre no se mostrará. Coddvisor sabe que usted lo
-escribió, y solo lo diría si una autoridad lo pide por ley». Se usa para lo
-delicado: SUNAT, deudas, un trabajador, la extorsión.
+**Se encontró.** En la querella, si no se conoce al autor, el juez ordena una
+investigación preliminar (Código Procesal Penal, art. 461). Intervenir
+comunicaciones pide un juez (Constitución, art. 2.10). El fiscal puede exigir
+información a un particular solo en los delitos que persigue el Estado (art.
+337.3.b). No hay un deber general de denunciar (art. 326). Pedir el borrado
+bloquea el dato, y el bloqueo puede durar mientras prescriben las
+responsabilidades (reglamento de datos, arts. 82.3 y III.2). Lo sin firma no
+está en boca de nadie determinado: Coddvisor queda como el único
+identificable.
+
+**Se propone.** El texto «...Solo lo diría ante la orden escrita de un juez o de
+un fiscal, o para proteger a un menor». Sin firma no se nombra a nadie. Al
+pedir el borrado, el lazo se bloquea.
 
 **Preguntas.**
 
-1. ¿El texto es exacto y suficiente? ¿Hay que decir qué autoridades y con qué
-   orden?
-2. ¿Qué autoridad puede pedir el nombre del autor, y con qué orden: un juez, un
-   fiscal, la Policía, la autoridad de datos personales? ¿Qué hacemos si lo
-   pide la Policía sin una orden escrita?
-3. Si la persona pide borrar sus datos, se borra lo que une su cuenta con lo
-   publicado sin firma. Si ya hay un pedido de ayuda o una orden sobre esa
-   publicación, ¿podemos o debemos conservarlo? ¿Hasta cuándo?
-4. ¿Hay casos en que Coddvisor deba avisar a la Policía por su cuenta, como
-   una amenaza de muerte o algo con un menor? Si los hay, el texto de la
-   pantalla tiene que decirlo.
+1. ¿Es exacto el texto? ¿Hay otra autoridad que pueda pedirlo, como la de datos
+   personales o la de trabajo?
+2. ¿El correo de una cuenta está protegido por el secreto de las
+   comunicaciones, o es solo un dato personal?
+3. ¿Cuánto dura el bloqueo del lazo: el plazo de prescripción de la
+   difamación, el de la acción civil u otro?
+4. ¿Es correcto denunciar por decisión propia solo el material sexual de
+   menores, y decirlo en la pantalla?
 5. Si denuncian a Coddvisor por una publicación sin firma, ¿puede revelar al
    autor para defenderse, o solo si el juez se lo ordena?
 
 ### P3. Retirar por orden legal
 
-**Contexto.** Coddvisor retira solo con una orden escrita de una autoridad que
-puede darla. Lo retirado se guarda aparte, no se borra. Se avisa al autor,
-salvo que la orden lo impida, y cada año se publica cuántas órdenes hubo.
+**Se encontró.** En derechos de autor, el D. Leg. 1724 fija su camino: se
+retira en 3 días hábiles y se avisa al usuario, que puede contestar; si no hay
+un proceso, se restituye a los 5 días hábiles (art. 212). Los datos del usuario
+se entregan solo por requerimiento de una autoridad (art. 215).
+
+**Se propone.** Para todo lo demás, retirar solo con una orden escrita,
+guardarlo aparte, avisar al autor y publicar la cuenta del año.
 
 **Preguntas.**
 
-1. ¿Qué autoridades pueden ordenar que se retire una publicación, y con qué
-   forma? ¿Vale un correo, un oficio, una notificación electrónica? ¿A qué
-   dirección deben llegar?
+1. ¿Qué autoridades pueden ordenar retirar una publicación por otros motivos,
+   y con qué forma? ¿A qué dirección deben llegar?
 2. ¿En qué plazo hay que cumplir?
-3. ¿Está bien guardar aparte lo retirado, o hay que borrarlo? ¿Por cuánto
-   tiempo se guarda?
+3. ¿Está bien guardar aparte lo retirado? ¿Por cuánto tiempo?
 4. ¿Cuándo no podemos avisar al autor?
 5. ¿Podemos publicar en la cuenta del año el tipo de autoridad y el motivo?
-6. Para los derechos de autor, ¿el D. Leg. 1724 fija su propio procedimiento,
-   y conviene seguirlo tal cual?
 
 ### P4. Quien es nombrado y no es miembro
 
-**Contexto.** Hoy, pedir ayuda a Coddvisor es un botón para miembros
-([comunidad.md](comunidad.md), «Coddvisor, solo a pedido»). Quien es nombrado,
-como un proveedor, un trabajador o una clienta, puede leer la publicación sin
-cuenta. Pero para pedir ayuda tendría que crear una cuenta, aceptar las normas
-y tener 18 años. Lo que se publica sobre una persona es un dato personal suyo,
-aunque no sea miembro.
+**Se encontró.** Coddvisor responde por todo dato personal de la comunidad,
+también por el de terceros que escriben los miembros (reglamento de datos,
+arts. IV y III.22). Debe atender la oposición y el borrado en 10 días hábiles
+(art. 69). En diciembre de 2025 la autoridad anunció acciones contra un sitio
+con datos de terceros subidos por sus usuarios.
 
-**Lo que se propone (decisión N1).** «Pedir ayuda a Coddvisor» se abre
-también sin cuenta, desde cada publicación, para quien dice ser nombrado o
-afectado. Lleva la prueba de que no es un robot y un tope por publicación. El
-pedido no oculta nada solo: lo decide el equipo.
+**Se propone (N1).** «¿Hay un problema?» abierto sin cuenta, con dos caminos.
 
 **Preguntas.**
 
-1. ¿Responde Coddvisor, ante la Ley 29733, por los datos de terceros que
-   escriben los miembros? ¿Ese tercero puede pedir que se borren o se
-   corrijan, como cualquier titular de sus datos?
-2. ¿Basta con esa puerta sin cuenta, o hace falta otro canal? ¿En qué plazo hay
-   que responderle?
-3. ¿Cómo comprobamos que quien pide es el nombrado, sin pedirle más datos de
-   los que hacen falta?
+1. ¿Basta esa puerta sin cuenta como canal para que un tercero ejerza sus
+   derechos?
+2. ¿Cómo comprobamos que quien pide es el nombrado, sin pedirle más datos de
+   los necesarios?
+3. ¿Cuenta la comunidad como «fuente accesible al público» (ley, art. 14.2;
+   reglamento, art. 11.1.1)? ¿Qué cambia si cuenta?
 
-### P5. El banco de datos y la evaluación de impacto
+### P5. El banco de datos, la evaluación de impacto y el oficial de datos
 
-**Contexto.** La comunidad guarda perfiles (nombre de pila, rol, rubro,
-región y tamaño), lo que se publica, los reportes, los niveles y los pedidos de
-ayuda. Usa las cuentas de Coddvisor, que ya son un banco de datos de usuarios.
-Los datos se guardan en São Paulo, Brasil, como los del sistema, y esa
-transferencia se comunica a la autoridad según el art. 21.2 del reglamento
-([datos-personales.md](datos-personales.md) e
-[identidad-y-membresia.md](identidad-y-membresia.md)). Los guardianes no son
-del equipo y ven lo oculto, que puede traer datos de otros. El reglamento pide
-registrar quién vio, cambió o borró datos personales y guardarlo al menos dos
-años (art. 46.3). [comunidad.md](comunidad.md) dice que hay que inscribir el
-banco o actualizar su registro, y que conviene la evaluación de impacto.
+**Se encontró.** Inscribir el banco es obligatorio, gratis y automático
+(reglamento de datos, arts. 42.1, 43.3 y 45.2). La evaluación de impacto es
+voluntaria, y si se hizo, baja una sanción (arts. 40.1 y 125.4). El oficial de
+datos es obligatorio cuando el giro trata datos sensibles; para una
+microempresa, desde el 30 de noviembre de 2028 (art. 37.1 y primera disposición
+complementaria final). Toda acción sobre los datos se registra y se guarda dos
+años; usar mensajería externa pide una aprobación formal; y se hace una copia de
+respaldo cada semana (arts. 46.3, 46.4 y 51.1). No se encontró que Brasil esté
+declarado adecuado (arts. 18 a 21.2).
 
 **Preguntas.**
 
-1. ¿La comunidad es un banco de datos nuevo, o se actualiza la inscripción del
-   banco de usuarios de Coddvisor?
-2. ¿Hace falta una evaluación de impacto antes de abrir, o solo se recomienda?
-   ¿Qué tiene que cubrir?
-3. ¿La transferencia a Brasil se comunica aparte para la comunidad, o vale la
-   del sistema?
-4. ¿Qué tienen que aceptar los guardianes para ver lo oculto? ¿Un compromiso de
-   confidencialidad?
+1. ¿La comunidad es un banco nuevo, o se actualiza el de usuarios de Coddvisor?
+2. ¿Qué debe cubrir la evaluación de impacto?
+3. ¿Necesita Coddvisor un oficial de datos antes de 2028, por los datos
+   sensibles de la comunidad o del sistema de gestión? ¿Valen los umbrales de
+   «gran volumen» de la RD 100-2025-JUS/DGTAIPD?
+4. Para Brasil, ¿basta la excepción del contrato con la persona (ley, art.
+   15.4), o hacen falta cláusulas con el proveedor?
+5. ¿Qué deben aceptar los guardianes para ver lo oculto?
 
-### P6. ¿Las deudas, los problemas con SUNAT y lo que vende son datos sensibles?
+### P6. Lo que cada uno cuenta de su plata
 
-**Contexto.** La Ley 29733 (art. 2, numeral 5) cuenta los «ingresos
-económicos» entre los datos sensibles. Según su resumen público, la Opinión
-Consultiva N.° 032-2022-JUS/DGTAIPD dice que también lo es la información con
-reserva tributaria. Para tratar un dato sensible, el consentimiento tiene que
-darse por escrito (art. 13, numeral 13.6). En la comunidad, la gente cuenta
-cuánto vende, cuánto debe y qué problema tiene con SUNAT. Lo cuenta de sí
-misma, a veces con firma y a veces sin ella. La pregunta ya estaba abierta en
-[comunidad.md](comunidad.md) y en [comunidad-evidencia.md](comunidad-evidencia.md).
+**Se encontró.** Los «ingresos económicos» son sensibles por ley (art. 2.5), y
+piden consentimiento por escrito (art. 13.6), que puede ser una firma
+electrónica (reglamento de datos, art. 8). Probarlo le toca a Coddvisor (art.
+9). Una opinión consultiva de la autoridad (032-2022, no obligatoria) trata
+también como sensible lo que tiene reserva tributaria. Está prohibido obtener
+de un menor información económica de su familia sin el permiso de esta (art.
+23.1).
+
+**Se propone (N4).** Cuando el texto trae plata, ofrecer un rango o publicar
+sin firma, y pedir una confirmación propia, guardada como prueba.
 
 **Preguntas.**
 
-1. ¿Las deudas, las multas o los problemas con SUNAT que una persona cuenta de
-   su propio negocio son datos sensibles? ¿Y lo que vende o lo que gana?
-2. Si lo son, ¿qué consentimiento basta? ¿Vale aceptarlo en la pantalla, con un
-   botón, en el momento de publicar?
-3. ¿Cambia algo si lo publica sin firma, o si el negocio es de una persona
-   jurídica?
-4. ¿Qué hacemos cuando alguien publica datos sensibles de otro, como lo que
+1. ¿Las deudas, las multas y los problemas con SUNAT son sensibles, como los
+   ingresos? ¿Y lo que vende un negocio de persona jurídica?
+2. ¿Esa confirmación, con la sesión abierta y la versión del texto y la hora
+   guardadas, cuenta como consentimiento por escrito?
+3. ¿Qué hacemos cuando alguien publica datos sensibles de otro, como lo que
    gana su trabajador o la enfermedad de una clienta?
 
 ### P7. El mínimo de 10 perfiles para mostrar la descripción completa
@@ -587,145 +653,153 @@ negocio». Se calcula al mostrar, también en lo ya publicado. El 10 es el ajust
 `descripcion_minimo`, que eligió la fundadora el 26-nov para confirmarlo con el
 abogado. Se descartaron 5, porque un vecino puede adivinar quién es, y 20,
 porque casi todos saldrían como «Dueña de un negocio» durante meses
-([comunidad-etapa-1.md](comunidad-etapa-1.md)). El reglamento trata como dato
-personal lo que identifica a alguien al combinar datos con medios razonables,
-incluida su situación económica (art. III.4, según
-[comunidad-evidencia.md](comunidad-evidencia.md)).
+([comunidad-etapa-1.md](comunidad-etapa-1.md)).
+
+**Se encontró.** El perfil achicado sigue siendo un dato personal, porque
+Coddvisor sabe de quién es. El mínimo protege a la persona de los lectores,
+pero no saca el dato de la ley (reglamento de datos, art. III.4).
 
 **Preguntas.**
 
 1. ¿10 es un mínimo razonable? ¿Hay una referencia que la autoridad acepte?
-2. El nombre de pila no se cuenta, y la forma de escribir también delata. ¿Basta
-   con decirlo y ofrecer «Publicar sin firma»?
+2. El nombre de pila no se cuenta, y la forma de escribir también delata.
+   ¿Basta con decirlo y ofrecer «Publicar sin firma»?
 3. ¿El mínimo tiene que ser más alto en los espacios delicados, como SUNAT?
 
 ### P8. La edad mínima
 
-**Contexto.** Las normas dicen que la comunidad es para mayores de 18 años,
-que es la mayoría de edad en el Perú. Se entra con Google, y una cuenta de
-Google puede ser de alguien menor. Muchos jóvenes de 16 o 17 años atienden el
-negocio de su familia. Según fuentes secundarias, el reglamento pide el
-permiso de los padres para tratar datos de menores de 14 años; no se confirmó
-en el texto oficial del D.S. 016-2024-JUS.
+**Se encontró.** La capacidad plena llega a los 18 años (Código Civil, art.
+42). Entre los 16 y los 18 un contrato es anulable, y solo puede pedirlo el
+menor o quien lo representa (arts. 44 y 222). Desde los 14 años un menor
+consiente solo para sus datos, y antes consienten sus padres (reglamento de
+datos, arts. 22 y 25). Se entra con Google, y una cuenta de Google puede ser de
+alguien menor.
 
-**Lo que se propone.** 18 años, que la persona confirma al entrar. Si se sabe
-que un perfil es de un menor, se cierra y se borran sus datos de la comunidad.
+**Se propone.** 18 años, como requisito para entrar, que la persona confirma.
 
 **Preguntas.**
 
-1. ¿18 es la edad correcta? ¿Podría ser 14 o 16, con el permiso de los padres?
+1. ¿18 es la edad correcta, o conviene 16 con el permiso de los padres, para
+   los jóvenes que atienden el negocio de su familia?
 2. ¿Basta con que la persona confirme su edad al entrar?
 3. Si descubrimos a un menor, ¿qué hacemos con lo que publicó: se borra, o se
    queda sin nombre?
 
 ### P9. Lo publicado: de quién es y qué puede hacer Coddvisor con ello
 
-**Contexto.** Lo que la persona escribe es suyo. Los términos le piden un
-permiso gratis, no exclusivo y que no vence. Sirve para mostrarlo, dejar que lo
-lean los buscadores, llevar una duda a la guía de su tema y guardarlo sin
-nombre cuando la persona se va. Las guías están en el sitio de Coddvisor, que
-también presenta su sistema. El permiso es una lista cerrada.
+**Se encontró.** El autor tiene derechos morales que no se renuncian, entre
+ellos el de retirar su obra aunque haya dado permiso, si antes indemniza a
+quien perjudique (D. Leg. 822, arts. 21 y 27). Los permisos se leen estrictos:
+cada uso nombrado, el territorio dicho y gratis solo si lo dice (arts. 89 y
+95).
+
+**Se propone.** El permiso nombra cada uso, dice «gratis» y «para todo el
+mundo», y el autor puede retirar su texto cuando quiera.
 
 **Preguntas.**
 
-1. ¿Es válido ese permiso, tal como está escrito, para el Decreto Legislativo
-   822? ¿Qué pasa con los derechos morales del autor cuando su texto queda
-   como «Alguien que dejó la comunidad»?
-2. Si la persona pide borrar sus datos, ¿basta con quitar su nombre, o puede
-   exigir que se borre el texto? ¿Y si el texto la identifica por lo que
-   cuenta?
-3. ¿Podemos llevar una respuesta de la comunidad a una guía sin pedir permiso
-   cada vez?
+1. ¿Es válido el permiso tal como está escrito? ¿Qué más hace falta para que
+   valga como escrito (art. 95)?
+2. Si otra empresa siguiera con la comunidad, ¿cómo pasa el permiso?
+3. Si la persona pide borrar sus datos, ¿basta con quitar su nombre, o puede
+   exigir que se borre el texto?
+4. Lo firmado «Equipo de Coddvisor» es contenido propio (#94 y #98). ¿Qué
+   cuidado pide la ley si una respuesta de ejemplo resulta equivocada?
 
 ### P10. «Oportunidades»
 
-**Contexto.** Es el único espacio para ofrecer y buscar productos, servicios,
-proveedores y trabajo. Publicar ahí pide nivel y tiene un tope por semana. Un
-freno de palabras detiene «ingresos extra», multinivel y pirámides. Coddvisor
-no participa en los tratos ni cobra por ellos. La Ley 26772 prohíbe requisitos
-discriminatorios en las ofertas de empleo, y su reglamento (D.S. 002-98-TR)
-sanciona a los medios que las difunden (según un texto secundario; a
-confirmar).
+**Se encontró.** No hay una ley contra el multinivel: se castiga captar dinero
+del público sin autorización (Código Penal, art. 246) y la estafa. Una oferta
+de trabajo no puede pedir requisitos discriminatorios, y el medio que la
+difunde debe dar información a la autoridad de trabajo (Ley 26772; D.S.
+002-98-TR, art. 2). La plataforma pasiva no responde por las ofertas, pero sí
+por lo que promete de ellas (resoluciones del Indecopi).
+
+**Se propone.** Frenar el reclutamiento y la promesa de ganar por sumar
+personas, no la palabra «multinivel» (N5). Una lista de lo que no se ofrece. El
+alcohol, solo con licencia y con la advertencia de ley.
 
 **Preguntas.**
 
-1. ¿Responde Coddvisor por una oferta engañosa o una estafa publicada en
-   «Oportunidades»?
-2. ¿Cuenta la comunidad como un medio para la Ley 26772? ¿Qué debe decir la
-   norma sobre las ofertas de trabajo?
-3. ¿Hay productos o servicios que la norma debe prohibir por ley, como
-   medicinas, alcohol, armas o productos sin registro?
+1. ¿Está completa la lista de lo que no se ofrece?
+2. ¿Responde Coddvisor por una estafa publicada en «Oportunidades», si no
+   cobra, no pasa el pago y no garantiza a nadie?
+3. ¿Basta el formulario de trabajo sin casillas de edad, sexo ni apariencia?
 
 ### P11. Aceptar, cambiar y reclamar
 
-**Contexto.** Las normas y los términos se aceptan con un botón al entrar, y se
-guarda qué versión aceptó cada persona. La comunidad es gratis, pero es de una
-empresa que vende un sistema, y quienes entran son en su mayoría dueños de
-negocio.
+**Se encontró.** El Código del Consumidor cubre lo gratis que tiene un
+propósito comercial (Ley 29571, art. III.3). No valen las cláusulas que liberan
+a quien redactó ni las que le dan el poder de suspender o resolver a su gusto
+(Código Civil, art. 1398; Ley 29571, art. 50). En la duda, se lee a favor de la
+persona (Código Civil, art. 1401). Toda plataforma digital de comercio
+electrónico tiene libro de reclamaciones (Ley 29571, arts. 150 y 151).
 
 **Preguntas.**
 
-1. ¿Basta un botón «Acepto» para que los términos valgan? ¿El consentimiento
-   para los datos tiene que ir aparte?
-2. ¿Con cuánta anticipación hay que avisar un cambio? ¿Cuándo hay que pedir que
-   acepten de nuevo?
-3. ¿Aplica el Código de Protección y Defensa del Consumidor (Ley 29571), aunque
-   la comunidad sea gratis? Si aplica, ¿hace falta un libro de reclamaciones en
-   la comunidad?
-4. ¿Qué ley y qué jueces conviene fijar, pensando en un segundo país?
-5. ¿Es válido decir que no podemos prometer que nunca se pierda nada?
-6. ¿Qué falta para publicar los términos: la razón social, el RUC, un
+1. ¿Las consecuencias graduales, aplicadas con reglas objetivas, evitan el
+   problema del art. 1398 y del art. 50?
+2. ¿Hace falta un libro de reclamaciones propio de la comunidad, o basta el del
+   sitio?
+3. ¿Con cuánta anticipación hay que avisar un cambio?
+4. ¿Qué falta para publicar los términos: la razón social, el RUC, el
    domicilio?
+5. ¿Está bien no fijar jueces, y decir «ante el Indecopi o ante los jueces que
+   correspondan según la ley»?
 
 ### P12. Los guardianes
 
-**Contexto.** Coddvisor nombra a los primeros guardianes, con un tope; después
-los elige la propia comunidad, por medio de sus guardianes
-([comunidad-etapa-1.md](comunidad-etapa-1.md)). Ocultan, restauran y mueven
-publicaciones, ven lo oculto y publican lo sin firma. No son del equipo ni cobran. Quien
-rompe las normas una y otra vez pierde permisos (norma 8).
+**Se encontró.** Quien tiene a otro bajo sus órdenes responde por él (Código
+Civil, art. 1981). Responde también quien tiene poder de decisión sobre lo que
+se publica y autoriza material sexual de menores (Código Penal, art. 129-N).
+Usar mensajería externa con datos pide una aprobación formal (reglamento de
+datos, art. 46.4).
 
 **Preguntas.**
 
-1. ¿Qué relación tienen con Coddvisor? ¿Responde Coddvisor por lo que deciden?
-2. ¿Cambia algo que Coddvisor nombre a los primeros, frente a que los elija la
-   comunidad?
-3. Quitarle permisos a alguien por romper las normas, ¿exige avisarle, decirle
-   por qué y dejarle apelar? ¿Basta con «Pedir ayuda a Coddvisor» como
-   apelación?
+1. Si los guardianes aplican solo normas publicadas y Coddvisor no les da
+   órdenes, ¿quedan fuera del art. 1981?
+2. ¿Qué compromiso deben aceptar: confidencialidad, no sacar nada de la
+   comunidad, el protocolo de menores?
+3. ¿Cambia algo que Coddvisor nombre a los primeros?
+4. Quitarle permisos a alguien, ¿exige avisarle, decirle por qué y dejarle
+   apelar? ¿Basta «Pedir ayuda a Coddvisor» como apelación?
 
 ## Lo que decide la fundadora
 
-Tres decisiones cambian el texto que va al abogado. Cada una va con la
+Cinco decisiones cambian el texto que va al abogado. Cada una va con la
 recomendada primero. **Si no responde, el borrador va al abogado con la opción
 recomendada de cada una.**
 
-### N1. ¿Quién puede pedir ayuda a Coddvisor sin tener cuenta?
+### N1. ¿Cómo se atiende un problema con una publicación?
 
 | Opción | Gana | Paga |
 |---|---|---|
-| **A. También quien no es miembro, desde cada publicación** (recomendada) | El proveedor, el trabajador o la clienta nombrada pide ayuda sin crear una cuenta. El pedido entra al mismo registro y a la cuenta del año. Coddvisor se entera por la comunidad, no por una notificación del juez | Una puerta abierta se puede usar para molestar, como un competidor que pide ocultar cada opinión sobre su empresa. Por eso lleva la prueba de que no es un robot y un tope por publicación, y no oculta nada sola. Hay más pedidos para el equipo |
-| B. Por correo a equipo@coddvisor.com, como ya dice el aviso de privacidad | Nada que construir | El pedido queda fuera del registro y de la cuenta del año, y el plazo depende de que alguien lea el buzón |
-| C. Solo los miembros, como hoy | Menos pedidos | Quien es nombrado y no tiene cuenta solo puede ir a un juez, y lo primero que sabe Coddvisor es la denuncia |
+| **A. Dos puertas, abiertas sin cuenta** (recomendada). «Es peligroso» oculta al momento; «No es cierto o me perjudica» pone la respuesta debajo, saca la publicación de los buscadores y le pide al autor que la sostenga o la retire | El afectado, que casi nunca es miembro, tiene una salida rápida. Coddvisor actúa igual cada vez que se entera, con registro: eso muestra el cuidado debido | Una puerta abierta se puede usar para molestar. Lleva la prueba de que no es un robot, un tope por publicación, y lo que el autor sostuvo no se oculta otra vez por el mismo reclamo. Hay más trabajo para el equipo en lo peligroso |
+| B. Un solo botón «Pedir ayuda», solo para miembros, como estaba | Menos que construir | Quien es nombrado y no tiene cuenta solo puede ir a un juez, y lo primero que sabe Coddvisor es la denuncia |
+| C. Todo por correo a equipo@coddvisor.com | Nada que construir | Queda fuera del registro, del plazo y de la cuenta del año |
 
 **Por qué A.** La decisión del 27-nov dice que Coddvisor entra «cuando alguien
-se lo pide». A hace que ese «alguien» incluya a quien más lo necesita, que
-casi nunca es miembro. **Se rompe si** la puerta se vuelve el camino para tapar
-opiniones incómodas: por eso el pedido no oculta nada solo y el tope es por
-publicación.
+se lo pide». A hace que ese «alguien» incluya a quien más lo necesita, y que
+cada vez que Coddvisor se entera haga lo mismo. Es la división que usan las
+cortes de Argentina y Brasil: lo manifiesto se oculta con un aviso; lo que pide
+aclarar hechos va a un juez. **Se rompe si** la vía de disputa se vuelve el
+camino para tapar opiniones incómodas: por eso el tope es por publicación y lo
+sostenido no se oculta dos veces.
 
-### N2. ¿A quién se puede nombrar al contar un hecho?
+### N2. ¿Qué se puede contar de otros?
 
 | Opción | Gana | Paga |
 |---|---|---|
-| **A. A una empresa o un negocio, sí; a una persona, no** (recomendada) | Queda lo que más le sirve a otro dueño: saber qué proveedor cumple. Un trabajador, una clienta o un vecino nunca quedan nombrados junto a un hecho que los perjudica | La norma es un poco más larga. El freno no reconoce solo el nombre de una persona: lo cuidan la norma, los reportes y los guardianes |
-| B. Como se aprobó: a cualquiera; solo se frena la acusación de un delito | La norma más corta | La difamación castiga atribuir un hecho que perjudique, no solo un delito (P1). Nombrar a una persona es, además, publicar un dato personal suyo |
+| **A. Hechos, no culpables** (recomendada). Se nombran empresas y negocios, nunca personas; se frenan los calificativos y los insultos; la experiencia con un proveedor tiene su formato y la marca «tengo cómo mostrarlo»; sin firma no se nombra a nadie | Queda lo que más le sirve a un dueño, saber qué proveedor cumple, contado de la forma que la ley defiende | La norma es más larga, y contar una experiencia pide un paso más |
+| B. Como se aprobó: solo se frena la acusación de un delito | La norma más corta | La difamación alcanza los hechos y los calificativos, y en una comunidad abierta es la forma agravada (P1) |
 
 **Por qué A.** El freno nació para nombrar empresas («Nombrar empresas», en la
-#85), y el ejemplo aprobado es un proveedor. A deja la regla donde sirve y la
-quita donde solo hace daño. **Se rompe si** el negocio lleva el nombre de su
-dueño, como la bodega que se llama como quien la atiende: nombrar el negocio
-es nombrar a la persona. Lo responde el abogado (P1, pregunta 4).
+#85). A lo deja donde sirve y lo cierra donde la ley no defiende: el insulto,
+la persona nombrada y lo anónimo que señala a otro. **Se rompe si** el negocio
+lleva el nombre de su dueño, como la bodega que se llama como quien la atiende:
+nombrar el negocio es nombrar a la persona. Lo responde el abogado (P1,
+pregunta 3).
 
 ### N3. ¿Qué quiere decir «sin publicidad»?
 
@@ -736,19 +810,62 @@ es nombrar a la persona. Lo responde el abogado (P1, pregunta 4).
 | C. Coddvisor puede promover su sistema dentro de la comunidad | Más pedidos para probarlo | «Sin publicidad» deja de ser verdad, y la comunidad se vuelve un anuncio |
 
 **Por qué A.** «Lo que no existe, no lo anunciamos» vale también al revés: lo
-que se promete tiene que ser verdad el día que se lee. **Se rompe si** alguien
-pone un «Pruebe Coddvisor» junto a una pregunta de caja: desde ese día, la
-frase de los términos es falsa.
+que se promete tiene que ser verdad el día que se lee. Y cuando el equipo nombre
+su sistema en una conversación, lo dice, como pide la norma 7. **Se rompe si**
+alguien pone un «Pruebe Coddvisor» junto a una pregunta de caja: desde ese día,
+la frase de los términos es falsa.
+
+### N4. ¿Cómo se contactan en «Oportunidades», y qué pasa con la plata que se cuenta?
+
+| Opción | Gana | Paga |
+|---|---|---|
+| **A. El número nunca a la vista** (recomendada). «Me interesa», y quien publicó decide si pasa su WhatsApp; no hay mensajes privados entre desconocidos; la plata, en un rango o sin firma, con una confirmación propia | Nadie arma una lista de números y ventas para extorsionar. Es un toque y termina en WhatsApp. El consentimiento para el dato sensible queda probado | Un paso más para contactar, y una confirmación cuando se cuenta plata |
+| B. Cada uno pone su número en la oferta | Lo más rápido | Números y ventas a la vista de los buscadores, en un país donde casi todos los bodegueros han sufrido extorsión. Rompe la norma 5 |
+| C. Mensajes privados dentro de la comunidad | Todo queda adentro | Hay que cuidar los chats: estafas, acoso y contacto con menores (Ley 30096, art. 5) |
+
+**Por qué A.** Cuida a la persona, que es lo primero, y además cumple la ley de
+datos sin pedirle nada raro. **Se rompe si** alguien escribe su número dentro
+de una foto o con letras: el aviso de datos personales mira también eso, y la
+norma 5 lo prohíbe.
+
+### N5. ¿Qué se frena en «Oportunidades»: la palabra «multinivel» o la promesa?
+
+| Opción | Gana | Paga |
+|---|---|---|
+| **A. La promesa y el reclutamiento** (recomendada). Se puede ofrecer lo que se vende, también por catálogo; no se recluta gente, no se cobra por entrar a un negocio y no se promete ganar por sumar personas | No deja fuera a la dueña que vende por catálogo, que es legal y común. Frena lo que la ley castiga y lo que ensucia la comunidad | El freno tiene que aprender frases nuevas, y algunos casos van a los guardianes |
+| B. Como se aprobó el 27-nov: no se acepta el multinivel | La regla más simple | Saca a vendedoras que trabajan dentro de la ley, y quien recluta usa otra palabra |
+
+**Por qué A.** Ninguna norma peruana prohíbe el multinivel; lo que se castiga
+es captar dinero del público sin autorización y estafar (P10). Lo que delata a
+una pirámide es cobrar por entrar y pagar por sumar gente, no su nombre. **Se
+rompe si** el reclutamiento se disfraza de venta («compre el kit y empiece»):
+pagar por entrar a vender es justo lo que la norma 4 no deja.
+
+### Lo que hay que hacer antes de abrir, y no es opcional
+
+Salieron de la revisión. No son decisiones: son obligaciones, y esta solicitud
+no contrata ni hace ninguna.
+
+- **Contratar copias de respaldo semanales** para la comunidad (reglamento de
+  datos, art. 51.1). Antes era una recomendación en
+  [comunidad.md](comunidad.md); ahora es la ley.
+- **Inscribir el banco de datos y comunicar el envío de datos a Brasil**
+  (arts. 42.1 y 21.2).
+- **Tener el protocolo de material sexual de menores** antes de abrir (Código
+  Penal, art. 129-M).
+- **Elegir al abogado** y mandarle este documento con
+  [comunidad-riesgos-legales.md](comunidad-riesgos-legales.md). Lo natural es el
+  mismo que revise `/privacidad/`, porque P4, P5, P6 y P11 tocan también el
+  aviso de privacidad.
+- **Nombrar un representante** para los avisos de derechos de autor (D. Leg.
+  1724) y **tener el libro de reclamaciones virtual** del sitio.
+- **Completar la razón social, el RUC y el domicilio** de los términos.
 
 ### Lo que no es decisión de hoy
 
-- **Elegir al abogado y cuándo se le manda.** Esta solicitud no contrata a
-  nadie. Lo natural es el mismo que revise `/privacidad/`, como dice
-  [comunidad.md](comunidad.md), porque P4, P5, P6 y P11 tocan también el aviso
-  de privacidad.
 - **Usar lo publicado para un asistente de inteligencia artificial.** Los
-  términos no lo permiten (punto 8). Si algún día se quiere, se decide antes
-  de abrir: pedirlo después obliga a preguntarle a cada persona.
+  términos no lo permiten (punto 8). Si algún día se quiere, se decide antes de
+  abrir: pedirlo después obliga a preguntarle a cada persona.
 
 ## Lo que este borrador supone y la etapa 4 tiene que diseñar
 
@@ -756,24 +873,31 @@ Los textos prometen cosas que todavía no tienen diseño. Si la etapa 4 no las
 construye, el texto se corrige antes de publicarse, porque lo que no existe no
 se anuncia.
 
-1. **La puerta sin cuenta** de «Pedir ayuda a Coddvisor», si la fundadora
-   elige N1-A.
-2. **Perder permisos por romper las normas una y otra vez** (norma 8). Hoy el
-   nivel solo baja por inactividad, y lo calcula la base desde su libro de
-   evidencia ([comunidad-etapa-1.md](comunidad-etapa-1.md), aprendizaje 8). La
-   falta tiene que entrar a ese libro.
-3. **Los avisos de lo que se decidió**, a quien pidió ayuda y a quien publicó
-   lo oculto o lo retirado. Con un texto genérico, para no delatar a quien
+1. **Las dos puertas** de «¿Hay un problema?», sin cuenta (N1).
+2. **La vía de disputa**: la respuesta fijada, la publicación fuera de los
+   buscadores, el aviso al autor y su plazo.
+3. **El formato de las experiencias**, la marca «tengo cómo mostrarlo» y el
+   resumen de un proveedor con su mínimo.
+4. **El freno de calificativos e insultos**, y que sin firma no se nombre a
+   nadie.
+5. **«Me interesa»** y la confirmación cuando se cuenta plata (N4).
+6. **Las consecuencias graduales**, calculadas desde el libro de evidencia
+   ([comunidad-etapa-1.md](comunidad-etapa-1.md), aprendizaje 8).
+7. **Los avisos con su motivo**, con un texto genérico para no delatar a quien
    publicó sin firma (aprendizaje 3).
-4. **Guardar aparte lo retirado por orden legal**, sin borrarlo y fuera de
-   circulación en un solo lugar (aprendizaje 10).
-5. **Borrar del todo una publicación propia que trae datos suyos**, a pedido,
-   sin que falle por lo que la cita (aprendizaje 6).
-6. **Confirmar la edad al entrar**, en la misma pantalla de las normas.
-7. **La página pública con la cuenta del año.**
-8. **Avisar un cambio de normas y pedir que se acepten de nuevo**, sin perder
-   lo que la persona estaba escribiendo (EX-12). Si la versión cambia mientras
-   escribe, lo escrito se guarda y se le pide aceptar antes de enviarlo.
+8. **Guardar aparte lo retirado por orden legal**, fuera de circulación en un
+   solo lugar (aprendizaje 10).
+9. **Retirar su texto**, y borrar del todo lo propio que trae datos suyos, sin
+   que falle por lo que lo cita (aprendizaje 6).
+10. **El bloqueo del lazo de lo sin firma**, con su plazo como ajuste.
+11. **El protocolo de material sexual de menores**: ocultar, denunciar y borrar
+    sin archivo.
+12. **Confirmar la edad al entrar**, en la misma pantalla de las normas.
+13. **La página pública con la cuenta del año.**
+14. **Avisar un cambio de normas y pedir que se acepten de nuevo**, sin perder
+    lo que la persona estaba escribiendo (EX-12).
+15. **La advertencia automática en las ofertas de alcohol** y el formulario de
+    trabajo sin casillas de edad, sexo ni apariencia.
 
 ## Cómo llega esto al sistema
 
@@ -784,6 +908,9 @@ se anuncia.
   `comunidad.perfil.normas_version` guarda la que aceptó cada persona. Una
   versión nueva es una fila nueva con su fecha, y la anterior no se pisa. Así se
   puede decir qué aceptó cada quien y cuándo.
+- **Cada aceptación guarda su prueba**: la versión exacta, la fecha y la hora,
+  la cuenta y la huella del texto. Es lo que hace de un toque una firma
+  electrónica simple (Ley 27269, art. 1).
 - **El consentimiento para los datos va aparte**, si el abogado lo pide (P6 y
   P11). Va en el registro de consentimientos de D27, con su finalidad, no como
   otra versión de las normas.
@@ -800,7 +927,5 @@ sensible. Eso va al registro de consentimientos, no a una segunda versión.
   etapa 4 ([comunidad-etapa-1.md](comunidad-etapa-1.md)).
 - **Dónde se publican los textos en el sitio**, por ejemplo
   `/comunidad/normas/` y `/comunidad/terminos/`. Va con la etapa 4.
-- **El plan pagado con copias diarias**, antes de abrir. Mientras no exista, los
-  términos no prometen copias.
 - **Los términos del sistema de gestión.** Son otro documento, con el contrato
   de encargo de D27.

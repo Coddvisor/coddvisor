@@ -280,7 +280,8 @@ permisos que se ganan:
 - **Normas de convivencia** cortas, que se aceptan al entrar y se ven siempre.
   Lo que más frena las agresiones es la costumbre del grupo, no el nombre real.
   Su borrador para el abogado, con los términos de la comunidad, está en
-  [comunidad-normas.md](comunidad-normas.md).
+  [comunidad-normas.md](comunidad-normas.md), y la revisión norma por norma, en
+  [comunidad-riesgos-legales.md](comunidad-riesgos-legales.md).
 - **Difamación**: en el Perú no se encontró una norma que proteja al sitio por
   lo que escriben otros. Lo revisa un abogado antes de abrir. Mientras, un
   freno: una acusación de delito con nombre («son unos estafadores») se detiene
@@ -372,7 +373,9 @@ la propuesta de identidad y lo hace usted, porque son sus cuentas:
 4. **Una decisión de pago, antes de abrir la comunidad:** el plan gratis de
    Supabase no hace copias de seguridad, y la comunidad guarda lo que escriben
    otros. Se recomienda el plan pagado con copias diarias. No se contrata sin su
-   orden.
+   orden. (Desde el 27-nov no es solo una recomendación: el reglamento de la ley
+   de datos pide una copia de respaldo cada semana, art. 51.1. Ver
+   [comunidad-riesgos-legales.md](comunidad-riesgos-legales.md).)
 
 ## Qué se mide
 
