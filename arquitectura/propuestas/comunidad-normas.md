@@ -21,8 +21,9 @@ norma, está en [comunidad-riesgos-legales.md](comunidad-riesgos-legales.md).
 - **Nada de esto vale todavía.** Todo es borrador para el abogado. Si su
   revisión no llega cuando termine la etapa 4, la comunidad no abre: sigue en
   el entorno de pruebas.
-- **Cinco decisiones de la fundadora** cambian el texto que va al abogado (ver
-  «Lo que decide la fundadora»).
+- **Siete decisiones de la fundadora** cambian el texto que va al abogado (ver
+  «Lo que decide la fundadora»). Ninguna está tomada: el texto lleva la opción
+  recomendada, y cada frase que depende de una decisión lo dice en sus notas.
 - **El hallazgo que más pesa.** Contar un hecho ya puede ser difamación
   (Código Penal, art. 132), y en una comunidad abierta es la forma agravada,
   como en una red social (R.N. 1495-2019-Lima). El freno solo cubría la
@@ -40,7 +41,7 @@ revisión norma por norma y cambia:
   semanales y los motivos de un cambio;
 - los textos de pantalla y las preguntas para el abogado, que ahora dicen lo
   que ya se encontró;
-- dos decisiones nuevas, N4 y N5, y unas N1 y N2 más completas;
+- cuatro decisiones nuevas, de N4 a N7, y unas N1 y N2 más completas;
 - las frases que propusieron Coddvisor/coddvisor#94 y Coddvisor/coddvisor#98
   para el contenido inicial: lo firmado «Equipo de Coddvisor» es de Coddvisor,
   no de terceros;
@@ -79,7 +80,14 @@ revisión de la comunidad. Este borrador parte de:
   pantalla: trata de usted y va en frases cortas (EX-01 y EX-02 de
   [04-experiencia.md](../bases/04-experiencia.md)).
 - **Las notas para la revisión** van debajo de cada texto: de dónde sale cada
-  punto y qué pregunta del abogado lo toca (P1 a P12).
+  punto, qué decisión lo cambia (N1 a N7) y qué pregunta del abogado lo toca (P1
+  a P12).
+- **Lo que depende de una decisión va con la opción recomendada**, y su nota lo
+  dice. Si la fundadora elige otra, esa frase cambia.
+- **Lo incompleto está marcado.** Cada pregunta dice qué se encontró y qué
+  falta. Lo que no se pudo confirmar está en la lista del final de
+  [comunidad-riesgos-legales.md](comunidad-riesgos-legales.md). Nada se da por
+  cerrado hasta que responda el abogado.
 - **Los números son ajustes, no programa.** Los 18 años, los 10 perfiles, los
   topes, los plazos y el teléfono de la Policía son datos. Viven en
   `comunidad.ajuste` o en el catálogo de textos, por país y con fecha, como
@@ -193,7 +201,7 @@ revisión de la comunidad. Este borrador parte de:
 | 7 | Nueva. Decir lo que uno gana evita la publicidad encubierta (D. Leg. 1044, art. 16) | P10 |
 | 8 | «Reportes» ([comunidad.md](comunidad.md)). Las dos puertas son la decisión N1. Las consecuencias graduales salen del Código Civil, art. 1398, y de la Ley 29571, art. 50 | P1, P11, P12 |
 | 9 | «Cuentas nuevas» y «Niveles de confianza» ([comunidad.md](comunidad.md)) | |
-| 10 | «Coddvisor, solo a pedido» (decisión del 27-nov). Entrar si ve algo grave evita mirar a otro lado después de enterarse. El 105 es el teléfono de emergencia de la Policía del Perú: un dato del país | P1, P4 |
+| 10 | «Coddvisor, solo a pedido» (decisión del 27-nov). «Si ve algo grave» es la decisión N6, y cambia lo decidido el 27-nov: si la fundadora elige B, se quita. El 105 es el teléfono de emergencia de la Policía del Perú: un dato del país | P1, P4 |
 
 ## Parte 2. Términos de la comunidad
 
@@ -210,9 +218,8 @@ revisión de la comunidad. Este borrador parte de:
 >   guarda sin su nombre. Puede retirar su texto cuando quiera.
 > - Coddvisor no revisa lo que se publica. Entra si alguien se lo pide, si ve
 >   algo grave o si lo ordena una autoridad.
-> - Si publica sin firma, nadie ve su nombre. Coddvisor sabe que es suyo. Solo
->   lo diría ante la orden escrita de un juez o de un fiscal, o para proteger a
->   un menor.
+> - Si publica sin firma, nadie ve su nombre. Coddvisor sabe que es suyo, y solo
+>   lo diría ante la orden escrita de un juez o de un fiscal.
 > - Puede irse cuando quiera y pedir que borremos sus datos.
 >
 > **1. Qué es este acuerdo**
@@ -326,8 +333,8 @@ revisión de la comunidad. Este borrador parte de:
 > - Antes de mostrarla, la revisa un guardián. Ve el texto, nunca a usted. Si
 >   nadie la revisa en un plazo, se publica sola.
 > - Al publicar, la pantalla le dice: «Su nombre no se mostrará. Coddvisor sabe
->   que usted lo escribió. Solo lo diría ante la orden escrita de un juez o de un
->   fiscal, o para proteger a un menor».
+>   que usted lo escribió, y solo lo diría ante la orden escrita de un juez o de
+>   un fiscal».
 > - Es verdad: la base de datos guarda quién la escribió, aparte, en un lugar
 >   que el programa de la comunidad no puede leer. Si usted pide ayuda por esa
 >   publicación, el equipo la ve como «quien la escribió», nunca su cuenta.
@@ -448,13 +455,13 @@ Cada punto remite a la ficha de
 | 1 | La razón social, el RUC y el domicilio están pendientes, como en el aviso de privacidad (`titular` en `privacidad.astro`) | P11 |
 | 2 | Las cuentas de Coddvisor son las del sistema (decisión del 26-nov). Los 18 años son un requisito de la oferta: ficha «La edad para aceptar» | P8 |
 | 3 | Las preguntas de ejemplo, de la #94 y la #98. Los frenos se anuncian y dejan pedir una persona: ficha «El freno automático». Copias semanales: ficha «Registros, canales y copias». Libro de reclamaciones: su ficha | P5, P11 |
-| 4 | Decisiones del 27-nov. Ver algo grave y actuar: ficha «¿Responde Coddvisor?». El sello dice lo que comprueba: ficha «Alojar ofertas de otros» | P1, P10 |
+| 4 | Decisiones del 27-nov. «Si alguien del equipo ve algo grave» es la decisión N6, que cambia lo decidido el 27-nov; si la fundadora elige B, se quita. Ficha «¿Responde Coddvisor?». El sello dice lo que comprueba: ficha «Alojar ofertas de otros» | P1, P10 |
 | 5 | Las dos puertas son la decisión N1 (invento 1) | P1, P4 |
 | 6 | Fichas «Quién puede pedir el nombre del autor» y «Lo que hacen los vecinos» | P2, P3 |
-| 7 | «Publicar sin firma» ([comunidad-etapa-1.md](comunidad-etapa-1.md)). No nombrar a nadie: ficha «La rectificación». El bloqueo: ficha «Borrar, bloquear y el nada se borra». Proteger a un menor: ficha «El material sexual de menores» | P2 |
+| 7 | «Publicar sin firma» ([comunidad-etapa-1.md](comunidad-etapa-1.md)). No nombrar a nadie: ficha «La rectificación». El bloqueo es la decisión N7: la #90 decía que se borra. «Juez o fiscal» precisa «una autoridad», lo aprobado; no agrega casos | P2 |
 | 8 | Ficha «El permiso sobre lo publicado» y la de los derechos de autor (D. Leg. 1724). El permiso es una lista cerrada: no incluye usar lo publicado para entrenar inteligencia artificial | P9 |
 | 9 | «Mal consejo de impuestos o leyes» ([comunidad.md](comunidad.md)), y lo firmado por el equipo, de la #94 y la #98 | P1, P9, P10 |
-| 10 | `archivar_perfil` y `olvidar_perfil`, que en la etapa 1 vacía también la cuenta del perfil (Coddvisor/coddvisor#92) | P2, P5, P9 |
+| 10 | `archivar_perfil` y `olvidar_perfil`, que en la etapa 1 vacía también la cuenta del perfil (Coddvisor/coddvisor#92). El bloqueo es la decisión N7 | P2, P5, P9 |
 | 11 | «Lo que no se hace» ([comunidad.md](comunidad.md)), la decisión N3 y la ficha «Los correos de aviso y las promociones» | P11 |
 | 12 | Ficha «Lo que los términos no pueden decir»: en vez de «no podemos prometer», lo que se hace | P11 |
 | 13 | Motivo del cambio y salida sin costo (Ley 29571, arts. 47 y 51). `normas_version` en `comunidad.perfil` | P11 |
@@ -465,7 +472,7 @@ Cada punto remite a la ficha de
 | Dónde | Texto propuesto |
 |---|---|
 | Al entrar por primera vez | «Para entrar, confirme que tiene 18 años o más y que acepta las normas y los términos de la comunidad.» Botón: «Acepto» |
-| Al publicar sin firma | «Su nombre no se mostrará. Coddvisor sabe que usted lo escribió. Solo lo diría ante la orden escrita de un juez o de un fiscal, o para proteger a un menor.» |
+| Al publicar sin firma | «Su nombre no se mostrará. Coddvisor sabe que usted lo escribió, y solo lo diría ante la orden escrita de un juez o de un fiscal.» |
 | Sin firma, con un nombre | «Sin firma no se nombra a nadie. Quite el nombre, o publíquelo con su firma.» |
 | El freno de calificativos y acusaciones | «Esta palabra califica a alguien, y la ley no la defiende aunque sea cierta. Cuente qué pasó y cuándo. Si cree que hubo un delito, aquí puede denunciarlo.» |
 | Al contar una experiencia con un proveedor | Casilla: «Lo que cuento lo viví y tengo cómo mostrarlo.» |
@@ -492,8 +499,9 @@ Cada punto remite a la ficha de
 
 Van en orden de cuánto pesan. La revisión norma por norma ya respondió una
 parte en fuentes públicas: cada pregunta dice qué se encontró y qué falta.
-Confirmarlo en el texto oficial es parte de la pregunta. El detalle y las
-fuentes de cada hallazgo están en
+Confirmarlo en el texto oficial es parte de la pregunta, y lo que una pregunta
+no dice que se encontró falta investigarlo. El detalle y las fuentes de cada
+hallazgo están en
 [comunidad-riesgos-legales.md](comunidad-riesgos-legales.md).
 
 ### P1. ¿Responde Coddvisor por lo que otros escriben?
@@ -544,9 +552,10 @@ responsabilidades (reglamento de datos, arts. 82.3 y III.2). Lo sin firma no
 está en boca de nadie determinado: Coddvisor queda como el único
 identificable.
 
-**Se propone.** El texto «...Solo lo diría ante la orden escrita de un juez o de
-un fiscal, o para proteger a un menor». Sin firma no se nombra a nadie. Al
-pedir el borrado, el lazo se bloquea.
+**Se propone.** Precisar el texto aprobado («solo lo diría si una autoridad lo
+pide por ley») como «...solo lo diría ante la orden escrita de un juez o de un
+fiscal». Sin firma no se nombra a nadie. Al pedir el borrado, el lazo se bloquea
+(decisión N7).
 
 **Preguntas.**
 
@@ -557,7 +566,8 @@ pedir el borrado, el lazo se bloquea.
 3. ¿Cuánto dura el bloqueo del lazo: el plazo de prescripción de la
    difamación, el de la acción civil u otro?
 4. ¿Es correcto denunciar por decisión propia solo el material sexual de
-   menores, y decirlo en la pantalla?
+   menores? Si para denunciarlo hay que entregar quién lo publicó sin firma,
+   ¿cambia la promesa de la pantalla, y cómo se dice?
 5. Si denuncian a Coddvisor por una publicación sin firma, ¿puede revelar al
    autor para defenderse, o solo si el juez se lo ordena?
 
@@ -767,9 +777,9 @@ datos, art. 46.4).
 
 ## Lo que decide la fundadora
 
-Cinco decisiones cambian el texto que va al abogado. Cada una va con la
-recomendada primero. **Si no responde, el borrador va al abogado con la opción
-recomendada de cada una.**
+Siete decisiones cambian el texto que va al abogado. Ninguna está tomada
+todavía. Cada una va con la recomendada primero. **Si no responde, el borrador
+va al abogado con la opción recomendada de cada una.**
 
 ### N1. ¿Cómo se atiende un problema con una publicación?
 
@@ -840,6 +850,40 @@ es captar dinero del público sin autorización y estafar (P10). Lo que delata a
 una pirámide es cobrar por entrar y pagar por sumar gente, no su nombre. **Se
 rompe si** el reclutamiento se disfraza de venta («compre el kit y empiece»):
 pagar por entrar a vender es justo lo que la norma 4 no deja.
+
+### N6. ¿Qué hace el equipo si ve algo grave sin que nadie lo pida?
+
+Cambia lo que decidió la fundadora el 27-nov: «Coddvisor entra solo a pedido»,
+cuando alguien toca «Pedir ayuda a Coddvisor» o lo ordena una autoridad.
+
+| Opción | Gana | Paga |
+|---|---|---|
+| **A. Lo atiende como un pedido de ayuda, con su registro** (recomendada) | Coddvisor no se queda quieto después de enterarse, que es cuando nace su riesgo (P1). Una amenaza o material sexual de menores no queda a la vista ni un minuto más | Se aparta un poco de «solo a pedido»: el que pide puede ser alguien del equipo. Hay que cuidar que no se vuelva vigilancia |
+| B. Como se decidió el 27-nov: solo a pedido o por orden | La regla más pura | Si alguien del equipo ve una amenaza o material de menores y nadie lo pidió, Coddvisor sabe y no hace nada. Es justo lo que la ley mira (Código Civil, art. 1969; Código Penal, art. 129-M) |
+
+**Por qué A.** «Solo a pedido» protege a la comunidad de un equipo que patrulla,
+y eso se mantiene: el equipo no sale a buscar. Pero lo que ya vio no lo puede
+dejar de ver. **Se rompe si** el equipo empieza a recorrer la comunidad para
+encontrar cosas: eso ya es patrullar, y lo prohíbe la misma decisión. Si la
+fundadora elige B, se quitan las frases del punto 4 y del «En corto» de los
+términos, y la de la norma 10.
+
+### N7. Al pedir el borrado, ¿qué pasa con lo que une a la persona con lo que publicó sin firma?
+
+La #90 decía que se borra. El reglamento de datos dice que pedir el borrado
+bloquea el dato, y que el bloqueo puede durar mientras prescriben las
+responsabilidades (arts. 82.3 y III.2).
+
+| Opción | Gana | Paga |
+|---|---|---|
+| **A. Se bloquea hasta que venza el plazo legal, y después se borra solo** (recomendada) | Si alguien fue difamado por algo sin firma, un juez todavía puede saber quién fue, y Coddvisor no queda como el único demandado | Quien pide borrar sus datos espera que se borren al momento. Los términos se lo tienen que decir con claridad |
+| B. Se borra al momento, como decía la #90 | Lo más simple de explicar | Se destruye la única forma de encontrar al autor. Si ya había un reclamo, puede verse como borrar pruebas, y el afectado solo puede ir contra Coddvisor |
+
+**Por qué A.** Nadie lee el lazo bloqueado, ni el equipo: solo sale ante la
+orden de un juez. La persona pierde lo mismo que con B, que su nombre quede a la
+vista de alguien, y la víctima no pierde su camino a la justicia. **Se rompe
+si** el bloqueo no tiene fin: por eso su plazo es un ajuste que fija el abogado
+(P2, pregunta 3), y al vencer se borra solo.
 
 ### Lo que hay que hacer antes de abrir, y no es opcional
 

@@ -23,7 +23,7 @@ resuelve el diseño de la comunidad.
 - **Tres cosas son obligatorias antes de abrir y no son opciones**: copias de
   respaldo cada semana, inscribir el banco de datos y un protocolo para el
   material sexual de menores, que nunca se archiva.
-- **Cinco decisiones de la fundadora** cambian los textos que van al abogado.
+- **Siete decisiones de la fundadora** cambian los textos que van al abogado.
   Están en [comunidad-normas.md](comunidad-normas.md), con su recomendación.
 - **No existe en el Perú una norma que proteja al sitio por lo que escriben
   otros**, salvo en derechos de autor. Este diseño baja el riesgo; no lo borra.
@@ -173,10 +173,11 @@ Por qué así:
 
 ### Y además
 
-- **El equipo actúa si ve algo grave.** No revisar por su cuenta no es mirar a
-  otro lado: lo que el equipo ve, lo atiende como un pedido de ayuda.
+- **El equipo actúa si ve algo grave** (decisión N6, que cambia lo decidido el
+  27-nov). No revisar por su cuenta no es mirar a otro lado: lo que el equipo
+  ve, lo atiende como un pedido de ayuda.
 - **El lazo de lo sin firma se bloquea, no se borra**, cuando la persona pide
-  borrar sus datos (reglamento de datos, art. 82.3). Nadie lo lee, solo sale con
+  borrar sus datos (reglamento de datos, art. 82.3; decisión N7). Nadie lo lee, solo sale con
   la orden de un juez y se borra al vencer el plazo legal.
 - **Un protocolo para el material sexual de menores**: se oculta, se denuncia y
   se borra, sin archivo.
@@ -393,7 +394,8 @@ y 76.
   único al que puede demandar es Coddvisor.
 - Se resuelve: al pedir el borrado, ese lazo queda **bloqueado**. Nadie lo lee,
   solo sale con la orden de una autoridad, y se borra cuando vence el plazo
-  (un ajuste que fija el abogado). Los términos lo dicen así.
+  (un ajuste que fija el abogado). Si la fundadora lo elige (N7), los términos
+  lo dicen así.
 - Certeza: texto oficial. El plazo, sin confirmar.
 
 **Que no salga en los buscadores.** Reglamento, art. 86.5.
@@ -754,8 +756,9 @@ y 51.a; Código Procesal Civil, art. 25.
 - Se resuelve: un protocolo de excepción, listo antes de abrir. Se oculta al
   momento por la vía rápida, se denuncia a la Policía con lo que ella pida, y se
   borra de todos los sistemas, sin archivo. Nadie hace capturas. La instrucción
-  del guardián dice: ante la duda, no publicar y pedir ayuda. El texto de
-  «Publicar sin firma» dice esta excepción.
+  del guardián dice: ante la duda, no publicar y pedir ayuda. Si para denunciar
+  hay que entregar quién lo publicó sin firma, la promesa de la pantalla tiene
+  que decirlo: lo responde el abogado (P2, pregunta 4).
 - Certeza: texto oficial. Cómo se entrega a la Policía, sin confirmar.
 
 ## Lo que se toma de las reglas del mundo
@@ -767,7 +770,7 @@ toma. Aquí se describen, sin nombrarlas.
 |---|---|---|
 | Cualquiera avisa de un contenido ilegal, y el sitio actúa pronto | Reglamento europeo de servicios digitales (UE 2022/2065), art. 16 | Invento 1 |
 | A quien se le quita algo, se le dice por qué y cómo reclamar | Arts. 17 y 20; Principios de Santa Clara, «Aviso» y «Apelación» | Invento 4 |
-| No se obliga a vigilarlo todo, y revisar de buena fe no quita protección | Arts. 7 y 8 | Coddvisor no revisa por su cuenta, pero actúa si ve algo grave |
+| No se obliga a vigilarlo todo, y revisar de buena fe no quita protección | Arts. 7 y 8 | Coddvisor no revisa por su cuenta, pero actúa si ve algo grave (N6) |
 | Se frena a quien abusa: quien publica lo ilegal una y otra vez, y quien avisa sin razón | Art. 23 | Invento 4 y el peso de los reportes |
 | Se publica cuántas veces se actuó | Arts. 15 y 24; Principios de Santa Clara, «Números» | La cuenta del año |
 | Lo manifiestamente ilegal se oculta con un aviso; lo que pide aclarar hechos va a un juez | Argentina (2014) y Brasil (2025) | Invento 1 |
