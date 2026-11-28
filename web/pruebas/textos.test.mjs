@@ -37,7 +37,7 @@ test('se revisan los archivos del sitio de verdad', () => {
 });
 
 test('el sitio no usa el punto medio, ni escrito ni como código (&middot;, \\u00b7, \\b7)', () => {
-  const PUNTO_MEDIO = /·|&middot;|&centerdot;|&#183;|&#x0*b7;|\\u00b7|\\x[bB]7|\\0*[bB]7\b/;
+  const PUNTO_MEDIO = /\u00b7|&middot;|&centerdot;|&#183;|&#x0*b7;|\\u00b7|\\x[bB]7|\\0*[bB]7\b/;
   assert.deepEqual(conFaltas(PUNTO_MEDIO), [], 'Separe con una coma, un punto o dos puntos.');
 });
 
