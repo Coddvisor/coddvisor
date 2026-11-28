@@ -37,9 +37,9 @@ const vencidoYa = a.vence && hoy > a.vence;
   <div class="brillo brillo--ambar" aria-hidden="true"></div>
   <div class="enmarcado interior-in">
     <span class="franja-sello" aria-hidden="true"></span>
-    <p class="rotulo portada-rot"><a class="art-volver" href="/blog/">Blog</a> · {a.categoria}</p>
+    <p class="rotulo portada-rot"><a class="art-volver" href="/blog/">Blog</a>: {a.categoria}</p>
     <h1 class="portada-t interior-t art-t" id="art-t">{a.titulo}</h1>
-    <p class="guia-meta art-meta">{autor} · <time datetime={a.publicada}>{fechaLarga(a.publicada)}</time> · {a.lectura} min de lectura</p>
+    <p class="guia-meta art-meta">{autor}, <time datetime={a.publicada}>{fechaLarga(a.publicada)}</time>, {a.lectura} min de lectura</p>
   </div>
 </section>
 
