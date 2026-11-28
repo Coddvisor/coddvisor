@@ -53,6 +53,18 @@ async function permitir(correo, { duracion = DURACION_S, permiso = uuid7() } = {
   return permiso;
 }
 
+/** Anota un permiso como lo hará «Entrar a la comunidad»: su propia puerta y su propia firma. */
+async function permitirDesdeLaComunidad(correo, { duracion = DURACION_S, permiso = uuid7(), proposito = 'identidad_permitir_alta_comunidad' } = {}) {
+  await db.exec(`set local role ${ROL_DE_ENTRADA}`);
+  await db.query('select identidad.permitir_alta_en_la_comunidad($1, $2, $3, $4, $5, $6)',
+    [permiso, correo, duracion, ...firmar(proposito, [u(permiso), t(correo), n(duracion)])]);
+  await db.exec('reset role');
+  return permiso;
+}
+
+// Dentro de una transacción la hora no avanza: se ordenan por origen.
+const origenes = async () => (await db.query('select origen_codigo from control.alta_permitida order by origen_codigo')).rows.map((r) => r.origen_codigo);
+
 /** Llama al gancho como Supabase Auth: con supabase_auth_admin. */
 async function gancho(e) {
   await db.exec('set local role supabase_auth_admin');
@@ -116,6 +128,70 @@ describe('el gancho antes de crear una cuenta', () => {
     await permitir('repetido@ejemplo.test');
     assert.equal(await contar(), 2);
     assert.deepEqual(await gancho(evento({ email: 'repetido@ejemplo.test' })), {});
+  }));
+});
+
+describe('«Entrar a la comunidad» (etapa 1 de la comunidad)', () => {
+  test('el gancho deja pasar a Google con un permiso de la comunidad, y el permiso dice de qué botón vino', () => enTransaccion(db, async () => {
+    await permitirDesdeLaComunidad('Vecina@Ejemplo.test');
+    assert.deepEqual(await gancho(evento({ email: 'vecina@ejemplo.test' })), {});
+    await permitir('duena@ejemplo.test');
+    assert.deepEqual(await origenes(), ['abrir_negocio', 'comunidad']);
+  }));
+
+  test('sin permiso sigue negado: entrar por la comunidad no abre la barrera', () => enTransaccion(db, async () => {
+    await permitirDesdeLaComunidad('otra@ejemplo.test');
+    assert.deepEqual(await gancho(evento({ email: 'sin.permiso@ejemplo.test' })), NIEGA);
+    // Y vale lo mismo que para «Abra su negocio»: solo Google, nunca anónima.
+    assert.deepEqual(await gancho(evento({ email: 'otra@ejemplo.test', provider: 'email' })), NIEGA);
+    assert.deepEqual(await gancho(evento({ email: 'otra@ejemplo.test', anonimo: true })), NIEGA);
+  }));
+
+  test('un permiso de la comunidad vence igual', () => enTransaccion(db, async () => {
+    await permitirDesdeLaComunidad('vencida@ejemplo.test');
+    await db.query("update control.alta_permitida set vence_en = now() - interval '1 second'");
+    assert.deepEqual(await gancho(evento({ email: 'vencida@ejemplo.test' })), NIEGA);
+  }));
+
+  test('cada botón firma con su propósito: la firma de uno no sirve para el otro', () => enTransaccion(db, async () => {
+    const permiso = uuid7();
+    const deAbrir = firmar('identidad_permitir_alta', [u(permiso), t('x@ejemplo.test'), n(DURACION_S)]);
+    await db.exec(`set local role ${ROL_DE_ENTRADA}`);
+    assert.equal(await codigoDeError(db, () => db.query('select identidad.permitir_alta_en_la_comunidad($1, $2, $3, $4, $5, $6)',
+      [permiso, 'x@ejemplo.test', DURACION_S, ...deAbrir])), FIRMA_INVALIDA);
+    const deLaComunidad = firmar('identidad_permitir_alta_comunidad', [u(permiso), t('x@ejemplo.test'), n(DURACION_S)]);
+    assert.equal(await codigoDeError(db, () => db.query('select identidad.permitir_alta($1, $2, $3, $4, $5, $6)',
+      [permiso, 'x@ejemplo.test', DURACION_S, ...deLaComunidad])), FIRMA_INVALIDA);
+    assert.equal(await codigoDeError(db, () => db.query('select identidad.permitir_alta_en_la_comunidad($1, $2, $3, $4, $5, $6)',
+      [permiso, '  ', DURACION_S, ...firmar('identidad_permitir_alta_comunidad', [u(permiso), t('  '), n(DURACION_S)])])), PEDIDO_INVALIDO);
+  }));
+
+  test('mientras el correo tiene un permiso vigente, de cualquier botón, no se anota otro', () => enTransaccion(db, async () => {
+    const permiso = await permitirDesdeLaComunidad('repetida@ejemplo.test');
+    await permitirDesdeLaComunidad('repetida@ejemplo.test', { permiso });
+    await permitirDesdeLaComunidad('repetida@ejemplo.test');
+    await permitir('repetida@ejemplo.test');
+    assert.deepEqual(await origenes(), ['comunidad']);
+  }));
+
+  test('la cuenta que nace así no tiene ninguna membresía: no entra a ningún negocio', () => enTransaccion(db, async () => {
+    await permitirDesdeLaComunidad('nueva@ejemplo.test');
+    assert.deepEqual(await gancho(evento({ email: 'nueva@ejemplo.test' })), {});
+    const c = { id: uuid7(), proveedor: uuid7(), correo: 'nueva@ejemplo.test', nombre: 'Nueva' };
+    await db.exec(`set local role ${ROL_DE_ENTRADA}`);
+    await db.query('select identidad.registrar_cuenta($1, $2, $3, $4, $5, $6, $7)',
+      [c.id, c.proveedor, c.correo, c.nombre, ...firmar('identidad_registrar_cuenta', [u(c.id), u(c.proveedor), t(c.correo), t(c.nombre)])]);
+    await db.exec('reset role');
+    assert.equal((await db.query('select count(*)::int as n from control.acceso where cuenta_id = $1', [c.id])).rows[0].n, 0);
+  }));
+
+  test('ni la aplicación ni Supabase Auth leen los permisos, y Supabase no anota desde la comunidad', () => enTransaccion(db, async () => {
+    await db.exec('set local role supabase_auth_admin');
+    const permiso = uuid7();
+    assert.equal(await codigoDeError(db, () => db.query('select identidad.permitir_alta_en_la_comunidad($1, $2, $3, $4, $5, $6)',
+      [permiso, 'x@ejemplo.test', DURACION_S, ...firmar('identidad_permitir_alta_comunidad', [u(permiso), t('x@ejemplo.test'), n(DURACION_S)])])), PERMISO_DENEGADO);
+    await db.exec(`reset role; set local role ${ROL_DE_ENTRADA}`);
+    assert.equal(await codigoDeError(db, () => db.query('select origen_codigo from control.alta_permitida')), PERMISO_DENEGADO);
   }));
 });
 

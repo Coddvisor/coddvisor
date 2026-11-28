@@ -139,6 +139,11 @@ de pruebas):
 - No distingue los dos botones: con un permiso vigente, la cuenta nace aunque
   la persona toque «Continuar con Google». Coddvisor la registra cuando pasa por
   «Abra su negocio».
+- Desde la etapa 1 de la comunidad (migración
+  `base-de-datos/migraciones/20261127233200_alta_desde_la_comunidad.sql`), el
+  permiso lo anota también «Entrar a la comunidad», con su propia puerta, y cada
+  permiso dice de qué botón vino. El gancho deja pasar los dos igual. Ese botón
+  y su ruta todavía no existen.
 
 ### 6. Abrir el registro, al final y solo con el gancho encendido
 

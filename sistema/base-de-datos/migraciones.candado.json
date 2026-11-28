@@ -21,5 +21,6 @@
   "20261127220000_cupos_compartidos.sql": "a8fab9f3d1a409ef6be68a9bb89d278e4adbe0e23c8053750dec03fa72487f70",
   "20261127223000_codigos_por_cuenta.sql": "4d7e0936cfa1c69bf5cf4601e0343a4c60e3df9d431e81c49ed4c74aba9b8fb4",
   "20261127233000_clase_comun.sql": "222abd62763c2b31ce68e4cd74b75fea93d0bf8b8904965cdb1de7cba921a5d1",
-  "20261127233100_modulo_comunidad.sql": "55bb56976d1c29d779671bb4d18c4c9852bfec5c25bd4c1a8cdbaa417eb4319c"
+  "20261127233100_modulo_comunidad.sql": "55bb56976d1c29d779671bb4d18c4c9852bfec5c25bd4c1a8cdbaa417eb4319c",
+  "20261127233200_alta_desde_la_comunidad.sql": "46971f456dcb34ff41cb8b530afcc82e58e1397ebdbbe0ff96cc25269c0635fe"
 }

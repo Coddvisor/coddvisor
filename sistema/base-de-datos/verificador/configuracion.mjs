@@ -206,6 +206,9 @@ export const configuracion = {
     // permiso, y el gancho lo ejecuta Supabase Auth con su propio rol, el único
     // de esta lista que no es de Coddvisor. Ese rol no recibe ninguna tabla.
     'identidad.permitir_alta': ['coddvisor_app'],
+    // El mismo permiso, anotado por «Entrar a la comunidad», con su propia firma
+    // (etapa 1 de la comunidad, 27-nov-2026).
+    'identidad.permitir_alta_en_la_comunidad': ['coddvisor_app'],
     'ganchos.antes_de_crear_cuenta': ['supabase_auth_admin'],
     // Los cupos compartidos de intentos y de permisos de alta (27-nov-2026).
     'identidad.usar_cupos': ['coddvisor_app'],
