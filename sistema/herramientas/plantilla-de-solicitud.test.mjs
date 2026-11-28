@@ -39,6 +39,6 @@ describe('la plantilla de las solicitudes de revisión', () => {
   });
 
   test('no usa el punto medio', () => {
-    assert.ok(!plantilla.includes('·'));
+    assert.ok(!plantilla.includes('\u00b7'));
   });
 });
