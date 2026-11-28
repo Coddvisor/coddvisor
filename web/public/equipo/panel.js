@@ -473,15 +473,21 @@
   var roles = [];
   function nombreRol(c) { var r = roles.filter(function (x) { return x.codigo === c; })[0]; return r ? r.nombre : c; }
 
+  // La base manda el enlace por correo si tiene la clave de Resend (correo_enviado). Igual se
+  // muestra aquí, por si no le llega o se prefiere WhatsApp. Solo se ve ahora: la base guarda su huella.
   function mostrarEnlace(res) {
     var url = location.origin + '/equipo/invitacion/?e=' + encodeURIComponent(res.enlace);
     var caja = $('[data-enlace]');
     caja.hidden = false;
-    $('[data-enlace-texto]').textContent = (res.tipo === 'restablecer'
-      ? 'Enlace para que ' + res.correo + ' cree una contraseña nueva.'
-      : 'Invitación lista para ' + res.correo + '.') + ' Envíesela; solo se muestra ahora. Vence el ' + cuando(res.vence_en).replace(/\.$/, '') + '.';
+    var vence = ' Vence el ' + cuando(res.vence_en).replace(/\.$/, '') + '.';
+    var que = res.tipo === 'restablecer' ? 'el enlace para crear una contraseña nueva' : 'la invitación';
+    $('[data-enlace-texto]').textContent = res.correo_enviado
+      ? 'Le enviamos ' + que + ' a ' + res.correo + '. Si no le llega en unos minutos, que revise su correo no deseado, o envíele este mismo enlace por WhatsApp.' + vence
+      : (res.tipo === 'restablecer'
+        ? 'Enlace para que ' + res.correo + ' cree una contraseña nueva.'
+        : 'Invitación lista para ' + res.correo + '.') + ' No salió por correo: envíesela usted por WhatsApp o cópiela. Solo se muestra ahora.' + vence;
     $('[data-enlace-valor]').value = url;
-    var texto = 'Hola. Este es tu enlace para entrar al panel del equipo de Coddvisor: ' + url;
+    var texto = 'Hola. Este es su enlace para entrar al panel del equipo de Coddvisor: ' + url;
     $('[data-enlace-whatsapp]').href = 'https://wa.me/?text=' + encodeURIComponent(texto);
     caja.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }

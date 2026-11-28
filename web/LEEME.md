@@ -387,20 +387,27 @@ no le llegan los nombres ni los WhatsApp de los pedidos. El administrador siempr
 «Administrar el equipo» y «Configurar». Nadie cambia su propio rol ni se quita el acceso a sí mismo.
 Cada cambio queda en `sitio.equipo_historial`, que solo crece.
 
-**Invitar a alguien** (pestaña Equipo): nombre, correo y rol → **Invitar**. El panel muestra un
-enlace con **Copiar enlace** y **Enviar por WhatsApp**: se le manda a la persona, que lo abre, crea
-su contraseña y entra. El enlace sirve una vez y vence en 7 días (ajuste `dias_invitacion`). Si la
-persona ya tenía cuenta, recibe el acceso al momento.
+**Invitar a alguien** (pestaña Equipo): nombre, correo y rol → **Invitar**. A la persona le llega un
+correo de `avisos@coddvisor.com` (ajuste `correo_remitente`) con su enlace; lo abre, crea su
+contraseña y entra. Si responde el correo, la respuesta le llega a quien la invitó. El panel también
+muestra el enlace con **Copiar enlace** y **Enviar por WhatsApp**, por si el correo no llega. El
+enlace sirve una vez y vence en 7 días (ajuste `dias_invitacion`). Si la persona ya tenía cuenta,
+recibe el acceso al momento, sin correo.
 
-**Olvidó su contraseña:** en la pestaña Equipo, **Contraseña nueva** junto a su nombre: sale un enlace
-igual al de la invitación para que cree una nueva.
+**Olvidó su contraseña:** en la pestaña Equipo, **Contraseña nueva** junto a su nombre: le llega un
+correo con un enlace igual al de la invitación para que cree una nueva (y el panel lo muestra).
+
+**Cómo sale el correo:** lo manda la base con Resend (pg_net y la clave `resend_api_key` de la
+bóveda de Supabase, la misma de los avisos de Preguntas). La clave no pasa por el navegador ni por
+el repositorio. Sin esa clave, o si el correo no se puede encolar, la invitación se crea igual y el
+panel dice «No salió por correo»: el enlace se manda a mano, como antes. Los textos del correo están
+en `sitio.enviar_enlace` (migración `20261128120000_sitio_invitacion_por_correo.sql`).
 
 **Cómo se crea la cuenta:** la crea la función de Supabase **`equipo-invitacion`**
 (`supabase/funciones/equipo-invitacion/`), con la llave secreta que Supabase le entrega a la función
-por dentro: no se copia a Cloudflare ni a ningún otro lado. No hace falta Resend: el enlace se manda
-por WhatsApp o por correo, a mano. Si se cambia `aceptar.js` o `index.ts`, se vuelve a subir la
-función con el conector «Supabase Coddvisor» (o `supabase functions deploy equipo-invitacion
---no-verify-jwt`).
+por dentro: no se copia a Cloudflare ni a ningún otro lado. Si se cambia `aceptar.js` o `index.ts`,
+se vuelve a subir la función con el conector «Supabase Coddvisor» (o `supabase functions deploy
+equipo-invitacion --no-verify-jwt`).
 
 **El panel se actualiza solo** cada 5 minutos mientras la pestaña está a la vista, y al volver a la
 pestaña si pasó más de un minuto. Cada actualización es una sola consulta sobre tablas ya sumadas
@@ -714,8 +721,14 @@ Lo que falta, una sola vez:
 
 1. **Cerrar el registro público:** Supabase → **Authentication → Sign In / Providers** → apagar
    **Allow new users to sign up**. Las cuentas se crean solo por invitación.
-2. **Probar:** en la pestaña Equipo, invítate con otro correo tuyo como Integrante, abre el enlace en
-   una ventana privada, crea la contraseña y revisa que solo veas la pestaña Análisis.
+2. **La clave de Resend en la bóveda**, para que las invitaciones salgan por correo: en Resend
+   (equipo «coddvisor», dominio `coddvisor.com` verificado) → **API Keys → Create API key**, permiso
+   **Sending access**, dominio `coddvisor.com`; copiarla al momento, porque Resend no la vuelve a
+   mostrar. En Supabase → **Integrations → Vault → Secrets → Add new secret**: **Name**
+   `resend_api_key`, **Secret value** la clave. Nunca en el repositorio ni en un chat.
+3. **Probar:** en la pestaña Equipo, invítate con otro correo tuyo como Integrante. Revisa que llegue
+   el correo, abre el enlace en una ventana privada, crea la contraseña y revisa que solo veas la
+   pestaña Análisis.
 
 ---
 
