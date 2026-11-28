@@ -7,7 +7,7 @@ que impide unir a `main` un cambio que la incumpla. La revisión vive en
 Estas reglas son las más caras de cambiar del proyecto, porque se copian en
 cada fila de cada cliente. Por eso se fijan antes de la primera tabla de negocio.
 
-## Las seis clases de tabla
+## Las siete clases de tabla
 
 Toda tabla declara qué clase es. De la clase salen su aislamiento y sus permisos.
 
@@ -19,12 +19,26 @@ Toda tabla declara qué clase es. De la clase salen su aislamiento y sus permiso
 | `custodia` | Datos de un cliente que solo cambia una puerta     | Leer                | `identidad.membresia`, `identidad.asignacion` |
 | `catalogo` | Datos iguales para todos los clientes              | Leer                | `nucleo.moneda`, `nucleo.parametro_legal` |
 | `control`  | Lo que vive fuera de las celdas (enrutador, identidad) | Nada            | `portero.llave`, `control.cuenta` |
+| `comun`    | Datos de todos, que no son de ningún negocio       | Leer                | `comunidad.perfil`        |
 
 Una tabla de `custodia` se aísla y se sella igual que una de `negocio`, pero la
 aplicación no la puede escribir: si pudiera, un error en el servicio
 reactivaría una membresía suspendida o le daría a alguien el rol de dueño. La
 escribe una sola puerta de su módulo, que se da con nombre en la lista de
 puertas.
+
+Una tabla `comun` es de todos: guarda lo de la comunidad, que se ve sin entrar
+a ningún negocio. No lleva `tenant_id` ni seguridad por fila, porque no hay
+negocio que aislar. La aplicación solo la lee; la escriben las puertas firmadas
+de su módulo (`comunidad`), igual que las de identidad, así un error del
+servicio no puede publicar a nombre de otra persona. Lleva los sellos y el
+candado de identidad de una tabla de negocio, sobre su `id`. Sus tablas van en
+una lista cerrada, como las del plano de control (BD-16), y cuando haya varias
+celdas no se reparte: vive junto al plano de control, como las cuentas. Ninguna
+de las otras seis servía: las de un cliente esconden sus filas fuera de su
+negocio, un catálogo solo lo cambia una migración y la aplicación no lee el
+plano de control. (Clase nueva del 27-nov-2026, etapa 1 de la comunidad,
+`../propuestas/comunidad-etapa-1.md`.)
 
 Nadie borra. Lo que deja de usarse se archiva (`archivado_en`) o se anula con
 un movimiento inverso.
@@ -300,10 +314,20 @@ ninguna otra regla lo notaría. Si los datos son de un cliente, la tabla es de
 negocio, libro o custodia. (Cambio del 26-nov-2026, auditoría de seguridad de
 la identidad.)
 
+Una tabla común tampoco lleva `tenant_id`, por lo mismo, y su clave es `id`
+(UUID). (Cambio del 27-nov-2026, etapa 1 de la comunidad.)
+
 **BD-03. Una fila de un cliente nunca puede apuntar a otro cliente, y nada se borra en cascada.**
 Toda relación entre datos de un cliente incluye `tenant_id`. Así lo impide la
 propia base, aunque el programa se equivoque. Ninguna tabla de un cliente
 apunta al plano de control, y ningún catálogo apunta a datos de un cliente.
+
+Lo común queda aparte de los negocios en los dos sentidos: ninguna tabla de un
+negocio apunta a una tabla común, y ninguna común apunta a una de un negocio.
+Así la comunidad no llega a las ventas de nadie, ni un negocio depende de la
+comunidad. Una tabla común puede apuntar a los catálogos y, del plano de
+control, solo a `control.cuenta` (`controlQueCitaLoComun` en la configuración
+del verificador). (Cambio del 27-nov-2026, etapa 1 de la comunidad.)
 
 **BD-04. La seguridad por fila está activa y forzada, y toda política filtra por el cliente activo.**
 Es la segunda barrera: si el programa olvida filtrar, la base no devuelve
@@ -349,6 +373,9 @@ no pueden saltarse la seguridad por fila. Además:
   escribe una puerta, y nadie por su clase. Las de identidad las escriben las
   puertas de `coddvisor_identidad`, que la aplicación ejecuta con la firma del
   servicio. (Cambio del 26-nov-2026, tramo 2a de la identidad.)
+- Una tabla común, la aplicación solo la lee y el rol de los libros no la toca.
+  La escriben las puertas de su módulo, y nadie por su clase. (Cambio del
+  27-nov-2026, etapa 1 de la comunidad.)
 - Los permisos se dan por tabla, nunca por columna.
 - Ningún rol de la aplicación es dueño de una tabla ni crea objetos.
 - La aplicación no crea tablas temporales.
@@ -396,8 +423,9 @@ una vez, ahí. Una tabla con importes tiene una columna `moneda_codigo`.
 `creado_en`, `creado_por`, `actualizado_en`, `actualizado_por` y `version`.
 Los pone la base, no el programa, así que no se pueden falsear. `version`
 sube en cada cambio y permite avisar cuando dos personas editan lo mismo.
-Vale también para una tabla de custodia y para una tabla de control que
-alguien edita.
+Vale también para una tabla de custodia, para una común (con el candado de su
+`id`; cambio del 27-nov-2026, etapa 1 de la comunidad) y para una tabla de
+control que alguien edita.
 
 **BD-10. Un libro solo se anexa.**
 No se edita, no se borra y no se vacía, ni siquiera por el dueño de la base.
@@ -461,7 +489,7 @@ real falló, porque en Supabase quien migra no es superusuario.)
 
 ### Afuera de los negocios
 
-**BD-16. Afuera de los negocios viven solo las tablas de una lista cerrada.**
+**BD-16. Afuera de los negocios viven solo las tablas de dos listas cerradas.**
 El plano de control (las tablas de clase `control`) es lo único que no es de
 ningún negocio: las cuentas, el índice de accesos, la lista de en qué celda vive
 cada negocio y con qué nombre se muestra (`control.negocio`, decisión 14 de
@@ -485,6 +513,13 @@ día, con la barrera de altas, pendiente de la aprobación del fundador;
 `control.migracion_aplicada`, el mismo día, con el camino de las migraciones,
 también pendiente de su aprobación; `control.cupo_usado`, el 27-nov-2026, con
 los cupos compartidos, pendiente de su aprobación.)
+
+La segunda lista es la de lo común (`tablasComunes`): las tablas de clase
+`comun`, que son de todos y no de un negocio. Toda tabla común figura en ella y
+vive en el esquema `comunidad`; una que no figure, o que viva en otro esquema,
+es una falta, y una de la lista que no exista también. Entra a la lista con su
+porqué, y lo aprueba el fundador. (Cambio del 27-nov-2026, etapa 1 de la
+comunidad.)
 
 **BD-17. Los datos personales no dejan rastro en los resúmenes de la base.**
 La base guarda resúmenes de cada columna (los valores más frecuentes, los
