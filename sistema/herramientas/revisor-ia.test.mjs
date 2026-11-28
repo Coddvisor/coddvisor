@@ -68,6 +68,47 @@ describe('qué parte del cambio mira', () => {
   });
 });
 
+describe('contra qué main compara', () => {
+  // En una copia de trabajo, el main local puede tener semanas: el 27-nov-2026, en la
+  // computadora de las sesiones, iba 242 cambios atrás de origin/main. Comparar contra él
+  // mete en el cambio el trabajo ya unido de otras sesiones. Se compara contra origin/main.
+  test('con el main local atrasado, compara contra origin/main y no lee el trabajo ajeno', () => {
+    const raiz = mkdtempSync(path.join(tmpdir(), 'revisor-ia-origen-'));
+    try {
+      const git = (cwd, ...args) => execFileSync('git', ['-c', 'commit.gpgsign=false', '-c', 'user.name=Prueba', '-c', 'user.email=prueba@ejemplo.invalid', ...args], { cwd, encoding: 'utf8' });
+      const origen = path.join(raiz, 'origen.git');
+      const aqui = path.join(raiz, 'aqui');
+      const otra = path.join(raiz, 'otra');
+      git(raiz, 'init', '-q', '--bare', '-b', 'main', origen);
+      git(raiz, 'clone', '-q', origen, aqui);
+      for (const carpeta of ['sistema', 'web']) mkdirSync(path.join(aqui, carpeta));
+      writeFileSync(path.join(aqui, 'sistema', 'caja.ts'), 'base\n');
+      git(aqui, 'add', '.');
+      git(aqui, 'commit', '-q', '-m', 'base');
+      git(aqui, 'push', '-q', 'origin', 'main');
+      // Otra sesión une su trabajo; el main local de «aqui» se queda atrás.
+      git(raiz, 'clone', '-q', origen, otra);
+      mkdirSync(path.join(otra, 'web'), { recursive: true });
+      writeFileSync(path.join(otra, 'web', 'trabajo-ajeno.astro'), 'de otra sesion\n');
+      git(otra, 'add', '.');
+      git(otra, 'commit', '-q', '-m', 'trabajo ajeno');
+      git(otra, 'push', '-q', 'origin', 'main');
+      // Esta sesión trae origin/main y hace su rama desde ahí, como una copia de trabajo nueva.
+      git(aqui, 'fetch', '-q', 'origin');
+      git(aqui, 'switch', '-q', '-c', 'cambio', 'origin/main');
+      writeFileSync(path.join(aqui, 'web', 'pagina.astro'), 'mi cambio\n');
+      git(aqui, 'add', '.');
+      git(aqui, 'commit', '-q', '-m', 'mi cambio');
+
+      const diff = leerDiff('main', config, path.join(aqui, 'sistema'));
+      assert.match(diff, /web\/pagina\.astro/);
+      assert.doesNotMatch(diff, /trabajo-ajeno/, 'leyó el trabajo de otra sesión: comparó contra el main local atrasado');
+    } finally {
+      rmSync(raiz, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('recorte del cambio', () => {
   test('lo corto pasa entero y lo largo se recorta avisando', () => {
     assert.deepEqual(recortarDiff('abc', 10), { texto: 'abc', recortado: false });
