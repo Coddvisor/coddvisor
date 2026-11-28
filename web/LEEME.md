@@ -540,7 +540,9 @@ reescribas con Space Grotesk. Alto mínimo: 24 px.
 4. **Solo información pública.** Nada de documentos internos ni planes
    financieros: este repositorio es público, y su historial también.
 5. **Trato de usted, soles con formato `S/ 4,820.50`.** Sin el punto medio «·»
-   como separador.
+   como separador. El trato de usted y el punto medio los revisa
+   `pruebas/textos.test.mjs` en `npm run verificar`; el formato de los soles, quien
+   revisa el cambio.
 6. **Vocabulario:** "cliente", "integrante", "sede".
 
 ---

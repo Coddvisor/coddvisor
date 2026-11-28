@@ -88,7 +88,7 @@ const hoy = new Date().toISOString().slice(0, 10);
                   {x.vence && <p class="tarjeta-cat"><span class="tarjeta-fin" hidden={!(hoy > x.vence)}>Terminó</span></p>}
                   <h4 class="tarjeta-t"><a href={x.href}>{x.titulo}</a></h4>
                   <p class="tarjeta-tx">{x.resumen}</p>
-                  <p class="tarjeta-meta">{autor} · <time datetime={x.publicada}>{fechaLarga(x.publicada)}</time> · {x.lectura} min</p>
+                  <p class="tarjeta-meta">{autor}, <time datetime={x.publicada}>{fechaLarga(x.publicada)}</time>, {x.lectura} min de lectura</p>
                 </li>
               ))}
             </ul>
@@ -104,10 +104,10 @@ const hoy = new Date().toISOString().slice(0, 10);
         <ul class="tarjetas tarjetas--blog">
           {sueltos.map((x) => (
             <li class="tarjeta" data-vence={x.vence}>
-              <p class="tarjeta-cat">{x.categoria}<span class="tarjeta-fin" hidden={!(x.vence && hoy > x.vence)}> · Terminó</span></p>
+              <p class="tarjeta-cat">{x.categoria}<span class="tarjeta-fin" hidden={!(x.vence && hoy > x.vence)}> (terminó)</span></p>
               <h3 class="tarjeta-t"><a href={x.href}>{x.titulo}</a></h3>
               <p class="tarjeta-tx">{x.resumen}</p>
-              <p class="tarjeta-meta">{autor} · <time datetime={x.publicada}>{fechaLarga(x.publicada)}</time> · {x.lectura} min</p>
+              <p class="tarjeta-meta">{autor}, <time datetime={x.publicada}>{fechaLarga(x.publicada)}</time>, {x.lectura} min de lectura</p>
             </li>
           ))}
         </ul>
