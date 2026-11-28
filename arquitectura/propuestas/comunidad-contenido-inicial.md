@@ -35,7 +35,8 @@ porque escribirlo bien, con fuentes, toma tiempo.
   que la guía cambie.
 - **Los términos de la comunidad necesitan dos frases más** antes de ir al
   abogado. Hoy dicen que Coddvisor no comprueba lo que se lee, y este contenido
-  lo escribe y lo comprueba Coddvisor.
+  lo escribe y lo comprueba Coddvisor. La sesión de normas las suma en su propia
+  solicitud, y la fundadora lo decide ahí.
 
 ## Qué aprueba la fundadora
 
@@ -46,8 +47,9 @@ porque escribirlo bien, con fuentes, toma tiempo.
    publicaría».
 3. **Qué huecos se escriben como guías** antes de abrir. Cada guía nueva trae
    sus propias preguntas.
-4. **Las frases que se suman a los términos** de la comunidad, en «Lo que cambia
-   en los términos».
+Las frases que se suman a los términos no se aprueban aquí. Van en la solicitud
+de la sesión de normas, para decidirlas en un solo lugar (ver «Lo que cambia en
+los términos»).
 
 ## Lo que había antes
 
@@ -90,8 +92,7 @@ y le pide a Google que no la muestre.
    término técnico se explica la primera vez.
 3. **Corta, a propósito.** No copia la guía: da la regla para ese caso y enlaza
    la guía para el resto.
-   - DECIDÍ: respuestas de 4 a 7 frases, con el número del caso y el enlace a la
-     guía.
+   - DECIDÍ: respuestas cortas, con el número del caso y el enlace a la guía.
    - DESCARTÉ: copiar la sección de la guía. Serían dos textos que mantener y
      dos páginas que compiten en Google por lo mismo. El sitio ya eligió una
      página fuerte en vez de dos débiles (`web/src/datos/herramientas.ts`).
@@ -105,10 +106,11 @@ y le pide a Google que no la muestre.
    nueva o un contador. Son cuatro: `abrir-03`, `finanzas-04`, `equipo-06` y
    `desarrollo-03`.
 6. **Las dudas de la guía pasan a la respuesta.** La guía del REMYPE anota en
-   sus fuentes una duda: si salió el reglamento de la nueva Ley MYPE, la Ley
-   32353. No pudo confirmarlo para el tramo del 1 de octubre al 22 de noviembre
-de 2026. Si salió, cambian las respuestas que dependen del REMYPE, que están en
-«Antes de abrir».
+   sus fuentes dos dudas. Una: si salió el reglamento de la nueva Ley MYPE, la
+   Ley 32353, entre el 1 de octubre y el 22 de noviembre de 2026. Otra: si
+   cambiaron los arts. 29 y 70 del D.S. 008-2008-TR, que citan `sunat-06` y
+   `abrir-02`. Si algo cambió, cambian las respuestas que dependen del REMYPE,
+   que están en «Antes de abrir».
 7. **Ninguna respuesta nombra el sistema de Coddvisor**, sus planes ni una
    prueba gratis: lo pidió la fundadora el 26-nov-2026. Solo enlazan a guías y
    herramientas gratis. No se nombran otras empresas, salvo plataformas y medios
@@ -139,16 +141,18 @@ Depende de si su negocio está inscrito en el REMYPE, no de cuántas personas
 tiene. Si no está inscrito, paga un sueldo completo más una bonificación del 9
 %. Con el mínimo de S/ 1,230 y todo el semestre trabajado, son S/ 1,340.70 por
 persona. En una pequeña empresa inscrita, la mitad más el 9 %. En una
-microempresa inscrita, no corresponde. Se paga en la primera quincena de
+microempresa inscrita, no corresponde. Pero quien ya trabajaba con usted antes
+de la inscripción conserva el régimen general. Se paga en la primera quincena de
 diciembre, sin descontar AFP ni ONP. Confirme su caso con su RUC en la consulta
 gratuita del REMYPE.
 
 Sale de: [Gratificación de
 diciembre](https://www.coddvisor.com/herramientas/gratificacion/), verificada el
-19-nov-2026, y [Sueldo mínimo S/
+19-nov-2026; [Sueldo mínimo S/
 1,230](https://www.coddvisor.com/blog/sueldo-minimo/), verificada el
-22-nov-2026. Ley 27735 y D.S. 005-2002-TR; Ley 30334; TUO de la Ley MYPE, art.
-50; D.S. 015-2026-TR. Revísela con su contador.
+22-nov-2026; y [REMYPE](https://www.coddvisor.com/blog/remype/), verificada el
+19-nov-2026. Ley 27735 y D.S. 005-2002-TR; Ley 30334; TUO de la Ley MYPE, arts.
+47 y 50; D.S. 015-2026-TR. Revísela con su contador.
 
 #### planilla-02 «Mi ayudante viene de lunes a sábado, 4 horas cada día. ¿Le tengo que pagar el sueldo mínimo completo?»
 
@@ -158,15 +162,17 @@ Sí. Desde 4 horas diarias en promedio le corresponden el mínimo completo y tod
 los beneficios. El mínimo es S/ 1,230 desde el 1 de octubre de 2026. Con menos
 de 4 horas, el mínimo es proporcional. Con 3 horas diarias y una jornada de 8,
 es S/ 1,230 × 3 ÷ 8 = S/ 461.25. El promedio sale de dividir las horas de la
-semana entre 6, o entre 5 si su negocio abre 5 días. Cuentan las horas que de
-verdad trabaja, también las extra.
+semana entre 6, o entre 5 si su negocio abre 5 días. Si la persona va menos de 5
+días a la semana, le toca el mínimo completo desde las 20 horas semanales.
+Cuentan las horas que de verdad trabaja, también las extra.
 
 Sale de: [Sueldo mínimo S/
 1,230](https://www.coddvisor.com/blog/sueldo-minimo/), verificada el
 22-nov-2026, y [Medio tiempo o tiempo
 completo](https://www.coddvisor.com/blog/medio-tiempo/), verificada el
 21-nov-2026. D.S. 015-2026-TR; R.M. 091-92-TR, art. 3; D.S. 001-96-TR, art. 12;
-Resolución de Sala Plena 003-2023-SUNAFIL/TFL. Revísela con su contador.
+D.S. 004-97-TR, art. 3; Resolución de Sala Plena 003-2023-SUNAFIL/TFL. Revísela
+con su contador.
 
 #### planilla-03 «Contraté a una vendedora solo para la campaña de Navidad. ¿Igual tengo que registrarla en planilla?»
 
@@ -182,8 +188,8 @@ su contador.
 
 Sale de: [T-Registro](https://www.coddvisor.com/blog/t-registro/) y [Seguro Vida
 Ley](https://www.coddvisor.com/blog/seguro-vida-ley/), verificadas el
-21-nov-2026. D.S. 018-2007-TR, art. 4-A; TUO del D. Leg. 728, arts. 67, 69 y 72;
-D. Leg. 688, art. 1; D.S. 009-2020-TR, art. 2. Revísela con su contador.
+21-nov-2026. D.S. 018-2007-TR, art. 4-A; TUO del D. Leg. 728, arts. 67, 69, 71 y
+72; D. Leg. 688, art. 1; D.S. 009-2020-TR, art. 2. Revísela con su contador.
 
 #### planilla-04 «Mi vendedora renunció y se va el viernes. ¿Qué le tengo que pagar, y en cuánto tiempo?»
 
@@ -191,18 +197,22 @@ D. Leg. 688, art. 1; D.S. 009-2020-TR, art. 2. Revísela con su contador.
 
 Lo que ganó y todavía no cobró. Es el sueldo de los últimos días, la
 gratificación trunca con su 9 %, las vacaciones truncas y la CTS desde el último
-depósito. «Trunca» es la parte de un beneficio que quedó a medias. Como
-renunció, no hay indemnización. Pague la CTS y la gratificación trunca dentro de
-las 48 horas de su salida. En ese mismo plazo, entréguele la constancia de cese,
-para que retire su CTS. Y registre su baja en el T-Registro a más tardar el
-primer día hábil siguiente.
+depósito. «Trunca» es la parte de un beneficio que quedó a medias. Si tenía
+vacaciones ganadas y no tomadas, esas se pagan completas. Como renunció, no hay
+indemnización. Pague la CTS y la gratificación trunca dentro de las 48 horas de
+su salida. En ese mismo plazo, entréguele la constancia de cese, para que retire
+su CTS. Y registre su baja en el T-Registro a más tardar el primer día hábil
+siguiente. En una pequeña empresa inscrita en el REMYPE, la gratificación y la
+CTS son la mitad, y en una microempresa no corresponden. Eso no vale para quien
+ya trabajaba antes de la inscripción.
 
 Sale de: [Liquidación de
 beneficios](https://www.coddvisor.com/blog/liquidacion/), verificada el
-22-nov-2026, y [T-Registro](https://www.coddvisor.com/blog/t-registro/),
-verificada el 21-nov-2026. TUO de la Ley de CTS, arts. 3 y 45; Ley 27735, art.
-7, y D.S. 005-2002-TR, art. 5; D. Leg. 713, art. 22; D.S. 018-2007-TR, art. 4-A.
-Revísela con su contador.
+22-nov-2026; [T-Registro](https://www.coddvisor.com/blog/t-registro/),
+verificada el 21-nov-2026; y [REMYPE](https://www.coddvisor.com/blog/remype/),
+verificada el 19-nov-2026. TUO de la Ley de CTS, arts. 3 y 45; Ley 27735, art.
+7, y D.S. 005-2002-TR, art. 5; D. Leg. 713, arts. 22 y 23; D.S. 018-2007-TR,
+art. 4-A; TUO de la Ley MYPE, arts. 47 y 50. Revísela con su contador.
 
 #### planilla-05 «Si mi cajera trabaja un feriado, ¿cuánto le pago de más?»
 
@@ -272,30 +282,36 @@ Leg. 728, arts. 6 y 7. Revísela con su contador.
 *Beneficios del año.*
 
 En el régimen general, 30 días por cada año completo. En una micro o pequeña
-empresa inscrita en el REMYPE, 15. Se pagan antes de que salga, con lo que gana
-normalmente. Además del año, tiene que haber trabajado un mínimo de días: 260 si
-trabaja 6 días a la semana, o 210 si trabaja 5. Debe tomarlas dentro del año
-siguiente. Si ese año pasa sin que descanse, en el régimen general le debe un
-sueldo más por el descanso no tomado y otro de indemnización.
+empresa inscrita en el REMYPE, 15, salvo para quien ya trabajaba antes de la
+inscripción. Con menos de 4 horas diarias, le tocan al menos 6 días al año. Se
+pagan antes de que salga, con lo que gana normalmente. Además del año, tiene que
+haber trabajado un mínimo de días: 260 si trabaja 6 días a la semana, o 210 si
+trabaja 5. Debe tomarlas dentro del año siguiente. Si ese año pasa sin que
+descanse, en el régimen general le debe un sueldo más por el descanso no tomado
+y otro de indemnización.
 
 Sale de: [Vacaciones](https://www.coddvisor.com/herramientas/vacaciones/),
-verificada el 24-nov-2026. D. Leg. 713, arts. 10 a 23, y D.S. 012-92-TR; TUO de
-la Ley MYPE, art. 55. Revísela con su contador.
+verificada el 24-nov-2026, y [REMYPE](https://www.coddvisor.com/blog/remype/),
+verificada el 19-nov-2026. D. Leg. 713, arts. 10 a 23, y D.S. 012-92-TR; TUO de
+la Ley MYPE, arts. 47 y 55; nota de la SUNAFIL del 17 de enero de 2025, sobre el
+Convenio 52 de la OIT. Revísela con su contador.
 
 #### planilla-10 «Mi negocio es una pequeña empresa. ¿Tengo que depositar CTS en mayo?»
 
 *Beneficios del año.*
 
-Si está inscrita en el REMYPE como pequeña empresa, sí: deposita la mitad de lo
-que pagaría el régimen general. Si no está inscrita, deposita la CTS completa.
-La microempresa inscrita no deposita CTS. Con un sueldo de S/ 1,500 y el
-semestre completo, son S/ 406.25 en la pequeña empresa y S/ 875 en el régimen
-general. La base lleva un sexto de la gratificación de diciembre, y es el olvido
-más común. Solo corresponde a quien trabaja 4 horas diarias o más en promedio.
+Si está inscrita en el REMYPE como pequeña empresa, sí: deposita media CTS. Si
+no está inscrita, deposita la CTS completa. La microempresa inscrita no deposita
+CTS. Quien ya trabajaba antes de la inscripción conserva la CTS completa. Con un
+sueldo de S/ 1,500 y el semestre completo, son S/ 406.25 en la pequeña empresa y
+S/ 875 en el régimen general. La de la pequeña no es la mitad exacta, porque su
+base lleva un sexto de la media gratificación. Olvidar ese sexto es el error más
+común. Solo corresponde a quien trabaja 4 horas diarias o más en promedio.
 
 Sale de: [CTS de mayo](https://www.coddvisor.com/herramientas/cts/), verificada
-el 21-nov-2026. TUO de la Ley de CTS (D.S. 001-97-TR) y D.S. 004-97-TR; TUO de
-la Ley MYPE, art. 50. Revísela con su contador.
+el 21-nov-2026, y [REMYPE](https://www.coddvisor.com/blog/remype/), verificada
+el 19-nov-2026. TUO de la Ley de CTS (D.S. 001-97-TR) y D.S. 004-97-TR; TUO de
+la Ley MYPE, arts. 47 y 50. Revísela con su contador.
 
 ### Caja, cobros y reclamos (`caja`)
 
@@ -339,11 +355,14 @@ Anote en cada venta cómo le pagaron: efectivo, Yape, Plin o tarjeta. Anótela
 según dónde llegó la plata: si le pagan desde Plin a su Yape, es una venta por
 Yape. Al cerrar, sume los cobros del día en los movimientos de la app del
 negocio. Compárelos con las ventas que anotó como Yape o Plin: deben ser
-iguales. Si no, revise cobro por cobro. Lo más común es una venta anotada con el
-medio de pago equivocado.
+iguales. Si no, revise cobro por cobro. Si es una venta anotada con otro medio
+de pago, corríjala. Si es una venta que quedó sin boleta, emítala en cuanto lo
+note. Si el cobro no fue una venta, como un pago repetido, no emita boleta:
+devuélvalo o páselo a su cuenta personal, y anote qué fue.
 
-Sale de: [Yape y Plin](https://www.coddvisor.com/blog/yape-plin/) y [Cierre de
-caja](https://www.coddvisor.com/herramientas/cierre-de-caja/).
+Sale de: [Yape y Plin](https://www.coddvisor.com/blog/yape-plin/), verificada el
+22-nov-2026. Reglamento de Comprobantes de Pago, art. 5, num. 1. Revísela con su
+contador.
 
 #### caja-04 «Un cliente me mostró en su celular que ya me yapeó, pero a mí no me llegó nada. ¿Le entrego el producto?»
 
@@ -396,10 +415,10 @@ Peruano del 14-oct-2026. Revísela con su contador.
 Por la talla, o porque ya no le gustó, la ley no obliga a cambiarlo. Pero si su
 tienda ofrece cambios, tiene que cumplir lo que ofreció: todo depende de su
 política. Por eso conviene decirla antes de cobrar, en un cartel en la caja y en
-la boleta. Por ejemplo: cambios por talla o color hasta 7 días, sin usar, con
-etiqueta y con la boleta. Con esa política, a los 10 días ya no le toca. Si la
-prenda tiene un defecto, es distinto: la clienta puede pedir que se la arreglen,
-se la cambien o le devuelvan su dinero.
+la boleta. Por ejemplo: cambios por talla o color hasta 7 días calendario desde
+la compra, sin usar, con etiqueta y con la boleta. Con esa política, a los 10
+días ya no le toca. Si la prenda tiene un defecto, es distinto: la clienta puede
+pedir que se la arreglen, se la cambien o le devuelvan su dinero.
 
 Sale de: [Vender más en su tienda de
 ropa](https://www.coddvisor.com/blog/vender-mas-cliente/), verificada el
@@ -462,12 +481,13 @@ partes de las de Yape y del REMYPE.
 
 *Boletas y facturas. Rubro: ferretería.*
 
-No, si su régimen le permite emitir facturas. Si un cliente con RUC la pide para
-su negocio, usted se la debe dar. Dar boleta cuando correspondía factura se
-multa con 50 % de la UIT en el Régimen MYPE Tributario y el General: S/ 2,750 en
-2026. En el Especial, con 25 %. La primera vez se libra si presenta a SUNAT el
-Acta de Reconocimiento dentro de 5 días hábiles. Si está en el Nuevo RUS, no
-puede emitir facturas.
+No, si su régimen le permite emitir facturas. Si un cliente con RUC la pide
+para su negocio, usted se la debe dar. Dar boleta cuando correspondía factura
+se multa con 50 % de la UIT en el Régimen MYPE Tributario y el General: S/
+2,750 en 2026. En el Especial, con 25 %. La primera vez se libra si presenta a
+SUNAT el Acta de Reconocimiento. Tiene 5 días hábiles desde la falta, o desde
+que SUNAT se la notifique. Desde la segunda vez, SUNAT puede cerrar el local.
+Si está en el Nuevo RUS, no puede emitir facturas.
 
 Sale de: [Boleta o factura](https://www.coddvisor.com/blog/boleta-o-factura/),
 verificada el 22-nov-2026. Reglamento de Comprobantes de Pago, art. 4, num. 1;
@@ -479,15 +499,16 @@ Revísela con su contador.
 *Boletas y facturas.*
 
 En el Nuevo RUS no puede emitir facturas. Si emite una, pasa de inmediato a otro
-régimen desde ese mes y paga impuestos por todas sus ventas. Para este pedido,
-ofrézcale boleta con su RUC y su razón social, aunque casi no le sirva para sus
-impuestos. Si muchos clientes le piden factura, evalúe con su contador cambiarse
-de régimen: primero el cambio, después la factura. Volver al Nuevo RUS solo se
-puede en enero del año siguiente.
+régimen desde ese mes y paga impuestos por todas sus ventas. Además, puede
+recibir una multa o el cierre del local. Para este pedido, ofrézcale boleta con
+su RUC y su razón social, aunque casi no le sirva para sus impuestos. Si muchos
+clientes le piden factura, evalúe con su contador cambiarse de régimen: primero
+el cambio, después la factura. Volver al Nuevo RUS solo se puede en enero del
+año siguiente.
 
 Sale de: [Boleta o factura](https://www.coddvisor.com/blog/boleta-o-factura/),
-verificada el 22-nov-2026. D. Leg. 937 (Nuevo RUS), arts. 13, 16 y 17. Revísela
-con su contador.
+verificada el 22-nov-2026. D. Leg. 937 (Nuevo RUS), arts. 13, 16 y 17; Código
+Tributario, art. 174, num. 3, y Tabla III. Revísela con su contador.
 
 #### sunat-03 «En mi bodega, si una vecina me compra S/ 3, ¿le tengo que dar boleta? ¿Y si son S/ 850?»
 
@@ -498,9 +519,10 @@ un control diario. Al final del día, emita una boleta por el total de las que n
 la tuvieron. De más de S/ 5, boleta siempre. De más de S/ 700, como los S/ 850,
 la boleta lleva los apellidos, los nombres y el DNI de quien compra.
 
-Sale de: [Boleta o factura](https://www.coddvisor.com/blog/boleta-o-factura/),
-verificada el 22-nov-2026. Reglamento de Comprobantes de Pago, art. 8, num. 3,
-inc. 3.10, y art. 15. Revísela con su contador.
+Sale de: [Boleta o factura](https://www.coddvisor.com/blog/boleta-o-factura/) y
+[Yape y Plin](https://www.coddvisor.com/blog/yape-plin/), verificadas el
+22-nov-2026. Reglamento de Comprobantes de Pago, art. 8, num. 3, inc. 3.10, y
+art. 15. Revísela con su contador.
 
 #### sunat-04 «Casi todos mis clientes me pagan por Yape. ¿La captura del yapeo vale como comprobante?»
 
@@ -508,12 +530,12 @@ inc. 3.10, y art. 15. Revísela con su contador.
 
 No. A noviembre de 2026, ninguna norma reconoce la constancia de Yape o Plin
 como comprobante. Cuando le pagan por celular, emita la boleta igual que en
-efectivo. Entregar la captura en vez de la boleta es no emitir comprobante, y se
-sanciona con el cierre del local: 3 días la primera vez. Si vende por redes, sin
-local, es una multa de 1 UIT en el MYPE Tributario y el General: S/ 5,500 en
-2026. Una microempresa de hasta 150 UIT de ventas al año recibe primero un
-      curso,
-la primera vez.
+efectivo. Entregar la captura en vez de la boleta es no emitir comprobante. En
+un local, se sanciona con el cierre: 3 días la primera vez. Si la falta no
+ocurre en un local, como en una venta por redes con delivery, es una multa. En
+el MYPE Tributario y el General es de 1 UIT, S/ 5,500 en 2026, y la primera vez
+baja a S/ 3,575. Una microempresa de hasta 150 UIT de ventas al año recibe
+primero un curso, la primera vez.
 
 Sale de: [Yape y Plin](https://www.coddvisor.com/blog/yape-plin/), verificada el
 22-nov-2026. D.L. 25632, art. 1; Reglamento de Comprobantes de Pago, art. 2;
@@ -554,19 +576,22 @@ micro y pequeña empresa. Revísela con su contador.
 
 *Declarar y pagar.*
 
-Depende de su régimen. En el Nuevo RUS paga igual la cuota de S/ 20, porque
-pagarla es su declaración. En el Especial, el MYPE Tributario y el General no
-hace falta declarar, si ese mes tampoco anotó compras en su Registro de Compras.
-Si las anotó, declare en cero: le queda IGV a favor, que descontará de sus
-próximas ventas. Si lleva sus registros en el SIRE, el sistema de registros de
-SUNAT, presente igual el de ventas, sin movimiento. Si va a cerrar varios meses,
-comunique a SUNAT la suspensión temporal dentro de 5 días hábiles.
+Depende de su régimen. En el Nuevo RUS paga igual su cuota, porque pagarla es su
+declaración. Es S/ 20 si sus compras del mes no pasaron de S/ 5,000, y S/ 50 si
+llegaron hasta S/ 8,000. En la Categoría Especial, la cuota es S/ 0. En el
+Especial, el MYPE Tributario y el General no hace falta declarar, si ese mes
+tampoco anotó compras en su Registro de Compras. Si las anotó, declare en cero:
+le queda IGV a favor, que descontará de sus próximas ventas. También declara si
+tuvo otro ingreso del negocio, como un alquiler, o si pide una devolución; la
+guía trae los demás casos. Si lleva sus registros en el SIRE, el sistema de
+registros de SUNAT, presente igual el de ventas, sin movimiento. Si va a cerrar
+varios meses, comunique a SUNAT la suspensión temporal dentro de 5 días hábiles.
 
 Sale de: [Declarar en cero](https://www.coddvisor.com/blog/declarar-en-cero/),
 verificada el 22-nov-2026. R.S. 203-2006/SUNAT, art. 3 (texto de la R.S.
-272-2016/SUNAT); D. Leg. 937, arts. 7 y 8; R.S. 112-2021/SUNAT, art. 6, inc. c);
-Reglamento del RUC (R.S. 210-2004/SUNAT), arts. 24 y 26. Revísela con su
-contador.
+272-2016/SUNAT), y R.S. 272-2016/SUNAT, Única Disposición Complementaria Final;
+D. Leg. 937, arts. 7 y 8; R.S. 112-2021/SUNAT, art. 6, inc. c); Reglamento del
+RUC (R.S. 210-2004/SUNAT), arts. 24 y 26. Revísela con su contador.
 
 #### sunat-08 «Me olvidé de declarar un mes. ¿Qué hago para no pagar una multa grande?»
 
@@ -638,10 +663,12 @@ color](https://www.coddvisor.com/blog/inventario-talla-color/).
 *Comprar y reponer. Rubro: ropa.*
 
 Saque cuántos vende por día y multiplíquelo por los días que tarda su proveedor,
-más un colchón. A eso réstele lo que le queda y lo que ya pidió. Por ejemplo:
-vendió 12 polos M negros en 30 días, o sea 0.4 por día. Si su proveedor tarda 15
-días y usted pone 15 de colchón, necesita 0.4 × 30 = 12. Le quedan 2: pida 10.
-Si no sabe cuánto colchón poner, use los mismos días que tarda su proveedor.
+más un colchón. A eso réstele lo que le queda y lo que ya pidió y todavía no le
+llega. Por ejemplo: vendió 12 polos M negros en 30 días, o sea 0.4 por día. Si
+su proveedor tarda 15 días y usted pone 15 de colchón, necesita 0.4 × 30 = 12.
+Le quedan 2: pida 10. Si la talla se le acabó a mitad de mes, divida entre los
+días que sí la tuvo. Así, 12 en 20 días son 0.6 por día, no 0.4. Si no sabe
+cuánto colchón poner, use los mismos días que tarda su proveedor.
 
 Sale de: [Inventario de ropa por talla y
 color](https://www.coddvisor.com/blog/inventario-talla-color/).
@@ -793,9 +820,10 @@ completo](https://www.coddvisor.com/blog/medio-tiempo/), verificadas el
 Quien ya estaba en su planilla antes de la inscripción conserva los beneficios
 que tenía, los del régimen general. El régimen especial se aplica solo a quienes
 entran después. Para inscribirse necesita su RUC, su Clave SOL y al menos una
-persona en planilla, y el trámite es en línea. No despida a alguien para volver
-a contratarlo en el régimen especial. La ley lo impide si no pasó un año, y si
-es para reemplazar a alguien, hay una indemnización especial.
+persona en planilla, y el trámite es en línea. Si su negocio es una sociedad,
+también la partida registral de su constitución. No despida a alguien para
+volver a contratarlo en el régimen especial. La ley lo impide si no pasó un año,
+y si es para reemplazar a alguien, hay una indemnización especial.
 
 Sale de: [REMYPE](https://www.coddvisor.com/blog/remype/), verificada el
 19-nov-2026. TUO de la Ley MYPE, arts. 47, 60 y 61; D.S. 008-2008-TR, art. 29.
@@ -822,11 +850,12 @@ con su contador.
 *Antes de invertir. Rubro: taller.*
 
 Piénselo antes. En el Nuevo RUS solo puede emitir boletas, y a una empresa la
-boleta casi no le sirve. No le permite descontar el IGV que le pagó a usted, y
-como gasto le sirve solo en un porcentaje pequeño. Por eso muchas empresas
-prefieren comprarle a un proveedor que les dé factura. Puede cambiarse a otro
-régimen en cualquier mes, pero volver al Nuevo RUS solo se puede en enero del
-año siguiente. Haga las cuentas con su contador antes de elegir.
+boleta casi no le sirve. No le da crédito fiscal, es decir, no le sirve para
+pagar menos IGV. Y como gasto le sirve solo en un porcentaje pequeño. Por eso
+muchas empresas prefieren comprarle a un proveedor que les dé factura. Puede
+cambiarse a otro régimen en cualquier mes, pero volver al Nuevo RUS solo se
+puede en enero del año siguiente. Haga las cuentas con su contador antes de
+elegir.
 
 Sale de: [Boleta o factura](https://www.coddvisor.com/blog/boleta-o-factura/),
 verificada el 22-nov-2026. Reglamento de Comprobantes de Pago, art. 4, num. 3;
@@ -853,17 +882,18 @@ Final. Revísela con su contador.
 
 *El local. Rubro: ropa.*
 
-Tres cosas. El precio en cada prenda, y que sea el precio final, con los
-impuestos: en la caja no se suma nada. El aviso de su Libro de Reclamaciones,
-físico o virtual; Indecopi tiene una herramienta gratis para armarlo. Y, si
-ofrece cambios, su política en un cartel en la caja. Nunca ponga «no hay cambios
-ni devoluciones» sin excepción: si la prenda tiene un defecto, el cliente igual
-puede reclamar.
+Lo básico son tres cosas. El precio en cada prenda, y que sea el precio final,
+con los impuestos: en la caja no se suma nada. El aviso de su Libro de
+Reclamaciones, físico o virtual; Indecopi tiene una herramienta gratis para
+armarlo. Y, si ofrece cambios, su política en un cartel en la caja. Nunca ponga
+«no hay cambios ni devoluciones» sin excepción: si la prenda tiene un defecto,
+el cliente igual puede reclamar. Si cobra más con tarjeta, pone precios en
+dólares o anuncia ofertas, cada caso tiene su regla, y la guía las explica.
 
 Sale de: [Vender más en su tienda de
 ropa](https://www.coddvisor.com/blog/vender-mas-cliente/), verificada el
-24-nov-2026. Ley 29571, arts. 4.1, 5.1, 6, 20 (inc. b), 50 (inc. e) y 150 a 152.
-Revísela con su contador.
+24-nov-2026. Ley 29571, arts. 4.1, 5.1, 6, 7, 14, 20 (inc. b), 50 (inc. e) y 150
+a 152. Revísela con su contador.
 
 #### abrir-07 «Antes de contratar a alguien con un sueldo de S/ 1,500, ¿cuánto me costaría de verdad cada mes?»
 
@@ -931,13 +961,16 @@ S/ 1,500 en el régimen general, aparte cada mes unos S/ 553 por persona, ademá
 del sueldo. Son S/ 250 de gratificaciones, S/ 22.50 de su bonificación, S/
 145.83 de CTS y S/ 135 de EsSalud. Así julio y diciembre, que traen un sueldo
 extra, y mayo y noviembre, que traen la CTS, no lo toman por sorpresa. En una
-pequeña empresa inscrita son unos S/ 339; en una microempresa inscrita, solo los
-S/ 15 del SIS.
+pequeña empresa inscrita son unos S/ 339, y en una microempresa inscrita, S/ 15
+del SIS. Quien ya trabajaba antes de la inscripción en el REMYPE cuesta como en
+el régimen general. Estas cifras no incluyen el Seguro Vida Ley, que es
+obligatorio en todos los regímenes.
 
 Sale de: [Costo real de un
 integrante](https://www.coddvisor.com/herramientas/costo-real-de-un-integrante/),
-verificada el 21-nov-2026. Ley 27735; Ley 30334; TUO de la Ley de CTS; Ley
-26790, art. 6; TUO de la Ley MYPE, arts. 50 y 64. Revísela con su contador.
+verificada el 21-nov-2026. Ley 26790, art. 6; TUO de la Ley MYPE, arts. 50, 63 y
+64; D.S. 008-2008-TR, art. 39; D.S. 009-2020-TR, art. 2. Revísela con su
+contador.
 
 #### finanzas-04 «Mi hermana me va a prestar S/ 8,000 para surtir la tienda. ¿Cómo lo recibo?»
 
@@ -964,8 +997,10 @@ del Impuesto a la Renta, art. 52, incs. a) y e). Revísela con su contador.
 No. Para quien compra en su tienda, el precio que usted exhibe es el total, con
 el IGV incluido. En la caja no se le puede sumar nada. Si la etiqueta dice S/ 10
 y cobra S/ 11.80, cobró más de lo que mostró. Ponga en cada producto el precio
-final. Para saber cuánto de ese precio es IGV, divídalo entre 1.18. Si está en
-el Nuevo RUS, no cobra IGV aparte: su cuota del mes lo reemplaza.
+final. Para saber cuánto de ese precio es IGV, divida el precio entre 1.18 y
+reste el resultado del precio. Con S/ 11.80, son S/ 10 de venta y S/ 1.80 de
+IGV. Si está en el Nuevo RUS, no cobra IGV aparte: su cuota del mes lo
+reemplaza.
 
 Sale de: [Vender más en su tienda de
 ropa](https://www.coddvisor.com/blog/vender-mas-cliente/), verificada el
@@ -991,29 +1026,32 @@ Consumidor permite mandar promociones solo al cliente que, por iniciativa
 propia, pidió recibirlas. Mandarlas sin ese pedido es una infracción muy grave,
 aunque tenga su número porque compró. Tampoco les escriba para preguntarles si
 las quieren: ese mensaje también lo empieza usted. Ponga en la caja un cartel
-con un código QR, para que el cliente le escriba primero.
+con un código QR, para que el cliente le escriba primero. Póngalo al lado del
+aviso de cómo cuida sus datos, que el cliente tiene que poder leer antes.
 
 Sale de: [Su lista de clientes en
 Excel](https://www.coddvisor.com/blog/lista-clientes/), verificada el
 25-nov-2026. Ley 29571, art. 58.1, inc. e) (texto de la Ley 32323); Reglamento
-de la Ley 29733 (D.S. 016-2024-JUS), art. 26.1. Revísela con su contador.
+de la Ley 29733 (D.S. 016-2024-JUS), arts. 6.1 y 26.1. Revísela con su contador.
 
 #### marketing-02 «Una clienta me pidió que le avise cuando llegue su talla. ¿Puedo anotar su número?»
 
 *Que vuelva. Rubro: ropa.*
 
-Sí. Dígale antes para qué es, pídale un «sí» y anote la fecha. El «sí» de
-palabra vale, pero si algún día se lo piden, le toca a usted probarlo. Úselo
-solo para ese aviso: «Llegó su polo azul talla M». Si le agrega una oferta, ya
-necesita otro permiso. Bórrelo cuando le entregue la prenda o cuando venza el
-plazo que le dijo. La guía trae el aviso para imprimir y poner en la caja.
+Sí. Antes de anotarlo, la ley le pide informarle 10 cosas, como quién guarda su
+número, para qué y hasta cuándo. Si deja de decir tres o más, es una infracción
+grave. Lo más simple es tener en la caja el aviso impreso que trae la guía.
+Después pídale un «sí» y anote la fecha. El «sí» de palabra vale, pero si algún
+día se lo piden, le toca a usted probarlo. Úselo solo para ese aviso: «Llegó su
+polo azul talla M». Si le agrega una oferta, ya necesita otro permiso. Bórrelo
+cuando le entregue la prenda o cuando venza el plazo del aviso.
 
 Sale de: [Lo que sus ventas le dicen de su
 cliente](https://www.coddvisor.com/blog/ventas-cliente/), verificada el
 23-nov-2026, y [Su lista de clientes en
 Excel](https://www.coddvisor.com/blog/lista-clientes/), verificada el
 25-nov-2026. Ley 29733, arts. 13.5 y 14, inc. 5; Reglamento de la Ley 29733,
-arts. 5.1.1, 6.1 y 9. Revísela con su contador.
+arts. 5.1.1, 6.1 y 9, y art. 133, inc. 2. Revísela con su contador.
 
 #### marketing-03 «¿Puedo tener la lista de mis clientes en un Excel?»
 
@@ -1024,7 +1062,8 @@ celular, la talla y qué pidió. No anote el DNI, la dirección ni la fecha de
 nacimiento. Dígales para qué es, mande ofertas solo a quien las pidió y borre lo
 que ya no usa. Inscriba la lista en el Registro Nacional de Protección de Datos
 Personales: es gratis y se aprueba en automático. Tenga un documento de
-seguridad firmado, y ponga contraseña al archivo.
+seguridad firmado y con fecha cierta, por ejemplo con su firma legalizada en una
+notaría. Y ponga contraseña al archivo.
 
 Sale de: [Su lista de clientes en
 Excel](https://www.coddvisor.com/blog/lista-clientes/), verificada el
@@ -1150,8 +1189,9 @@ infracción muy grave ante la SUNAFIL, aunque haya pagado cada hora extra.
 Además, es su prueba de quién trabajó y cuántas horas. También muestra si
 alguien llegó al promedio de 4 horas diarias.
 
-Sale de: [Horas extra](https://www.coddvisor.com/blog/horas-extra/) y [Medio
-tiempo o tiempo completo](https://www.coddvisor.com/blog/medio-tiempo/),
+Sale de: [Horas extra](https://www.coddvisor.com/blog/horas-extra/), [Medio
+tiempo o tiempo completo](https://www.coddvisor.com/blog/medio-tiempo/) y [El
+pago triple del feriado](https://www.coddvisor.com/blog/feriado-trabajado/),
 verificadas el 21-nov-2026. D.S. 004-2006-TR, arts. 1 y 2; D.S. 019-2006-TR,
 art. 25, num. 25.19. Revísela con su contador.
 
@@ -1307,17 +1347,18 @@ Leg. 728, arts. 6 y 7; SUNAT, Tabla 22 del PLAME. Revísela con su contador.
 *Crecer dentro del negocio.*
 
 Si su promedio llega a 4 horas diarias, le tocan el mínimo completo y todos los
-beneficios. Entre ellos, la CTS, las vacaciones de su régimen y la protección
-contra el despido sin causa. En un negocio que abre 6 días, eso pasa a las 24
-horas a la semana. Y pasar de 23 a 24 horas más que duplica su costo. Por eso,
+beneficios de su régimen. También la protección contra el despido sin causa. Si
+va 5 días o más en un negocio que abre 6, eso pasa a las 24 horas a la semana.
+Si va menos de 5 días, o su negocio abre 5, pasa a las 20. Con el sueldo mínimo,
+en el régimen general, pasar de 23 a 24 horas más que duplica su costo. Por eso,
 si su negocio necesita ese puesto, ofrézcale el tiempo completo antes de que los
 turnos se alarguen por costumbre.
 
 Sale de: [Medio tiempo o tiempo
 completo](https://www.coddvisor.com/blog/medio-tiempo/), verificada el
-21-nov-2026. R.M. 091-92-TR, art. 3; D.S. 001-96-TR, art. 12; TUO de la Ley de
-CTS, art. 4; D.S. 012-92-TR, art. 11; TUO del D. Leg. 728, art. 22. Revísela con
-su contador.
+21-nov-2026. R.M. 091-92-TR, art. 3; D.S. 001-96-TR, art. 12; D.S. 004-97-TR,
+art. 3; TUO de la Ley de CTS, art. 4; D.S. 012-92-TR, art. 11; TUO del D. Leg.
+728, art. 22. Revísela con su contador.
 
 ## Los huecos
 
@@ -1486,9 +1527,11 @@ que estas respuestas usan. Una semana antes de abrir:
 1. **Comparar cada respuesta con su guía.** Si la guía se verificó después de la
    fecha que lleva la respuesta, la respuesta se rehace con la guía.
 2. **Actualizar las cifras que vencen**, de la tabla de abajo.
-3. **Confirmar la nueva Ley MYPE (Ley 32353).** Si salió su reglamento, cambian
-   `planilla-01`, `planilla-04`, `planilla-05`, `planilla-09`, `planilla-10`,
-   `sunat-06`, `abrir-02`, `abrir-07` y `finanzas-03`.
+3. **Confirmar las dos dudas de la guía del REMYPE.** Ver en el SPIJ, el sistema
+   oficial de normas, si cambiaron los arts. 29 y 70 del D.S. 008-2008-TR. Y si
+   salió el reglamento de la nueva Ley MYPE (Ley 32353), cambian `planilla-01`,
+   `planilla-04`, `planilla-05`, `planilla-09`, `planilla-10`, `sunat-06`,
+   `abrir-02`, `abrir-07` y `finanzas-03`.
 4. **Resolver los cuatro «Por revisar con el contador»**, o publicar esas
    respuestas sin esa parte.
 5. **Si los contadores invitados ya aceptaron, pedirles que lean las de SUNAT y
@@ -1531,8 +1574,12 @@ otros. Una respuesta de impuestos firmada por Coddvisor es otra cosa: es su
 propio consejo, como en sus guías. El abogado tiene que verla antes de que la
 comunidad abra.
 
-Este documento no cambia [comunidad-normas.md](comunidad-normas.md): es de otra
-sesión, y se decide en su revisión.
+Este documento no cambia [comunidad-normas.md](comunidad-normas.md). La sesión
+de normas suma estas frases en su propia solicitud, en la rama
+`propuesta/comunidad-riesgos-legales`, y cita esta. Así ese archivo lo edita una
+sola sesión, y la fundadora lo decide en un solo lugar. Esa sesión agrega además
+una pregunta para el abogado. Lo firmado «Equipo de Coddvisor» es contenido
+propio, así que los términos no pueden decir que Coddvisor no responde por él.
 
 ## Lo que se encontró en las guías
 
@@ -1569,5 +1616,5 @@ contratación.
    Cada una se nombra por su código.
 2. Aprobar la firma y la marca: «Equipo de Coddvisor» y «Pregunta de ejemplo».
 3. Elegir qué huecos se escriben como guías antes de abrir.
-4. Decidir si las frases de «Lo que cambia en los términos» van al borrador del
-   abogado.
+4. Decidir las frases de «Lo que cambia en los términos» en la solicitud de la
+   sesión de normas, no en esta.
