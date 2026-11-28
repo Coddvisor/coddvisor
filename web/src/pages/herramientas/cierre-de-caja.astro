@@ -190,9 +190,9 @@ const nombre = (c: number) => (c >= 100 ? 'S/ ' + c / 100 : c + ' céntimos');
 <article class="guia guia-nueva" aria-labelledby="guia-t">
   <div class="col">
     <header class="guia-cab guia-in">
-      <p class="rotulo">Guía · {h.categoria}</p>
+      <p class="rotulo">Guía: {h.categoria}</p>
       <h2 class="titular guia-t" id="guia-t">{h.guia}</h2>
-      <p class="guia-meta">{autor} · <time datetime={h.publicada}>{fechaLarga(h.publicada)}</time> · {h.lectura} min de lectura</p>
+      <p class="guia-meta">{autor}, <time datetime={h.publicada}>{fechaLarga(h.publicada)}</time>, {h.lectura} min de lectura</p>
     </header>
 
     <nav class="guia-indice" aria-label="En esta guía">

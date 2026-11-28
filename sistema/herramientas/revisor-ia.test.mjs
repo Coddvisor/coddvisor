@@ -1,10 +1,13 @@
 // Prueba el revisor con IA sin llamar a la API: las piezas puras y una API falsa.
 
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { describe, test } from 'node:test';
 
-import { armarMensajes, consultarModelo, extraerPreguntas, formatearInforme, leerConfiguracion, parsearRespuesta, recortarDiff } from './revisor-ia.mjs';
+import { armarMensajes, consultarModelo, extraerPreguntas, formatearInforme, leerConfiguracion, leerDiff, parsearRespuesta, recortarDiff } from './revisor-ia.mjs';
 
 const config = { ...leerConfiguracion(), reintentos: 1, segundos_espera: 5 };
 const preguntas = [
@@ -27,6 +30,41 @@ describe('preguntas de la lista de revisión', () => {
 
   test('sin el encabezado no inventa preguntas', () => {
     assert.deepEqual(extraerPreguntas('nada', '## Lo que responde una persona'), []);
+  });
+});
+
+describe('qué parte del cambio mira', () => {
+  // Un repositorio de juguete con la forma del real. Hasta el 28-nov-2026 el revisor
+  // corría git desde sistema/ con la ruta «.», y no veía nada de web/ ni de
+  // arquitectura/: la solicitud del panel del equipo (#88) le llegaba vacía.
+  test('ve el cambio de todo el repositorio, no solo sistema/, y deja fuera lo que pide la configuración', () => {
+    const repo = mkdtempSync(path.join(tmpdir(), 'revisor-ia-'));
+    try {
+      const git = (...args) => execFileSync('git', ['-c', 'commit.gpgsign=false', ...args], { cwd: repo, encoding: 'utf8' });
+      const escribir = (ruta, texto) => writeFileSync(path.join(repo, ruta), texto);
+      git('init', '-q', '-b', 'main');
+      git('config', 'user.name', 'Prueba');
+      git('config', 'user.email', 'prueba@ejemplo.invalid');
+      for (const carpeta of ['sistema', 'web', 'arquitectura']) mkdirSync(path.join(repo, carpeta));
+      escribir('sistema/caja.ts', 'antes\n');
+      git('add', '.');
+      git('commit', '-q', '-m', 'base');
+      git('switch', '-q', '-c', 'cambio');
+      escribir('sistema/caja.ts', 'despues\n');
+      escribir('web/pagina.astro', 'pagina nueva\n');
+      escribir('arquitectura/propuesta.md', 'propuesta nueva\n');
+      escribir('web/package-lock.json', '{}\n');
+      git('add', '.');
+      git('commit', '-q', '-m', 'cambio');
+
+      const diff = leerDiff('main', config, path.join(repo, 'sistema'));
+      assert.match(diff, /sistema\/caja\.ts/);
+      assert.match(diff, /web\/pagina\.astro/);
+      assert.match(diff, /arquitectura\/propuesta\.md/);
+      assert.doesNotMatch(diff, /package-lock\.json/);
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
   });
 });
 

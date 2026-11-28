@@ -7,6 +7,9 @@ export const configuracion = {
   // Nadie tiene DELETE ni TRUNCATE: en Coddvisor nada se borra.
   // custodia: datos de un cliente que la aplicación solo lee y que escribe una
   // sola puerta (la membresía y sus roles). Por clase nadie escribe en ella.
+  // comun: datos de todos, que no son de ningún negocio (la comunidad). La
+  // aplicación solo los lee; los escriben las puertas firmadas de su módulo
+  // (cambio de BD-05 del 27-nov-2026, etapa 1 de la comunidad).
   permisos: {
     coddvisor_app: {
       raiz: ['SELECT'],
@@ -15,6 +18,7 @@ export const configuracion = {
       custodia: ['SELECT'],
       catalogo: ['SELECT'],
       control: [],
+      comun: ['SELECT'],
     },
     coddvisor_libros: {
       raiz: ['SELECT'],
@@ -23,13 +27,18 @@ export const configuracion = {
       custodia: ['SELECT'],
       catalogo: ['SELECT'],
       control: [],
+      // Los libros son de los negocios: lo de la comunidad no les hace falta.
+      comun: [],
     },
     // El portero no trabaja por clase: por clase no tiene nada. Lo suyo es la
     // lista cerrada de abajo.
-    coddvisor_portero: { raiz: [], negocio: [], libro: [], custodia: [], catalogo: [], control: [] },
+    coddvisor_portero: { raiz: [], negocio: [], libro: [], custodia: [], catalogo: [], control: [], comun: [] },
     // El dueño de las puertas de identidad, igual: por clase nada, y su lista
     // cerrada abajo (cambio de BD-05 del 26-nov-2026, tramo 2a de identidad).
-    coddvisor_identidad: { raiz: [], negocio: [], libro: [], custodia: [], catalogo: [], control: [] },
+    coddvisor_identidad: { raiz: [], negocio: [], libro: [], custodia: [], catalogo: [], control: [], comun: [] },
+    // El dueño de las puertas de la comunidad: por clase nada, y su lista cerrada
+    // abajo (cambio de BD-05 del 27-nov-2026, etapa 1 de la comunidad).
+    coddvisor_comunidad: { raiz: [], negocio: [], libro: [], custodia: [], catalogo: [], control: [], comun: [] },
   },
 
   // BD-16. Las únicas tablas que viven afuera de los negocios (clase control).
@@ -67,6 +76,25 @@ export const configuracion = {
     // (plan de despliegue, paso 22; decisión 8 bis). Cupos compartidos, 27-nov-2026.
     'control.cupo_usado',
   ],
+
+  // BD-16. La segunda lista de afuera: las tablas de clase comun, que son de
+  // todos y no de un negocio (la comunidad). Toda tabla común figura aquí y vive
+  // en su esquema; una que no figure es una falta. Entra con su porqué y lo
+  // aprueba el fundador (comunidad-etapa-1.md, «Lo que la clase comun exige»).
+  tablasComunes: [
+    // Cómo se presenta cada persona: nombre de pila, rol y negocio descrito.
+    // Es de la persona y se muestra a todos, sin entrar a ningún negocio.
+    'comunidad.perfil',
+    // Cuántos perfiles vivos comparten cada descripción, en cada escalón: la
+    // proyección con que la descripción se achica. Se lee al mostrar.
+    'comunidad.conteo_descripcion',
+  ],
+  esquemaDeLoComun: 'comunidad',
+
+  // BD-03. Lo único del plano de control que una tabla común puede citar con una
+  // clave foránea: la cuenta de la persona. Así la comunidad no llega a las
+  // llaves, al índice de accesos ni a la lista de negocios.
+  controlQueCitaLoComun: ['control.cuenta'],
 
   // Lista cerrada, tabla por tabla, para un rol que no trabaja por clase. Si
   // un rol está aquí, esta lista manda: una tabla que no figura no le da nada.
@@ -116,12 +144,26 @@ export const configuracion = {
       'identidad.tope_de_cupo': ['SELECT'],
       'control.cupo_usado': ['SELECT', 'INSERT', 'UPDATE'],
     },
+    // Lo justo para las puertas de la comunidad: escribir el perfil y su
+    // proyección, y leer los catálogos con que se cuenta (el rubro amplio, los
+    // escalones y los ajustes). Ninguna tabla de un negocio y nada del plano de
+    // control: de una cuenta solo sabe si está activa, por identidad.cuenta_activa
+    // (cambio de BD-05 del 27-nov-2026, etapa 1 de la comunidad).
+    coddvisor_comunidad: {
+      'comunidad.perfil': ['SELECT', 'INSERT', 'UPDATE'],
+      'comunidad.conteo_descripcion': ['SELECT', 'INSERT', 'UPDATE'],
+      'comunidad.rubro': ['SELECT'],
+      'comunidad.escalon': ['SELECT'],
+      'comunidad.ajuste': ['SELECT'],
+    },
   },
 
   // Quién puede ejecutar cada función que corre con los permisos de su dueño
   // (SECURITY DEFINER). Cada una es una puerta: se abre con nombre y apellido.
   puertas: {
-    'portero.contexto': ['coddvisor_app', 'coddvisor_libros', 'coddvisor_identidad'],
+    // Las puertas de la comunidad lo leen a través de los sellos y para comprobar
+    // que no hay un negocio abierto (etapa 1 de la comunidad).
+    'portero.contexto': ['coddvisor_app', 'coddvisor_libros', 'coddvisor_identidad', 'coddvisor_comunidad'],
     // Las formas del portero (tramo 2b de identidad). portero.abrir queda para
     // la caja sola; la persona entra por abrir_persona, que comprueba la membresía.
     'portero.abrir': ['coddvisor_app'],
@@ -164,12 +206,24 @@ export const configuracion = {
     // permiso, y el gancho lo ejecuta Supabase Auth con su propio rol, el único
     // de esta lista que no es de Coddvisor. Ese rol no recibe ninguna tabla.
     'identidad.permitir_alta': ['coddvisor_app'],
+    // El mismo permiso, anotado por «Entrar a la comunidad», con su propia firma
+    // (etapa 1 de la comunidad, 27-nov-2026).
+    'identidad.permitir_alta_en_la_comunidad': ['coddvisor_app'],
     'ganchos.antes_de_crear_cuenta': ['supabase_auth_admin'],
     // Los cupos compartidos de intentos y de permisos de alta (27-nov-2026).
     'identidad.usar_cupos': ['coddvisor_app'],
     // La única que anexa el rubro elegido. Es del rol de los libros y solo la
     // ejecuta la puerta que abre un negocio, dentro del negocio que abrió.
     'configuracion.anotar_rubro': ['coddvisor_identidad'],
+    // La comunidad (etapa 1, 27-nov-2026). Sus puertas las ejecuta solo el
+    // servicio, cada una con su firma, que verifica el portero solo para
+    // propósitos «comunidad_». De una cuenta, la comunidad sabe solo si está activa.
+    'portero.exigir_firma_de_comunidad': ['coddvisor_comunidad'],
+    'identidad.cuenta_activa': ['coddvisor_comunidad'],
+    'comunidad.crear_perfil': ['coddvisor_app'],
+    'comunidad.cambiar_perfil': ['coddvisor_app'],
+    'comunidad.archivar_perfil': ['coddvisor_app'],
+    'comunidad.olvidar_perfil': ['coddvisor_app'],
   },
 
   // Cómo entra el servicio a la base y de dónde sale el cliente activo.

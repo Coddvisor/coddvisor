@@ -122,13 +122,19 @@ export const reglas = [
         from t left join pk on pk.conrelid = t.oid
         where t.clase = 'raiz' and pk.columnas is distinct from 'id'
         union all
+        -- Una tabla común es de todos: no tiene negocio en la clave.
+        select t.esquema || '.' || t.tabla,
+               'La clave primaria de una tabla común debe ser (id) y es (' || coalesce(pk.columnas, 'ninguna') || ').'
+        from t left join pk on pk.conrelid = t.oid
+        where t.clase = 'comun' and pk.columnas is distinct from 'id'
+        union all
         select t.esquema || '.' || t.tabla,
                'Falta la columna ' || requerida.columna || ' de tipo uuid y obligatoria.'
         from t
         cross join lateral (
-          select unnest(case when t.clase = 'raiz' then array['id'] else array['tenant_id', 'id'] end) as columna
+          select unnest(case when t.clase in ('raiz', 'comun') then array['id'] else array['tenant_id', 'id'] end) as columna
         ) requerida
-        where t.clase in ('raiz', 'negocio', 'libro', 'custodia')
+        where t.clase in ('raiz', 'negocio', 'libro', 'custodia', 'comun')
           and not exists (
             select 1 from col
             where col.tabla_oid = t.oid and col.columna = requerida.columna
@@ -152,6 +158,13 @@ export const reglas = [
                'Un catálogo es igual para todos los clientes y no lleva tenant_id: la aplicación lo lee sin filtro, desde cualquier negocio. Si los datos son de un cliente, la tabla es de clase negocio, libro o custodia.'
         from col
         where col.clase = 'catalogo' and col.columna = 'tenant_id'
+        union all
+        -- Lo común no tiene seguridad por fila: con tenant_id, las filas de un
+        -- negocio quedarían a la vista de todos, y ninguna otra regla lo notaría.
+        select col.esquema || '.' || col.tabla || '.' || col.columna,
+               'Una tabla común es de todos y no lleva tenant_id: la aplicación la lee sin filtro y sin abrir ningún negocio. Si los datos son de un cliente, la tabla es de clase negocio, libro o custodia.'
+        from col
+        where col.clase = 'comun' and col.columna = 'tenant_id'
         order by 1`);
     },
   },
@@ -159,7 +172,7 @@ export const reglas = [
   {
     id: 'BD-03',
     titulo: 'Una fila de un cliente nunca puede apuntar a otro cliente, y nada se borra en cascada',
-    async revisar(db) {
+    async revisar(db, cfg) {
       return filas(db, `
         ${con(TABLAS)},
         fk as (
@@ -193,16 +206,30 @@ export const reglas = [
         union all
         select o_esquema || '.' || o_tabla || ' (' || conname || ')',
                'Ninguna tabla dentro de una celda apunta al plano de control (' || d_esquema || '.' || d_tabla || ').'
-        from fk where d_clase = 'control' and o_clase is distinct from 'control'
+        from fk where d_clase = 'control' and o_clase is distinct from 'control' and o_clase is distinct from 'comun'
+        union all
+        -- Lo común vive junto al plano de control y cita a la persona por su
+        -- cuenta. Nada más de afuera: ni llaves, ni accesos, ni negocios.
+        select o_esquema || '.' || o_tabla || ' (' || conname || ')',
+               'Una tabla común cita del plano de control solo lo de su lista (' || array_to_string($1::text[], ', ') || ' en controlQueCitaLoComun), y esta apunta a ' || d_esquema || '.' || d_tabla || '.'
+        from fk where o_clase = 'comun' and d_clase = 'control' and not (d_esquema || '.' || d_tabla = any($1::text[]))
         union all
         select o_esquema || '.' || o_tabla || ' (' || conname || ')',
                'Un catálogo o una tabla de control no puede apuntar a datos de un cliente (' || d_esquema || '.' || d_tabla || ').'
         from fk where o_clase in ('catalogo', 'control') and d_clase in ('raiz', 'negocio', 'libro', 'custodia')
         union all
         select o_esquema || '.' || o_tabla || ' (' || conname || ')',
+               'Una tabla común no apunta a datos de un negocio (' || d_esquema || '.' || d_tabla || '): la comunidad no llega a las ventas de nadie.'
+        from fk where o_clase = 'comun' and d_clase in ('raiz', 'negocio', 'libro', 'custodia')
+        union all
+        select o_esquema || '.' || o_tabla || ' (' || conname || ')',
+               'Una tabla de un negocio no apunta a una tabla común (' || d_esquema || '.' || d_tabla || '): un negocio no depende de la comunidad.'
+        from fk where o_clase in ('raiz', 'negocio', 'libro', 'custodia') and d_clase = 'comun'
+        union all
+        select o_esquema || '.' || o_tabla || ' (' || conname || ')',
                'La clave foránea borra o cambia en cascada. Nada se borra: se archiva o se anula.'
         from fk where confdeltype not in ('a', 'r') or confupdtype not in ('a', 'r')
-        order by 1`);
+        order by 1`, [cfg.controlQueCitaLoComun]);
     },
   },
 
@@ -566,7 +593,7 @@ export const reglas = [
                'Falta la columna ' || r.columna || ' (' || r.tipo
                  || case when r.obligatoria then ', obligatoria' else '' end || ').' as detalle
         from t cross join requerida r
-        where (t.clase in ('raiz', 'negocio', 'custodia') or t.oid in (select oid from control_editable))
+        where (t.clase in ('raiz', 'negocio', 'custodia', 'comun') or t.oid in (select oid from control_editable))
           and not exists (
             select 1 from col
             where col.tabla_oid = t.oid and col.columna = r.columna and col.tipo_base = r.tipo
@@ -575,7 +602,7 @@ export const reglas = [
         select t.esquema || '.' || t.tabla,
                'Falta el disparador de sello (nucleo.sellar_fila, antes de insertar y de actualizar cada fila).'
         from t
-        where (t.clase in ('raiz', 'negocio', 'custodia') or t.oid in (select oid from control_editable))
+        where (t.clase in ('raiz', 'negocio', 'custodia', 'comun') or t.oid in (select oid from control_editable))
           and not exists (
             select 1 from pg_trigger g
             where g.tgrelid = t.oid and not g.tgisinternal and g.tgenabled <> 'D'
@@ -585,7 +612,7 @@ export const reglas = [
         select t.esquema || '.' || t.tabla,
                'Falta el disparador que impide cambiar la identidad de la fila (nucleo.rechazar_cambio_de_identidad).'
         from t
-        where t.clase in ('raiz', 'negocio', 'custodia')
+        where t.clase in ('raiz', 'negocio', 'custodia', 'comun')
           and not exists (
             select 1 from pg_trigger g
             where g.tgrelid = t.oid and not g.tgisinternal and g.tgenabled <> 'D'
@@ -595,7 +622,7 @@ export const reglas = [
                 select array_agg(a.attname::text order by a.attname::text)
                 from pg_attribute a
                 where a.attrelid = t.oid and a.attnum = any (string_to_array(g.tgattr::text, ' ')::int2[])
-              ) = case when t.clase = 'raiz' then array['id'] else array['id', 'tenant_id'] end)
+              ) = case when t.clase in ('raiz', 'comun') then array['id'] else array['id', 'tenant_id'] end)
         order by 1`);
     },
   },
@@ -793,7 +820,7 @@ export const reglas = [
 
   {
     id: 'BD-16',
-    titulo: 'Afuera de los negocios viven solo las tablas de la lista cerrada del plano de control',
+    titulo: 'Afuera de los negocios viven solo las tablas de dos listas cerradas: la del plano de control y la de lo común',
     async revisar(db, cfg) {
       return filas(db, `
         ${con(TABLAS)}
@@ -809,7 +836,22 @@ export const reglas = [
                'Está en la lista cerrada del plano de control pero no existe como tabla de control. Si se quitó, sale también de la lista.'
         from unnest($1::text[]) as lista(nombre)
         where not exists (select 1 from t where t.esquema || '.' || t.tabla = lista.nombre and t.clase = 'control')
-        order by 1`, [cfg.tablasDeControl]);
+        union all
+        -- Lo común es la segunda lista de afuera: lo que no es de ningún negocio
+        -- y la aplicación muestra a todos (comunidad-etapa-1.md).
+        select esquema || '.' || tabla,
+               'Es una tabla común y no está en la lista cerrada de lo común (tablasComunes en verificador/configuracion.mjs). Lo de un negocio vive dentro del negocio; si de verdad es de todos, entra a la lista con su porqué.'
+        from t where clase = 'comun' and not (esquema || '.' || tabla = any($2))
+        union all
+        select esquema || '.' || tabla,
+               'Es una tabla común y vive en el esquema ' || esquema || '. Lo común vive en el esquema ' || $3 || ', el de su módulo.'
+        from t where clase = 'comun' and esquema <> $3
+        union all
+        select lista.nombre,
+               'Está en la lista cerrada de lo común pero no existe como tabla común. Si se quitó, sale también de la lista.'
+        from unnest($2::text[]) as lista(nombre)
+        where not exists (select 1 from t where t.esquema || '.' || t.tabla = lista.nombre and t.clase = 'comun')
+        order by 1`, [cfg.tablasDeControl, cfg.tablasComunes, cfg.esquemaDeLoComun]);
     },
   },
 
