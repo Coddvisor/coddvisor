@@ -64,10 +64,12 @@ decisión 1.
 
 ### Lo que usted decide
 
-Nueve decisiones, cada una con su recomendación. **Si une esta solicitud sin
+Diez decisiones, cada una con su recomendación. **Si une esta solicitud sin
 marcar otra cosa, se aprueba la opción recomendada (A) de cada una.** Para
 elegir otra, márquela en la descripción de la solicitud o en un comentario.
-Ninguna contrata ni compra nada.
+Ninguna contrata ni compra nada. Siete cambian reglas, revisiones obligatorias o
+agregan bloqueos (la 1, 2, 3, 4, 6, 7 y 8); la 5 y la 9 agregan herramientas,
+y la 10 aclara el alcance de una regla.
 
 | # | Decisión | Recomendación | Si no responde |
 |---|---|---|---|
@@ -80,6 +82,7 @@ Ninguna contrata ni compra nada.
 | 7 | La descripción de cada solicitud | GitHub comprueba que diga qué decide usted, qué se comprobó y si cambia lo que corre solo en su computadora | Se suma, obligatoria |
 | 8 | Las señales de que la IA se desvía | Un trinquete de pruebas, un aviso de tamaño y un pedido de verificar al terminar | Se hace |
 | 9 | Cómo se mide | GitHub cuenta cada mes y abre una solicitud con los números | Se crea |
+| 10 | Si los documentos internos pueden citar estudios con nombre | Sí, con su enlace; el sitio y el sistema, nunca | Así queda |
 
 ## 1. Qué es el desarrollo aumentado
 
@@ -161,7 +164,8 @@ no con la sensación de ir rápido.
 - GitHub busca llaves conocidas al subir y las bloquea.
 - El revisor con IA de la #34 responde las preguntas de juicio de 06. Solo
   sugiere y necesita una llave de pago, así que se corre a mano. Tenía dos
-  defectos, arreglados en la #91 y la #99 (sección 2.4).
+  defectos: uno lo arregló la #91 y el otro lo arregla la #99, en revisión
+  (sección 2.4).
 
 ### 2.2 Las reglas, una por una
 
@@ -261,7 +265,7 @@ Ninguna revisa estos seis puntos, y las del panel tampoco.
   `arquitectura/`) le habrían llegado vacías. Arreglado en la #91. Y
   comparaba contra el `main` local, que en esta computadora iba 242 cambios
   atrás: leía 551 archivos de trabajo ajeno en vez de los 2 del cambio.
-  Arreglado en la #99.
+  Lo arregla la #99, en revisión.
 - **Las pruebas del sitio no corren en GitHub.** Son 57, con una base de
   prueba: el contador, el panel, las invitaciones y los permisos. Cloudflare
   solo arma el sitio.
@@ -311,14 +315,14 @@ entorno de la base real la única revisora es esa misma cuenta. Además, las
 sesiones tienen conectores con herramientas que ejecutan SQL, aplican
 migraciones, despliegan, crean proyectos y compran; y esta computadora tiene
 `psql`, Docker y la terminal de Supabase. Una sesión podría hoy unir una
-solicitud, aprobar sola las nueve decisiones de esta propuesta, cambiar la
+solicitud, aprobar sola las diez decisiones de esta propuesta, cambiar la
 protección de `main`, aprobar una migración a la base real o ejecutar SQL en
 ella. Es como darle al practicante la llave maestra y la clave de la caja,
 con una nota que dice «no abrir».
 
-| Opción | Ganas | Pagas |
+| Opción | Gana | Paga |
 |---|---|---|
-| **A. Dos paredes** (recomendada). **Primera, en el repositorio** (`.claude/settings.json`): reglas de permiso que niegan, con comodines, las herramientas de los conectores que escriben, despliegan o compran, y las órdenes de la terminal que unen solicitudes, aprueban corridas o cambian la protección. Un gancho las respalda, bloquea si él mismo falla, y por regla deja pasar solo las herramientas que leen (las que empiezan con `list_`, `get_` o `search_`). Mientras la base del sitio no tenga su camino por GitHub (decisión 2), aplicar una migración o subir una función del sitio pide confirmación en vez de negarse. **Segunda, en GitHub:** las sesiones trabajan con una cuenta propia que puede subir ramas y abrir solicitudes, sin administrar; `main` exige la aprobación de usted; y esa cuenta no es revisora del entorno `base-real`. | La primera pared se instala en un día. La segunda no depende de que ningún programa corra: es GitHub el que dice que no, a cualquier herramienta. | Usted aprueba cada solicitud con una revisión antes de unirla: un clic más. Una cuenta más que cuidar, gratis. La primera pared es una red: una orden de la terminal se puede disfrazar. El muro es la segunda. |
+| **A. Dos paredes** (recomendada). **Primera, en el repositorio** (`.claude/settings.json`): reglas de permiso que niegan, con comodines, las herramientas de los conectores que escriben, despliegan o compran, y las órdenes de la terminal que unen solicitudes, aprueban corridas, cambian la protección o llegan a una base o a un proyecto fuera de esta computadora (`psql` hacia otra dirección, `supabase db push`, `supabase functions deploy`). `psql` contra el Docker de esta computadora sigue permitido: sirve para probar. Un gancho las respalda, bloquea si él mismo falla, y por regla deja pasar solo las herramientas que leen (las que empiezan con `list_`, `get_` o `search_`). Mientras la base del sitio no tenga su camino por GitHub (decisión 2), aplicar una migración o subir una función del sitio pide confirmación en vez de negarse. **Segunda, en GitHub:** las sesiones trabajan con una cuenta propia que puede subir ramas y abrir solicitudes, sin administrar; `main` exige la aprobación de usted; y esa cuenta no es revisora del entorno `base-real`. | La primera pared se instala en un día. La segunda no depende de que ningún programa corra: es GitHub el que dice que no, a cualquier herramienta. | Usted aprueba cada solicitud con una revisión antes de unirla: un clic más. Una cuenta más que cuidar, gratis. La primera pared es una red: una orden de la terminal se puede disfrazar. El muro es la segunda. |
 | **B. Solo la primera pared** | Rápida, sin cambiar cómo aprueba usted. | La cuenta de las sesiones sigue pudiendo todo. Una sesión confundida puede rodear la red, por ejemplo con un programa propio. |
 | **C. Negar todos los conectores** (`mcp__*`) | Lo más simple. | Apaga también el navegador, la terminal y las herramientas de la app, y no hace nada con GitHub. |
 
@@ -346,7 +350,7 @@ GitHub, y el ensayo de Supabase, que corre pero no es obligatorio. Si se unen
 tres solicitudes en un minuto, la revisión de la del medio se cancela. Y la
 base del sitio cambia por el conector, sin camino por GitHub ni aprobación.
 
-| Opción | Ganas | Pagas |
+| Opción | Gana | Paga |
 |---|---|---|
 | **A. Todo por GitHub** (recomendada). (1) Una revisión nueva, «Sitio: pruebas y armado», en `bases.yml`. (2) Obligatorias las tres: la de siempre, el ensayo y la del sitio. (3) Las revisiones de `main` esperan en fila en vez de cancelarse, como ya hacen los flujos de la base real. (4) Un camino para las migraciones y la función del sitio, igual al del sistema: ensayo primero y su aprobación después. | Lo que hoy depende de la memoria se revisa solo, también la prueba de la #93. Todo cambio de `main` queda verificado. La base del sitio deja de depender del conector, y la decisión 1 puede cerrarlo. En un repositorio público, las máquinas estándar de GitHub no cobran. | Cada solicitud espera 2 o 3 minutos más. Una prueba inestable bloquearía solicitudes sin culpa: se arregla, no se quita. Construir el camino del sitio es una solicitud mediana. |
 | **B. Solo hacer obligatorio el ensayo** | Un clic suyo, sin código. | El sitio sigue sin pruebas ni camino en GitHub. |
@@ -379,7 +383,7 @@ una solicitud ya unida. Las dos reglas que lo evitan (revisar el trabajo
 paralelo y mirar el estado antes de subir) viven en la memoria de las sesiones
 de una sola computadora.
 
-| Opción | Ganas | Pagas |
+| Opción | Gana | Paga |
 |---|---|---|
 | **A. Dos ganchos y el borrador** (recomendada). **Al empezar**, el gancho trae lo último de GitHub y muestra, sin que se lo pidan: cuántos cambios atrás está el `main` de la sesión; las solicitudes unidas en las últimas 72 horas; las abiertas, también en borrador; las propuestas que cambiaron en 7 días; y las otras copias de trabajo de esta computadora, con sus archivos sin guardar. No bloquea nada. **Antes de subir**, otro gancho mira si la solicitud de esa rama ya se unió o se cerró; si es así, bloquea y pide una rama nueva desde `main`. Si la rama no tiene solicitud, avisa. Y una regla nueva: la sesión abre su solicitud en borrador con su primer commit. | El 26-nov habría mostrado al empezar que la #63, la #66 y la #68 sobre la comunidad se acababan de unir, y que el `main` de esa sesión iba 69 cambios atrás. El 27-nov habría frenado la subida a la #91. Las sesiones en la nube ven los borradores. | Unos segundos más al empezar y antes de cada subida, y unas 40 líneas de contexto. Sin red, el de inicio lo dice y sigue, y el de subida deja subir y lo dice. |
 | **B. A, y además bloquear el primer commit si no hay borrador** | Nadie trabaja sin que se vea. | Frena un momento normal de trabajo. Si GitHub no responde, nadie puede guardar. |
@@ -411,9 +415,9 @@ pantallas. Dos reglas del `CLAUDE.md` no tienen ni revisión ni pregunta en 06,
 como pide el principio 10: empresa independiente y trato de usted. Y 06 no
 pregunta si lo nuevo llegó con su prueba.
 
-| Opción | Ganas | Pagas |
+| Opción | Gana | Paga |
 |---|---|---|
-| **A. Por capas** (recomendada). `CLAUDE.md` gana una sección corta, «Cómo se trabaja con asistentes» (abajo). `.claude/rules/` gana tres archivos que solo enlazan a las bases y se cargan al tocar su carpeta: pantallas, base de datos y sitio. Las dos notas de memoria pasan al repositorio. 06 gana tres preguntas: «¿Nombra, compara o pone de ejemplo a otra empresa?», «¿Todo texto trata de usted?» y «¿Lo nuevo llegó con su prueba, escrita antes, y en commits que separan ordenar de cambiar?». | Cada regla está en el repositorio y llega a toda sesión, también en la nube. Lo de pantallas pesa solo cuando se toca una pantalla. El revisor con IA hace las preguntas nuevas sin cambiar su código: las lee de 06. La prueba de la #91 obliga a copiarlas también en la plantilla. | Un lugar más que cuidar. Para que no sea una copia, esos archivos solo enlazan; una prueba revisa que no copien listas de las bases. |
+| **A. Por capas** (recomendada). `CLAUDE.md` gana una sección corta, «Cómo se trabaja con asistentes» (abajo). `.claude/rules/` gana tres archivos que solo enlazan a las bases y se cargan al tocar su carpeta: pantallas, base de datos y sitio. Las dos notas de memoria pasan al repositorio. 06 gana tres preguntas: «¿El sitio o el sistema nombra, compara o pone de ejemplo a otra empresa?», «¿Todo texto trata de usted?» y «¿Lo nuevo llegó con su prueba, escrita antes, y en commits que separan ordenar de cambiar?». | Cada regla está en el repositorio y llega a toda sesión, también en la nube. Lo de pantallas pesa solo cuando se toca una pantalla. El revisor con IA hace las preguntas nuevas sin cambiar su código: las lee de 06. La prueba de la #91 obliga a copiarlas también en la plantilla. | Un lugar más que cuidar. Para que no sea una copia, esos archivos solo enlazan; una prueba revisa que no copien listas de las bases. |
 | **B. Todo en `CLAUDE.md`** | Un solo archivo. | Más largo para toda sesión, aunque no toque pantallas. La documentación pide menos de 200 líneas. |
 | **C. Como está** | Nada que hacer. | Lo que vive en una computadora no llega a las demás. |
 
@@ -452,7 +456,7 @@ listas» lo atrapa solo si la copia es una lista.
 robar la caja antes de abrir la tienda. Funciona, pero hoy hay que
 explicarles todo de nuevo cada vez.
 
-| Opción | Ganas | Pagas |
+| Opción | Gana | Paga |
 |---|---|---|
 | **A. Una habilidad del proyecto sobre la revisión que trae Claude Code** (recomendada). `/revision-adversaria` corre primero `/code-review`, que ya existe, y después cuatro subagentes de Coddvisor (`.claude/agents/`): estados imposibles, reglas del proyecto, privacidad y concurrencia. Cada uno trabaja en su propia copia y demuestra cada hallazgo con una prueba que falla. Un quinto, el verificador, vuelve a correr cada prueba y descarta lo que no se reproduce. Lo confirmado queda como prueba permanente. El de reglas del proyecto usa las preguntas de 06, como el revisor con IA. | Se repite con una orden. Los mismos ángulos siempre, así los números se comparan. Lo que encuentra queda como prueba y no vuelve a pasar. Sin servicio nuevo: usa la suscripción. | Entre 10 y 30 minutos y bastante consumo por cambio. Corre solo si la sesión la llama: lo asegura la decisión 7. |
 | **B. Correrla en GitHub en cada cambio de riesgo**, con la acción oficial de Claude Code. | Corre siempre, sin que nadie se acuerde. | Una llave de pago o un token de la suscripción en los secretos de GitHub (van cifrados). Cuesta por uso. No corre en solicitudes que llegan de copias ajenas. Y el texto de una solicitud puede traerle instrucciones escondidas. |
@@ -483,7 +487,7 @@ cierto.
 **El problema.** Los seis puntos de la pestaña «Análisis» (sección 2.3) viven
 en una nota de memoria, y ninguna prueba los revisa.
 
-| Opción | Ganas | Pagas |
+| Opción | Gana | Paga |
 |---|---|---|
 | **A. Regla por carpeta, revisor de pantallas y cuatro reglas nuevas en 04** (recomendada). `.claude/rules/pantallas.md` se carga al tocar una pantalla. Un subagente revisa cada pantalla nueva contra 04 y los seis puntos, con capturas de 375 píxeles en claro y en oscuro. 04 gana cuatro reglas. Dos se revisan solas, en las pruebas de la oficina y en las del panel del sitio: cada gráfico tiene su «Ver como tabla», y una vista tiene un solo control. Dos se preguntan en 06, porque una máquina no las puede juzgar: «¿La actualización deja intacto lo que la persona ve y escribe?» y «¿Las cifras salen de lo ya sumado, sin recorrer todo cada vez?». | La vara deja de depender de que alguien recuerde la pestaña. Cada regla tiene una prueba o una pregunta, como pide el principio 10. | Cambian las reglas de 04 y la lista de 06, y eso se aprueba. Hay que escribir las pruebas. |
 | **B. Solo la regla por carpeta y el revisor** | No cambia ninguna regla. | La vara queda como sugerencia. |
@@ -508,7 +512,7 @@ lista y a las pruebas.
 plantilla, pero las sesiones abren sus solicitudes con `gh pr create --body`,
 que no la usa.
 
-| Opción | Ganas | Pagas |
+| Opción | Gana | Paga |
 |---|---|---|
 | **A. Una revisión obligatoria que lee la descripción** (recomendada). Un flujo aparte de GitHub, que corre al abrir, al subir y **al editar** la descripción, sin repetir las demás revisiones. Comprueba que estén las secciones de la plantilla y la lista de 06. Con un cambio de riesgo, «Revisión independiente» no puede quedar vacía ni decir solo «No hubo»: dice qué se encontró, o por qué no hizo falta. Si el cambio toca `.claude/`, la descripción tiene que decirlo con una línea propia: es código que corre solo en su computadora. El texto llega al programa como un dato, nunca dentro de una orden de la terminal, para que nadie pueda colar una orden en la descripción. | Toda solicitud dice qué decide usted, qué se comprobó y si cambia lo que corre solo en su computadora. Lo que cuenta la sección 4 sale solo. | Una sesión que olvida una sección corrige la descripción. Comprueba la forma, no la verdad de lo escrito. |
 | **B. Lo mismo, pero solo avisa** | No detiene a nadie. | Un aviso que no detiene se ignora. |
@@ -531,7 +535,7 @@ prueba o debilitar lo que comprueba no lo ve nadie. Tampoco hay aviso de una
 solicitud enorme: la mediana es de 367 líneas, pero 1 de cada 10 llega a
 2691 o más.
 
-| Opción | Ganas | Pagas |
+| Opción | Gana | Paga |
 |---|---|---|
 | **A. Tres piezas** (recomendada). (1) **Un trinquete de pruebas** en GitHub: compara los nombres de las pruebas que corren en la rama con los de `origin/main`. Si desaparece alguno, falla, salvo que la descripción diga cuál se quita y por qué (lo revisa la decisión 7). Es como el contador de la puerta: el número solo baja si alguien lo firma. (2) **Un aviso de tamaño** cuando una solicitud pasa de 1500 líneas, sin contar candados ni la lista exacta de librerías (`package-lock`). No bloquea. (3) **Un gancho al terminar**: si hubo cambios después de la última verificación, le pide a la sesión correr `npm run verificar` **una sola vez**. Claude Code trae una marca (`stop_hook_active`) para no pedirlo dos veces. | La trampa que más daña, borrar pruebas, se vuelve visible. La regla 6 de `CLAUDE.md` deja de depender de la memoria. | El trinquete corre también las pruebas de `main`: un minuto más por solicitud. El gancho al terminar alarga una vez la conversación. |
 | **B. Las tres bloquean siempre** | Más disciplina. | Un gancho que impide terminar cada vez que la verificación falla deja a la sesión dando vueltas: la primera señal de Beck. |
@@ -548,7 +552,7 @@ entiende. Eso lo busca el revisor de reglas del proyecto.
 
 #### Decisión 9. Cómo se mide
 
-| Opción | Ganas | Pagas |
+| Opción | Gana | Paga |
 |---|---|---|
 | **A. GitHub cuenta cada mes** (recomendada). Un flujo programado de GitHub corre el primer día de cada mes, cuenta lo de la sección 4 y abre una solicitud con la tabla en `arquitectura/medicion/AAAA-MM.md`. | Nadie tiene que acordarse. Números, no impresiones, mes con mes. Gratis en un repositorio público, sin servicio nuevo. | Cuenta por el texto de las solicitudes: si cambian las palabras de la plantilla, hay que ajustarlo. Su prueba lee la plantilla real. |
 | **B. Una pestaña «Cómo trabajamos» en el panel del equipo** | Se ve sin pedirla, con la vara de «Análisis». | Hay que guardar las cifras y construir la pestaña antes de saber si sirven. |
@@ -562,6 +566,29 @@ qué cifras importan.
 SE ROMPE SI: la plantilla cambia de palabras y el programa deja de encontrar
 las secciones. Su prueba lee la plantilla real, así que falla ese mismo día.
 
+#### Decisión 10. Si los documentos internos pueden citar estudios con nombre
+
+**El problema.** Esta propuesta es el primer documento de `main` que nombra
+organizaciones de afuera (DORA, METR y DX) y usa sus cifras. La regla de
+empresa independiente habla del sitio y del sistema: ni uno ni otro hablan en
+nombre de otro negocio, lo ponen de ejemplo, lo comparan ni usan sus cifras.
+No dice nada de los documentos internos. Y la pregunta que la decisión 4 suma
+a 06 podría leerse como que también los alcanza.
+
+| Opción | Gana | Paga |
+|---|---|---|
+| **A. Los documentos internos pueden citar estudios con su enlace; el sitio y el sistema, nunca** (recomendada). La pregunta de 06 dice «¿El sitio o el sistema nombra, compara o pone de ejemplo a otra empresa?». | Las decisiones se apoyan en evidencia que cualquiera puede comprobar. La regla del producto no cambia. | El repositorio es público: alguien podría leer una cita como si Coddvisor hablara por esa organización. Se cita como fuente, nunca como ejemplo a seguir. |
+| **B. Tampoco los documentos internos** | Una sola regla, sin matices. | Las fuentes se describen sin nombre («un estudio controlado de 2025») y nadie las puede comprobar. Esta propuesta se reescribe sin nombres. |
+
+**Si no responde:** queda A.
+
+DECIDÍ: A.
+DESCARTÉ: B, porque una cifra sin una fuente que se pueda comprobar vale menos
+que una opinión, y la regla protege al producto, no al estudio.
+SE ROMPE SI: un texto del sitio copia una cifra de un documento interno con su
+fuente («según DORA...»). La prueba del sitio no lo ve; lo ve la pregunta de
+06.
+
 ## 4. Cómo se mide que mejoró
 
 La línea de partida cubre las 89 solicitudes del 18 al 27-nov (de la #1 a la
@@ -572,7 +599,7 @@ La línea de partida cubre las 89 solicitudes del 18 al 27-nov (de la #1 a la
 | Trabajo duplicado | Dos sesiones haciendo la misma obra a la vez | 2 casos en 10 días | 0 | Solicitudes que reemplazan a otra o se cierran sin unir |
 | Solicitudes rehechas | Cerradas sin unir, o reemplazadas | 1 de 89 | Menos de 1 de cada 20 | GitHub |
 | Problemas que llegaron a `main` o más lejos | Lo que hubo que corregir después de unir | Al menos 5: la migración que falló en la base real (#87), los arreglos de la #84, la contradicción de la #86, el punto medio en el sitio y la línea que quedó fuera de la #91 (#95) | Que cada uno quede anotado; que bajen | La línea «corrige» de la plantilla (sección «Trabajo relacionado») |
-| Problemas encontrados antes de unir | Hallazgos de una revisión independiente | 42 en la comunidad (10 graves), 8 en la #87 y 25 en esta propuesta (5 graves); los demás no se anotaron | Anotados en todo cambio de riesgo | La sección «Revisión independiente» |
+| Problemas encontrados antes de unir | Hallazgos de una revisión independiente | 42 en la comunidad (10 graves), 8 en la #87 y 30 en esta propuesta (25 de un revisor y 5 de otro); los demás no se anotaron | Anotados en todo cambio de riesgo | La sección «Revisión independiente» |
 | Revisiones que fallan en GitHub | Corridas en rojo de las obligatorias | 0 de 88 | Al principio subirá, y es buena señal: las revisiones nuevas atrapan lo que hoy pasa. Después, cerca de 0 | GitHub |
 | Solicitudes que dicen qué decide la fundadora | Con esa sección llena | Unas 12 de 89 | Todas | La revisión de la decisión 7 |
 | Solicitudes que responden la lista de 06 | Con la lista marcada | 7 de 89 | Todas | La revisión de la decisión 7 |
@@ -603,13 +630,17 @@ cada sesión.
 
 Cada decisión aprobada va en su propia solicitud pequeña, en este orden:
 
-1. Decisión 1, primera pared. Es lo que más protege y lo más corto.
+1. Decisión 1, primera pared. Es lo que más protege y lo más corto. Es la
+   primera solicitud que crea `.claude/`: agrega al `.gitignore` lo que es de
+   cada computadora (`.claude/worktrees/`, `.claude/settings.local.json` y
+   `.claude/launch.json`).
 2. Decisión 2: la revisión del sitio, la fila de `main` y el camino de la base
    del sitio. Después, la decisión 1 cambia «pedir confirmación» por «negar»
    en la base del sitio.
 3. Decisión 3: los dos ganchos.
 4. Decisión 7: la revisión de la descripción.
-5. Decisión 4: `CLAUDE.md`, `.claude/rules/` y las tres preguntas de 06.
+5. Decisión 4: `CLAUDE.md`, `.claude/rules/` y las tres preguntas de 06, con
+   la redacción que fije la decisión 10.
 6. Decisión 8: el trinquete, el aviso de tamaño y el pedido al terminar.
 7. Decisión 5: la revisión adversaria.
 8. Decisión 6: la vara de las pantallas.
@@ -657,6 +688,12 @@ tiene `psql`, Docker y la terminal de Supabase; las reglas de permiso aceptan
 comodines; y una lista de lo prohibido deja pasar lo que no nombra. También
 corrigió la historia de la #85, que esta propuesta contaba mal. Todos se
 comprobaron antes de corregir y quedaron incorporados en esta versión.
+
+Una segunda revisión, de la sesión que pidió este trabajo, trajo 8 puntos más.
+Cinco eran nuevos y quedaron incorporados: «Ganas / Pagas» tuteaba en las
+tablas; la #99 se daba por unida; faltaba decir qué pasa con `psql` desde la
+terminal; faltaba pedir de forma explícita la decisión 10; y faltaba el
+`.gitignore` de `.claude/`. Los otros tres ya estaban corregidos.
 
 ## 7. Fuentes
 
