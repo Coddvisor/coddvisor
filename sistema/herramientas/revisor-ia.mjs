@@ -171,9 +171,11 @@ function leerBases(config) {
 }
 
 // `carpeta` es desde dónde se corre git: sistema/ en el uso normal, otra en las pruebas.
+// El cambio se lee desde la raíz del repositorio («:/» y «top»), no desde la carpeta:
+// las preguntas de 06-antes-de-unir.md valen también para web/ y arquitectura/.
 export function leerDiff(base, config, carpeta = RAIZ) {
-  const excluir = config.ignorar_en_diff.map((p) => `:(exclude,glob)**/${p}`);
-  const git = (rama) => execFileSync('git', ['diff', `${rama}...HEAD`, '--', '.', ...excluir], { cwd: carpeta, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const excluir = config.ignorar_en_diff.map((p) => `:(top,exclude,glob)**/${p}`);
+  const git = (rama) => execFileSync('git', ['diff', `${rama}...HEAD`, '--', ':/', ...excluir], { cwd: carpeta, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   try {
     return git(base);
   } catch {
