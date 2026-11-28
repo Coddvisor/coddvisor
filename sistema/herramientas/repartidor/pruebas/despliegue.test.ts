@@ -271,12 +271,15 @@ describe("el flujo de GitHub", () => {
     assert.deepEqual(conToken, ["SUPABASE_ACCESS_TOKEN: ${{ inputs.secreto == 'nuevo' && secrets.SUPABASE_ACCESS_TOKEN || '' }}"]);
   });
 
-  it("antes de tocar nada, la corrida tiene que ser de lo último de main", async () => {
+  it("antes de tocar nada, se niega si después llegó a main otro cambio de lo que publica", async () => {
     const f = await flujo("desplegar-repartidor.yml");
     const desplegar = f.slice(f.indexOf("\n  desplegar:\n"));
-    const revision = desplegar.indexOf("git ls-remote");
-    assert.ok(revision > 0 && revision < desplegar.indexOf("Instalar Wrangler"), "la revisión va primero");
-    assert.match(desplegar, /refs\/heads\/main[\s\S]*GITHUB_SHA/);
+    const pasos = desplegar.split("\n      - ").slice(1);
+    const vigente = pasos.findIndex((p) => p.includes("run: node herramientas/desplegar/sigue-vigente.mjs desplegar-repartidor.yml\n"));
+    assert.ok(vigente >= 0, "revisa con el archivo de este mismo flujo");
+    assert.ok(vigente < pasos.findIndex((p) => p.includes("Instalar Wrangler")), "la revisión va primero");
+    const paso = pasos[vigente] ?? "";
+    assert.ok(!paso.includes("secrets.") && !paso.includes("env:"), "esa revisión no ve ningún secreto");
   });
 
   it("revisa en un trabajo sin secretos, y el que ve los tokens no instala nada del sistema", async () => {

@@ -93,17 +93,13 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: sistema/.nvmrc
-      # Antes de tocar nada: esta corrida tiene que ser de lo último de main. Si
-      # main avanzó mientras esperaba (o si alguien la vuelve a correr después),
-      # publicaría páginas viejas encima de unas nuevas. El repositorio es
-      # público: se lee sin credenciales.
-      - name: Esta corrida es de lo último de main
-        run: |
-          ultimo="$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | cut -f1)"
-          if [ "$ultimo" != "$GITHUB_SHA" ]; then
-            echo "::error::Esta corrida es de una versión anterior de main ($GITHUB_SHA); main ya va en $ultimo. No se publicó nada. Para publicar lo último: Actions → Desplegar el repartidor → Run workflow, rama main."
-            exit 1
-          fi
+      # Antes de tocar nada: si mientras esperaba (o al volver a correrla) llegó a
+      # main otro cambio de lo que publica este flujo (las rutas de «push»), se
+      # niega: pondría páginas viejas encima de las nuevas, y ese cambio trae su
+      # propia corrida. Si main avanzó solo en otras cosas, sigue. Lee main sin
+      # credenciales: el repositorio es público.
+      - name: Nada de lo que publica cambió en main después de esta corrida
+        run: node herramientas/desplegar/sigue-vigente.mjs desplegar-repartidor.yml
       # Wrangler en la versión exacta de su candado (herramientas/repartidor/wrangler/),
       # instalado fuera del repositorio y sin correr programas al instalarse.
       - name: Instalar Wrangler
