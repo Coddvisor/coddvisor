@@ -458,8 +458,9 @@ puede contestar debajo.
    ¿La comisaría, la fiscalía, Indecopi?
 7. La Constitución (art. 2, inciso 7) da a quien es agraviado en un medio de
    comunicación social el derecho a que este se rectifique gratis, de
-   inmediato y en forma proporcional. ¿Aplica a la comunidad? ¿Basta con que
-   la persona o la empresa nombrada pueda contestar debajo?
+   inmediato y en forma proporcional, y la Ley 26775 fija cómo se pide.
+   ¿Aplica a la comunidad? ¿Basta con que la persona o la empresa nombrada
+   pueda contestar debajo?
 
 ### P2. «Publicar sin firma»: qué se promete y a quién se le dice
 
