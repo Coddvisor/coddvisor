@@ -279,6 +279,8 @@ permisos que se ganan:
   las pirámides, y el freno de palabras las detiene.
 - **Normas de convivencia** cortas, que se aceptan al entrar y se ven siempre.
   Lo que más frena las agresiones es la costumbre del grupo, no el nombre real.
+  Su borrador para el abogado, con los términos de la comunidad, está en
+  [comunidad-normas.md](comunidad-normas.md).
 - **Difamación**: en el Perú no se encontró una norma que proteja al sitio por
   lo que escriben otros. Lo revisa un abogado antes de abrir. Mientras, un
   freno: una acusación de delito con nombre («son unos estafadores») se detiene
@@ -289,8 +291,12 @@ permisos que se ganan:
 - **Menores**: las normas dicen que la comunidad es para mayores de edad.
 - **Nada se borra, salvo lo que pide la ley.** Lo que rompe las normas se
   archiva y deja de verse. Si la persona pide borrar sus datos, se borran su
-  cuenta y su firma en el plazo de la ley, y lo que publicó queda como «Un
-  dueño que dejó la comunidad», o se borra si trae datos suyos.
+  firma y la descripción de su negocio en el plazo de la ley, y lo que publicó
+  queda como «Alguien que dejó la comunidad», o se borra si trae datos suyos.
+  Su cuenta de Coddvisor sigue, porque es la misma del sistema. (Hasta el
+  27-nov decía «Un dueño que dejó la comunidad» y que se borraba la cuenta; se
+  alinea con [comunidad-etapa-1.md](comunidad-etapa-1.md) y
+  [comunidad-normas.md](comunidad-normas.md).)
 - **El tiempo del equipo**: el equipo no modera. Antes de abrir arma el
   contenido inicial, invita a los contadores y nombra a los primeros
   guardianes. Después, entra solo cuando alguien se lo pide o lo ordena una
