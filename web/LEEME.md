@@ -413,12 +413,44 @@ equipo-invitacion --no-verify-jwt`).
 pestaña si pasó más de un minuto. Cada actualización es una sola consulta sobre tablas ya sumadas
 por día: no carga la base. También hay un botón «Actualizar».
 
+### Fase 1: cifras honestas y lo pendiente primero (28-nov-2026)
+
+Sale de la investigación «Contar sin reconocer, decidir sin ruido» (28-nov-2026). Usa solo lo que la
+base ya guarda; no mide nada nuevo en el sitio (migración `20261128200000_sitio_panel_fase_1.sql`).
+
+- **«Para hoy»**, arriba de las pestañas: cuántos pedidos esperan respuesta y cuántas preguntas
+  están sin responder, con la más antigua. Solo lo que el rol puede ver. «Ver pedidos» abre la
+  pestaña Pedidos en «Esperan respuesta», que junta los pendientes de cualquier fecha.
+- **Tarjetas honestas.** Con 5 a 15 entradas al día, casi todo cambio es azar. Las tarjetas muestran
+  el conteo y dicen «más» o «menos» solo si la diferencia pasa `margen_azar` veces la raíz de la
+  suma de los dos periodos; si no, «Parecido al día anterior». Nunca un porcentaje de cambio.
+- **«Les escribimos en»** (cuarta tarjeta) y la tarjeta **«Qué tan rápido respondemos»**: mediana
+  desde que llega el pedido hasta que alguien marca «Ya le escribimos», cuántos dentro de la meta
+  (`minutos_meta_respuesta`) y por tramos (`tramos_respuesta`). Por eso conviene marcarlo apenas se
+  le escribe a la persona.
+- **El embudo llega hasta «Se volvieron clientes».** En Pedidos, «Se volvió cliente» marca a quien
+  empezó a usar Coddvisor (permiso «Marcar «Ya le escribimos»»). Cada paso dice «2 de 74» mientras
+  la base sea menor que `minimo_para_porcentaje`, y un porcentaje después.
+- **Páginas que ayudaron:** lo que leyeron antes de escribir quienes dejaron sus datos.
+- **Notas en el gráfico de entradas:** «publicamos la guía», «compartimos en un grupo». Con el
+  permiso nuevo «Anotar el gráfico» (líder y administrador). Se archivan, nunca se borran
+  (`sitio.notas`).
+- **«¿Le sirvió?»** se ordena por «al menos»: el límite bajo del intervalo de Wilson al 95%, lo
+  mínimo que se puede afirmar con esos votos. Así 2 «sí» de 2 no queda por encima de 18 de 22.
+
+Las cuentas de azar, votos y tiempos están en `public/equipo/cifras.js`, con sus pruebas en
+`pruebas/cifras.test.mjs`. Las de la base, en `pruebas/panel-fase-1.test.mjs`.
+
 ### Lo que se cambia sin tocar el programa
 
 - **Qué dominio es «Buscadores», «Redes sociales» o «WhatsApp»:** la tabla `sitio.origenes_visita`.
   Para sumar uno: `INSERT INTO sitio.origenes_visita (patron, grupo) VALUES ('%.ejemplo.com', 'Redes sociales');`
   (`%` es cualquier texto).
 - **La zona horaria del día y los días que dura una invitación:** pestaña Configuración → Ajustes.
+- **Cuándo una cifra «subió» o «bajó», desde cuántas personas se muestran porcentajes y la meta para
+  responder un pedido:** pestaña Configuración → Ajustes (`margen_azar`, `minimo_para_porcentaje`,
+  `minutos_meta_respuesta`). Los tramos de respuesta (`tramos_respuesta`) se cambian en la tabla
+  `sitio.ajustes`.
 - **Qué puede ver cada rol:** pestaña Configuración.
 
 ### Seguridad y la excepción a D30

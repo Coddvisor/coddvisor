@@ -129,7 +129,7 @@ test('Configuración: qué ve cada rol se cambia sin tocar el programa; el admin
   const db = await equipoDePrueba();
   const c = await r(db, 'public.sitio_configuracion()');
   assert.deepEqual(c.roles.map((x) => x.codigo), ['integrante', 'lider', 'administrador']);
-  assert.equal(c.permisos.length, 7, 'los seis del 24-nov y responder_preguntas');
+  assert.equal(c.permisos.length, 8, 'los seis del 24-nov, responder_preguntas y anotar (fase 1)');
 
   await r(db, `public.sitio_configurar_permiso('integrante', 'ver_pedidos', true)`);
   assert.equal((await r(db, `public.sitio_panel('dia')`, [], ID_ANA)).pedidos.lista.length, 1);

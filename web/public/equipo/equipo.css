@@ -184,3 +184,35 @@ thead th { color:var(--texto-2); font-weight:600; font-size:13px; }
 .pr-texto, .pr-respuesta { width:100%; margin:8px 0; border:2px solid var(--borde-fuerte); border-radius:12px; padding:10px 12px; font:inherit; font-size:15px; line-height:1.5; background:var(--tarjeta); color:inherit; resize:vertical; }
 .pr-texto[readonly] { border-style:dashed; color:var(--texto-2); }
 .pr-motivo { min-height:40px; border:1px solid var(--borde-fuerte); border-radius:10px; padding:0 10px; font:inherit; font-size:14px; background:var(--tarjeta); color:inherit; }
+
+/* ---------- Fase 1: «Para hoy», tarjetas honestas, notas, rapidez y clientes ---------- */
+.hoy { display:grid; gap:12px; }
+.hoy h2 { font-size:17px; }
+.hoy-lista { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+.hoy-item { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 14px; padding:10px 12px; border:1px solid var(--borde); border-radius:12px; }
+.hoy-texto { display:grid; gap:2px; min-width:0; flex:1 1 220px; }
+.hoy-texto span { color:var(--texto-2); font-size:14px; }
+.hoy-al-dia { background:var(--correcto-fondo); border-color:transparent; color:var(--correcto); font-weight:600; font-size:14px; }
+
+.tile-val--texto { font-size:20px; line-height:1.3; }
+.tile-val small { font-size:15px; font-weight:500; color:var(--texto-2); }
+
+.grafico.con-notas { margin-top:36px; }
+.nota-marca { position:absolute; top:-6px; left:50%; transform:translate(-50%, -100%); min-width:20px; height:20px; padding:0 4px; border-radius:999px; background:var(--tarjeta); border:2px solid var(--tinta); font:700 11px/16px var(--mono); color:var(--tinta); text-align:center; white-space:nowrap; }
+.globo-nota { margin-top:4px; padding-top:4px; border-top:1px solid var(--borde); max-width:240px; }
+.notas { list-style:none; padding:0; margin:12px 0 0; display:grid; gap:8px; }
+.notas:empty { display:none; }
+.nota-item { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; font-size:14px; }
+.nota-num { flex:none; min-width:22px; height:22px; border-radius:999px; border:2px solid var(--tinta); font:700 11px/18px var(--mono); text-align:center; }
+.nota-texto { flex:1 1 200px; min-width:0; }
+.nota-texto small { color:var(--texto-3); }
+.nota-form { margin-top:14px; display:grid; gap:6px; }
+.nota-form label { font-weight:600; font-size:14px; }
+.nota-fila { display:flex; flex-wrap:wrap; gap:8px; }
+.nota-fila input { min-height:44px; padding:0 12px; border:1px solid var(--borde-fuerte); border-radius:12px; background:var(--tarjeta); color:var(--tinta); font:inherit; }
+.nota-fila input[type="text"] { flex:1 1 220px; min-width:0; }
+
+.cifras { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; margin-top:12px; }
+.cifra { display:grid; gap:2px; }
+.cifra b { font-size:22px; font-weight:600; line-height:1.2; }
+.cifra span { color:var(--texto-2); font-size:13px; }

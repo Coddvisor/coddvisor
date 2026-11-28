@@ -27,6 +27,7 @@ for (const [ruta, md] of Object.entries(archivos)) {
 <Equipo titulo="Visitas y pedidos | Coddvisor">
 <!-- preguntas.js arma la firma de cada pregunta con la misma regla que el sitio. -->
 <script slot="cabeza" is:inline src="/preguntas.js" defer></script>
+<script slot="cabeza" is:inline src="/equipo/cifras.js" defer></script>
 <script slot="cabeza" is:inline src="/equipo/panel.js" defer></script>
 <script type="application/json" id="titulos" set:html={JSON.stringify(titulos).replace(/</g, '\\u003c')}></script>
 <!-- Cómo firma quien pregunta en una guía: las mismas listas del sitio (servidor/firma.js). -->
@@ -42,6 +43,13 @@ for (const [ruta, md] of Object.entries(archivos)) {
     <button type="button" class="boton-2" data-salir>Salir</button>
   </div>
 </header>
+
+<!-- «Para hoy»: lo que espera respuesta va antes que las cifras. Solo aparece si el rol ve
+     pedidos o responde preguntas (public/equipo/panel.js, paraHoy). -->
+<section class="tarjeta hoy" aria-labelledby="hoy-t" data-hoy hidden>
+  <h2 id="hoy-t">Para hoy</h2>
+  <ul class="hoy-lista" data-hoy-lista></ul>
+</section>
 
 <!-- Pestañas: cada una aparece solo si el rol tiene su permiso (public/equipo/panel.js). -->
 <nav class="pestanas" role="tablist" aria-label="Secciones del panel" data-pestanas>
@@ -72,13 +80,23 @@ for (const [ruta, md] of Object.entries(archivos)) {
     <div class="tile"><p class="tile-rot">Entraron al sitio</p><p class="tile-val" data-tile="entradas"></p><p class="tile-delta" data-delta="entradas"></p></div>
     <div class="tile"><p class="tile-rot">Páginas vistas</p><p class="tile-val" data-tile="paginas"></p><p class="tile-delta" data-delta="paginas"></p></div>
     <div class="tile"><p class="tile-rot">Dejaron sus datos</p><p class="tile-val" data-tile="pedidos"></p><p class="tile-delta" data-delta="pedidos"></p></div>
-    <div class="tile"><p class="tile-rot">De cada 100 que entran, dejan sus datos</p><p class="tile-val" data-tile="conversion"></p><p class="tile-delta" data-delta="conversion"></p></div>
+    <div class="tile"><p class="tile-rot">Les escribimos en</p><p class="tile-val" data-tile="respuesta"></p><p class="tile-delta" data-delta="respuesta"></p></div>
   </section>
 
   <section class="tarjeta" aria-labelledby="g-t">
     <h2 id="g-t">Entradas al sitio</h2>
     <p class="nota" data-grafico-nota></p>
     <div class="grafico" data-grafico></div>
+    <ol class="notas" data-notas aria-label="Notas del equipo sobre el gráfico"></ol>
+    <form class="nota-form" data-nota-form hidden>
+      <label for="nota-texto">Agregar una nota al gráfico</label>
+      <div class="nota-fila">
+        <input id="nota-dia" name="dia" type="date" required aria-label="Día de la nota">
+        <input id="nota-texto" name="texto" type="text" maxlength="120" required placeholder="Qué pasó ese día. Ejemplo: publicamos la guía de CTS">
+        <button type="submit" class="boton-2 boton-chico">Anotar</button>
+      </div>
+      <p class="estado" data-nota-estado role="status" aria-live="polite"></p>
+    </form>
     <details class="tabla-vista">
       <summary>Ver como tabla</summary>
       <div class="tabla-envoltura"><table data-tabla-serie>
@@ -89,10 +107,24 @@ for (const [ruta, md] of Object.entries(archivos)) {
   </section>
 
   <section class="tarjeta" aria-labelledby="e-t">
-    <h2 id="e-t">Del que entra al que dejó sus datos</h2>
-    <p class="nota">Como en una tienda: cuántos entraron, cuántos pidieron que les escribamos y a cuántos ya les escribimos.</p>
+    <h2 id="e-t">Del que entra al que se vuelve cliente</h2>
+    <p class="nota">Como en una tienda: cuántos entraron, cuántos pidieron que les escribamos, a cuántos ya les escribimos y cuántos se volvieron clientes.</p>
     <div class="embudo" data-embudo></div>
   </section>
+
+  <div class="eq-doble">
+    <section class="tarjeta" aria-labelledby="r-t">
+      <h2 id="r-t">Qué tan rápido respondemos</h2>
+      <p class="nota">Desde que llega el pedido hasta que alguien marca «Ya le escribimos». Márquelo apenas le escriba.</p>
+      <div class="cifras" data-respuesta></div>
+      <div class="barras" data-tramos></div>
+    </section>
+    <section class="tarjeta" aria-labelledby="a-t">
+      <h2 id="a-t">Páginas que ayudaron</h2>
+      <p class="nota">Lo que leyeron antes de escribir quienes dejaron sus datos en este periodo.</p>
+      <div class="barras" data-ayudaron></div>
+    </section>
+  </div>
 
   <div class="eq-doble">
     <section class="tarjeta" aria-labelledby="o-t">
@@ -128,7 +160,11 @@ for (const [ruta, md] of Object.entries(archivos)) {
 <div data-panel="pedidos" class="eq-panel" hidden>
   <section class="tarjeta" aria-labelledby="q-t">
     <h2 id="q-t">Quiénes dejaron sus datos</h2>
-    <p class="nota">Lo que escribieron en el formulario «Quiero ser de los primeros» y qué páginas leyeron antes. Marque «Ya le escribimos» cuando alguien del equipo le responda.</p>
+    <p class="nota">Lo que escribieron en el formulario «Quiero ser de los primeros» y qué páginas leyeron antes. Marque «Ya le escribimos» cuando alguien del equipo le responda, y «Se volvió cliente» cuando empiece a usar Coddvisor.</p>
+    <div class="seg seg--chico" role="radiogroup" aria-label="Mostrar">
+      <button type="button" role="radio" aria-checked="true" data-filtro-pedidos="periodo">Del periodo</button>
+      <button type="button" role="radio" aria-checked="false" data-filtro-pedidos="pendientes">Esperan respuesta <span data-pendientes-cuenta></span></button>
+    </div>
     <ol class="pedidos" data-pedidos></ol>
   </section>
 </div>
@@ -147,8 +183,9 @@ for (const [ruta, md] of Object.entries(archivos)) {
   <section class="tarjeta" aria-labelledby="pr-o-t">
     <h2 id="pr-o-t">¿Le sirvió la guía? <small>(últimos 30 días)</small></h2>
     <div class="tabla-envoltura"><table class="tabla" data-preg-opiniones>
-      <thead><tr><th scope="col">Guía</th><th scope="col">Sí</th><th scope="col">No</th></tr></thead><tbody></tbody>
+      <thead><tr><th scope="col">Guía</th><th scope="col">Dijeron sí</th><th scope="col">Al menos</th></tr></thead><tbody></tbody>
     </table></div>
+    <p class="nota">Ordenadas por «al menos»: lo mínimo que se puede afirmar con esos votos (intervalo de Wilson al 95%). Así, 2 «sí» de 2 votos no queda por encima de 18 de 22.</p>
     <h3 class="pr-sub">Lo que les faltó</h3>
     <ol class="historial" data-preg-faltantes></ol>
   </section>

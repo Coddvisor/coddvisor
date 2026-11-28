@@ -124,8 +124,8 @@ test('las cifras: hoy frente a ayer, semana de lunes a domingo, pedidos por hora
   const d = await resumen(db, 'dia');
   assert.equal(d.periodo, hoy);
   assert.equal(d.serie.length, 30);
-  assert.deepEqual(d.totales, { entradas: 15, paginas: 22, pedidos: 1, atendidos: 1 });
-  assert.deepEqual({ ...d.anterior, periodo: undefined }, { periodo: undefined, entradas: 5, paginas: 5, pedidos: 1, atendidos: 0 });
+  assert.deepEqual(d.totales, { entradas: 15, paginas: 22, pedidos: 1, atendidos: 1, clientes: 0 });
+  assert.deepEqual({ ...d.anterior, periodo: undefined }, { periodo: undefined, entradas: 5, paginas: 5, pedidos: 1, atendidos: 0, clientes: 0 });
   assert.equal(d.pedidos.lista[0].nombre, 'Luis');
   const grupo = (n) => d.origenes.find((o) => o.grupo === n || o.clave === n);
   assert.equal(grupo('Buscadores').entradas, 10);
@@ -157,7 +157,7 @@ test('un periodo futuro o mal escrito vuelve al periodo en curso; sin datos todo
   assert.equal((await resumen(db, 'dia', '2026-02-30')).periodo, hoy);
   const d = await resumen(db, 'cualquiera');
   assert.equal(d.escala, 'dia');
-  assert.deepEqual(d.totales, { entradas: 0, paginas: 0, pedidos: 0, atendidos: 0 });
+  assert.deepEqual(d.totales, { entradas: 0, paginas: 0, pedidos: 0, atendidos: 0, clientes: 0 });
   assert.deepEqual(d.paginas, []);
   assert.deepEqual(d.origenes, []);
 });

@@ -10,13 +10,17 @@
   try { titulos = JSON.parse($('#titulos').textContent); } catch (e) {}
 
   var numero = new Intl.NumberFormat('es-PE');
-  var porciento = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 1 });
   var paises = null;
   try { paises = new Intl.DisplayNames(['es'], { type: 'region' }); } catch (e) {}
+  // Cuentas sin página (public/equipo/cifras.js): azar, votos, tiempos y proporciones en palabras.
+  var C = window.CoddvisorCifras;
 
-  var estado = { escala: 'dia', periodo: null, filtroPaginas: 'todas', datos: null, permisos: [], pestana: null, yo: null };
+  var estado = { escala: 'dia', periodo: null, filtroPaginas: 'todas', filtroPedidos: 'periodo', datos: null, permisos: [], pestana: null, yo: null };
   var NOMBRE_ANTERIOR = { dia: 'el día anterior', semana: 'la semana anterior', mes: 'el mes anterior' };
-  var FRENTE = { dia: 'frente al día anterior', semana: 'frente a la semana anterior', mes: 'frente al mes anterior' };
+  var PARECIDO = { dia: 'Parecido al día anterior', semana: 'Parecido a la semana anterior', mes: 'Parecido al mes anterior' };
+  // Cuando faltan los ajustes (una base sin la migración de la fase 1), estos son los de fábrica.
+  var AJUSTES = { margen_azar: 2, minimo_para_porcentaje: 100, minutos_meta_respuesta: 60 };
+  function ajustes(d) { return d.ajustes || AJUSTES; }
   var DISPOSITIVOS = { celular: 'Celular', tableta: 'Tableta', computadora: 'Computadora' };
 
   function el(tag, clase, texto) {
@@ -44,7 +48,6 @@
 
   function titulo(ruta) { return (titulos[ruta] && titulos[ruta].titulo) || ruta; }
   function tipo(ruta) { return (titulos[ruta] && titulos[ruta].tipo) || (ruta.indexOf('/blog/') === 0 ? 'articulo' : 'pagina'); }
-  function conversion(t) { return t.entradas ? (t.pedidos / t.entradas) * 100 : 0; }
 
   // ---------- Pedir datos ----------
   // `estado.periodo` es el que eligió la persona tocando una columna; vacío = el periodo en curso,
@@ -103,10 +106,14 @@
     $('[data-quien]').textContent = estado.yo ? estado.yo.nombre + ' (' + estado.yo.rol_nombre + ')' : '';
     var actual = d.serie.filter(function (p) { return p.periodo === d.periodo; })[0] || { periodo: d.periodo, desde: d.desde, hasta: d.hasta };
     $('[data-periodo-texto]').textContent = 'Mostrando: ' + nombrePeriodo(actual, true) + (d.periodo === d.serie[d.serie.length - 1].periodo ? ' (en curso)' : '');
+    paraHoy(d);
     tiles(d);
     grafico(d);
+    notas(d);
     tablaSerie(d);
     embudo(d);
+    respuestaDetalle(d);
+    ayudaron(d);
     barras($('[data-origenes]'), d.origenes.map(function (o) {
       var nombre = o.clave === 'directo' ? 'Directo, WhatsApp o una app' : o.clave === 'otros' ? 'Otros sitios' : o.grupo;
       var detalle = o.clave === 'directo' ? 'Sin dato de origen: escribieron la dirección, o abrieron un enlace desde una app.'
@@ -126,25 +133,40 @@
     pedidos(d);
   }
 
+  // Tarjetas honestas: el conteo primero, y «más» o «menos» solo si el cambio supera el azar
+  // (ajuste margen_azar). Nunca un porcentaje de cambio sobre números chicos.
   function tiles(d) {
-    var t = d.totales, a = d.anterior;
-    var vals = { entradas: t.entradas, paginas: t.paginas, pedidos: t.pedidos, conversion: conversion(t) };
-    var ants = { entradas: a.entradas, paginas: a.paginas, pedidos: a.pedidos, conversion: conversion(a) };
-    Object.keys(vals).forEach(function (k) {
-      $('[data-tile="' + k + '"]').textContent = k === 'conversion' ? porciento.format(vals[k]) : numero.format(vals[k]);
+    var t = d.totales, a = d.anterior, aj = ajustes(d);
+    ['entradas', 'paginas', 'pedidos'].forEach(function (k) {
+      var val = $('[data-tile="' + k + '"]');
+      val.textContent = numero.format(t[k]);
+      if (k === 'pedidos' && t.entradas) val.appendChild(el('small', null, ' de ' + numero.format(t.entradas)));
       var delta = $('[data-delta="' + k + '"]');
-      delta.className = 'tile-delta';
-      var dif = vals[k] - ants[k];
-      var frente = ' ' + FRENTE[estado.escala];
-      if (dif === 0) { delta.textContent = 'Igual que ' + NOMBRE_ANTERIOR[estado.escala]; return; }
-      var arriba = dif > 0;
-      delta.classList.add(arriba ? 'sube' : 'baja');
-      var cuanto = k === 'conversion'
-        ? porciento.format(Math.abs(dif)) + (Math.abs(dif) === 1 ? ' persona ' : ' personas ') + (arriba ? 'más' : 'menos') + ' de cada 100'
-        : ants[k] ? porciento.format(Math.abs(dif) / ants[k] * 100) + ' % ' + (arriba ? 'más' : 'menos')
-        : numero.format(Math.abs(dif)) + ' ' + (arriba ? 'más' : 'menos');
-      delta.textContent = (arriba ? '▲ ' : '▼ ') + cuanto + frente;
+      var c = C.cambio(t[k], a[k], aj.margen_azar);
+      delta.className = 'tile-delta' + (c === 'igual' ? '' : ' ' + c);
+      var antes = ' (' + numero.format(a[k]) + ')';
+      delta.textContent = c === 'sube' ? '▲ Más que ' + NOMBRE_ANTERIOR[estado.escala] + antes
+        : c === 'baja' ? '▼ Menos que ' + NOMBRE_ANTERIOR[estado.escala] + antes
+        : PARECIDO[estado.escala] + antes;
     });
+    var r = d.respuesta, val = $('[data-tile="respuesta"]'), delta = $('[data-delta="respuesta"]');
+    val.className = 'tile-val';
+    delta.className = 'tile-delta';
+    if (!r || !r.pedidos) {
+      val.textContent = 'Sin pedidos';
+      val.classList.add('tile-val--texto');
+      delta.textContent = 'Nadie dejó sus datos en este periodo.';
+    } else if (!r.respondidos) {
+      val.textContent = 'Sin respuesta';
+      val.classList.add('tile-val--texto');
+      delta.textContent = '! ' + (r.sin_responder === 1 ? 'Un pedido espera' : numero.format(r.sin_responder) + ' pedidos esperan') + ' respuesta.';
+      delta.classList.add('baja');
+    } else {
+      var dentro = r.mediana_min <= r.meta_min;
+      val.textContent = C.duracion(r.mediana_min);
+      delta.textContent = (dentro ? '✓ ' : '! ') + 'Mediana. ' + numero.format(r.en_meta) + ' de ' + numero.format(r.pedidos) + ' dentro de ' + C.plazo(r.meta_min) + '.';
+      delta.classList.add(dentro ? 'sube' : 'baja');
+    }
   }
 
   // Columnas: una por periodo. El periodo elegido va en ámbar (--grafico-hoy) y lleva su número
@@ -173,6 +195,12 @@
       ejeY.appendChild(et);
     }
     var columnas = el('div', 'columnas');
+    // Notas del equipo: un número sobre la columna de su día (o de su semana o mes), el mismo de la lista.
+    var notasDe = {};
+    (d.notas || []).forEach(function (n, k) {
+      d.serie.forEach(function (p) { if (n.dia >= p.desde && n.dia <= p.hasta) (notasDe[p.periodo] = notasDe[p.periodo] || []).push({ n: n, num: k + 1 }); });
+    });
+    caja.classList.toggle('con-notas', (d.notas || []).length > 0);
     // Cuántas fechas caben debajo sin montarse (unos 64 px cada una). La última siempre se ve.
     var caben = Math.max(2, Math.floor((caja.clientWidth - 48) / 64));
     var saltar = Math.ceil(d.serie.length / caben);
@@ -180,7 +208,10 @@
       var b = el('button', 'col-b');
       b.type = 'button';
       b.setAttribute('aria-pressed', p.periodo === d.periodo ? 'true' : 'false');
-      b.setAttribute('aria-label', nombrePeriodo(p, true) + ': ' + numero.format(p.entradas) + ' entradas, ' + numero.format(p.pedidos) + ' dejaron sus datos');
+      var suyas = notasDe[p.periodo] || [];
+      b.setAttribute('aria-label', nombrePeriodo(p, true) + ': ' + numero.format(p.entradas) + ' entradas, ' + numero.format(p.pedidos) + ' dejaron sus datos'
+        + suyas.map(function (x) { return '. Nota: ' + x.n.texto; }).join(''));
+      if (suyas.length) b.appendChild(el('span', 'nota-marca', suyas.map(function (x) { return x.num; }).join(',')));
       var barra = el('span', 'barra');
       barra.style.height = (p.entradas / tope * 100) + '%';
       if (p.periodo === d.periodo) {
@@ -191,7 +222,7 @@
       var et = el('span', 'col-et', (d.serie.length - 1 - i) % saltar === 0 ? etiquetaCorta(p) : '');
       b.appendChild(et);
       b.addEventListener('click', function () { estado.periodo = p.periodo; cargar(); });
-      var mostrar = function () { globo(b, p); };
+      var mostrar = function () { globo(b, p, suyas); };
       b.addEventListener('pointerenter', mostrar);
       b.addEventListener('focus', mostrar);
       b.addEventListener('pointerleave', ocultarGlobo);
@@ -211,7 +242,7 @@
     return Math.max(1, (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * pot);
   }
 
-  function globo(ancla, p) {
+  function globo(ancla, p, suyas) {
     var g = $('[data-globo]');
     g.textContent = '';
     g.appendChild(el('p', 'globo-t', nombrePeriodo(p, true)));
@@ -221,6 +252,7 @@
       fila.appendChild(document.createTextNode(' ' + f[1]));
       g.appendChild(fila);
     });
+    (suyas || []).forEach(function (x) { g.appendChild(el('p', 'globo-nota', x.num + '. ' + x.n.texto)); });
     g.hidden = false;
     var r = ancla.getBoundingClientRect();
     var ancho = g.offsetWidth;
@@ -241,24 +273,27 @@
     });
   }
 
+  // Del que entra al que se vuelve cliente. Cada paso dice cuántos siguieron: «2 de 74» mientras
+  // la base sea chica, un porcentaje solo desde el ajuste minimo_para_porcentaje.
   function embudo(d) {
     var caja = $('[data-embudo]');
     caja.textContent = '';
-    var t = d.totales;
+    var t = d.totales, minimo = ajustes(d).minimo_para_porcentaje;
     var pasos = [
       { nombre: 'Entraron al sitio', valor: t.entradas },
-      { nombre: 'Dejaron sus datos', valor: t.pedidos },
-      { nombre: 'Ya les escribimos', valor: t.atendidos },
+      { nombre: 'Dejaron sus datos', valor: t.pedidos, corto: 'que entraron', largo: 'de los que entraron' },
+      { nombre: 'Ya les escribimos', valor: t.atendidos, corto: 'que dejaron sus datos', largo: 'de los que dejaron sus datos' },
+      { nombre: 'Se volvieron clientes', valor: t.clientes || 0, corto: 'a quienes les escribimos', largo: 'de aquellos a quienes les escribimos' },
     ];
     var base = Math.max(t.entradas, t.pedidos, 1);
     pasos.forEach(function (p, i) {
       var fila = el('div', 'emb-fila');
       var cab = el('p', 'emb-cab');
       cab.appendChild(el('span', null, p.nombre));
-      var valor = el('b', null, numero.format(p.valor));
-      cab.appendChild(valor);
-      if (i > 0 && pasos[i - 1].valor) {
-        cab.appendChild(el('span', 'emb-pct', porciento.format(p.valor / pasos[i - 1].valor * 100) + ' % del paso anterior'));
+      cab.appendChild(el('b', null, numero.format(p.valor)));
+      var antes = i ? pasos[i - 1].valor : 0;
+      if (i && antes) {
+        cab.appendChild(el('span', 'emb-pct', C.deCada(p.valor, antes, minimo) + ' ' + (antes < minimo ? p.corto : p.largo)));
       }
       fila.appendChild(cab);
       var pista = el('div', 'pista');
@@ -268,6 +303,114 @@
       fila.appendChild(pista);
       caja.appendChild(fila);
     });
+  }
+
+  // Qué tan rápido respondemos en el periodo: mediana, cuántos dentro de la meta y por tramos.
+  function respuestaDetalle(d) {
+    var r = d.respuesta, caja = $('[data-respuesta]'), tramos = $('[data-tramos]');
+    caja.textContent = '';
+    tramos.textContent = '';
+    if (!r || !r.pedidos) { caja.appendChild(el('p', 'vacio', 'Nadie dejó sus datos en este periodo.')); return; }
+    [[r.respondidos ? C.duracion(r.mediana_min) : 'Sin respuesta', 'Mediana hasta escribirle'],
+     [numero.format(r.en_meta) + ' de ' + numero.format(r.pedidos), 'Dentro de ' + C.plazo(r.meta_min)],
+     [r.respondidos ? C.duracion(r.mas_larga_min) : 'Sin respuesta', 'La espera más larga']].forEach(function (x) {
+      var c = el('p', 'cifra');
+      c.appendChild(el('b', null, x[0]));
+      c.appendChild(el('span', null, x[1]));
+      caja.appendChild(c);
+    });
+    var filas = (r.tramos || []).map(function (t, i) {
+      var desde = i ? r.tramos[i - 1].hasta_min : null;
+      var nombre = t.hasta_min == null ? 'Más de ' + C.plazo(desde)
+        : desde == null ? 'Hasta ' + C.plazo(t.hasta_min) : 'De ' + C.plazo(desde) + ' a ' + C.plazo(t.hasta_min);
+      return { nombre: nombre, valor: t.pedidos };
+    });
+    if (r.sin_responder) filas.push({ nombre: 'Todavía sin respuesta', valor: r.sin_responder });
+    barras(tramos, filas, '');
+  }
+
+  // Páginas que leyeron, antes de escribir, quienes dejaron sus datos en el periodo.
+  function ayudaron(d) {
+    var total = d.totales.pedidos;
+    var filas = d.paginas.filter(function (p) { return p.pedidos > 0; })
+      .sort(function (a, b) { return b.pedidos - a.pedidos || b.paginas - a.paginas; })
+      .slice(0, 8)
+      .map(function (p) { return { nombre: titulo(p.ruta), valor: p.pedidos }; });
+    barras($('[data-ayudaron]'), filas, 'Nadie dejó sus datos en este periodo.', total ? 'de ' + numero.format(total) : '');
+  }
+
+  // «Para hoy»: lo que espera respuesta, sin importar el periodo elegido. Solo lo que el rol puede ver.
+  function paraHoy(d) {
+    var p = d.pendientes || {}, caja = $('[data-hoy]'), lista = $('[data-hoy-lista]');
+    var veoPedidos = p.pedidos != null, veoPreguntas = p.preguntas != null;
+    caja.hidden = !(veoPedidos || veoPreguntas);
+    lista.textContent = '';
+    if (caja.hidden) return;
+    function item(texto, detalle, boton, accion) {
+      var li = el('li', 'hoy-item');
+      var tx = el('p', 'hoy-texto');
+      tx.appendChild(el('b', null, texto));
+      tx.appendChild(el('span', null, detalle));
+      li.appendChild(tx);
+      var b = el('button', 'boton-2 boton-chico', boton);
+      b.type = 'button';
+      b.addEventListener('click', accion);
+      li.appendChild(b);
+      lista.appendChild(li);
+    }
+    if (veoPedidos && p.pedidos) {
+      item(p.pedidos === 1 ? 'Un pedido espera respuesta' : numero.format(p.pedidos) + ' pedidos esperan respuesta',
+        (p.pedidos === 1 ? 'Llegó ' : 'El más antiguo llegó ') + C.hace(p.pedido_mas_antiguo) + '.', 'Ver pedidos', verPendientes);
+    }
+    if (veoPreguntas && p.preguntas) {
+      item(p.preguntas === 1 ? 'Una pregunta por responder' : numero.format(p.preguntas) + ' preguntas por responder',
+        (p.preguntas === 1 ? 'Llegó ' : 'La más antigua llegó ') + C.hace(p.pregunta_mas_antigua) + '.', 'Ver preguntas', function () { abrir('preguntas'); });
+    }
+    if (!lista.children.length) {
+      lista.appendChild(el('li', 'hoy-item hoy-al-dia', '✓ Al día: ' + (veoPedidos && veoPreguntas ? 'no hay pedidos ni preguntas esperando.'
+        : veoPedidos ? 'no hay pedidos esperando.' : 'no hay preguntas por responder.')));
+    }
+  }
+  function verPendientes() {
+    estado.filtroPedidos = 'pendientes';
+    marcarFiltroPedidos();
+    abrir('pedidos');
+  }
+  function marcarFiltroPedidos() {
+    $$('[data-filtro-pedidos]').forEach(function (b) { b.setAttribute('aria-checked', b.dataset.filtroPedidos === estado.filtroPedidos ? 'true' : 'false'); });
+    if (estado.datos) pedidos(estado.datos);
+  }
+
+  // Notas del equipo sobre el gráfico: la lista numerada y el formulario para agregar una.
+  function notas(d) {
+    var lista = $('[data-notas]');
+    lista.textContent = '';
+    (d.notas || []).forEach(function (n, k) {
+      var li = el('li', 'nota-item');
+      li.appendChild(el('span', 'nota-num', String(k + 1)));
+      var tx = el('p', 'nota-texto');
+      tx.appendChild(el('b', null, fmt(n.dia, { day: 'numeric', month: 'short' }) + ' '));
+      tx.appendChild(document.createTextNode(n.texto));
+      tx.appendChild(el('small', null, ' Anotó ' + n.creada_por + '.'));
+      li.appendChild(tx);
+      if (d.puede_anotar) {
+        var b = el('button', 'boton-2 boton-chico', 'Archivar');
+        b.type = 'button';
+        b.setAttribute('aria-label', 'Archivar la nota «' + n.texto + '»');
+        b.addEventListener('click', function () {
+          b.disabled = true;
+          window.CoddvisorSesion.llamar('sitio_nota_archivar', { p_id: n.id })
+            .then(respuesta($('[data-nota-estado]'), 'Nota archivada. Sigue guardada, pero ya no se ve en el gráfico.', function () { cargar(true); }));
+        });
+        li.appendChild(b);
+      }
+      lista.appendChild(li);
+    });
+    var form = $('[data-nota-form]');
+    form.hidden = !d.puede_anotar;
+    var dia = form.querySelector('[name="dia"]');
+    dia.max = d.hoy;
+    if (!dia.value) dia.value = d.hoy;
   }
 
   function barras(caja, filas, vacio, unidad) {
@@ -324,11 +467,17 @@
   function pedidos(d) {
     var lista = $('[data-pedidos]');
     lista.textContent = '';
-    if (!d.pedidos.lista.length) {
-      lista.appendChild(el('li', 'vacio', 'Nadie dejó sus datos en este periodo. Cuando alguien llene «Quiero ser de los primeros», aparece aquí.'));
+    var pend = d.pendientes || {};
+    var cuenta = $('[data-pendientes-cuenta]');
+    if (cuenta) cuenta.textContent = pend.pedidos ? '(' + numero.format(pend.pedidos) + ')' : '';
+    var soloPendientes = estado.filtroPedidos === 'pendientes';
+    var filas = soloPendientes ? (pend.lista || []) : d.pedidos.lista;
+    if (!filas.length) {
+      lista.appendChild(el('li', 'vacio', soloPendientes ? '✓ Nadie espera respuesta. A todos los que dejaron sus datos ya les escribimos.'
+        : 'Nadie dejó sus datos en este periodo. Cuando alguien llene «Quiero ser de los primeros», aparece aquí.'));
       return;
     }
-    d.pedidos.lista.forEach(function (p) {
+    filas.forEach(function (p) {
       var li = el('li', 'pedido');
       var cab = el('div', 'pedido-cab');
       cab.appendChild(el('h3', null, p.nombre));
@@ -363,6 +512,11 @@
       marcar.hidden = !d.puede_atender;
       marcar.type = 'button';
       acciones.appendChild(marcar);
+      var cliente = el('button', 'boton-2');
+      cliente.hidden = !d.puede_atender;
+      cliente.type = 'button';
+      acciones.appendChild(cliente);
+      var clienteP = el('p', 'chip-estado hecho');
       var aviso = el('p', 'pedido-aviso');
       aviso.setAttribute('role', 'status');
       li.appendChild(acciones);
@@ -373,10 +527,30 @@
         estadoP.className = 'chip-estado ' + (hecho ? 'hecho' : 'pendiente');
         estadoP.textContent = hecho
           ? '✓ Ya le escribimos' + (p.atendido_por ? ' (' + p.atendido_por + ')' : '')
-          : '● Falta escribirle';
+          : '● Falta escribirle' + (p.recibido_en ? ', llegó ' + C.hace(p.recibido_en) : '');
         marcar.textContent = hecho ? 'Deshacer' : 'Ya le escribimos';
+        var esCliente = !!p.cliente_en;
+        clienteP.textContent = '✓ Se volvió cliente' + (p.cliente_por ? ' (' + p.cliente_por + ')' : '');
+        if (esCliente) estadoP.after(clienteP); else clienteP.remove();
+        cliente.textContent = esCliente ? 'Ya no es cliente' : 'Se volvió cliente';
       }
       pintar();
+      cliente.addEventListener('click', function () {
+        cliente.disabled = true;
+        aviso.textContent = '';
+        window.CoddvisorSesion.llamar('sitio_marcar_cliente', { p_id: p.id, p_cliente: !p.cliente_en }).then(function (r) {
+          if (r.estado === 401) { location.replace('/equipo/entrar/'); return; }
+          cliente.disabled = false;
+          if (r.estado !== 200) {
+            aviso.textContent = r.estado === 0 ? 'No hay conexión. El cambio no se guardó; intente otra vez.' : 'No pudimos guardar el cambio. Intente otra vez.';
+            return;
+          }
+          p.cliente_en = r.cuerpo.cliente_en;
+          p.cliente_por = r.cuerpo.cliente_por;
+          pintar();
+          cargar(true);
+        });
+      });
       marcar.addEventListener('click', function () {
         marcar.disabled = true;
         aviso.textContent = '';
@@ -390,11 +564,12 @@
           p.atendido_en = r.cuerpo.atendido_en;
           p.atendido_por = r.cuerpo.atendido_por;
           pintar();
+          cargar(true);
         });
       });
       lista.appendChild(li);
     });
-    if (d.pedidos.total > d.pedidos.lista.length) {
+    if (!soloPendientes && d.pedidos.total > d.pedidos.lista.length) {
       lista.appendChild(el('li', 'vacio', 'Se muestran los ' + d.pedidos.lista.length + ' más recientes de ' + numero.format(d.pedidos.total) + '. Elija un periodo más corto para ver los demás.'));
     }
   }
@@ -739,13 +914,16 @@
       tr0.appendChild(td0);
       cuerpo.appendChild(tr0);
     }
-    d.opiniones.forEach(function (o) {
-      var tr = el('tr');
-      tr.appendChild(el('th', null, titulo(o.ruta))).setAttribute('scope', 'row');
-      tr.appendChild(el('td', null, numero.format(o.si)));
-      tr.appendChild(el('td', null, numero.format(o.no)));
-      cuerpo.appendChild(tr);
-    });
+    var porcentaje = new Intl.NumberFormat('es-PE', { style: 'percent', maximumFractionDigits: 0 });
+    d.opiniones.map(function (o) { return { o: o, bajo: C.wilsonBajo(o.si, o.si + o.no) }; })
+      .sort(function (a, b) { return b.bajo - a.bajo || (b.o.si + b.o.no) - (a.o.si + a.o.no); })
+      .forEach(function (x) {
+        var tr = el('tr');
+        tr.appendChild(el('th', null, titulo(x.o.ruta))).setAttribute('scope', 'row');
+        tr.appendChild(el('td', null, numero.format(x.o.si) + ' de ' + numero.format(x.o.si + x.o.no)));
+        tr.appendChild(el('td', null, porcentaje.format(x.bajo)));
+        cuerpo.appendChild(tr);
+      });
     var faltan = $('[data-preg-faltantes]');
     faltan.textContent = '';
     if (!d.faltantes.length) faltan.appendChild(el('li', 'vacio', 'Nadie escribió qué le faltó.'));
@@ -843,6 +1021,19 @@
   }
 
   $('[data-actualizar]').addEventListener('click', function () { cargar(true); });
+  $$('[data-filtro-pedidos]').forEach(function (b) {
+    b.addEventListener('click', function () { estado.filtroPedidos = b.dataset.filtroPedidos; marcarFiltroPedidos(); });
+  });
+  $('[data-nota-form]').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var f = ev.target, aviso = $('[data-nota-estado]'), boton = f.querySelector('button');
+    if (f.texto.value.trim().length < 3) { aviso.textContent = 'Escriba qué pasó ese día, en pocas palabras.'; f.texto.focus(); return; }
+    boton.disabled = true;
+    window.CoddvisorSesion.llamar('sitio_nota_agregar', { p_dia: f.dia.value, p_texto: f.texto.value }).then(function (r) {
+      boton.disabled = false;
+      respuesta(aviso, 'Nota agregada al gráfico.', function () { f.texto.value = ''; cargar(true); })(r);
+    });
+  });
 
   // ---------- Al abrir ----------
   // Primero se revisa quién entró y qué puede hacer; las pestañas aparecen según su rol.
